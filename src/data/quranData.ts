@@ -1,7 +1,7 @@
-// Dataset Meta 114 Surat & Data Ayat Al-Qur'an (Rasm Utsmani & Terjemah Kemenag)
-
 import { SurahMeta, Ayat } from '../types';
 import { formatAlafasyAudioUrl } from '../services/audioPlayerService';
+import { JUZ_29_AYATS } from './juz29Data';
+import { JUZ_30_AYATS } from './juz30Data';
 
 export const SURAH_LIST: SurahMeta[] = [
   { number: 1, name: 'الفاتحة', latinName: 'Al-Fatihah', meaning: 'Pembukaan', ayahCount: 7, revelationPlace: 'Makkah', juzStart: 1 },
@@ -676,7 +676,11 @@ export const CORE_AYATS_DB: Record<number, Ayat[]> = {
         { id: 3, arabic: 'طِبَاقًا', transliteration: 'ṭibāqā', meaningId: 'berlapis-lapis' }
       ]
     }
-  ]
+  ],
+
+  // Injeksi Database Otentik Juz 29 dan Juz 30
+  ...JUZ_29_AYATS,
+  ...JUZ_30_AYATS
 };
 
 // Fetch Surah Ayahs (from Memory / Cache / Quran API fallback with timeout)
@@ -726,7 +730,7 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
       arabicText: String(a.teksArab || ''),
       translation: String(a.teksIndonesia || ''),
       transliteration: String(a.teksLatin || ''),
-      juz: Number(data.juzStart) || 30,
+      juz: Number(data.juzStart) || (safeSurahNo >= 78 ? 30 : safeSurahNo >= 67 ? 29 : 1),
       audioUrl: formatAlafasyAudioUrl(safeSurahNo, Number(a.nomorAyat) || 1),
       tafsirShort: a.tafsirKemenag ? String(a.tafsirKemenag) : undefined
     }));
@@ -755,7 +759,41 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
   }
 }
 
-// Random Ayah Generator for 30 Juz Murojaah AI
+// Special Randomizer for Sambung Ayat & Simai (Strictly Juz 29 & Juz 30)
+export function getRandomJuz29And30Ayat(filter: 29 | 30 | 'all' = 'all'): { prompt: Ayat; next: Ayat } {
+  let eligibleSurahIds: number[] = [];
+
+  if (filter === 29) {
+    eligibleSurahIds = [67, 68, 69, 71, 73, 74, 75, 76, 77];
+  } else if (filter === 30) {
+    eligibleSurahIds = [78, 79, 80, 81, 87, 89, 91, 93, 94, 95, 96, 97, 103, 108, 109, 112, 113, 114];
+  } else {
+    // Both Juz 29 & Juz 30
+    eligibleSurahIds = [
+      67, 68, 69, 71, 73, 74, 75, 76, 77, // Juz 29
+      78, 79, 80, 81, 87, 89, 91, 93, 94, 95, 96, 97, 103, 108, 109, 112, 113, 114 // Juz 30
+    ];
+  }
+
+  const randomSurahId = eligibleSurahIds[Math.floor(Math.random() * eligibleSurahIds.length)];
+  const surahAyats = CORE_AYATS_DB[randomSurahId] || CORE_AYATS_DB[67];
+
+  // Pick an ayat that has a next continuation
+  if (surahAyats.length > 1) {
+    const promptIdx = Math.floor(Math.random() * (surahAyats.length - 1));
+    return {
+      prompt: surahAyats[promptIdx],
+      next: surahAyats[promptIdx + 1]
+    };
+  }
+
+  return {
+    prompt: surahAyats[0],
+    next: surahAyats[0]
+  };
+}
+
+// General Random Ayah Generator for 30 Juz Murojaah AI
 export function getRandomAyatFromAvailable(filterJuz?: number, filterSurah?: number): Ayat {
   let candidates: Ayat[] = [];
 
@@ -765,7 +803,7 @@ export function getRandomAyatFromAvailable(filterJuz?: number, filterSurah?: num
   if (safeFilterSurah && CORE_AYATS_DB[safeFilterSurah]) {
     candidates = CORE_AYATS_DB[safeFilterSurah];
   } else {
-    // Gather all loaded core ayahs
+    // Gather loaded core ayahs
     Object.values(CORE_AYATS_DB).forEach(ayats => {
       if (safeFilterJuz) {
         candidates.push(...ayats.filter(a => a.juz === safeFilterJuz));
@@ -776,7 +814,7 @@ export function getRandomAyatFromAvailable(filterJuz?: number, filterSurah?: num
   }
 
   if (candidates.length === 0) {
-    candidates = CORE_AYATS_DB[1]; // Fallback to Al-Fatihah
+    candidates = CORE_AYATS_DB[67] || CORE_AYATS_DB[1]; // Fallback to Al-Mulk / Al-Fatihah
   }
 
   const randomIndex = Math.floor(Math.random() * candidates.length);

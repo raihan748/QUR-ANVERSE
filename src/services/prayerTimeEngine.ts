@@ -1,4 +1,5 @@
 // Prayer Times Calculation Engine - Makassar, Sulawesi Selatan (WITA / UTC+8)
+// Standar Kemenag RI / MABIMS dengan koreksi astronomis presisi
 
 import { PrayerTime } from '../types';
 
@@ -6,137 +7,155 @@ export const MAKASSAR_COORDS = {
   city: 'Makassar, Sulawesi Selatan',
   latitude: -5.1477,
   longitude: 119.4327,
-  timezone: 8 // WITA
+  timezone: 8 // WITA (UTC+8)
 };
 
-// Accurate Astronomical Calculation for Prayer Times (MABIMS / Kemenag RI standard)
-export function calculatePrayerTimes(date: Date = new Date()): PrayerTime[] {
+// Precise Solar Calculations for Makassar, Indonesia
+export function calculatePrayerTimes(baseDate: Date = new Date()): PrayerTime[] {
+  const date = new Date(baseDate);
   const year = date.getFullYear();
-  const month = date.getMonth() + 1;
+  const month = date.getMonth();
   const day = date.getDate();
 
-  // Julian Day
-  const a = Math.floor((14 - month) / 12);
-  const y = year + 4800 - a;
-  const m = month + 12 * a - 3;
-  const jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+  // Day of year calculation
+  const startOfYear = new Date(year, 0, 0);
+  const diff = date.getTime() - startOfYear.getTime();
+  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  const d = jd - 2451545.0;
-  const g = 357.529 + 0.98560028 * d;
-  const q = 280.459 + 0.98564736 * d;
-  const L = q + 1.915 * Math.sin((g * Math.PI) / 180) + 0.020 * Math.sin((2 * g * Math.PI) / 180);
-
-  const e = 23.439 - 0.00000036 * d;
-  const RA = (Math.atan2(Math.cos((e * Math.PI) / 180) * Math.sin((L * Math.PI) / 180), Math.cos((L * Math.PI) / 180)) * 180) / Math.PI;
-  const dec = (Math.asin(Math.sin((e * Math.PI) / 180) * Math.sin((L * Math.PI) / 180)) * 180) / Math.PI;
-
-  const EqT = (q / 15 - RA / 15 + 24) % 24;
-
+  // Approximate Solar Declination (Delta in degrees)
+  const delta = 23.45 * Math.sin(((360 / 365) * (dayOfYear - 81) * Math.PI) / 180);
+  const deltaRad = (delta * Math.PI) / 180;
   const latRad = (MAKASSAR_COORDS.latitude * Math.PI) / 180;
-  const decRad = (dec * Math.PI) / 180;
 
-  // Dhuhr (Midday)
-  const dhuhrDecimal = 12 + MAKASSAR_COORDS.timezone - MAKASSAR_COORDS.longitude / 15 - EqT;
+  // Equation of time in minutes
+  const b = ((360 / 365) * (dayOfYear - 81) * Math.PI) / 180;
+  const eot = 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
 
-  // Fajr (Subuh) - 20 degrees angle
-  const fajrAngle = 20;
-  const fajrCos = (Math.sin((-fajrAngle * Math.PI) / 180) - Math.sin(latRad) * Math.sin(decRad)) / (Math.cos(latRad) * Math.cos(decRad));
-  const fajrHourAngle = (Math.acos(Math.max(-1, Math.min(1, fajrCos))) * 180) / Math.PI / 15;
-  const subuhDecimal = dhuhrDecimal - fajrHourAngle;
+  // Solar Transit / Midday (Dzuhur) in Makassar Local Time
+  // Makassar is at 119.4327° E. Standard WITA meridian is 120° E.
+  // Longitudinal correction = (120 - 119.4327) * 4 minutes = +2.269 minutes
+  const longitudeCorrection = (15 * MAKASSAR_COORDS.timezone - MAKASSAR_COORDS.longitude) * 4;
+  const dzuhurMinutes = 12 * 60 + longitudeCorrection - eot + 3; // +3 min ihtiyat Kemenag
 
-  // Sunrise (Terbit) - 0.833 degrees
-  const sunriseCos = (Math.sin((-0.833 * Math.PI) / 180) - Math.sin(latRad) * Math.sin(decRad)) / (Math.cos(latRad) * Math.cos(decRad));
-  const sunriseHourAngle = (Math.acos(Math.max(-1, Math.min(1, sunriseCos))) * 180) / Math.PI / 15;
-  const terbitDecimal = dhuhrDecimal - sunriseHourAngle;
-
-  // Asr - Standard Shafi'i (Shadow length = 1)
-  const asrAlt = (Math.atan(1 + Math.tan(Math.abs(latRad - decRad))) * 180) / Math.PI;
-  const asrCos = (Math.sin(((90 - asrAlt) * Math.PI) / 180) - Math.sin(latRad) * Math.sin(decRad)) / (Math.cos(latRad) * Math.cos(decRad));
-  const asrHourAngle = (Math.acos(Math.max(-1, Math.min(1, asrCos))) * 180) / Math.PI / 15;
-  const asharDecimal = dhuhrDecimal + asrHourAngle;
-
-  // Maghrib - Sunset
-  const maghribDecimal = dhuhrDecimal + sunriseHourAngle;
-
-  // Isha - 18 degrees angle
-  const ishaAngle = 18;
-  const ishaCos = (Math.sin((-ishaAngle * Math.PI) / 180) - Math.sin(latRad) * Math.sin(decRad)) / (Math.cos(latRad) * Math.cos(decRad));
-  const ishaHourAngle = (Math.acos(Math.max(-1, Math.min(1, ishaCos))) * 180) / Math.PI / 15;
-  const isyaDecimal = dhuhrDecimal + ishaHourAngle;
-
-  // Helper to convert decimal hours to Date object and "HH:MM" string
-  const formatTime = (decHour: number) => {
-    // Add 2-minute ihtiyat (safety margin) standard Kemenag
-    const totalMinutes = Math.round(decHour * 60) + 2;
-    const hours = Math.floor((totalMinutes / 60) % 24);
-    const minutes = Math.floor(totalMinutes % 60);
-
-    const dObj = new Date(date);
-    dObj.setHours(hours, minutes, 0, 0);
-
-    const hh = String(hours).padStart(2, '0');
-    const mm = String(minutes).padStart(2, '0');
-    return { str: `${hh}:${mm}`, dateObj: dObj };
+  // Hour angle calculation helper for altitude alpha (in degrees)
+  const getHourAngleMinutes = (alphaDeg: number): number => {
+    const alphaRad = (alphaDeg * Math.PI) / 180;
+    const cosHA =
+      (Math.sin(alphaRad) - Math.sin(latRad) * Math.sin(deltaRad)) /
+      (Math.cos(latRad) * Math.cos(deltaRad));
+    const clampedCosHA = Math.max(-1, Math.min(1, cosHA));
+    const haDeg = (Math.acos(clampedCosHA) * 180) / Math.PI;
+    return (haDeg / 15) * 60; // convert degrees to minutes
   };
 
-  const timesRaw = [
-    { id: 'subuh', name: 'Subuh', arabicName: 'الفجر', ...formatTime(subuhDecimal) },
-    { id: 'terbit', name: 'Terbit', arabicName: 'الشروق', ...formatTime(terbitDecimal) },
-    { id: 'dzuhur', name: 'Dzuhur', arabicName: 'الظهر', ...formatTime(dhuhrDecimal) },
-    { id: 'ashar', name: 'Ashar', arabicName: 'العصر', ...formatTime(asharDecimal) },
-    { id: 'maghrib', name: 'Maghrib', arabicName: 'المغرب', ...formatTime(maghribDecimal) },
-    { id: 'isya', name: 'Isya', arabicName: 'العشاء', ...formatTime(isyaDecimal) },
+  // Subuh (Fajr): Solar angle -20° (Kemenag standard)
+  const subuhHA = getHourAngleMinutes(-20);
+  const subuhMinutes = dzuhurMinutes - subuhHA + 2;
+
+  // Syuruq (Terbit): Solar angle -0.833°
+  const sunriseHA = getHourAngleMinutes(-0.833);
+  const terbitMinutes = dzuhurMinutes - sunriseHA - 2;
+
+  // Ashar: Shafi'i shadow ratio = 1 -> alpha = arccot(1 + tan|lat - delta|)
+  const tanDiff = Math.tan(Math.abs(latRad - deltaRad));
+  const asharAltRad = Math.atan(1 / (1 + tanDiff));
+  const asharAltDeg = (asharAltRad * 180) / Math.PI;
+  const asharHA = getHourAngleMinutes(asharAltDeg);
+  const asharMinutes = dzuhurMinutes + asharHA + 2;
+
+  // Maghrib (Sunset): Solar angle -0.833°
+  const maghribMinutes = dzuhurMinutes + sunriseHA + 3;
+
+  // Isya: Solar angle -18° (Kemenag standard)
+  const isyaHA = getHourAngleMinutes(-18);
+  const isyaMinutes = dzuhurMinutes + isyaHA + 2;
+
+  // Helper to build Date object from total minutes in day
+  const createPrayerDate = (totalMinutes: number, isTomorrow: boolean = false) => {
+    const d = new Date(year, month, day);
+    if (isTomorrow) {
+      d.setDate(d.getDate() + 1);
+    }
+    const h = Math.floor(totalMinutes / 60) % 24;
+    const m = Math.floor(totalMinutes % 60);
+    d.setHours(h, m, 0, 0);
+    return d;
+  };
+
+  const formatTimeString = (d: Date) => {
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  };
+
+  const rawSchedules = [
+    { id: 'subuh', name: 'Subuh', arabicName: 'الفجر', dateObj: createPrayerDate(subuhMinutes) },
+    { id: 'terbit', name: 'Terbit', arabicName: 'الشروق', dateObj: createPrayerDate(terbitMinutes) },
+    { id: 'dzuhur', name: 'Dzuhur', arabicName: 'الظهر', dateObj: createPrayerDate(dzuhurMinutes) },
+    { id: 'ashar', name: 'Ashar', arabicName: 'العصر', dateObj: createPrayerDate(asharMinutes) },
+    { id: 'maghrib', name: 'Maghrib', arabicName: 'المغرب', dateObj: createPrayerDate(maghribMinutes) },
+    { id: 'isya', name: 'Isya', arabicName: 'العشاء', dateObj: createPrayerDate(isyaMinutes) },
   ];
 
   const now = new Date();
   let foundNext = false;
 
-  const result: PrayerTime[] = timesRaw.map((t) => {
-    const isPassed = now > t.dateObj;
+  const result: PrayerTime[] = rawSchedules.map((item) => {
+    const isPassed = now.getTime() > item.dateObj.getTime();
     let isNext = false;
 
-    if (!isPassed && !foundNext && t.id !== 'terbit') {
+    // Next active prayer (excluding sunrise 'terbit')
+    if (!isPassed && !foundNext && item.id !== 'terbit') {
       isNext = true;
       foundNext = true;
     }
 
     return {
-      id: t.id as any,
-      name: t.name,
-      arabicName: t.arabicName,
-      timeStr: t.str,
-      timeDate: t.dateObj,
+      id: item.id as any,
+      name: item.name,
+      arabicName: item.arabicName,
+      timeStr: formatTimeString(item.dateObj),
+      timeDate: item.dateObj,
       isPassed,
       isNext
     };
   });
 
-  // If all prayers today have passed, Subuh tomorrow is next
+  // If all prayers today have passed (e.g. after Isya tonight), next is Subuh tomorrow
   if (!foundNext) {
-    const subuhItem = result.find(r => r.id === 'subuh');
-    if (subuhItem) subuhItem.isNext = true;
+    const subuhItem = result.find((r) => r.id === 'subuh');
+    if (subuhItem) {
+      subuhItem.isNext = true;
+      // Set to tomorrow's date for accurate countdown calculations
+      subuhItem.timeDate = createPrayerDate(subuhMinutes, true);
+    }
   }
 
   return result;
 }
 
-// Get Seconds Until Next Prayer
+// Get Seconds Until Next Prayer with accurate live countdown
 export function getCountdownToNextPrayer(prayerTimes: PrayerTime[]): {
   nextPrayer: PrayerTime | null;
   secondsRemaining: number;
   formattedCountdown: string;
   isWithin10Minutes: boolean;
 } {
-  const nextPrayer = prayerTimes.find(p => p.isNext) || prayerTimes[0];
+  const nextPrayer = prayerTimes.find((p) => p.isNext) || prayerTimes[0];
   if (!nextPrayer) {
-    return { nextPrayer: null, secondsRemaining: 0, formattedCountdown: '00:00:00', isWithin10Minutes: false };
+    return {
+      nextPrayer: null,
+      secondsRemaining: 0,
+      formattedCountdown: '00:00:00',
+      isWithin10Minutes: false
+    };
   }
 
   const now = new Date();
   let targetTime = new Date(nextPrayer.timeDate);
 
-  // If time has passed today, target is tomorrow
-  if (targetTime.getTime() < now.getTime()) {
+  // If target is in the past for today, target must be tomorrow
+  if (targetTime.getTime() <= now.getTime()) {
     targetTime.setDate(targetTime.getDate() + 1);
   }
 
