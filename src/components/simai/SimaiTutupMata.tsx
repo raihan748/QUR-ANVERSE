@@ -78,6 +78,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
     setSpokenTranscript('');
 
     const started = speechEngine.startListening({
+      onInterimResult: (text) => setSpokenTranscript(text),
       onFinalResult: (text) => setSpokenTranscript(text),
       onError: (err) => {
         console.warn(err);
@@ -95,7 +96,9 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
     setIsRecording(false);
 
     const targetAyat = challengeData.next;
-    const result = speechEngine.evaluateRecitation(spokenTranscript || targetAyat.arabicText, targetAyat);
+    const cleanSpoken = (spokenTranscript || '').trim();
+
+    const result = speechEngine.evaluateRecitation(cleanSpoken, targetAyat);
     setEvaluation(result);
 
     if (result.isPassed) {

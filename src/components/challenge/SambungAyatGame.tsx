@@ -86,6 +86,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
     setSpokenTranscript('');
 
     const started = speechEngine.startListening({
+      onInterimResult: (text) => setSpokenTranscript(text),
       onFinalResult: (text) => setSpokenTranscript(text),
       onError: () => setIsRecording(false),
       onEnd: () => setIsRecording(false)
@@ -102,7 +103,21 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
     setIsRecording(false);
 
     const target = challengeData.next;
-    const evalResult = speechEngine.evaluateRecitation(spokenTranscript || target.arabicText, target);
+    const cleanSpoken = (spokenTranscript || '').trim();
+
+    // Check if voice was silent or empty
+    if (!cleanSpoken || cleanSpoken.length < 2) {
+      audioPlayer.playCorrectionPromptSound();
+      setComboStreak(0);
+      setLastResult({
+        isCorrect: false,
+        accuracy: 0,
+        praise: '⚠️ Suara tidak terdeteksi! Pastikan mikrofon aktif dan lafalkan ayat sambungan dengan jelas.'
+      });
+      return;
+    }
+
+    const evalResult = speechEngine.evaluateRecitation(cleanSpoken, target);
 
     if (evalResult.isPassed) {
       // Correct!
@@ -118,7 +133,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
       setLastResult({
         isCorrect: true,
         accuracy: evalResult.accuracyScore,
-        praise: 'Maa Syaa Allah! Sambung ayat Anda tepat, fasih & mutqin!'
+        praise: evalResult.aiAdabPraise || 'Maa Syaa Allah! Sambung ayat Anda tepat, fasih & mutqin!'
       });
     } else {
       // Wrong!
@@ -127,7 +142,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
       setLastResult({
         isCorrect: false,
         accuracy: evalResult.accuracyScore,
-        praise: 'Belum tepat. Dengarkan lantunan tartil Syekh Misyari berikut ini untuk memperbaiki!'
+        praise: evalResult.aiCorrectionNote || 'Belum tepat. Dengarkan lantunan tartil Syekh Misyari berikut ini!'
       });
 
       // Auto play correct Syekh recitation

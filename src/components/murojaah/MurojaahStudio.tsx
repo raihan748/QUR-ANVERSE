@@ -90,9 +90,9 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
     const fullSpoken = (spokenTranscript + ' ' + interimTranscript).trim();
     
-    // Evaluate recitation against current ayat
+    // Evaluate recitation against current ayat (Strict speech evaluation)
     const evalResult = speechEngine.evaluateRecitation(
-      fullSpoken || currentAyat.arabicText, // fallback for testing
+      fullSpoken,
       currentAyat
     );
 
