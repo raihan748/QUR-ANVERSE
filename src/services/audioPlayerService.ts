@@ -2,8 +2,8 @@
 
 // EveryAyah CDN Format: 3-digit surah + 3-digit ayah (e.g. 001001.mp3)
 export function formatAlafasyAudioUrl(surahNumber: number, ayahNumber: number): string {
-  const sStr = String(surahNumber).padStart(3, '0');
-  const aStr = String(ayahNumber).padStart(3, '0');
+  const sStr = String(Math.max(1, Math.min(114, surahNumber))).padStart(3, '0');
+  const aStr = String(Math.max(1, ayahNumber)).padStart(3, '0');
   return `https://everyayah.com/data/Alafasy_128kbps/${sStr}${aStr}.mp3`;
 }
 
@@ -15,8 +15,26 @@ class AudioPlayerService {
   private isPlaying = false;
   private onEndedCallback: (() => void) | null = null;
   private onTimeUpdateCallback: ((current: number, duration: number) => void) | null = null;
+  private sharedAudioCtx: AudioContext | null = null;
 
-  // Play a specific URL with error resilience
+  private getAudioContext(): AudioContext | null {
+    try {
+      if (!this.sharedAudioCtx || this.sharedAudioCtx.state === 'closed') {
+        const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtxClass) {
+          this.sharedAudioCtx = new AudioCtxClass();
+        }
+      }
+      if (this.sharedAudioCtx && this.sharedAudioCtx.state === 'suspended') {
+        this.sharedAudioCtx.resume().catch(() => {});
+      }
+      return this.sharedAudioCtx;
+    } catch {
+      return null;
+    }
+  }
+
+  // Play a specific URL with error resilience & timeout safeguards
   public async playUrl(
     url: string, 
     onEnded?: () => void, 
@@ -25,7 +43,14 @@ class AudioPlayerService {
     this.stop();
 
     try {
-      this.currentAudio = new Audio(url);
+      // Validate URL
+      const parsedUrl = new URL(url, window.location.origin);
+      if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+        return false;
+      }
+
+      this.currentAudio = new Audio(parsedUrl.toString());
+      this.currentAudio.crossOrigin = 'anonymous';
       this.onEndedCallback = onEnded || null;
       this.onTimeUpdateCallback = onTimeUpdate || null;
 
@@ -83,6 +108,7 @@ class AudioPlayerService {
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
+      this.currentAudio.src = '';
       this.currentAudio = null;
       this.isPlaying = false;
     }
@@ -92,28 +118,29 @@ class AudioPlayerService {
     return this.isPlaying;
   }
 
-  // Play Sound Effects using Web Audio API (Zero-dependency & instant)
+  // Play Sound Effects using Cached Web Audio Context
   public playSuccessChime(): void {
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-      osc1.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
-      osc1.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
-      osc1.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.3); // C6
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+      osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
+      osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.3); // C6
 
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
 
-      osc1.connect(gain);
+      osc.connect(gain);
       gain.connect(ctx.destination);
 
-      osc1.start();
-      osc1.stop(ctx.currentTime + 0.8);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.8);
     } catch {
       // Audio context might be restricted
     }
@@ -121,7 +148,9 @@ class AudioPlayerService {
 
   public playCorrectionPromptSound(): void {
     try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 

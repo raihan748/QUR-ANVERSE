@@ -1,22 +1,26 @@
-import { UserProfile, Bookmark, WeakVerse, AchievementBadge } from '../types';
+import { UserProfile, Bookmark, WeakVerse } from '../types';
 
 const STORAGE_KEYS = {
-  PROFILE: 'alfityan_profile_v1',
-  BOOKMARKS: 'alfityan_bookmarks_v1',
-  WEAK_VERSES: 'alfityan_weak_verses_v1',
-  MUROJAAH_HISTORY: 'alfityan_murojaah_history_v1',
-  STREAK_CALENDAR: 'alfityan_streak_calendar_v1',
-  ACHIEVEMENTS: 'alfityan_achievements_v1',
-  OFFLINE_DOWNLOADS: 'alfityan_offline_downloads_v1',
-  LAST_READ: 'alfityan_last_read_v1',
-  FONT_SIZE: 'alfityan_font_size_v1',
-  THEME_MODE: 'alfityan_theme_mode_v1',
+  PROFILE: 'quranverse_profile_v2',
+  BOOKMARKS: 'quranverse_bookmarks_v2',
+  WEAK_VERSES: 'quranverse_weak_verses_v2',
+  STREAK_CALENDAR: 'quranverse_streak_calendar_v2',
+  LAST_READ: 'quranverse_last_read_v2',
 };
+
+// Input Sanitizer to prevent XSS / malicious injection
+export function sanitizeInput(input: string, maxLength: number = 200): string {
+  if (!input || typeof input !== 'string') return '';
+  return input
+    .trim()
+    .replace(/[<>]/g, '') // strip dangerous html bracket characters
+    .substring(0, maxLength);
+}
 
 // Default Initial Profile
 export const defaultProfile: UserProfile = {
   id: 'guest_hafidz_' + Math.random().toString(36).substring(2, 9),
-  fullName: 'Hafidz Al-Fityan',
+  fullName: 'Hafidz QURANVERSE',
   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   hafidzLevel: 'Santri Pemula',
   totalXp: 1250,
@@ -24,7 +28,7 @@ export const defaultProfile: UserProfile = {
   lastMurojaahDate: new Date().toISOString().split('T')[0]
 };
 
-// Profile Storage
+// Profile Storage with Safe Parsing & Type Validation
 export function getLocalProfile(): UserProfile {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.PROFILE);
@@ -32,7 +36,16 @@ export function getLocalProfile(): UserProfile {
       saveLocalProfile(defaultProfile);
       return defaultProfile;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return {
+      id: sanitizeInput(parsed.id || defaultProfile.id, 50),
+      fullName: sanitizeInput(parsed.fullName || defaultProfile.fullName, 100),
+      avatarUrl: sanitizeInput(parsed.avatarUrl || defaultProfile.avatarUrl, 300),
+      hafidzLevel: sanitizeInput(parsed.hafidzLevel || defaultProfile.hafidzLevel, 50),
+      totalXp: Math.max(0, Number(parsed.totalXp) || 0),
+      streakCount: Math.max(0, Number(parsed.streakCount) || 1),
+      lastMurojaahDate: sanitizeInput(parsed.lastMurojaahDate || defaultProfile.lastMurojaahDate, 20)
+    };
   } catch {
     return defaultProfile;
   }
@@ -40,9 +53,18 @@ export function getLocalProfile(): UserProfile {
 
 export function saveLocalProfile(profile: UserProfile): void {
   try {
-    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+    const sanitized: UserProfile = {
+      id: sanitizeInput(profile.id, 50),
+      fullName: sanitizeInput(profile.fullName, 100),
+      avatarUrl: sanitizeInput(profile.avatarUrl, 300),
+      hafidzLevel: sanitizeInput(profile.hafidzLevel, 50),
+      totalXp: Math.max(0, Number(profile.totalXp) || 0),
+      streakCount: Math.max(0, Number(profile.streakCount) || 1),
+      lastMurojaahDate: sanitizeInput(profile.lastMurojaahDate, 20)
+    };
+    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(sanitized));
   } catch (e) {
-    console.error('Failed to save profile:', e);
+    console.warn('Storage quota or error saving profile:', e);
   }
 }
 
@@ -61,7 +83,7 @@ export function addXpAndCheckStreak(xpGain: number): UserProfile {
   }
 
   let newLevel = profile.hafidzLevel;
-  const newXp = profile.totalXp + xpGain;
+  const newXp = profile.totalXp + Math.max(0, Math.min(1000, xpGain)); // capped gain per session
   if (newXp >= 10000) newLevel = 'Hafidz 30 Juz (Master)';
   else if (newXp >= 5000) newLevel = 'Hafidzah Mutqin';
   else if (newXp >= 2500) newLevel = 'Pejuang Tahfidz';
@@ -80,12 +102,11 @@ export function addXpAndCheckStreak(xpGain: number): UserProfile {
   return updatedProfile;
 }
 
-// Streak Calendar (Past 30 Days)
+// Streak Calendar
 export function getStreakCalendar(): Record<string, boolean> {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.STREAK_CALENDAR);
     if (!raw) {
-      // Prepopulate past 7 days for realistic premium onboarding experience
       const initial: Record<string, boolean> = {};
       for (let i = 0; i < 7; i++) {
         const d = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
@@ -101,12 +122,17 @@ export function getStreakCalendar(): Record<string, boolean> {
 }
 
 export function recordStreakDay(dateStr: string): void {
-  const cal = getStreakCalendar();
-  cal[dateStr] = true;
-  localStorage.setItem(STORAGE_KEYS.STREAK_CALENDAR, JSON.stringify(cal));
+  try {
+    const cal = getStreakCalendar();
+    const cleanDate = sanitizeInput(dateStr, 20);
+    cal[cleanDate] = true;
+    localStorage.setItem(STORAGE_KEYS.STREAK_CALENDAR, JSON.stringify(cal));
+  } catch (e) {
+    console.warn(e);
+  }
 }
 
-// Bookmarks
+// Bookmarks (Max 200 bookmarks quota)
 export function getBookmarks(): Bookmark[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.BOOKMARKS);
@@ -117,26 +143,42 @@ export function getBookmarks(): Bookmark[] {
 }
 
 export function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'createdAt'>): Bookmark[] {
-  const bookmarks = getBookmarks();
-  const existingIdx = bookmarks.findIndex(
-    b => b.surahNumber === bookmark.surahNumber && b.ayahNumber === bookmark.ayahNumber
-  );
+  try {
+    const bookmarks = getBookmarks();
+    const cleanSurahNo = Math.max(1, Math.min(114, Number(bookmark.surahNumber) || 1));
+    const cleanAyahNo = Math.max(1, Number(bookmark.ayahNumber) || 1);
 
-  if (existingIdx >= 0) {
-    bookmarks.splice(existingIdx, 1);
-  } else {
-    bookmarks.unshift({
-      ...bookmark,
-      id: 'bm_' + Date.now(),
-      createdAt: new Date().toISOString()
-    });
+    const existingIdx = bookmarks.findIndex(
+      b => b.surahNumber === cleanSurahNo && b.ayahNumber === cleanAyahNo
+    );
+
+    if (existingIdx >= 0) {
+      bookmarks.splice(existingIdx, 1);
+    } else {
+      if (bookmarks.length >= 200) {
+        bookmarks.pop(); // Remove oldest to preserve memory
+      }
+      bookmarks.unshift({
+        id: 'bm_' + Date.now(),
+        surahNumber: cleanSurahNo,
+        ayahNumber: cleanAyahNo,
+        surahName: sanitizeInput(bookmark.surahName, 100),
+        arabicText: bookmark.arabicText || '',
+        translation: bookmark.translation || '',
+        note: bookmark.note ? sanitizeInput(bookmark.note, 500) : undefined,
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(bookmarks));
+    return bookmarks;
+  } catch (e) {
+    console.warn('Error saving bookmark:', e);
+    return [];
   }
-
-  localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(bookmarks));
-  return bookmarks;
 }
 
-// Weak Verses (Ayat Lemah)
+// Weak Verses (Max 150 items)
 export function getWeakVerses(): WeakVerse[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.WEAK_VERSES);
@@ -147,30 +189,50 @@ export function getWeakVerses(): WeakVerse[] {
 }
 
 export function recordWeakVerse(verse: Omit<WeakVerse, 'id' | 'lastTestedDate'>): void {
-  const list = getWeakVerses();
-  const existing = list.find(v => v.surahNumber === verse.surahNumber && v.ayahNumber === verse.ayahNumber);
-  
-  if (existing) {
-    existing.errorCount += 1;
-    existing.resolved = false;
-    existing.lastTestedDate = new Date().toISOString().split('T')[0];
-  } else {
-    list.unshift({
-      ...verse,
-      id: 'wv_' + Date.now(),
-      lastTestedDate: new Date().toISOString().split('T')[0]
-    });
-  }
+  try {
+    const list = getWeakVerses();
+    const cleanSurahNo = Math.max(1, Math.min(114, Number(verse.surahNumber) || 1));
+    const cleanAyahNo = Math.max(1, Number(verse.ayahNumber) || 1);
 
-  localStorage.setItem(STORAGE_KEYS.WEAK_VERSES, JSON.stringify(list));
+    const existing = list.find(v => v.surahNumber === cleanSurahNo && v.ayahNumber === cleanAyahNo);
+    
+    if (existing) {
+      existing.errorCount = Math.min(99, existing.errorCount + 1);
+      existing.resolved = false;
+      existing.lastTestedDate = new Date().toISOString().split('T')[0];
+    } else {
+      if (list.length >= 150) {
+        list.pop();
+      }
+      list.unshift({
+        id: 'wv_' + Date.now(),
+        surahNumber: cleanSurahNo,
+        ayahNumber: cleanAyahNo,
+        surahName: sanitizeInput(verse.surahName, 100),
+        arabicText: verse.arabicText || '',
+        translation: verse.translation || '',
+        errorCount: 1,
+        resolved: false,
+        lastTestedDate: new Date().toISOString().split('T')[0]
+      });
+    }
+
+    localStorage.setItem(STORAGE_KEYS.WEAK_VERSES, JSON.stringify(list));
+  } catch (e) {
+    console.warn('Error recording weak verse:', e);
+  }
 }
 
 export function resolveWeakVerse(surahNumber: number, ayahNumber: number): void {
-  const list = getWeakVerses();
-  const target = list.find(v => v.surahNumber === surahNumber && v.ayahNumber === ayahNumber);
-  if (target) {
-    target.resolved = true;
-    localStorage.setItem(STORAGE_KEYS.WEAK_VERSES, JSON.stringify(list));
+  try {
+    const list = getWeakVerses();
+    const target = list.find(v => v.surahNumber === surahNumber && v.ayahNumber === ayahNumber);
+    if (target) {
+      target.resolved = true;
+      localStorage.setItem(STORAGE_KEYS.WEAK_VERSES, JSON.stringify(list));
+    }
+  } catch (e) {
+    console.warn(e);
   }
 }
 
@@ -185,5 +247,16 @@ export function getLastRead(): { surahNumber: number; ayahNumber: number; surahN
 }
 
 export function setLastRead(surahNumber: number, ayahNumber: number, surahName: string): void {
-  localStorage.setItem(STORAGE_KEYS.LAST_READ, JSON.stringify({ surahNumber, ayahNumber, surahName }));
+  try {
+    localStorage.setItem(
+      STORAGE_KEYS.LAST_READ, 
+      JSON.stringify({ 
+        surahNumber: Math.max(1, Math.min(114, surahNumber)), 
+        ayahNumber: Math.max(1, ayahNumber), 
+        surahName: sanitizeInput(surahName, 100) 
+      })
+    );
+  } catch (e) {
+    console.warn(e);
+  }
 }

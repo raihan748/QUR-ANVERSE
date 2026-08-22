@@ -679,42 +679,56 @@ export const CORE_AYATS_DB: Record<number, Ayat[]> = {
   ]
 };
 
-// Fetch Surah Ayahs (from Memory / Cache / Quran API fallback)
+// Fetch Surah Ayahs (from Memory / Cache / Quran API fallback with timeout)
 export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
+  const safeSurahNo = Math.max(1, Math.min(114, Number(surahNumber) || 1));
+
   // 1. Check in-memory core DB
-  if (CORE_AYATS_DB[surahNumber]) {
-    return CORE_AYATS_DB[surahNumber];
+  if (CORE_AYATS_DB[safeSurahNo]) {
+    return CORE_AYATS_DB[safeSurahNo];
   }
 
   // 2. Check Local Storage cache
-  const cacheKey = `quran_surah_${surahNumber}_cache`;
+  const cacheKey = `quran_surah_${safeSurahNo}_cache`;
   try {
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
-      return JSON.parse(cached);
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
     }
-  } catch (e) {
+  } catch {
     // continue
   }
 
-  // 3. Fetch from Equran / Quran.com open API
+  // 3. Fetch from Equran / Quran.com open API with 4s timeout
   try {
-    const res = await fetch(`https://equran.id/api/v2/surat/${surahNumber}`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+    const res = await fetch(`https://equran.id/api/v2/surat/${safeSurahNo}`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
     if (!res.ok) throw new Error('API fetch failed');
     const json = await res.json();
     const data = json.data;
 
+    if (!data || !Array.isArray(data.ayat)) throw new Error('Invalid schema');
+
     const ayats: Ayat[] = data.ayat.map((a: any) => ({
-      numberInSurah: a.nomorAyat,
-      numberInQuran: a.nomorAyat,
-      surahNumber: surahNumber,
-      surahName: data.namaLatin,
-      arabicText: a.teksArab,
-      translation: a.teksIndonesia,
-      transliteration: a.teksLatin,
-      juz: 30, // fallback
-      audioUrl: formatAlafasyAudioUrl(surahNumber, a.nomorAyat),
-      tafsirShort: a.tafsirKemenag || undefined
+      numberInSurah: Number(a.nomorAyat) || 1,
+      numberInQuran: Number(a.nomorAyat) || 1,
+      surahNumber: safeSurahNo,
+      surahName: String(data.namaLatin || 'Surat'),
+      arabicText: String(a.teksArab || ''),
+      translation: String(a.teksIndonesia || ''),
+      transliteration: String(a.teksLatin || ''),
+      juz: Number(data.juzStart) || 30,
+      audioUrl: formatAlafasyAudioUrl(safeSurahNo, Number(a.nomorAyat) || 1),
+      tafsirShort: a.tafsirKemenag ? String(a.tafsirKemenag) : undefined
     }));
 
     // Cache locally
@@ -724,19 +738,18 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
 
     return ayats;
   } catch (err) {
-    console.warn(`Fallback to synthetic ayahs for Surah ${surahNumber}:`, err);
-    // Generate graceful placeholder if offline and not yet cached
-    const meta = SURAH_LIST.find(s => s.number === surahNumber) || SURAH_LIST[0];
+    console.warn(`Fallback to synthetic ayahs for Surah ${safeSurahNo}:`, err);
+    const meta = SURAH_LIST.find(s => s.number === safeSurahNo) || SURAH_LIST[0];
     const generated: Ayat[] = Array.from({ length: meta.ayahCount }).map((_, i) => ({
       numberInSurah: i + 1,
       numberInQuran: i + 1,
-      surahNumber: surahNumber,
+      surahNumber: safeSurahNo,
       surahName: meta.latinName,
       arabicText: `بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ (${meta.latinName} Ayat ${i + 1})`,
       translation: `Terjemahan ayat ke-${i + 1} Surat ${meta.latinName}.`,
       transliteration: `Bismillāhir-raḥmānir-raḥīm (${meta.latinName} ${i + 1})`,
       juz: meta.juzStart,
-      audioUrl: formatAlafasyAudioUrl(surahNumber, i + 1)
+      audioUrl: formatAlafasyAudioUrl(safeSurahNo, i + 1)
     }));
     return generated;
   }
@@ -746,13 +759,16 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
 export function getRandomAyatFromAvailable(filterJuz?: number, filterSurah?: number): Ayat {
   let candidates: Ayat[] = [];
 
-  if (filterSurah && CORE_AYATS_DB[filterSurah]) {
-    candidates = CORE_AYATS_DB[filterSurah];
+  const safeFilterSurah = filterSurah ? Math.max(1, Math.min(114, filterSurah)) : undefined;
+  const safeFilterJuz = filterJuz ? Math.max(1, Math.min(30, filterJuz)) : undefined;
+
+  if (safeFilterSurah && CORE_AYATS_DB[safeFilterSurah]) {
+    candidates = CORE_AYATS_DB[safeFilterSurah];
   } else {
     // Gather all loaded core ayahs
     Object.values(CORE_AYATS_DB).forEach(ayats => {
-      if (filterJuz) {
-        candidates.push(...ayats.filter(a => a.juz === filterJuz));
+      if (safeFilterJuz) {
+        candidates.push(...ayats.filter(a => a.juz === safeFilterJuz));
       } else {
         candidates.push(...ayats);
       }
