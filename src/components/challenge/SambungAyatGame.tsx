@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Swords, 
   Clock, 
@@ -14,7 +14,9 @@ import {
   CheckCircle,
   XCircle,
   Zap,
-  BookOpen
+  BookOpen,
+  Globe,
+  Radio
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Ayat, ChallengeMode, UserProfile } from '../../types';
@@ -35,6 +37,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
 }) => {
   const [mode, setMode] = useState<ChallengeMode>('ai');
   const [juzFilter, setJuzFilter] = useState<29 | 30 | 'all'>('all');
+  const [speechLanguage, setSpeechLanguage] = useState<'ar-SA' | 'id-ID'>('ar-SA');
   const [challengeData, setChallengeData] = useState<{ prompt: Ayat; next: Ayat }>(
     getRandomJuz29And30Ayat('all')
   );
@@ -85,11 +88,17 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
     setLastResult(null);
     setSpokenTranscript('');
 
+    speechEngine.setLanguage(speechLanguage);
     const started = speechEngine.startListening({
+      language: speechLanguage,
       onInterimResult: (text) => setSpokenTranscript(text),
       onFinalResult: (text) => setSpokenTranscript(text),
-      onError: () => setIsRecording(false),
-      onEnd: () => setIsRecording(false)
+      onError: (err) => {
+        console.warn('Mic Error:', err);
+      },
+      onEnd: () => {
+        // keep recording state until user manually stops
+      }
     });
 
     if (started) {
@@ -99,11 +108,11 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
   };
 
   const handleStopAndEvaluate = async () => {
-    speechEngine.stopListening();
+    const finalAccumulated = speechEngine.stopListening();
     setIsRecording(false);
 
     const target = challengeData.next;
-    const cleanSpoken = (spokenTranscript || '').trim();
+    const cleanSpoken = (spokenTranscript || finalAccumulated || '').trim();
 
     // Check if voice was silent or empty
     if (!cleanSpoken || cleanSpoken.length < 2) {
@@ -112,7 +121,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
       setLastResult({
         isCorrect: false,
         accuracy: 0,
-        praise: '⚠️ Suara tidak terdeteksi! Pastikan mikrofon aktif dan lafalkan ayat sambungan dengan jelas.'
+        praise: '⚠️ Suara tidak terdeteksi! Silakan ganti Mode Bahasa (Arab/Indonesia) di bawah tombol mic atau lafalkan lebih dekat ke mikrofon.'
       });
       return;
     }
@@ -320,8 +329,33 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
 
         {/* ACTION TARGET: SAMBUNG AYAT BERIKUTNYA */}
         <div className="p-5 bg-white border-3 border-dashed border-[#0B4627] rounded-2xl text-center space-y-4">
-          <div className="inline-block px-3 py-1 bg-[#FEF3C7] border-2 border-black rounded-full text-xs font-extrabold text-black">
-            🎯 Sambung Ayat ke-{challengeData.next.numberInSurah} Surat {challengeData.next.surahName}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 border-b border-gray-200 pb-3">
+            <div className="inline-block px-3 py-1 bg-[#FEF3C7] border-2 border-black rounded-full text-xs font-extrabold text-black">
+              🎯 Sambung Ayat ke-{challengeData.next.numberInSurah} Surat {challengeData.next.surahName}
+            </div>
+
+            {/* Language Mode Selector (Fixes speech engine being deaf) */}
+            <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl border border-gray-300">
+              <span className="text-[10px] font-bold text-gray-500 flex items-center gap-1">
+                <Globe className="w-3 h-3" /> Mode Suara:
+              </span>
+              <button
+                onClick={() => setSpeechLanguage('ar-SA')}
+                className={`px-2 py-0.5 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                  speechLanguage === 'ar-SA' ? 'bg-[#0B4627] text-white' : 'text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                🇸🇦 Arab
+              </button>
+              <button
+                onClick={() => setSpeechLanguage('id-ID')}
+                className={`px-2 py-0.5 text-[11px] font-black rounded-lg transition-all cursor-pointer ${
+                  speechLanguage === 'id-ID' ? 'bg-[#F59E0B] text-black' : 'text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                🇮🇩 Fonetik Latin
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col items-center justify-center gap-3">
@@ -344,19 +378,25 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
             )}
 
             {isRecording && (
-              <div className="flex items-center gap-2 text-xs font-extrabold text-[#EF4444]">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] animate-ping" />
-                <span>AI sedang mendengarkan sambungan hafalan Anda...</span>
+              <div className="flex items-center gap-2 p-2 bg-red-50 border-2 border-red-300 rounded-xl animate-pulse text-xs font-black text-[#EF4444]">
+                <Radio className="w-4 h-4 animate-spin text-red-600" />
+                <span>🎙️ Mikrofon Sedang Aktif Mendengarkan... Lafalkan ayat sekarang!</span>
               </div>
             )}
           </div>
 
-          {spokenTranscript && (
-            <div className="p-3 bg-gray-50 border-2 border-black rounded-xl text-left">
-              <span className="text-[10px] font-black text-gray-500 block uppercase">Transkrip Suara Anda:</span>
-              <p className="text-sm font-semibold text-black mt-0.5">{spokenTranscript}</p>
+          {spokenTranscript ? (
+            <div className="p-3 bg-emerald-50 border-2 border-black rounded-xl text-left">
+              <span className="text-[10px] font-black text-emerald-800 block uppercase">
+                Suara Yang Tertangkap ({speechLanguage === 'ar-SA' ? 'Aksara Arab' : 'Fonetik'}):
+              </span>
+              <p className="text-sm font-bold text-black mt-0.5">{spokenTranscript}</p>
             </div>
-          )}
+          ) : isRecording ? (
+            <p className="text-xs text-gray-500 italic">
+              Bicaralah dengan jelas ke mikrofon Anda. Bila kata belum muncul, coba ganti opsi "Mode Suara: 🇮🇩 Fonetik Latin".
+            </p>
+          ) : null}
         </div>
 
         {/* EVALUATION RESULT BANNER */}
@@ -394,6 +434,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
               <p className="font-quran text-xl text-right leading-loose font-bold" dir="rtl">
                 {challengeData.next.arabicText}
               </p>
+              <p className="text-xs text-emerald-800 font-semibold">{challengeData.next.transliteration}</p>
               <p className="text-xs text-gray-700 italic">{challengeData.next.translation}</p>
             </div>
           </div>

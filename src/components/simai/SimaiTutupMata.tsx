@@ -11,7 +11,9 @@ import {
   ShieldCheck, 
   Flame,
   Award,
-  BookOpen
+  BookOpen,
+  Globe,
+  Radio
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Ayat, SimaiLevel, UserProfile, EvaluationResult } from '../../types';
@@ -32,6 +34,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
 }) => {
   const [level, setLevel] = useState<SimaiLevel>('hafidz');
   const [juzFilter, setJuzFilter] = useState<29 | 30 | 'all'>('all');
+  const [speechLanguage, setSpeechLanguage] = useState<'ar-SA' | 'id-ID'>('ar-SA');
   const [challengeData, setChallengeData] = useState<{ prompt: Ayat; next: Ayat }>(
     getRandomJuz29And30Ayat('all')
   );
@@ -77,14 +80,17 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
     setEvaluation(null);
     setSpokenTranscript('');
 
+    speechEngine.setLanguage(speechLanguage);
     const started = speechEngine.startListening({
+      language: speechLanguage,
       onInterimResult: (text) => setSpokenTranscript(text),
       onFinalResult: (text) => setSpokenTranscript(text),
       onError: (err) => {
         console.warn(err);
-        setIsRecording(false);
       },
-      onEnd: () => setIsRecording(false)
+      onEnd: () => {
+        // stay active until user stops
+      }
     });
 
     if (started) setIsRecording(true);
@@ -92,11 +98,11 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
 
   // Stop and Evaluate Continuation
   const handleStopAndEvaluate = async () => {
-    speechEngine.stopListening();
+    const finalAccumulated = speechEngine.stopListening();
     setIsRecording(false);
 
     const targetAyat = challengeData.next;
-    const cleanSpoken = (spokenTranscript || '').trim();
+    const cleanSpoken = (spokenTranscript || finalAccumulated || '').trim();
 
     const result = speechEngine.evaluateRecitation(cleanSpoken, targetAyat);
     setEvaluation(result);
@@ -140,9 +146,9 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
               <button
                 key={lvl}
                 onClick={() => setLevel(lvl)}
-                className={`px-3 py-1 text-xs font-extrabold rounded-lg transition-all capitalize cursor-pointer ${
+                className={`px-3 py-1 text-xs font-black rounded-lg capitalize transition-all cursor-pointer ${
                   level === lvl
-                    ? 'bg-[#F59E0B] text-black border border-black font-black'
+                    ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]'
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
@@ -151,42 +157,50 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
             ))}
           </div>
         </div>
+      </NeobrutalCard>
 
-        {/* Juz Scope Filter */}
-        <div className="mt-4 pt-3 border-t border-white/20 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-gray-300 font-bold flex items-center gap-1">
-            <BookOpen className="w-3 h-3 text-[#F59E0B]" /> Cakupan:
-          </span>
+      {/* FILTER JUZ BUTTONS */}
+      <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
+        <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
+          <BookOpen className="w-3.5 h-3.5 text-[#0B4627]" /> PILIH CAKUPAN JUZ UNTUK SIMAI:
+        </span>
+        <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => setJuzFilter('all')}
-            className={`px-3 py-1 text-xs font-black rounded-lg border-2 border-black cursor-pointer ${
-              juzFilter === 'all' ? 'bg-[#10B981] text-black' : 'bg-white/20 text-white hover:bg-white/30'
+            className={`py-2 text-xs font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              juzFilter === 'all'
+                ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000] font-black'
+                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
             }`}
           >
-            Semua Juz 29 & 30
+            Juz 29 & 30 (Semua)
           </button>
           <button
             onClick={() => setJuzFilter(29)}
-            className={`px-3 py-1 text-xs font-black rounded-lg border-2 border-black cursor-pointer ${
-              juzFilter === 29 ? 'bg-[#F59E0B] text-black' : 'bg-white/20 text-white hover:bg-white/30'
+            className={`py-2 text-xs font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              juzFilter === 29
+                ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000] font-black'
+                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
             }`}
           >
-            Khusus Juz 29 (Al-Mulk s/d Al-Mursalat)
+            Khusus Juz 29
           </button>
           <button
             onClick={() => setJuzFilter(30)}
-            className={`px-3 py-1 text-xs font-black rounded-lg border-2 border-black cursor-pointer ${
-              juzFilter === 30 ? 'bg-[#F59E0B] text-black' : 'bg-white/20 text-white hover:bg-white/30'
+            className={`py-2 text-xs font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              juzFilter === 30
+                ? 'bg-[#10B981] text-black shadow-[2px_2px_0px_0px_#000] font-black'
+                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
             }`}
           >
-            Khusus Juz 30 (An-Naba' s/d An-Nas)
+            Khusus Juz 30
           </button>
         </div>
-      </NeobrutalCard>
+      </div>
 
-      {/* BIG DARK ATMOSPHERIC SIMAI ARENA */}
-      <div className="bg-[#0D2418] border-4 border-black rounded-3xl p-6 sm:p-10 text-center shadow-[8px_8px_0px_0px_#111827] relative overflow-hidden space-y-8">
-        {/* Subtle Decorative Star */}
+      {/* BLIND CHALLENGE ARENA (Islamic Dark Sanctuary) */}
+      <div className="relative rounded-3xl bg-[#032313] border-3 border-black p-6 sm:p-10 shadow-[8px_8px_0px_0px_#111827] text-center space-y-8 overflow-hidden">
+        {/* Background Islamic Watermark */}
         <div className="absolute top-4 right-4 opacity-10 text-white font-quran text-9xl select-none pointer-events-none">
           ۞
         </div>
@@ -231,9 +245,34 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
 
         {/* 2. Tindakan: Sambung Lisan */}
         <div className="p-6 bg-black/40 border-2 border-emerald-500/40 rounded-2xl space-y-4 max-w-xl mx-auto">
-          <span className="text-xs font-black text-[#F59E0B] uppercase tracking-wider block">
-            2. Sambung Ayat ke-{challengeData.next.numberInSurah}:
-          </span>
+          <div className="flex items-center justify-between gap-2 border-b border-emerald-800 pb-2">
+            <span className="text-xs font-black text-[#F59E0B] uppercase tracking-wider block">
+              2. Sambung Ayat ke-{challengeData.next.numberInSurah}:
+            </span>
+
+            {/* Language Mode Switcher */}
+            <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-emerald-700">
+              <span className="text-[10px] text-emerald-300 flex items-center gap-0.5">
+                <Globe className="w-3 h-3" /> Mode:
+              </span>
+              <button
+                onClick={() => setSpeechLanguage('ar-SA')}
+                className={`px-2 py-0.5 text-[10px] font-black rounded ${
+                  speechLanguage === 'ar-SA' ? 'bg-[#10B981] text-black' : 'text-emerald-200 hover:text-white'
+                }`}
+              >
+                🇸🇦 Arab
+              </button>
+              <button
+                onClick={() => setSpeechLanguage('id-ID')}
+                className={`px-2 py-0.5 text-[10px] font-black rounded ${
+                  speechLanguage === 'id-ID' ? 'bg-[#F59E0B] text-black' : 'text-emerald-200 hover:text-white'
+                }`}
+              >
+                🇮🇩 Latin
+              </button>
+            </div>
+          </div>
 
           {level === 'pemula' && (
             <p className="text-xs text-gray-300 italic">
@@ -261,56 +300,59 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
             )}
 
             {isRecording && (
-              <p className="text-xs text-red-400 font-extrabold animate-pulse">
-                🎙️ AI sedang mendengarkan sambungan hafalan Anda...
-              </p>
+              <div className="flex items-center gap-2 p-2 bg-red-950/80 border border-red-500 rounded-xl text-xs font-bold text-red-300 animate-pulse">
+                <Radio className="w-4 h-4 animate-spin text-red-400" />
+                <span>Mikrofon Aktif Mendengarkan... Lafalkan ayat sambungan sekarang!</span>
+              </div>
             )}
           </div>
 
           {spokenTranscript && (
-            <div className="p-3 bg-black/60 rounded-xl border border-white/20 text-left">
-              <span className="text-[10px] text-gray-400 font-mono block">Suara Anda:</span>
-              <p className="text-xs text-white font-medium">{spokenTranscript}</p>
+            <div className="p-3 bg-white/10 border border-white/20 rounded-xl text-left">
+              <span className="text-[10px] font-black text-emerald-300 block uppercase">Transkrip Suara Anda:</span>
+              <p className="text-sm font-semibold text-white mt-0.5">{spokenTranscript}</p>
             </div>
           )}
         </div>
 
-        {/* 3. Hasil Evaluasi */}
+        {/* 3. Hasil Evaluasi AI */}
         {evaluation && (
-          <div
-            className={`p-6 rounded-2xl border-3 border-black text-left space-y-3 ${
-              evaluation.isPassed ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-[#FEF3C7] text-[#92400E]'
-            }`}
-          >
-            <div className="flex items-center justify-between">
+          <div className="bg-[#FFFDF7] text-black border-3 border-black rounded-2xl p-6 text-left space-y-4 animate-fade-up">
+            <div className="flex items-center justify-between border-b-2 border-black pb-3">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-6 h-6" />
-                <h4 className="text-base font-black">
-                  {evaluation.isPassed ? 'Alhamdulillah, Sambungan Sempurna!' : 'Perlu Disempurnakan'} (Akurasi: {evaluation.accuracyScore}%)
-                </h4>
+                {evaluation.isPassed ? (
+                  <CheckCircle2 className="w-6 h-6 text-[#10B981]" />
+                ) : (
+                  <ShieldCheck className="w-6 h-6 text-[#EF4444]" />
+                )}
+                <div>
+                  <h4 className="text-base font-black">
+                    {evaluation.isPassed ? 'BACAAN MUTQIN & TEPAT!' : 'BELUM TEPAT'}
+                  </h4>
+                  <span className="text-xs font-extrabold text-gray-600">
+                    Akurasi Makhraj & Hafalan: {evaluation.accuracyScore}%
+                  </span>
+                </div>
               </div>
 
               <button
                 onClick={() => handleGenerateChallenge()}
-                className="px-4 py-2 bg-black text-white text-xs font-black rounded-xl border border-black neo-button cursor-pointer flex items-center gap-1"
+                className="px-4 py-2 bg-[#0B4627] hover:bg-[#08351D] text-white text-xs font-black rounded-xl border-2 border-black neo-button flex items-center gap-1.5 cursor-pointer"
               >
-                <span>Lanjut Ayat Lain</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>Tantangan Berikutnya</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-xs font-semibold">{evaluation.aiAdabPraise}</p>
-            {evaluation.aiCorrectionNote && (
-              <p className="text-xs font-medium text-red-800">{evaluation.aiCorrectionNote}</p>
-            )}
+            <p className="text-xs font-semibold text-gray-800">{evaluation.aiAdabPraise}</p>
 
-            {/* Jawaban yang Benar */}
-            <div className="p-4 bg-white border-2 border-black rounded-xl text-black">
-              <span className="text-[10px] font-black text-gray-500 uppercase">Teks Ayat Sambungan:</span>
-              <p className="font-quran text-2xl text-right leading-loose font-bold mt-1" dir="rtl">
+            {/* Jawaban Lengkap */}
+            <div className="p-4 bg-emerald-50 border-2 border-black rounded-xl space-y-2">
+              <span className="text-[10px] font-black text-emerald-900 uppercase">Kunci Sambungan Ayat:</span>
+              <p className="font-quran text-2xl text-right leading-loose font-bold" dir="rtl">
                 {challengeData.next.arabicText}
               </p>
-              <p className="text-xs text-gray-700 italic mt-1">{challengeData.next.translation}</p>
+              <p className="text-xs text-gray-700 italic">{challengeData.next.translation}</p>
             </div>
           </div>
         )}
