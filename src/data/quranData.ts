@@ -793,6 +793,39 @@ export function getRandomJuz29And30Ayat(filter: 29 | 30 | 'all' = 'all'): { prom
   };
 }
 
+// Challenge generator with 4 Multiple Choice Options (1 Correct + 3 Distractors)
+export function getRandomJuz29And30ChallengeWithOptions(filter: 29 | 30 | 'all' = 'all'): {
+  prompt: Ayat;
+  next: Ayat;
+  options: Ayat[];
+} {
+  const base = getRandomJuz29And30Ayat(filter);
+  const correct = base.next;
+
+  // Gather all other ayats as distractors
+  const allCandidates: Ayat[] = [];
+  Object.values(CORE_AYATS_DB).forEach((ayats) => {
+    ayats.forEach((a) => {
+      if (a.arabicText !== correct.arabicText && a.arabicText !== base.prompt.arabicText) {
+        allCandidates.push(a);
+      }
+    });
+  });
+
+  // Shuffle distractors and pick 3
+  const shuffledCandidates = [...allCandidates].sort(() => 0.5 - Math.random());
+  const distractors = shuffledCandidates.slice(0, 3);
+
+  // Combine and shuffle 4 options
+  const options = [correct, ...distractors].sort(() => 0.5 - Math.random());
+
+  return {
+    prompt: base.prompt,
+    next: correct,
+    options
+  };
+}
+
 // General Random Ayah Generator for 30 Juz Murojaah AI
 export function getRandomAyatFromAvailable(filterJuz?: number, filterSurah?: number): Ayat {
   let candidates: Ayat[] = [];
