@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="100" fill="#0B4627" stroke="#000000" stroke-width="16"/>
+  <!-- Gold Accent Inner Border -->
+  <rect x="24" y="24" width="464" height="464" rx="80" fill="none" stroke="#F59E0B" stroke-width="8" stroke-dasharray="16 8"/>
+  <!-- Islamic Star 8-point geometric pattern -->
+  <g transform="translate(256, 256)" fill="#D97706" opacity="0.3">
+    <rect x="-120" y="-120" width="240" height="240" rx="20"/>
+    <rect x="-120" y="-120" width="240" height="240" rx="20" transform="rotate(45)"/>
+  </g>
+  <!-- Quran / Book Icon with Neobrutalism shadow -->
+  <g transform="translate(128, 140)">
+    <!-- Hard shadow -->
+    <path d="M 12 24 C 70 0, 180 0, 246 34 L 246 220 C 180 190, 70 190, 12 210 Z" fill="#000000"/>
+    <path d="M 0 14 C 60 -10, 170 -10, 236 24 L 236 210 C 170 180, 60 180, 0 200 Z" fill="#FDF8E2" stroke="#000000" stroke-width="12"/>
+    <!-- Right Page -->
+    <path d="M 236 24 C 302 -10, 412 -10, 472 14 L 472 200 C 412 180, 302 180, 236 210 Z" fill="#F59E0B" stroke="#000000" stroke-width="12"/>
+    <!-- Audio Wave / AI Spark -->
+    <circle cx="236" cy="70" r="28" fill="#10B981" stroke="#000000" stroke-width="8"/>
+    <path d="M 236 50 L 236 90 M 216 70 L 256 70" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <!-- Arabic Calligraphy "اقرأ" / AI Text -->
+  <text x="256" y="420" font-family="'Amiri', serif" font-weight="bold" font-size="54" fill="#FCD34D" text-anchor="middle" stroke="#000000" stroke-width="4">AL-FITYAN AI</text>
+</svg>
