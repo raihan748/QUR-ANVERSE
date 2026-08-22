@@ -10,6 +10,7 @@ import { AuthModal } from './components/auth/AuthModal';
 import { ScrollToTopButton } from './components/common/ScrollToTopButton';
 import { LandingHeroShowcase } from './components/landing/LandingHeroShowcase';
 import { MushafView } from './components/quran/MushafView';
+import { TilawahStudio } from './components/tilawah/TilawahStudio';
 import { MurojaahStudio } from './components/murojaah/MurojaahStudio';
 import { SimaiTutupMata } from './components/simai/SimaiTutupMata';
 import { SambungAyatGame } from './components/challenge/SambungAyatGame';
@@ -82,6 +83,13 @@ export function App() {
           {/* Dynamic Tab View Container with Smooth Transitions */}
           <div key={activeTab} className="animate-fade-up">
             {activeTab === 'mushaf' && <MushafView />}
+
+            {activeTab === 'tilawah' && (
+              <TilawahStudio
+                userProfile={userProfile}
+                onProfileUpdated={handleProfileUpdated}
+              />
+            )}
 
             {activeTab === 'murojaah_ai' && (
               <MurojaahStudio

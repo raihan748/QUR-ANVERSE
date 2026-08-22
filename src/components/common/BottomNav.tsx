@@ -1,5 +1,4 @@
-import React from 'react';
-import { BookOpen, Mic2, EyeOff, Swords, Compass, LayoutDashboard } from 'lucide-react';
+import { BookOpen, Sparkles, Mic2, EyeOff, Swords, Compass, LayoutDashboard } from 'lucide-react';
 import { NavigationTab } from '../../types';
 
 interface BottomNavProps {
@@ -10,11 +9,11 @@ interface BottomNavProps {
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) => {
   const tabs = [
     { id: 'mushaf' as NavigationTab, label: 'Mushaf', icon: BookOpen },
+    { id: 'tilawah' as NavigationTab, label: 'Tilawah', icon: Sparkles },
     { id: 'murojaah_ai' as NavigationTab, label: 'Muroja\'ah AI', icon: Mic2, isSpecial: true },
     { id: 'simai' as NavigationTab, label: 'Simai', icon: EyeOff },
     { id: 'challenge' as NavigationTab, label: 'Game', icon: Swords },
     { id: 'prayer' as NavigationTab, label: 'Adzan', icon: Compass },
-    { id: 'dashboard' as NavigationTab, label: 'Statistik', icon: LayoutDashboard },
   ];
 
   return (

@@ -1,5 +1,6 @@
 export type NavigationTab = 
   | 'mushaf' 
+  | 'tilawah'
   | 'murojaah_ai' 
   | 'simai' 
   | 'challenge' 

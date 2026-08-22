@@ -56,7 +56,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               activeTab === 'mushaf' ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]' : 'text-emerald-100 hover:text-white'
             }`}
           >
-            Mushaf 30 Juz
+            Mushaf
+          </button>
+          <button
+            onClick={() => onSelectTab('tilawah')}
+            className={`px-3 py-1 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
+              activeTab === 'tilawah' ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]' : 'text-emerald-100 hover:text-white'
+            }`}
+          >
+            Tilawah
           </button>
           <button
             onClick={() => onSelectTab('murojaah_ai')}

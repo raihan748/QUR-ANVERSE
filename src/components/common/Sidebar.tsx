@@ -39,6 +39,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       isPrimary: true
     },
     {
+      id: 'tilawah' as NavigationTab,
+      label: 'Tilawah & Murottal',
+      sublabel: 'Audio Syekh & Tikrar',
+      icon: Sparkles,
+      badge: 'Auto Putar',
+      color: 'bg-[#059669]',
+      isPrimary: true
+    },
+    {
       id: 'murojaah_ai' as NavigationTab,
       label: 'Muroja\'ah AI Real-Time',
       sublabel: 'Koreksi Suara & Tajwid',

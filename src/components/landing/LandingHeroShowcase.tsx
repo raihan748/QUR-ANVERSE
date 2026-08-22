@@ -77,22 +77,31 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              {/* Action 2: Open Mushaf 30 Juz */}
+              {/* Action 2: Tilawah Studio */}
               <button
-                onClick={() => onSelectTab('mushaf')}
-                className="px-5 py-3.5 bg-[#FFFDF7] hover:bg-white text-black font-black text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000]"
+                onClick={() => onSelectTab('tilawah')}
+                className="px-5 py-3.5 bg-[#10B981] hover:bg-[#059669] text-black font-black text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000]"
               >
-                <BookOpen className="w-5 h-5 text-[#0B4627]" />
-                <span>Buka Mushaf 30 Juz</span>
+                <Sparkles className="w-5 h-5 text-black" />
+                <span>Mode Tilawah</span>
               </button>
 
-              {/* Action 3: Install App */}
+              {/* Action 3: Open Mushaf 30 Juz */}
+              <button
+                onClick={() => onSelectTab('mushaf')}
+                className="px-4 py-3.5 bg-[#FFFDF7] hover:bg-white text-black font-black text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000]"
+              >
+                <BookOpen className="w-4 h-4 text-[#0B4627]" />
+                <span>Mushaf 30 Juz</span>
+              </button>
+
+              {/* Action 4: Install App */}
               <button
                 onClick={onOpenInstallModal}
-                className="px-4 py-3.5 bg-[#10B981] hover:bg-[#059669] text-white font-extrabold text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000]"
+                className="px-4 py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000]"
               >
                 <Download className="w-4 h-4 text-[#F59E0B]" />
-                <span>Install APK / PWA</span>
+                <span>Install APK</span>
               </button>
             </div>
 
