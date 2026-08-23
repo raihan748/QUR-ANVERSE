@@ -324,7 +324,7 @@ export const MushafView: React.FC = () => {
                 {/* Arabic Text (Clickable Words) */}
                 <div className="my-4 text-right" dir="rtl">
                   {ayat.words && ayat.words.length > 0 ? (
-                    <div className="flex flex-wrap flex-row-reverse gap-x-2 gap-y-3 items-center">
+                    <div className="flex flex-wrap gap-x-2 gap-y-3 items-center">
                       {ayat.words.map((w) => (
                         <span
                           key={w.id}

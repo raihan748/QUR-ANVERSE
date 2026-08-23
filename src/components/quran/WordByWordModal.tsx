@@ -19,9 +19,14 @@ export const WordByWordModal: React.FC<WordByWordModalProps> = ({
 }) => {
   if (!isOpen || !ayat) return null;
 
-  const words = ayat.words || [
-    { id: 1, arabic: ayat.arabicText, transliteration: ayat.transliteration, meaningId: ayat.translation }
-  ];
+  const words = (ayat.words && ayat.words.length > 0)
+    ? ayat.words
+    : ayat.arabicText.split(/\s+/).filter(Boolean).map((w, idx) => ({
+        id: idx + 1,
+        arabic: w,
+        transliteration: `Lafal ke-${idx + 1}`,
+        meaningId: `Potongan kata ke-${idx + 1}`
+      }));
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
