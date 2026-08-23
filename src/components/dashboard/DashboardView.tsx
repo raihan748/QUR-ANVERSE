@@ -18,6 +18,7 @@ import { INITIAL_BADGES } from '../../data/achievementsData';
 import { fetchLeaderboardFromSupabase } from '../../services/supabaseClient';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { audioPlayer } from '../../services/audioPlayerService';
+import { EnterpriseArchitectureInspector } from './EnterpriseArchitectureInspector';
 
 interface DashboardViewProps {
   userProfile: UserProfile;
@@ -95,6 +96,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </NeobrutalCard>
+
+      {/* ENTERPRISE ARCHITECTURE & APSI CORE INSPECTOR */}
+      <EnterpriseArchitectureInspector />
 
       {/* 30-DAY STREAK TRACKER */}
       <NeobrutalCard variant="white" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">

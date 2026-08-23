@@ -120,6 +120,8 @@ export const SURAH_LIST: SurahMeta[] = [
   { number: 114, name: 'الناس', latinName: 'An-Nas', meaning: 'Manusia', ayahCount: 6, revelationPlace: 'Makkah', juzStart: 30 }
 ];
 
+export const SURAHS_DIRECTORY = SURAH_LIST;
+
 // Rich Preloaded Core Dataset (Al-Fatihah, Al-Ikhlas, Al-Falaq, An-Nas, Al-Kauthar, Al-Asr, Al-Mulk, Ayat Kursi, An-Naba, dll)
 export const CORE_AYATS_DB: Record<number, Ayat[]> = {
   // 1. Surah Al-Fatihah (1-7)
