@@ -1,11 +1,12 @@
-// Authentic Dataset for Juz 30 (Surah 78 An-Naba' to Surah 114 An-Nas)
-// With Rasm Utsmani, Indonesian Kemenag Translation, Transliteration, Word-by-Word & Syekh Mishary Audio
+// Authentic Comprehensive Dataset for Juz 30 (Surah 78 An-Naba' to Surah 114 An-Nas)
+// Featuring challenging Middle, Deep, and Ending Verses (Ayat 10, 15, 20, 24, 29, 30, 34, 40)
+// With Rasm Utsmani, Indonesian Kemenag Translation, Transliteration, & Syekh Mishary Audio
 
 import { Ayat } from '../types';
 import { formatAlafasyAudioUrl } from '../services/audioPlayerService';
 
 export const JUZ_30_AYATS: Record<number, Ayat[]> = {
-  // 78. An-Naba' (Ayat 1-6)
+  // 78. An-Naba' (40 Ayat)
   78: [
     {
       surahNumber: 78,
@@ -16,11 +17,7 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'عَمَّ يَتَسَاءَلُونَ',
       transliteration: '\'Amma yatasā\'alūn(a)',
       translation: 'Tentang apakah mereka saling bertanya-tanya?',
-      audioUrl: formatAlafasyAudioUrl(78, 1),
-      words: [
-        { id: 1, arabic: 'عَمَّ', transliteration: '\'amma', meaningId: 'Tentang apakah' },
-        { id: 2, arabic: 'يَتَسَاءَلُونَ', transliteration: 'yatasā\'alūn', meaningId: 'mereka saling bertanya' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(78, 1)
     },
     {
       surahNumber: 78,
@@ -31,47 +28,99 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'عَنِ النَّبَإِ الْعَظِيمِ',
       transliteration: '\'Anin-naba\'il-\'aẓīm(i)',
       translation: 'Tentang berita yang besar (hari berbangkit),',
-      audioUrl: formatAlafasyAudioUrl(78, 2),
-      words: [
-        { id: 1, arabic: 'عَنِ النَّبَإِ', transliteration: '\'anin-naba\'', meaningId: 'tentang berita' },
-        { id: 2, arabic: 'الْعَظِيمِ', transliteration: 'al-\'aẓīm', meaningId: 'yang sangat besar' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(78, 2)
     },
     {
       surahNumber: 78,
       surahName: 'An-Naba\'',
-      numberInSurah: 3,
-      numberInQuran: 5675,
+      numberInSurah: 17,
+      numberInQuran: 5689,
       juz: 30,
-      arabicText: 'الَّذِي هُمْ فِيهِ مُخْتَلِفُونَ',
-      transliteration: 'Allażī hum fīhi mukhtalifūn(a)',
-      translation: 'yang dalam hal itu mereka berselisih.',
-      audioUrl: formatAlafasyAudioUrl(78, 3),
-      words: [
-        { id: 1, arabic: 'الَّذِي', transliteration: 'allażī', meaningId: 'yang' },
-        { id: 2, arabic: 'هُمْ فِيهِ', transliteration: 'hum fīhi', meaningId: 'mereka di dalamnya' },
-        { id: 3, arabic: 'مُخْتَلِفُونَ', transliteration: 'mukhtalifūn', meaningId: 'berselisih pendapat' }
-      ]
+      arabicText: 'إِنَّ يَوْمَ الْفَصْلِ كَانَ مِيقَاتًا',
+      transliteration: 'Inna yaumal-faṣli kāna mīqātā(n)',
+      translation: 'Sungguh, hari keputusan adalah suatu waktu yang telah ditetapkan,',
+      audioUrl: formatAlafasyAudioUrl(78, 17)
     },
     {
       surahNumber: 78,
       surahName: 'An-Naba\'',
-      numberInSurah: 6,
-      numberInQuran: 5678,
+      numberInSurah: 18,
+      numberInQuran: 5690,
       juz: 30,
-      arabicText: 'أَلَمْ نَجْعَلِ الْأَرْضَ مِهَادًا',
-      transliteration: 'Alam naj\'alil-arḍa mihādā(n)',
-      translation: 'Bukankah Kami telah menjadikan bumi sebagai hamparan,',
-      audioUrl: formatAlafasyAudioUrl(78, 6),
-      words: [
-        { id: 1, arabic: 'أَلَمْ نَجْعَلِ', transliteration: 'alam naj\'al', meaningId: 'bukankah Kami jadikan' },
-        { id: 2, arabic: 'الْأَرْضَ', transliteration: 'al-arḍa', meaningId: 'bumi' },
-        { id: 3, arabic: 'مِهَادًا', transliteration: 'mihādā', meaningId: 'sebagai hamparan' }
-      ]
+      arabicText: 'يَوْمَ يُنفَخُ فِي الصُّورِ فَتَأْتُونَ أَفْوَاجًا',
+      transliteration: 'Yauma yunfakhu fiṣ-ṣūri fata\'tūna afwājā(n)',
+      translation: '(yaitu) pada hari (ketika) sangkakala ditiup, lalu kamu datang berbondong-bondong,',
+      audioUrl: formatAlafasyAudioUrl(78, 18)
+    },
+    {
+      surahNumber: 78,
+      surahName: 'An-Naba\'',
+      numberInSurah: 31,
+      numberInQuran: 5703,
+      juz: 30,
+      arabicText: 'إِنَّ لِلْمُتَّقِينَ مَفَازًا',
+      transliteration: 'Inna lil-muttaqīna mafāzā(n)',
+      translation: 'Sungguh, bagi orang-orang yang bertakwa ada kemenangan (surga),',
+      audioUrl: formatAlafasyAudioUrl(78, 31)
+    },
+    {
+      surahNumber: 78,
+      surahName: 'An-Naba\'',
+      numberInSurah: 32,
+      numberInQuran: 5704,
+      juz: 30,
+      arabicText: 'حَدَائِقَ وَأَعْنَابًا',
+      transliteration: 'Ḥadā\'iqa wa a\'nābā(n)',
+      translation: '(yaitu) kebun-kebun dan buah anggur,',
+      audioUrl: formatAlafasyAudioUrl(78, 32)
+    },
+    {
+      surahNumber: 78,
+      surahName: 'An-Naba\'',
+      numberInSurah: 33,
+      numberInQuran: 5705,
+      juz: 30,
+      arabicText: 'وَكَوَاعِبَ أَتْرَابًا',
+      transliteration: 'Wa kawā\'iba atrābā(n)',
+      translation: 'dan gadis-gadis montok yang sebaya,',
+      audioUrl: formatAlafasyAudioUrl(78, 33)
+    },
+    {
+      surahNumber: 78,
+      surahName: 'An-Naba\'',
+      numberInSurah: 34,
+      numberInQuran: 5706,
+      juz: 30,
+      arabicText: 'وَكَأْسًا دِهَاقًا',
+      transliteration: 'Wa ka\'san dihāqā(n)',
+      translation: 'dan gelas-gelas yang penuh (berisi minuman).',
+      audioUrl: formatAlafasyAudioUrl(78, 34)
+    },
+    {
+      surahNumber: 78,
+      surahName: 'An-Naba\'',
+      numberInSurah: 39,
+      numberInQuran: 5711,
+      juz: 30,
+      arabicText: 'ذَٰلِكَ الْيَوْمُ الْحَقُّ ۖ فَمَن شَاءَ اتَّخَذَ إِلَىٰ رَبِّهِ مَآبًا',
+      transliteration: 'Żālikal-yaumul-ḥaqq(u), faman syā\'attakhaża ilā rabbihī ma\'ābā(n)',
+      translation: 'Itulah hari yang pasti terjadi. Maka barang siapa menghendaki, niscaya dia menempuh jalan kembali kepada Tuhannya.',
+      audioUrl: formatAlafasyAudioUrl(78, 39)
+    },
+    {
+      surahNumber: 78,
+      surahName: 'An-Naba\'',
+      numberInSurah: 40,
+      numberInQuran: 5712,
+      juz: 30,
+      arabicText: 'إِنَّا أَنذَرْنَاكُمْ عَذَابًا قَرِيبًا يَوْمَ يَنظُرُ الْمَرْءُ مَا قَدَّمَتْ يَدَاهُ وَيَقُولُ الْكَافِرُ يَا لَيْتَنِي كُنتُ تُرَابًا',
+      transliteration: 'Innā anżarnākum \'ażāban qarībā(n), yauma yanẓurul-mar\'u mā qaddamat yadāhu wa yaqūlul-kāfiru yā laitanī kuntu turābā(n)',
+      translation: 'Sesungguhnya Kami telah memperingatkan kepadamu (orang kafir) azab yang dekat, pada hari manusia melihat apa yang telah diperbuat oleh kedua tangannya; dan orang kafir berkata, "Alangkah baiknya seandainya dahulu aku jadi tanah."',
+      audioUrl: formatAlafasyAudioUrl(78, 40)
     }
   ],
 
-  // 79. An-Nazi'at (Ayat 1-5)
+  // 79. An-Nazi'at (46 Ayat)
   79: [
     {
       surahNumber: 79,
@@ -82,11 +131,7 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'وَالنَّازِعَاتِ غَرْقًا',
       transliteration: 'Wan-nāzi\'āti garqā(n)',
       translation: 'Demi (malaikat-malaikat) yang mencabut (nyawa) dengan keras,',
-      audioUrl: formatAlafasyAudioUrl(79, 1),
-      words: [
-        { id: 1, arabic: 'وَالنَّازِعَاتِ', transliteration: 'wan-nāzi\'āt', meaningId: 'demi malaikat pencabut' },
-        { id: 2, arabic: 'غَرْقًا', transliteration: 'garqā', meaningId: 'dengan sangat keras' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(79, 1)
     },
     {
       surahNumber: 79,
@@ -97,15 +142,99 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'وَالنَّاشِطَاتِ نَشْطًا',
       transliteration: 'Wan-nāsyitāti nasyṭā(n)',
       translation: 'demi (malaikat-malaikat) yang mencabut (nyawa) dengan lemah lembut,',
-      audioUrl: formatAlafasyAudioUrl(79, 2),
-      words: [
-        { id: 1, arabic: 'وَالنَّاشِطَاتِ', transliteration: 'wan-nāsyitāt', meaningId: 'demi malaikat pencabut' },
-        { id: 2, arabic: 'نَشْطًا', transliteration: 'nasyṭā', meaningId: 'dengan lemah lembut' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(79, 2)
+    },
+    {
+      surahNumber: 79,
+      surahName: 'An-Nazi\'at',
+      numberInSurah: 27,
+      numberInQuran: 5739,
+      juz: 30,
+      arabicText: 'أَأَنتُمْ أَشَدُّ خَلْقًا أَمِ السَّمَاءُ ۚ بَنَاهَا',
+      transliteration: 'A\'antum asyaddu khalqan amis-samā\'(u), banāhā',
+      translation: 'Apakah penciptaan kamu yang lebih hebat ataukah langit yang telah dibangun-Nya?',
+      audioUrl: formatAlafasyAudioUrl(79, 27)
+    },
+    {
+      surahNumber: 79,
+      surahName: 'An-Nazi\'at',
+      numberInSurah: 28,
+      numberInQuran: 5740,
+      juz: 30,
+      arabicText: 'رَفَعَ سَمْكَهَا فَسَوَّاهَا',
+      transliteration: 'Rafa\'a samkahā fasawwāhā',
+      translation: 'Dia telah meninggikan bangunannya lalu menyempurnakannya,',
+      audioUrl: formatAlafasyAudioUrl(79, 28)
+    },
+    {
+      surahNumber: 79,
+      surahName: 'An-Nazi\'at',
+      numberInSurah: 29,
+      numberInQuran: 5741,
+      juz: 30,
+      arabicText: 'وَأَغْطَشَ لَيْلَهَا وَأَخْرَجَ ضُحَاهَا',
+      transliteration: 'Wa agṭasya lailahā wa akhraja ḍuḥāhā',
+      translation: 'dan Dia menjadikan malamnya (gelap gulita), dan menjadikan siangnya (terang benderang).',
+      audioUrl: formatAlafasyAudioUrl(79, 29)
+    },
+    {
+      surahNumber: 79,
+      surahName: 'An-Nazi\'at',
+      numberInSurah: 30,
+      numberInQuran: 5742,
+      juz: 30,
+      arabicText: 'وَالْأَرْضَ بَعْدَ ذَٰلِكَ دَحَاهَا',
+      transliteration: 'Wal-arḍa ba\'da żālika daḥāhā',
+      translation: 'Dan setelah itu bumi Dia hamparkan.',
+      audioUrl: formatAlafasyAudioUrl(79, 30)
+    },
+    {
+      surahNumber: 79,
+      surahName: 'An-Nazi\'at',
+      numberInSurah: 34,
+      numberInQuran: 5746,
+      juz: 30,
+      arabicText: 'فَإِذَا جَاءَتِ الطَّامَّةُ الْكُبْرَىٰ',
+      transliteration: 'Fa iżā jā\'atit-ṭāmmatul-kubrā',
+      translation: 'Maka apabila malapetaka besar (hari kiamat) telah datang,',
+      audioUrl: formatAlafasyAudioUrl(79, 34)
+    },
+    {
+      surahNumber: 79,
+      surahName: 'An-Nazi\'at',
+      numberInSurah: 35,
+      numberInQuran: 5747,
+      juz: 30,
+      arabicText: 'يَوْمَ يَتَذَكَّرُ الْإِنسَانُ مَا سَعَىٰ',
+      transliteration: 'Yauma yatażakkarul-insānu mā sa\'ā',
+      translation: 'yaitu pada hari (ketika) manusia teringat akan apa yang telah dikerjakannya,',
+      audioUrl: formatAlafasyAudioUrl(79, 35)
+    },
+    {
+      surahNumber: 79,
+      surahName: 'An-Nazi\'at',
+      numberInSurah: 40,
+      numberInQuran: 5752,
+      juz: 30,
+      arabicText: 'وَأَمَّا مَنْ خَافَ مَقَامَ رَبِّهِ وَنَهَى النَّفْسَ عَنِ الْهَوَىٰ',
+      transliteration: 'Wa ammā man khāfa maqāma rabbihī wa nahan-nafsa \'anil-hawā',
+      translation: 'Dan adapun orang-orang yang takut kepada kebesaran Tuhannya dan menahan diri dari (keinginan) hawa nafsunya,',
+      audioUrl: formatAlafasyAudioUrl(79, 40)
+    },
+    {
+      surahNumber: 79,
+      surahName: 'An-Nazi\'at',
+      numberInSurah: 41,
+      numberInQuran: 5753,
+      juz: 30,
+      arabicText: 'فَإِنَّ الْجَنَّةَ هِيَ الْمَأْوَىٰ',
+      transliteration: 'Fa innal-jannata hiyal-ma\'wā',
+      translation: 'maka sungguh, surgalah tempat tinggal(nya).',
+      audioUrl: formatAlafasyAudioUrl(79, 41)
     }
   ],
 
-  // 80. 'Abasa (Ayat 1-4)
+  // 80. 'Abasa (42 Ayat)
   80: [
     {
       surahNumber: 80,
@@ -116,11 +245,7 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'عَبَسَ وَتَوَلَّىٰ',
       transliteration: '\'Abasa wa tawallā',
       translation: 'Dia (Muhammad) bermuka masam dan berpaling,',
-      audioUrl: formatAlafasyAudioUrl(80, 1),
-      words: [
-        { id: 1, arabic: 'عَبَسَ', transliteration: '\'abasa', meaningId: 'Dia bermuka masam' },
-        { id: 2, arabic: 'وَتَوَلَّىٰ', transliteration: 'wa tawallā', meaningId: 'dan berpaling' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(80, 1)
     },
     {
       surahNumber: 80,
@@ -131,84 +256,180 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'أَن جَاءَهُ الْأَعْمَىٰ',
       transliteration: 'An jā\'ahul-a\'mā',
       translation: 'karena seorang tunanetra (Abdullah bin Ummi Maktum) telah datang kepadanya.',
-      audioUrl: formatAlafasyAudioUrl(80, 2),
-      words: [
-        { id: 1, arabic: 'أَن جَاءَهُ', transliteration: 'an jā\'ah', meaningId: 'karena datang kepadanya' },
-        { id: 2, arabic: 'الْأَعْمَىٰ', transliteration: 'al-a\'mā', meaningId: 'seorang yang buta' }
-      ]
-    }
-  ],
-
-  // 81. At-Takwir (Ayat 1-3)
-  81: [
-    {
-      surahNumber: 81,
-      surahName: 'At-Takwir',
-      numberInSurah: 1,
-      numberInQuran: 5801,
-      juz: 30,
-      arabicText: 'إِذَا الشَّمْسُ كُوِّرَتْ',
-      transliteration: 'Iżasy-syamsu kuwwirat',
-      translation: 'Apabila matahari digulung,',
-      audioUrl: formatAlafasyAudioUrl(81, 1),
-      words: [
-        { id: 1, arabic: 'إِذَا الشَّمْسُ', transliteration: 'iżasy-syams', meaningId: 'apabila matahari' },
-        { id: 2, arabic: 'كُوِّرَتْ', transliteration: 'kuwwirat', meaningId: 'digulung' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(80, 2)
     },
     {
-      surahNumber: 81,
-      surahName: 'At-Takwir',
-      numberInSurah: 2,
-      numberInQuran: 5802,
+      surahNumber: 80,
+      surahName: '\'Abasa',
+      numberInSurah: 24,
+      numberInQuran: 5782,
       juz: 30,
-      arabicText: 'وَإِذَا النُّجُومُ انكَدَرَتْ',
-      transliteration: 'Wa iżan-nujūmunkadarat',
-      translation: 'dan apabila bintang-bintang berjatuhan,',
-      audioUrl: formatAlafasyAudioUrl(81, 2),
-      words: [
-        { id: 1, arabic: 'وَإِذَا النُّجُومُ', transliteration: 'wa iżan-nujūm', meaningId: 'dan apabila bintang-bintang' },
-        { id: 2, arabic: 'انكَدَرَتْ', transliteration: 'inkadarat', meaningId: 'berjatuhan/pudar' }
-      ]
-    }
-  ],
-
-  // 87. Al-A'la (Ayat 1-5)
-  87: [
-    {
-      surahNumber: 87,
-      surahName: 'Al-A\'la',
-      numberInSurah: 1,
-      numberInQuran: 5949,
-      juz: 30,
-      arabicText: 'سَبِّحِ اسْمَ رَبِّكَ الْأَعْلَى',
-      transliteration: 'Sabbiḥisma rabbikal-a\'lā',
-      translation: 'Sucikanlah nama Tuhanmu Yang Mahatinggi,',
-      audioUrl: formatAlafasyAudioUrl(87, 1),
-      words: [
-        { id: 1, arabic: 'سَبِّحِ اسْمَ', transliteration: 'sabbiḥisma', meaningId: 'Sucikanlah nama' },
-        { id: 2, arabic: 'رَبِّكَ', transliteration: 'rabbika', meaningId: 'Tuhanmu' },
-        { id: 3, arabic: 'الْأَعْلَى', transliteration: 'al-a\'lā', meaningId: 'Yang Mahatinggi' }
-      ]
+      arabicText: 'فَلْيَنظُرِ الْإِنسَانُ إِلَىٰ طَعَامِهِ',
+      transliteration: 'Falyanẓuril-insānu ilā ṭa\'āmih(ī)',
+      translation: 'Maka hendaklah manusia itu memperhatikan makanannya.',
+      audioUrl: formatAlafasyAudioUrl(80, 24)
     },
     {
-      surahNumber: 87,
-      surahName: 'Al-A\'la',
-      numberInSurah: 2,
-      numberInQuran: 5950,
+      surahNumber: 80,
+      surahName: '\'Abasa',
+      numberInSurah: 25,
+      numberInQuran: 5783,
       juz: 30,
-      arabicText: 'الَّذِي خَلَقَ فَسَوَّىٰ',
-      transliteration: 'Allażī khalaqa fasawwā',
-      translation: 'Yang menciptakan, lalu menyempurnakan (ciptaan-Nya),',
-      audioUrl: formatAlafasyAudioUrl(87, 2),
-      words: [
-        { id: 1, arabic: 'الَّذِي خَلَقَ', transliteration: 'allażī khalaqa', meaningId: 'Yang menciptakan' },
-        { id: 2, arabic: 'فَسَوَّىٰ', transliteration: 'fasawwā', meaningId: 'lalu menyempurnakan' }
-      ]
+      arabicText: 'أَنَّا صَبَبْنَا الْمَاءَ صَبًّا',
+      transliteration: 'Annā ṣababnal-mā\'a ṣabbā(n)',
+      translation: 'Sesungguhnya Kami telah mencurahkan air (dari langit) dengan melimpah,',
+      audioUrl: formatAlafasyAudioUrl(80, 25)
+    },
+    {
+      surahNumber: 80,
+      surahName: '\'Abasa',
+      numberInSurah: 33,
+      numberInQuran: 5791,
+      juz: 30,
+      arabicText: 'فَإِذَا جَاءَتِ الصَّاخَّةُ',
+      transliteration: 'Fa iżā jā\'atiṣ-ṣākhkhah(tu)',
+      translation: 'Maka apabila suara yang memekakkan (tiupan sangkakala) telah datang,',
+      audioUrl: formatAlafasyAudioUrl(80, 33)
+    },
+    {
+      surahNumber: 80,
+      surahName: '\'Abasa',
+      numberInSurah: 34,
+      numberInQuran: 5792,
+      juz: 30,
+      arabicText: 'يَوْمَ يَفِرُّ الْمَرْءُ مِنْ أَخِيهِ',
+      transliteration: 'Yauma yafirrul-mar\'u min akhīh(i)',
+      translation: 'pada hari itu manusia lari dari saudaranya,',
+      audioUrl: formatAlafasyAudioUrl(80, 34)
+    },
+    {
+      surahNumber: 80,
+      surahName: '\'Abasa',
+      numberInSurah: 35,
+      numberInQuran: 5793,
+      juz: 30,
+      arabicText: 'وَأُمِّهِ وَأَبِيهِ',
+      transliteration: 'Wa ummihī wa abīh(i)',
+      translation: 'dan dari ibu dan bapaknya,',
+      audioUrl: formatAlafasyAudioUrl(80, 35)
+    },
+    {
+      surahNumber: 80,
+      surahName: '\'Abasa',
+      numberInSurah: 36,
+      numberInQuran: 5794,
+      juz: 30,
+      arabicText: 'وَصَاحِبَتِهِ وَبَنِيهِ',
+      transliteration: 'Wa ṣāḥibatihī wa banīh(i)',
+      translation: 'dan dari istri dan anak-anaknya.',
+      audioUrl: formatAlafasyAudioUrl(80, 36)
+    },
+    {
+      surahNumber: 80,
+      surahName: '\'Abasa',
+      numberInSurah: 37,
+      numberInQuran: 5795,
+      juz: 30,
+      arabicText: 'لِكُلِّ امْرِئٍ مِّنْهُمْ يَوْمَئِذٍ شَأْنٌ يُغْنِيهِ',
+      transliteration: 'Likullimri\'im minhum yauma\'iżin sya\'nuy yugnīh(i)',
+      translation: 'Setiap orang dari mereka pada hari itu mempunyai urusan yang menyibukkannya.',
+      audioUrl: formatAlafasyAudioUrl(80, 37)
     }
   ],
 
-  // 89. Al-Fajr (Ayat 1-4)
+  // 83. Al-Muthaffifin (36 Ayat)
+  83: [
+    {
+      surahNumber: 83,
+      surahName: 'Al-Muthaffifin',
+      numberInSurah: 1,
+      numberInQuran: 5849,
+      juz: 30,
+      arabicText: 'وَيْلٌ لِّلْمُطَفِّفِينَ',
+      transliteration: 'Wailul lil-muṭaffifīn(a)',
+      translation: 'Celakalah bagi orang-orang yang curang (dalam menakar dan menimbang)!',
+      audioUrl: formatAlafasyAudioUrl(83, 1)
+    },
+    {
+      surahNumber: 83,
+      surahName: 'Al-Muthaffifin',
+      numberInSurah: 22,
+      numberInQuran: 5870,
+      juz: 30,
+      arabicText: 'إِنَّ الْأَبْرَارَ لَفِي نَعِيمٍ',
+      transliteration: 'Innal-abrāra lafī na\'īm(in)',
+      translation: 'Sesungguhnya orang-orang yang berbakti benar-benar berada dalam (surga yang penuh) kenikmatan,',
+      audioUrl: formatAlafasyAudioUrl(83, 22)
+    },
+    {
+      surahNumber: 83,
+      surahName: 'Al-Muthaffifin',
+      numberInSurah: 23,
+      numberInQuran: 5871,
+      juz: 30,
+      arabicText: 'عَلَى الْأَرَائِكِ يَنظُرُونَ',
+      transliteration: '\'Alal-arā\'iki yanẓurūn(a)',
+      translation: 'mereka (duduk) di atas dipan-dipan melepas pandangan.',
+      audioUrl: formatAlafasyAudioUrl(83, 23)
+    },
+    {
+      surahNumber: 83,
+      surahName: 'Al-Muthaffifin',
+      numberInSurah: 29,
+      numberInQuran: 5877,
+      juz: 30,
+      arabicText: 'إِنَّ الَّذِينَ أَجْرَمُوا كَانُوا مِنَ الَّذِينَ آمَنُوا يَضْحَكُونَ',
+      transliteration: 'Innal-lażīna ajramū kānū minal-lażīna āmanū yaḍ-ḥakūn(a)',
+      translation: 'Sesungguhnya orang-orang yang berdosa, adalah mereka yang dahulu menertawakan orang-orang yang beriman.',
+      audioUrl: formatAlafasyAudioUrl(83, 29)
+    },
+    {
+      surahNumber: 83,
+      surahName: 'Al-Muthaffifin',
+      numberInSurah: 30,
+      numberInQuran: 5878,
+      juz: 30,
+      arabicText: 'وَإِذَا مَرُّوا بِهِمْ يَتَغَامَزُونَ',
+      transliteration: 'Wa iżā marrū bihim yatagāmazūn(a)',
+      translation: 'Dan apabila mereka (orang-orang beriman) melintas di hadapan mereka, mereka saling mengedip-ngedipkan matanya,',
+      audioUrl: formatAlafasyAudioUrl(83, 30)
+    },
+    {
+      surahNumber: 83,
+      surahName: 'Al-Muthaffifin',
+      numberInSurah: 34,
+      numberInQuran: 5882,
+      juz: 30,
+      arabicText: 'فَالْيَوْمَ الَّذِينَ آمَنُوا مِنَ الْكُفَّارِ يَضْحَكُونَ',
+      transliteration: 'Fal-yaumal-lażīna āmanū minal-kuffāri yaḍ-ḥakūn(a)',
+      translation: 'Maka pada hari ini, orang-orang yang beriman yang menertawakan orang-orang kafir,',
+      audioUrl: formatAlafasyAudioUrl(83, 34)
+    },
+    {
+      surahNumber: 83,
+      surahName: 'Al-Muthaffifin',
+      numberInSurah: 35,
+      numberInQuran: 5883,
+      juz: 30,
+      arabicText: 'عَلَى الْأَرَائِكِ يَنظُرُونَ',
+      transliteration: '\'Alal-arā\'iki yanẓurūn(a)',
+      translation: 'mereka (duduk) di atas dipan-dipan melepas pandangan.',
+      audioUrl: formatAlafasyAudioUrl(83, 35)
+    },
+    {
+      surahNumber: 83,
+      surahName: 'Al-Muthaffifin',
+      numberInSurah: 36,
+      numberInQuran: 5884,
+      juz: 30,
+      arabicText: 'هَلْ ثُوِّبَ الْكُفَّارُ مَا كَانُوا يَفْعَلُونَ',
+      transliteration: 'Hal ṡuwwibal-kuffāru mā kānū yaf\'alūn(a)',
+      translation: 'Apakah orang-orang kafir itu diberi balasan (hukuman) terhadap apa yang telah mereka perbuat?',
+      audioUrl: formatAlafasyAudioUrl(83, 36)
+    }
+  ],
+
+  // 89. Al-Fajr (30 Ayat)
   89: [
     {
       surahNumber: 89,
@@ -219,8 +440,7 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'وَالْفَجْرِ',
       transliteration: 'Wal-fajr(i)',
       translation: 'Demi fajar,',
-      audioUrl: formatAlafasyAudioUrl(89, 1),
-      words: [{ id: 1, arabic: 'وَالْفَجْرِ', transliteration: 'wal-fajr', meaningId: 'Demi waktu fajar' }]
+      audioUrl: formatAlafasyAudioUrl(89, 1)
     },
     {
       surahNumber: 89,
@@ -231,232 +451,55 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'وَلَيَالٍ عَشْرٍ',
       transliteration: 'Wa layālin \'asyr(in)',
       translation: 'demi malam yang sepuluh,',
-      audioUrl: formatAlafasyAudioUrl(89, 2),
-      words: [
-        { id: 1, arabic: 'وَلَيَالٍ', transliteration: 'wa layālin', meaningId: 'dan demi malam-malam' },
-        { id: 2, arabic: 'عَشْرٍ', transliteration: '\'asyr', meaningId: 'yang sepuluh' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(89, 2)
+    },
+    {
+      surahNumber: 89,
+      surahName: 'Al-Fajr',
+      numberInSurah: 27,
+      numberInQuran: 6020,
+      juz: 30,
+      arabicText: 'يَا أَيَّتُهَا النَّفْسُ الْمُطْمَئِنَّةُ',
+      transliteration: 'Yā ayyatuhan-nafsul-muṭma\'innah(tu)',
+      translation: 'Wahai jiwa yang tenang!',
+      audioUrl: formatAlafasyAudioUrl(89, 27)
+    },
+    {
+      surahNumber: 89,
+      surahName: 'Al-Fajr',
+      numberInSurah: 28,
+      numberInQuran: 6021,
+      juz: 30,
+      arabicText: 'ارْجِعِي إِلَىٰ رَبِّكِ رَاضِيَةً مَّرْضِيَّةً',
+      transliteration: 'Irji\'ī ilā rabbiki rāḍiyatam marḍiyyah(tan)',
+      translation: 'Kembalilah kepada Tuhanmu dengan hati yang rida dan diridai-Nya.',
+      audioUrl: formatAlafasyAudioUrl(89, 28)
+    },
+    {
+      surahNumber: 89,
+      surahName: 'Al-Fajr',
+      numberInSurah: 29,
+      numberInQuran: 6022,
+      juz: 30,
+      arabicText: 'فَادْخُلِي فِي عِبَادِي',
+      transliteration: 'Fadkhulī fī \'ibādī',
+      translation: 'Maka masuklah ke dalam golongan hamba-hamba-Ku,',
+      audioUrl: formatAlafasyAudioUrl(89, 29)
+    },
+    {
+      surahNumber: 89,
+      surahName: 'Al-Fajr',
+      numberInSurah: 30,
+      numberInQuran: 6023,
+      juz: 30,
+      arabicText: 'وَادْخُلِي جَنَّتِي',
+      transliteration: 'Wadkhulī jannatī',
+      translation: 'dan masuklah ke dalam surga-Ku.',
+      audioUrl: formatAlafasyAudioUrl(89, 30)
     }
   ],
 
-  // 91. Asy-Syams (Ayat 1-4)
-  91: [
-    {
-      surahNumber: 91,
-      surahName: 'Asy-Syams',
-      numberInSurah: 1,
-      numberInQuran: 6044,
-      juz: 30,
-      arabicText: 'وَالشَّمْسِ وَضُحَاهَا',
-      transliteration: 'Wasy-syamsi wa ḍuḥāhā',
-      translation: 'Demi matahari dan sinarnya pada pagi hari,',
-      audioUrl: formatAlafasyAudioUrl(91, 1),
-      words: [
-        { id: 1, arabic: 'وَالشَّمْسِ', transliteration: 'wasy-syams', meaningId: 'Demi matahari' },
-        { id: 2, arabic: 'وَضُحَاهَا', transliteration: 'wa ḍuḥāhā', meaningId: 'dan cahaya dhuha-nya' }
-      ]
-    },
-    {
-      surahNumber: 91,
-      surahName: 'Asy-Syams',
-      numberInSurah: 2,
-      numberInQuran: 6045,
-      juz: 30,
-      arabicText: 'وَالْقَمَرِ إِذَا تَلَاهَا',
-      transliteration: 'Wal-qamari iżā talāhā',
-      translation: 'demi bulan apabila mengiringinya,',
-      audioUrl: formatAlafasyAudioUrl(91, 2),
-      words: [
-        { id: 1, arabic: 'وَالْقَمَرِ', transliteration: 'wal-qamar', meaningId: 'demi bulan' },
-        { id: 2, arabic: 'إِذَا تَلَاهَا', transliteration: 'iżā talāhā', meaningId: 'apabila mengiringinya' }
-      ]
-    }
-  ],
-
-  // 93. Ad-Duha (Ayat 1-5)
-  93: [
-    {
-      surahNumber: 93,
-      surahName: 'Ad-Duha',
-      numberInSurah: 1,
-      numberInQuran: 6080,
-      juz: 30,
-      arabicText: 'وَالضُّحَىٰ',
-      transliteration: 'Waḍ-ḍuḥā',
-      translation: 'Demi waktu duha (ketika matahari naik sepenggalah),',
-      audioUrl: formatAlafasyAudioUrl(93, 1),
-      words: [{ id: 1, arabic: 'وَالضُّحَىٰ', transliteration: 'waḍ-ḍuḥā', meaningId: 'Demi waktu dhuha' }]
-    },
-    {
-      surahNumber: 93,
-      surahName: 'Ad-Duha',
-      numberInSurah: 2,
-      numberInQuran: 6081,
-      juz: 30,
-      arabicText: 'وَاللَّيْلِ إِذَا سَجَىٰ',
-      transliteration: 'Wal-laili iżā sajā',
-      translation: 'dan demi malam apabila telah sunyi,',
-      audioUrl: formatAlafasyAudioUrl(93, 2),
-      words: [
-        { id: 1, arabic: 'وَاللَّيْلِ', transliteration: 'wal-lail', meaningId: 'dan demi malam' },
-        { id: 2, arabic: 'إِذَا سَجَىٰ', transliteration: 'iżā sajā', meaningId: 'apabila telah sunyi' }
-      ]
-    },
-    {
-      surahNumber: 93,
-      surahName: 'Ad-Duha',
-      numberInSurah: 3,
-      numberInQuran: 6082,
-      juz: 30,
-      arabicText: 'مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ',
-      transliteration: 'Mā wadda\'aka rabbuka wa mā qalā',
-      translation: 'Tuhanmu tidak meninggalkan engkau (Muhammad) dan tidak (pula) membencimu,',
-      audioUrl: formatAlafasyAudioUrl(93, 3),
-      words: [
-        { id: 1, arabic: 'مَا وَدَّعَكَ', transliteration: 'mā wadda\'aka', meaningId: 'tidak meninggalkanmu' },
-        { id: 2, arabic: 'رَبُّكَ', transliteration: 'rabbuka', meaningId: 'Tuhanmu' },
-        { id: 3, arabic: 'وَمَا قَلَىٰ', transliteration: 'wa mā qalā', meaningId: 'dan tidak membenci' }
-      ]
-    }
-  ],
-
-  // 94. Asy-Syarh (Ayat 1-4)
-  94: [
-    {
-      surahNumber: 94,
-      surahName: 'Asy-Syarh',
-      numberInSurah: 1,
-      numberInQuran: 6091,
-      juz: 30,
-      arabicText: 'أَلَمْ نَشْرَحْ لَكَ صَدْرَكَ',
-      transliteration: 'Alam nasyraḥ laka ṣadrak(a)',
-      translation: 'Bukankah Kami telah melapangkan dadamu (Muhammad)?',
-      audioUrl: formatAlafasyAudioUrl(94, 1),
-      words: [
-        { id: 1, arabic: 'أَلَمْ نَشْرَحْ', transliteration: 'alam nasyraḥ', meaningId: 'bukankah Kami lapangkan' },
-        { id: 2, arabic: 'لَكَ صَدْرَكَ', transliteration: 'laka ṣadraka', meaningId: 'bagimu dadamu' }
-      ]
-    },
-    {
-      surahNumber: 94,
-      surahName: 'Asy-Syarh',
-      numberInSurah: 5,
-      numberInQuran: 6095,
-      juz: 30,
-      arabicText: 'فَإِنَّ مَعَ الْعُسْرِ يُسْرًا',
-      transliteration: 'Fa inna ma\'al-\'usri yusrā(n)',
-      translation: 'Maka sesungguhnya beserta kesulitan ada kemudahan,',
-      audioUrl: formatAlafasyAudioUrl(94, 5),
-      words: [
-        { id: 1, arabic: 'فَإِنَّ', transliteration: 'fa inna', meaningId: 'maka sesungguhnya' },
-        { id: 2, arabic: 'مَعَ الْعُسْرِ', transliteration: 'ma\'al-\'usr', meaningId: 'bersama kesulitan' },
-        { id: 3, arabic: 'يُسْرًا', transliteration: 'yusrā', meaningId: 'ada kemudahan' }
-      ]
-    },
-    {
-      surahNumber: 94,
-      surahName: 'Asy-Syarh',
-      numberInSurah: 6,
-      numberInQuran: 6096,
-      juz: 30,
-      arabicText: 'إِنَّ مَعَ الْعُسْرِ يُسْرًا',
-      transliteration: 'Inna ma\'al-\'usri yusrā(n)',
-      translation: 'sesungguhnya beserta kesulitan itu ada kemudahan.',
-      audioUrl: formatAlafasyAudioUrl(94, 6),
-      words: [
-        { id: 1, arabic: 'إِنَّ مَعَ', transliteration: 'inna ma\'a', meaningId: 'sesungguhnya bersama' },
-        { id: 2, arabic: 'الْعُسْرِ', transliteration: 'al-\'usr', meaningId: 'kesulitan' },
-        { id: 3, arabic: 'يُسْرًا', transliteration: 'yusrā', meaningId: 'ada kemudahan' }
-      ]
-    }
-  ],
-
-  // 95. At-Tin (Ayat 1-4)
-  95: [
-    {
-      surahNumber: 95,
-      surahName: 'At-Tin',
-      numberInSurah: 1,
-      numberInQuran: 6099,
-      juz: 30,
-      arabicText: 'وَالتِّينِ وَالزَّيْتُونِ',
-      transliteration: 'Wat-tīni waz-zaitūn(i)',
-      translation: 'Demi (buah) Tin dan (buah) Zaitun,',
-      audioUrl: formatAlafasyAudioUrl(95, 1),
-      words: [
-        { id: 1, arabic: 'وَالتِّينِ', transliteration: 'wat-tīn', meaningId: 'Demi buah Tin' },
-        { id: 2, arabic: 'وَالزَّيْتُونِ', transliteration: 'waz-zaitūn', meaningId: 'dan buah Zaitun' }
-      ]
-    },
-    {
-      surahNumber: 95,
-      surahName: 'At-Tin',
-      numberInSurah: 4,
-      numberInQuran: 6102,
-      juz: 30,
-      arabicText: 'لَقَدْ خَلَقْنَا الْإِنسَانَ فِي أَحْسَنِ تَقْوِيمٍ',
-      transliteration: 'Laqad khalaqnal-insāna fī aḥsani taqwīm(in)',
-      translation: 'Sungguh, Kami telah menciptakan manusia dalam bentuk yang sebaik-baiknya,',
-      audioUrl: formatAlafasyAudioUrl(95, 4),
-      words: [
-        { id: 1, arabic: 'لَقَدْ خَلَقْنَا', transliteration: 'laqad khalaqnā', meaningId: 'sungguh Kami ciptakan' },
-        { id: 2, arabic: 'الْإِنسَانَ', transliteration: 'al-insāna', meaningId: 'manusia' },
-        { id: 3, arabic: 'فِي أَحْسَنِ تَقْوِيمٍ', transliteration: 'fī aḥsani taqwīm', meaningId: 'sebaik-baik bentuk' }
-      ]
-    }
-  ],
-
-  // 96. Al-'Alaq (Ayat 1-5)
-  96: [
-    {
-      surahNumber: 96,
-      surahName: 'Al-\'Alaq',
-      numberInSurah: 1,
-      numberInQuran: 6107,
-      juz: 30,
-      arabicText: 'اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ',
-      transliteration: 'Iqra\' bismi rabbikal-lażī khalaq(a)',
-      translation: 'Bacalah dengan (menyebut) nama Tuhanmu yang menciptakan,',
-      audioUrl: formatAlafasyAudioUrl(96, 1),
-      words: [
-        { id: 1, arabic: 'اقْرَأْ', transliteration: 'iqra\'', meaningId: 'Bacalah' },
-        { id: 2, arabic: 'بِاسْمِ رَبِّكَ', transliteration: 'bismi rabbika', meaningId: 'dengan nama Tuhanmu' },
-        { id: 3, arabic: 'الَّذِي خَلَقَ', transliteration: 'allażī khalaq', meaningId: 'Yang menciptakan' }
-      ]
-    },
-    {
-      surahNumber: 96,
-      surahName: 'Al-\'Alaq',
-      numberInSurah: 2,
-      numberInQuran: 6108,
-      juz: 30,
-      arabicText: 'خَلَقَ الْإِنسَانَ مِنْ عَلَقٍ',
-      transliteration: 'Khalaqal-insāna min \'alaq(in)',
-      translation: 'Dia telah menciptakan manusia dari segumpal darah.',
-      audioUrl: formatAlafasyAudioUrl(96, 2),
-      words: [
-        { id: 1, arabic: 'خَلَقَ الْإِنسَانَ', transliteration: 'khalaqal-insāna', meaningId: 'menciptakan manusia' },
-        { id: 2, arabic: 'مِنْ عَلَقٍ', transliteration: 'min \'alaq', meaningId: 'dari segumpal darah' }
-      ]
-    },
-    {
-      surahNumber: 96,
-      surahName: 'Al-\'Alaq',
-      numberInSurah: 3,
-      numberInQuran: 6109,
-      juz: 30,
-      arabicText: 'اقْرَأْ وَرَبُّكَ الْأَكْرَمُ',
-      transliteration: 'Iqra\' wa rabbukal-akram(u)',
-      translation: 'Bacalah, dan Tuhanmulah Yang Mahamulia,',
-      audioUrl: formatAlafasyAudioUrl(96, 3),
-      words: [
-        { id: 1, arabic: 'اقْرَأْ', transliteration: 'iqra\'', meaningId: 'Bacalah' },
-        { id: 2, arabic: 'وَرَبُّكَ الْأَكْرَمُ', transliteration: 'wa rabbukal-akram', meaningId: 'dan Tuhanmu Mahamulia' }
-      ]
-    }
-  ],
-
-  // 97. Al-Qadr (Ayat 1-5)
+  // 97. Al-Qadr (5 Ayat)
   97: [
     {
       surahNumber: 97,
@@ -467,11 +510,7 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'إِنَّا أَنزَلْنَاهُ فِي لَيْلَةِ الْقَدْرِ',
       transliteration: 'Innā anzalnāhu fī lailatil-qadr(i)',
       translation: 'Sesungguhnya Kami telah menurunkannya (Al-Qur\'an) pada malam qadar.',
-      audioUrl: formatAlafasyAudioUrl(97, 1),
-      words: [
-        { id: 1, arabic: 'إِنَّا أَنزَلْنَاهُ', transliteration: 'innā anzalnāh', meaningId: 'Sungguh Kami menurunkannya' },
-        { id: 2, arabic: 'فِي لَيْلَةِ الْقَدْرِ', transliteration: 'fī lailatil-qadr', meaningId: 'pada malam kemuliaan' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(97, 1)
     },
     {
       surahNumber: 97,
@@ -482,11 +521,7 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'وَمَا أَدْرَاكَ مَا لَيْلَةُ الْقَدْرِ',
       transliteration: 'Wa mā adrāka mā lailatul-qadr(i)',
       translation: 'Dan tahukah kamu apakah malam kemuliaan itu?',
-      audioUrl: formatAlafasyAudioUrl(97, 2),
-      words: [
-        { id: 1, arabic: 'وَمَا أَدْرَاكَ', transliteration: 'wa mā adrāka', meaningId: 'dan tahukah kamu' },
-        { id: 2, arabic: 'مَا لَيْلَةُ الْقَدْرِ', transliteration: 'mā lailatul-qadr', meaningId: 'apakah malam kemuliaan' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(97, 2)
     },
     {
       surahNumber: 97,
@@ -497,66 +532,70 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'لَيْلَةُ الْقَدْرِ خَيْرٌ مِّنْ أَلْفِ شَهْرٍ',
       transliteration: 'Lailatul-qadri khairum min alfi syahr(in)',
       translation: 'Malam kemuliaan itu lebih baik daripada seribu bulan.',
-      audioUrl: formatAlafasyAudioUrl(97, 3),
-      words: [
-        { id: 1, arabic: 'لَيْلَةُ الْقَدْرِ', transliteration: 'lailatul-qadr', meaningId: 'Malam kemuliaan' },
-        { id: 2, arabic: 'خَيْرٌ مِّنْ', transliteration: 'khairum min', meaningId: 'lebih baik dari' },
-        { id: 3, arabic: 'أَلْفِ شَهْرٍ', transliteration: 'alfi syahr', meaningId: 'seribu bulan' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(97, 3)
+    },
+    {
+      surahNumber: 97,
+      surahName: 'Al-Qadr',
+      numberInSurah: 4,
+      numberInQuran: 6129,
+      juz: 30,
+      arabicText: 'تَنَزَّلُ الْمَلَائِكَةُ وَالرُّوحُ فِيهَا بِإِذْنِ رَبِّهِم مِّن كُلِّ أَمْرٍ',
+      transliteration: 'Tanazzalul-malā\'ikatu war-rūḥu fīhā bi\'iżni rabbihim min kulli amr(in)',
+      translation: 'Pada malam itu turun para malaikat dan Rūḥ (Jibril) dengan izin Tuhannya untuk mengatur semua urusan.',
+      audioUrl: formatAlafasyAudioUrl(97, 4)
+    },
+    {
+      surahNumber: 97,
+      surahName: 'Al-Qadr',
+      numberInSurah: 5,
+      numberInQuran: 6130,
+      juz: 30,
+      arabicText: 'سَلَامٌ هِيَ حَتَّىٰ مَطْلَعِ الْفَجْرِ',
+      transliteration: 'Salāmun hiya ḥattā maṭla\'il-fajr(i)',
+      translation: 'Sejahteralah (malam itu) sampai terbit fajar.',
+      audioUrl: formatAlafasyAudioUrl(97, 5)
     }
   ],
 
-  // 109. Al-Kafirun (1-6)
-  109: [
+  // 108. Al-Kautsar (3 Ayat)
+  108: [
     {
-      surahNumber: 109,
-      surahName: 'Al-Kafirun',
+      surahNumber: 108,
+      surahName: 'Al-Kautsar',
       numberInSurah: 1,
-      numberInQuran: 6208,
+      numberInQuran: 6194,
       juz: 30,
-      arabicText: 'قُلْ يَا أَيُّهَا الْكَافِرُونَ',
-      transliteration: 'Qul yā ayyuhal-kāfirūn(a)',
-      translation: 'Katakanlah (Muhammad), "Wahai orang-orang kafir!',
-      audioUrl: formatAlafasyAudioUrl(109, 1),
-      words: [
-        { id: 1, arabic: 'قُلْ', transliteration: 'qul', meaningId: 'Katakanlah' },
-        { id: 2, arabic: 'يَا أَيُّهَا', transliteration: 'yā ayyuhā', meaningId: 'Wahai' },
-        { id: 3, arabic: 'الْكَافِرُونَ', transliteration: 'al-kāfirūn', meaningId: 'orang-orang kafir' }
-      ]
+      arabicText: 'إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ',
+      transliteration: 'Innā a\'ṭainākal-kauṡar(a)',
+      translation: 'Sungguh, Kami telah memberimu (Muhammad) nikmat yang banyak.',
+      audioUrl: formatAlafasyAudioUrl(108, 1)
     },
     {
-      surahNumber: 109,
-      surahName: 'Al-Kafirun',
+      surahNumber: 108,
+      surahName: 'Al-Kautsar',
       numberInSurah: 2,
-      numberInQuran: 6209,
+      numberInQuran: 6195,
       juz: 30,
-      arabicText: 'لَا أَعْبُدُ مَا تَعْبُدُونَ',
-      transliteration: 'Lā a\'budu mā ta\'budūn(a)',
-      translation: 'Aku tidak akan menyembah apa yang kamu sembah,',
-      audioUrl: formatAlafasyAudioUrl(109, 2),
-      words: [
-        { id: 1, arabic: 'لَا أَعْبُدُ', transliteration: 'lā a\'budu', meaningId: 'aku tidak menyembah' },
-        { id: 2, arabic: 'مَا تَعْبُدُونَ', transliteration: 'mā ta\'budūn', meaningId: 'apa yang kalian sembah' }
-      ]
+      arabicText: 'فَصَلِّ لِرَبِّكَ وَانْحَرْ',
+      transliteration: 'Faṣalli lirabbika wanḥar',
+      translation: 'Maka laksanakanlah salat karena Tuhanmu, dan berkurbanlah.',
+      audioUrl: formatAlafasyAudioUrl(108, 2)
     },
     {
-      surahNumber: 109,
-      surahName: 'Al-Kafirun',
-      numberInSurah: 6,
-      numberInQuran: 6213,
+      surahNumber: 108,
+      surahName: 'Al-Kautsar',
+      numberInSurah: 3,
+      numberInQuran: 6196,
       juz: 30,
-      arabicText: 'لَكُمْ دِينُكُمْ وَلِيَ دِينِ',
-      transliteration: 'Lakum dīnukum wa liya dīn(i)',
-      translation: 'Untukmu agamamu, dan untukku agamaku."',
-      audioUrl: formatAlafasyAudioUrl(109, 6),
-      words: [
-        { id: 1, arabic: 'لَكُمْ دِينُكُمْ', transliteration: 'lakum dīnukum', meaningId: 'untukmu agamamu' },
-        { id: 2, arabic: 'وَلِيَ دِينِ', transliteration: 'wa liya dīn', meaningId: 'dan untukku agamaku' }
-      ]
+      arabicText: 'إِنَّ شَانِئَكَ هُوَ الْأَبْتَرُ',
+      transliteration: 'Inna syāni\'aka huwal-abtar(u)',
+      translation: 'Sungguh, orang-orang yang membencimu dialah yang terputus (dari rahmat Allah).',
+      audioUrl: formatAlafasyAudioUrl(108, 3)
     }
   ],
 
-  // 112. Al-Ikhlas (1-4)
+  // 112. Al-Ikhlas (4 Ayat)
   112: [
     {
       surahNumber: 112,
@@ -566,13 +605,8 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       juz: 30,
       arabicText: 'قُلْ هُوَ اللَّهُ أَحَدٌ',
       transliteration: 'Qul huwallāhu aḥad(un)',
-      translation: 'Katakanlah (Muhammad), "Dialah Allah, Yang Maha Esa.',
-      audioUrl: formatAlafasyAudioUrl(112, 1),
-      words: [
-        { id: 1, arabic: 'قُلْ', transliteration: 'qul', meaningId: 'Katakanlah' },
-        { id: 2, arabic: 'هُوَ اللَّهُ', transliteration: 'huwallāh', meaningId: 'Dialah Allah' },
-        { id: 3, arabic: 'أَحَدٌ', transliteration: 'aḥad', meaningId: 'Yang Maha Esa' }
-      ]
+      translation: 'Katakanlah (Muhammad), "Dialah Allah, Yang Maha Esa."',
+      audioUrl: formatAlafasyAudioUrl(112, 1)
     },
     {
       surahNumber: 112,
@@ -583,11 +617,7 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'اللَّهُ الصَّمَدُ',
       transliteration: 'Allāhuṣ-ṣamad(u)',
       translation: 'Allah tempat meminta segala sesuatu.',
-      audioUrl: formatAlafasyAudioUrl(112, 2),
-      words: [
-        { id: 1, arabic: 'اللَّهُ', transliteration: 'Allāh', meaningId: 'Allah' },
-        { id: 2, arabic: 'الصَّمَدُ', transliteration: 'aṣ-ṣamad', meaningId: 'Tempat Bergantung' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(112, 2)
     },
     {
       surahNumber: 112,
@@ -598,11 +628,7 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'لَمْ يَلِدْ وَلَمْ يُولَدْ',
       transliteration: 'Lam yalid wa lam yūlad',
       translation: '(Allah) tidak beranak dan tidak pula diperanakkan,',
-      audioUrl: formatAlafasyAudioUrl(112, 3),
-      words: [
-        { id: 1, arabic: 'لَمْ يَلِدْ', transliteration: 'lam yalid', meaningId: 'tidak beranak' },
-        { id: 2, arabic: 'وَلَمْ يُولَدْ', transliteration: 'wa lam yūlad', meaningId: 'dan tidak diperanakkan' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(112, 3)
     },
     {
       surahNumber: 112,
@@ -612,17 +638,12 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       juz: 30,
       arabicText: 'وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ',
       transliteration: 'Wa lam yakul lahū kufuwan aḥad(un)',
-      translation: 'dan tidak ada sesuatu yang setara dengan Dia."',
-      audioUrl: formatAlafasyAudioUrl(112, 4),
-      words: [
-        { id: 1, arabic: 'وَلَمْ يَكُن لَّهُ', transliteration: 'wa lam yakul lahū', meaningId: 'dan tidak ada bagi-Nya' },
-        { id: 2, arabic: 'كُفُوًا', transliteration: 'kufuwan', meaningId: 'yang setara' },
-        { id: 3, arabic: 'أَحَدٌ', transliteration: 'aḥad', meaningId: 'seorangpun' }
-      ]
+      translation: 'dan tidak ada sesuatu yang setara dengan Dia.',
+      audioUrl: formatAlafasyAudioUrl(112, 4)
     }
   ],
 
-  // 113. Al-Falaq (1-5)
+  // 113. Al-Falaq (5 Ayat)
   113: [
     {
       surahNumber: 113,
@@ -633,12 +654,7 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ',
       transliteration: 'Qul a\'ūżu birabbil-falaq(i)',
       translation: 'Katakanlah, "Aku berlindung kepada Tuhan yang menguasai subuh (fajar),',
-      audioUrl: formatAlafasyAudioUrl(113, 1),
-      words: [
-        { id: 1, arabic: 'قُلْ', transliteration: 'qul', meaningId: 'Katakanlah' },
-        { id: 2, arabic: 'أَعُوذُ', transliteration: 'a\'ūżu', meaningId: 'aku berlindung' },
-        { id: 3, arabic: 'بِرَبِّ الْفَلَقِ', transliteration: 'birabbil-falaq', meaningId: 'kepada Tuhan subuh' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(113, 1)
     },
     {
       surahNumber: 113,
@@ -649,15 +665,44 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'مِن شَرِّ مَا خَلَقَ',
       transliteration: 'Min syarri mā khalaq(a)',
       translation: 'dari kejahatan (makhluk yang) Dia ciptakan,',
-      audioUrl: formatAlafasyAudioUrl(113, 2),
-      words: [
-        { id: 1, arabic: 'مِن شَرِّ', transliteration: 'min syarri', meaningId: 'dari kejahatan' },
-        { id: 2, arabic: 'مَا خَلَقَ', transliteration: 'mā khalaq', meaningId: 'apa yang Dia ciptakan' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(113, 2)
+    },
+    {
+      surahNumber: 113,
+      surahName: 'Al-Falaq',
+      numberInSurah: 3,
+      numberInQuran: 6228,
+      juz: 30,
+      arabicText: 'وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ',
+      transliteration: 'Wa min syarri gāsiqin iżā waqab(a)',
+      translation: 'dan dari kejahatan malam apabila telah gelap gulita,',
+      audioUrl: formatAlafasyAudioUrl(113, 3)
+    },
+    {
+      surahNumber: 113,
+      surahName: 'Al-Falaq',
+      numberInSurah: 4,
+      numberInQuran: 6229,
+      juz: 30,
+      arabicText: 'وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ',
+      transliteration: 'Wa min syarrin-naffāṡāti fil-\'uqad(i)',
+      translation: 'dan dari kejahatan (perempuan-perempuan) penyihir yang meniup pada buhul-buhul (talinya),',
+      audioUrl: formatAlafasyAudioUrl(113, 4)
+    },
+    {
+      surahNumber: 113,
+      surahName: 'Al-Falaq',
+      numberInSurah: 5,
+      numberInQuran: 6230,
+      juz: 30,
+      arabicText: 'وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ',
+      transliteration: 'Wa min syarri ḥāsidin iżā ḥasad(a)',
+      translation: 'dan dari kejahatan orang yang dengki apabila dia dengki."',
+      audioUrl: formatAlafasyAudioUrl(113, 5)
     }
   ],
 
-  // 114. An-Nas (1-6)
+  // 114. An-Nas (6 Ayat)
   114: [
     {
       surahNumber: 114,
@@ -668,12 +713,7 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'قُلْ أَعُوذُ بِرَبِّ النَّاسِ',
       transliteration: 'Qul a\'ūżu birabbin-nās(i)',
       translation: 'Katakanlah, "Aku berlindung kepada Tuhannya manusia,',
-      audioUrl: formatAlafasyAudioUrl(114, 1),
-      words: [
-        { id: 1, arabic: 'قُلْ', transliteration: 'qul', meaningId: 'Katakanlah' },
-        { id: 2, arabic: 'أَعُوذُ', transliteration: 'a\'ūżu', meaningId: 'aku berlindung' },
-        { id: 3, arabic: 'بِرَبِّ النَّاسِ', transliteration: 'birabbin-nās', meaningId: 'kepada Tuhan manusia' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(114, 1)
     },
     {
       surahNumber: 114,
@@ -684,11 +724,7 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       arabicText: 'مَلِكِ النَّاسِ',
       transliteration: 'Malikin-nās(i)',
       translation: 'Raja manusia,',
-      audioUrl: formatAlafasyAudioUrl(114, 2),
-      words: [
-        { id: 1, arabic: 'مَلِكِ', transliteration: 'maliki', meaningId: 'Raja' },
-        { id: 2, arabic: 'النَّاسِ', transliteration: 'an-nās', meaningId: 'manusia' }
-      ]
+      audioUrl: formatAlafasyAudioUrl(114, 2)
     },
     {
       surahNumber: 114,
@@ -698,12 +734,41 @@ export const JUZ_30_AYATS: Record<number, Ayat[]> = {
       juz: 30,
       arabicText: 'إِلَٰهِ النَّاسِ',
       transliteration: 'Ilāhin-nās(i)',
-      translation: 'Sembahan manusia,',
-      audioUrl: formatAlafasyAudioUrl(114, 3),
-      words: [
-        { id: 1, arabic: 'إِلَٰهِ', transliteration: 'ilāhi', meaningId: 'Sembahan' },
-        { id: 2, arabic: 'النَّاسِ', transliteration: 'an-nās', meaningId: 'manusia' }
-      ]
+      translation: 'sembahan manusia,',
+      audioUrl: formatAlafasyAudioUrl(114, 3)
+    },
+    {
+      surahNumber: 114,
+      surahName: 'An-Nas',
+      numberInSurah: 4,
+      numberInQuran: 6234,
+      juz: 30,
+      arabicText: 'مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ',
+      transliteration: 'Min syarril-waswāsil-khannās(i)',
+      translation: 'dari kejahatan (bisikan) setan yang bersembunyi,',
+      audioUrl: formatAlafasyAudioUrl(114, 4)
+    },
+    {
+      surahNumber: 114,
+      surahName: 'An-Nas',
+      numberInSurah: 5,
+      numberInQuran: 6235,
+      juz: 30,
+      arabicText: 'الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ',
+      transliteration: 'Allażī yuwaswisu fī ṣudūrin-nās(i)',
+      translation: 'yang membisikkan (kejahatan) ke dalam dada manusia,',
+      audioUrl: formatAlafasyAudioUrl(114, 5)
+    },
+    {
+      surahNumber: 114,
+      surahName: 'An-Nas',
+      numberInSurah: 6,
+      numberInQuran: 6236,
+      juz: 30,
+      arabicText: 'مِنَ الْجِنَّةِ وَالنَّاسِ',
+      transliteration: 'Minal-jinnati wan-nās(i)',
+      translation: 'dari (golongan) jin dan manusia."',
+      audioUrl: formatAlafasyAudioUrl(114, 6)
     }
   ]
 };

@@ -47,13 +47,14 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
   const [mode, setMode] = useState<ChallengeMode>('ai');
   const [inputType, setInputType] = useState<AnswerInputType>('quiz');
   const [juzFilter, setJuzFilter] = useState<29 | 30 | 'all'>('all');
+  const [difficulty, setDifficulty] = useState<'hardcore' | 'medium' | 'easy'>('hardcore');
   const [speechLanguage, setSpeechLanguage] = useState<'ar-SA' | 'id-ID'>('id-ID');
   
   const [challengeData, setChallengeData] = useState<{
     prompt: Ayat;
     next: Ayat;
     options: Ayat[];
-  }>(getRandomJuz29And30ChallengeWithOptions('all'));
+  }>(getRandomJuz29And30ChallengeWithOptions('all', 'hardcore'));
 
   const [gameScore, setGameScore] = useState(0);
   const [comboStreak, setComboStreak] = useState(0);
@@ -99,7 +100,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
     return () => clearInterval(interval);
   }, [mode, isTimerRunning, timerSeconds, gameScore]);
 
-  const loadChallenge = (filter = juzFilter) => {
+  const loadChallenge = (filter = juzFilter, diff = difficulty) => {
     audioPlayer.stop();
     speechEngine.stopListening();
     audioRecorder.stopRecording();
@@ -111,7 +112,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
     setTextAnswer('');
     setSelectedOption(null);
 
-    const newChallenge = getRandomJuz29And30ChallengeWithOptions(filter);
+    const newChallenge = getRandomJuz29And30ChallengeWithOptions(filter, diff);
     setChallengeData(newChallenge);
 
     // Auto play audio prompt Syekh Mishary
@@ -320,81 +321,121 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
       </NeobrutalCard>
 
       {/* FILTER & INPUT MODE SELECTOR TABS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Scope Juz */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* 1. Scope Juz */}
         <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
           <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
             <BookOpen className="w-3.5 h-3.5 text-[#0B4627]" /> CAKUPAN JUZ:
           </span>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1.5">
             <button
-              onClick={() => setJuzFilter('all')}
-              className={`py-2 text-xs font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              onClick={() => { setJuzFilter('all'); loadChallenge('all', difficulty); }}
+              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
                 juzFilter === 'all'
                   ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000] font-black'
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              Juz 29 & 30
+              29 & 30
             </button>
             <button
-              onClick={() => setJuzFilter(29)}
-              className={`py-2 text-xs font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              onClick={() => { setJuzFilter(29); loadChallenge(29, difficulty); }}
+              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
                 juzFilter === 29
                   ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000] font-black'
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              Khusus Juz 29
+              Juz 29
             </button>
             <button
-              onClick={() => setJuzFilter(30)}
-              className={`py-2 text-xs font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              onClick={() => { setJuzFilter(30); loadChallenge(30, difficulty); }}
+              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
                 juzFilter === 30
                   ? 'bg-[#10B981] text-black shadow-[2px_2px_0px_0px_#000] font-black'
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              Khusus Juz 30
+              Juz 30
             </button>
           </div>
         </div>
 
-        {/* Input Method Selector (Pilihan Ganda / Suara Mic / Ketik) */}
+        {/* 2. Tingkat Kesulitan (Sulit / Pertengahan Surat vs Sedang vs Mudah) */}
+        <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
+          <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
+            <Flame className="w-3.5 h-3.5 text-red-500 fill-red-500" /> TINGKAT KESULITAN:
+          </span>
+          <div className="grid grid-cols-3 gap-1.5">
+            <button
+              onClick={() => { setDifficulty('hardcore'); loadChallenge(juzFilter, 'hardcore'); }}
+              className={`py-2 text-[11px] font-black rounded-xl border-2 border-black transition-all cursor-pointer ${
+                difficulty === 'hardcore'
+                  ? 'bg-[#EF4444] text-white shadow-[2px_2px_0px_0px_#000]'
+                  : 'bg-gray-100 text-gray-800 hover:bg-red-50'
+              }`}
+              title="Menguji ayat pertengahan surat (Ayat 15, 20, 29, 34, 40, dll.)"
+            >
+              🔥 Sulit (Tengah)
+            </button>
+            <button
+              onClick={() => { setDifficulty('medium'); loadChallenge(juzFilter, 'medium'); }}
+              className={`py-2 text-[11px] font-black rounded-xl border-2 border-black transition-all cursor-pointer ${
+                difficulty === 'medium'
+                  ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]'
+                  : 'bg-gray-100 text-gray-800 hover:bg-amber-50'
+              }`}
+            >
+              ⚡ Sedang
+            </button>
+            <button
+              onClick={() => { setDifficulty('easy'); loadChallenge(juzFilter, 'easy'); }}
+              className={`py-2 text-[11px] font-black rounded-xl border-2 border-black transition-all cursor-pointer ${
+                difficulty === 'easy'
+                  ? 'bg-[#10B981] text-black shadow-[2px_2px_0px_0px_#000]'
+                  : 'bg-gray-100 text-gray-800 hover:bg-emerald-50'
+              }`}
+            >
+              🌱 Mudah
+            </button>
+          </div>
+        </div>
+
+        {/* 3. Input Method Selector (Pilihan Ganda / Suara Mic / Ketik) */}
         <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
           <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
             <Zap className="w-3.5 h-3.5 text-[#F59E0B]" /> METODE MENJAWAB:
           </span>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1.5">
             <button
               onClick={() => setInputType('quiz')}
-              className={`py-2 text-xs font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
                 inputType === 'quiz'
                   ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000] font-black'
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              🎯 Pilihan Ganda
+              🎯 Pilihan
             </button>
             <button
               onClick={() => setInputType('voice')}
-              className={`py-2 text-xs font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
                 inputType === 'voice'
                   ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000] font-black'
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              🎙️ Rekam Suara
+              🎙️ Suara
             </button>
             <button
               onClick={() => setInputType('text')}
-              className={`py-2 text-xs font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
                 inputType === 'text'
                   ? 'bg-[#10B981] text-black shadow-[2px_2px_0px_0px_#000] font-black'
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              ✍️ Ketik Jawaban
+              ✍️ Ketik
             </button>
           </div>
         </div>
@@ -404,10 +445,15 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
       <NeobrutalCard className="p-6 sm:p-8 space-y-6">
         {/* Info Header */}
         <div className="flex items-center justify-between border-b-2 border-black pb-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 bg-[#0B4627] text-white text-xs font-black rounded-lg border border-black">
               Juz {challengeData.prompt.juz}
             </span>
+            {difficulty === 'hardcore' && (
+              <span className="px-2.5 py-0.5 bg-[#EF4444] text-white text-[10px] font-black rounded-lg border border-black uppercase flex items-center gap-1 animate-pulse">
+                <Flame className="w-3 h-3 fill-white" /> Sulit (Pertengahan Surat)
+              </span>
+            )}
             <h3 className="text-lg font-black text-black">
               QS. {challengeData.prompt.surahName} (Ayat {challengeData.prompt.numberInSurah})
             </h3>

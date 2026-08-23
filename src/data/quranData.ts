@@ -762,61 +762,111 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
 }
 
 // Special Randomizer for Sambung Ayat & Simai (Strictly Juz 29 & Juz 30)
-export function getRandomJuz29And30Ayat(filter: 29 | 30 | 'all' = 'all'): { prompt: Ayat; next: Ayat } {
+// Supporting 'hardcore' (pertengahan surah seperti ayat 15, 20, 29, 34, 40), 'medium', and 'easy'
+export function getRandomJuz29And30Ayat(
+  filter: 29 | 30 | 'all' = 'all',
+  difficulty: 'hardcore' | 'medium' | 'easy' = 'hardcore'
+): { prompt: Ayat; next: Ayat } {
   let eligibleSurahIds: number[] = [];
 
   if (filter === 29) {
-    eligibleSurahIds = [67, 68, 69, 71, 73, 74, 75, 76, 77];
+    eligibleSurahIds = [67, 68, 69, 70, 71, 74, 75, 77];
   } else if (filter === 30) {
-    eligibleSurahIds = [78, 79, 80, 81, 87, 89, 91, 93, 94, 95, 96, 97, 103, 108, 109, 112, 113, 114];
+    eligibleSurahIds = [78, 79, 80, 83, 89, 97, 108, 112, 113, 114];
   } else {
     // Both Juz 29 & Juz 30
     eligibleSurahIds = [
-      67, 68, 69, 71, 73, 74, 75, 76, 77, // Juz 29
-      78, 79, 80, 81, 87, 89, 91, 93, 94, 95, 96, 97, 103, 108, 109, 112, 113, 114 // Juz 30
+      67, 68, 69, 70, 71, 74, 75, 77, // Juz 29
+      78, 79, 80, 83, 89, 97, 108, 112, 113, 114 // Juz 30
     ];
   }
 
-  const randomSurahId = eligibleSurahIds[Math.floor(Math.random() * eligibleSurahIds.length)];
-  const surahAyats = CORE_AYATS_DB[randomSurahId] || CORE_AYATS_DB[67];
+  // Collect all eligible consecutive pairs
+  const eligiblePairs: { prompt: Ayat; next: Ayat; isMiddle: boolean }[] = [];
 
-  // Pick an ayat that has a next continuation
-  if (surahAyats.length > 1) {
-    const promptIdx = Math.floor(Math.random() * (surahAyats.length - 1));
-    return {
-      prompt: surahAyats[promptIdx],
-      next: surahAyats[promptIdx + 1]
-    };
+  eligibleSurahIds.forEach((sId) => {
+    const ayats = CORE_AYATS_DB[sId] || [];
+    for (let i = 0; i < ayats.length - 1; i++) {
+      const p = ayats[i];
+      const n = ayats[i + 1];
+      // Consecutive check
+      if (n.numberInSurah === p.numberInSurah + 1) {
+        const isMiddle = p.numberInSurah >= 10;
+        eligiblePairs.push({ prompt: p, next: n, isMiddle });
+      }
+    }
+  });
+
+  if (eligiblePairs.length === 0) {
+    const fallback = CORE_AYATS_DB[67];
+    return { prompt: fallback[0], next: fallback[1] };
   }
 
+  // Filter based on requested difficulty
+  let filteredPairs = eligiblePairs;
+  if (difficulty === 'hardcore') {
+    // Strictly prioritize middle/deep verses (Ayat >= 10 e.g. 13, 17, 20, 24, 29, 34, 40)
+    const middleOnly = eligiblePairs.filter((p) => p.isMiddle);
+    if (middleOnly.length > 0) {
+      filteredPairs = middleOnly;
+    }
+  } else if (difficulty === 'easy') {
+    // Early verses only (Ayat 1-5)
+    const earlyOnly = eligiblePairs.filter((p) => p.prompt.numberInSurah <= 5);
+    if (earlyOnly.length > 0) {
+      filteredPairs = earlyOnly;
+    }
+  }
+
+  const selected = filteredPairs[Math.floor(Math.random() * filteredPairs.length)];
   return {
-    prompt: surahAyats[0],
-    next: surahAyats[0]
+    prompt: selected.prompt,
+    next: selected.next
   };
 }
 
-// Challenge generator with 4 Multiple Choice Options (1 Correct + 3 Distractors)
-export function getRandomJuz29And30ChallengeWithOptions(filter: 29 | 30 | 'all' = 'all'): {
+// Challenge generator with 4 Multiple Choice Options (1 Correct + 3 Smart Distractors)
+export function getRandomJuz29And30ChallengeWithOptions(
+  filter: 29 | 30 | 'all' = 'all',
+  difficulty: 'hardcore' | 'medium' | 'easy' = 'hardcore'
+): {
   prompt: Ayat;
   next: Ayat;
   options: Ayat[];
 } {
-  const base = getRandomJuz29And30Ayat(filter);
+  const base = getRandomJuz29And30Ayat(filter, difficulty);
   const correct = base.next;
 
   // Gather all other ayats as distractors
-  const allCandidates: Ayat[] = [];
+  const sameSurahCandidates: Ayat[] = [];
+  const otherCandidates: Ayat[] = [];
+
   Object.values(CORE_AYATS_DB).forEach((ayats) => {
     ayats.forEach((a) => {
       if (a.arabicText !== correct.arabicText && a.arabicText !== base.prompt.arabicText) {
-        allCandidates.push(a);
+        if (a.surahNumber === correct.surahNumber) {
+          sameSurahCandidates.push(a);
+        } else {
+          otherCandidates.push(a);
+        }
       }
     });
   });
 
-  // Shuffle distractors and pick 3
-  const shuffledCandidates = [...allCandidates].sort(() => 0.5 - Math.random());
-  const distractors = shuffledCandidates.slice(0, 3);
+  // Pick tricky distractors (prioritize same surah or same difficulty level)
+  const distractors: Ayat[] = [];
+  const shuffledSame = [...sameSurahCandidates].sort(() => 0.5 - Math.random());
+  const shuffledOther = [...otherCandidates].sort(() => 0.5 - Math.random());
+
+  while (distractors.length < 3) {
+    if (shuffledSame.length > 0 && Math.random() < 0.6) {
+      distractors.push(shuffledSame.pop()!);
+    } else if (shuffledOther.length > 0) {
+      distractors.push(shuffledOther.pop()!);
+    } else {
+      break;
+    }
+  }
 
   // Combine and shuffle 4 options
   const options = [correct, ...distractors].sort(() => 0.5 - Math.random());
