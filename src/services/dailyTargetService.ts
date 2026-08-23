@@ -1,95 +1,234 @@
 // ==============================================================================
-// DAILY QURAN TARGET & KHATAM ROUTINE SERVICE
-// Target Tilawah & Muroja'ah Harian dengan Gamifikasi, Streak & XP Bonus
+// 1-YEAR (365 DAYS) QURAN KHATAM & TAHFIDZ ROADMAP ENGINE
+// Kurikulum Target Harian Acak Terstruktur 1 Tahun Penuh (365 Hari)
 // ==============================================================================
 
-import { SURAH_LIST, CORE_AYATS_DB } from '../data/quranData';
-import { addXpAndCheckStreak, getLocalProfile } from './offlineStorage';
+import { SURAH_LIST } from '../data/quranData';
+import { addXpAndCheckStreak } from './offlineStorage';
 import { UserProfile } from '../types';
 
-export interface DailyQuranTarget {
-  date: string; // YYYY-MM-DD
+export interface RoadmapDayItem {
+  dayNumber: number; // 1 to 365
+  date: string;      // YYYY-MM-DD
   surahNumber: number;
   surahName: string;
   surahArabic: string;
+  ayahStart: number;
+  ayahEnd: number;
   ayahCount: number;
   juz: number;
-  completedAyahNumbers: number[];
+  isReviewDay: boolean;
   isCompleted: boolean;
+}
+
+export interface DailyQuranTarget extends RoadmapDayItem {
+  completedAyahNumbers: number[];
   xpReward: number;
   rewardClaimed: boolean;
 }
 
-const STORAGE_KEY = 'quranverse_daily_target_v1';
+export interface AnnualProgress {
+  totalDays: number;
+  completedDaysCount: number;
+  currentDayNumber: number;
+  completionPercentage: number;
+  startDate: string;
+  endDate: string;
+}
 
-// Recommended Daily Target Rotation (Juz 29 & 30 + Surat Pilihan)
-const RECOMMENDED_DAILY_SURAHS = [
-  67, // Al-Mulk (Day 1)
-  78, // An-Naba' (Day 2)
-  56, // Al-Waqi'ah (Day 3)
-  36, // Ya-Sin (Day 4)
-  55, // Ar-Rahman (Day 5)
-  18, // Al-Kahf (Day 6)
-  71, // Nuh (Day 7)
-  73, // Al-Muzzammil (Day 8)
-  75, // Al-Qiyamah (Day 9)
-  79, // An-Nazi'at (Day 10)
-  87, // Al-A'la (Day 11)
-  93, // Ad-Duha (Day 12)
-  94, // Asy-Syarh (Day 13)
-  97, // Al-Qadr (Day 14)
-  112 // Al-Ikhlas & Mu'awwidzatain (Day 15)
-];
+const STORAGE_KEYS = {
+  DAILY_TARGET: 'quranverse_daily_target_365_v2',
+  COMPLETED_DAYS: 'quranverse_completed_days_365_v2',
+  START_DATE: 'quranverse_roadmap_start_date_v2'
+};
+
+// Default Start Date: August 23, 2026 (Today)
+export const DEFAULT_START_DATE = '2026-08-23';
+
+/**
+ * Deterministic Pseudo-Random Generator with Seed
+ */
+function seededRandom(seed: number): () => number {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+/**
+ * Generates the complete 365-Day curriculum spanning 1 full year
+ */
+export function generate365DayCurriculum(startDateStr = DEFAULT_START_DATE): RoadmapDayItem[] {
+  const startDate = new Date(startDateStr);
+  const rng = seededRandom(20260823); // Consistent reproducible seed
+
+  // 1. Build discrete study blocks covering all 114 Surahs
+  const rawUnits: {
+    surahNumber: number;
+    surahName: string;
+    surahArabic: string;
+    ayahStart: number;
+    ayahEnd: number;
+    ayahCount: number;
+    juz: number;
+    isReviewDay: boolean;
+  }[] = [];
+
+  SURAH_LIST.forEach((s) => {
+    const totalAyahs = s.ayahCount;
+    // Chunk long surahs into ~15-25 ayah blocks
+    if (totalAyahs <= 20) {
+      rawUnits.push({
+        surahNumber: s.number,
+        surahName: s.latinName,
+        surahArabic: s.name,
+        ayahStart: 1,
+        ayahEnd: totalAyahs,
+        ayahCount: totalAyahs,
+        juz: s.juzStart,
+        isReviewDay: false
+      });
+    } else {
+      const chunkSize = totalAyahs > 100 ? 25 : 18;
+      for (let start = 1; start <= totalAyahs; start += chunkSize) {
+        const end = Math.min(totalAyahs, start + chunkSize - 1);
+        rawUnits.push({
+          surahNumber: s.number,
+          surahName: s.latinName,
+          surahArabic: s.name,
+          ayahStart: start,
+          ayahEnd: end,
+          ayahCount: end - start + 1,
+          juz: s.juzStart,
+          isReviewDay: false
+        });
+      }
+    }
+  });
+
+  // 2. Add Spaced Repetition Review Units (Tikrar Akbar)
+  const reviewSurahs = [67, 78, 36, 55, 56, 18, 71, 73, 75, 112];
+  while (rawUnits.length < 365) {
+    const revSurahNo = reviewSurahs[Math.floor(rng() * reviewSurahs.length)];
+    const meta = SURAH_LIST.find((s) => s.number === revSurahNo) || SURAH_LIST[66];
+    rawUnits.push({
+      surahNumber: meta.number,
+      surahName: `${meta.latinName} (Tikrar Muroja'ah)`,
+      surahArabic: meta.name,
+      ayahStart: 1,
+      ayahEnd: meta.ayahCount,
+      ayahCount: meta.ayahCount,
+      juz: meta.juzStart,
+      isReviewDay: true
+    });
+  }
+
+  // 3. Deterministically Shuffle with Seed (Randomized 1-Year Curriculum)
+  const shuffled = [...rawUnits].slice(0, 365);
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  // Ensure Day 1 starts with a prominent Surah (Al-Mulk)
+  const alMulkIdx = shuffled.findIndex((u) => u.surahNumber === 67);
+  if (alMulkIdx > 0) {
+    [shuffled[0], shuffled[alMulkIdx]] = [shuffled[alMulkIdx], shuffled[0]];
+  }
+
+  // 4. Map to Calendar Dates & Check Stored Progress
+  const completedDaysMap = getCompletedDaysMap();
+
+  return shuffled.map((unit, idx) => {
+    const dayDate = new Date(startDate);
+    dayDate.setDate(startDate.getDate() + idx);
+    const dateStr = dayDate.toISOString().split('T')[0];
+
+    return {
+      dayNumber: idx + 1,
+      date: dateStr,
+      surahNumber: unit.surahNumber,
+      surahName: unit.surahName,
+      surahArabic: unit.surahArabic,
+      ayahStart: unit.ayahStart,
+      ayahEnd: unit.ayahEnd,
+      ayahCount: unit.ayahCount,
+      juz: unit.juz,
+      isReviewDay: unit.isReviewDay,
+      isCompleted: !!completedDaysMap[dateStr]
+    };
+  });
+}
+
+export function getCompletedDaysMap(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.COMPLETED_DAYS);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveCompletedDaysMap(map: Record<string, boolean>): void {
+  try {
+    localStorage.setItem(STORAGE_KEYS.COMPLETED_DAYS, JSON.stringify(map));
+  } catch (e) {
+    console.warn('Error saving completed days:', e);
+  }
+}
 
 export function getTodayDateString(): string {
   return new Date().toISOString().split('T')[0];
 }
 
-export function getDefaultTargetForToday(): DailyQuranTarget {
-  const today = getTodayDateString();
-  const dayOfYear = Math.floor(
-    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
-  );
-  const surahNo = RECOMMENDED_DAILY_SURAHS[dayOfYear % RECOMMENDED_DAILY_SURAHS.length] || 67;
-  const meta = SURAH_LIST.find((s) => s.number === surahNo) || SURAH_LIST[66];
-
-  return {
-    date: today,
-    surahNumber: meta.number,
-    surahName: meta.latinName,
-    surahArabic: meta.name,
-    ayahCount: meta.ayahCount,
-    juz: meta.juzStart,
-    completedAyahNumbers: [],
-    isCompleted: false,
-    xpReward: 150,
-    rewardClaimed: false
-  };
+/**
+ * Calculates current Day index (1 to 365) based on start date
+ */
+export function getCurrentDayNumber(startDateStr = DEFAULT_START_DATE): number {
+  const start = new Date(startDateStr).getTime();
+  const now = new Date(getTodayDateString()).getTime();
+  const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+  return Math.max(1, Math.min(365, diffDays + 1));
 }
 
+/**
+ * Retrieves the specific daily target for today within the 365-day plan
+ */
 export function getDailyTarget(): DailyQuranTarget {
-  const today = getTodayDateString();
+  const todayStr = getTodayDateString();
+  const curriculum = generate365DayCurriculum();
+  const currentDayNum = getCurrentDayNumber();
+
+  // Find target for today's date or by day number
+  const todayUnit = curriculum.find((c) => c.date === todayStr) || curriculum[currentDayNum - 1] || curriculum[0];
+
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEYS.DAILY_TARGET);
     if (raw) {
       const parsed: DailyQuranTarget = JSON.parse(raw);
-      if (parsed.date === today) {
+      if (parsed.date === todayStr) {
         return parsed;
       }
     }
-  } catch (e) {
-    console.warn('Error reading daily target:', e);
-  }
+  } catch {}
 
-  // Generate fresh target for today
-  const fresh = getDefaultTargetForToday();
-  saveDailyTarget(fresh);
-  return fresh;
+  const newTarget: DailyQuranTarget = {
+    ...todayUnit,
+    completedAyahNumbers: [],
+    isCompleted: todayUnit.isCompleted,
+    xpReward: todayUnit.isReviewDay ? 200 : 150,
+    rewardClaimed: false
+  };
+
+  saveDailyTarget(newTarget);
+  return newTarget;
 }
 
 export function saveDailyTarget(target: DailyQuranTarget): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(target));
+    localStorage.setItem(STORAGE_KEYS.DAILY_TARGET, JSON.stringify(target));
   } catch (e) {
     console.warn('Error saving daily target:', e);
   }
@@ -97,15 +236,20 @@ export function saveDailyTarget(target: DailyQuranTarget): void {
 
 export function setCustomDailyTarget(surahNumber: number): DailyQuranTarget {
   const meta = SURAH_LIST.find((s) => s.number === surahNumber) || SURAH_LIST[0];
-  const today = getTodayDateString();
+  const todayStr = getTodayDateString();
+  const currentDayNum = getCurrentDayNumber();
 
   const newTarget: DailyQuranTarget = {
-    date: today,
+    dayNumber: currentDayNum,
+    date: todayStr,
     surahNumber: meta.number,
     surahName: meta.latinName,
     surahArabic: meta.name,
+    ayahStart: 1,
+    ayahEnd: meta.ayahCount,
     ayahCount: meta.ayahCount,
     juz: meta.juzStart,
+    isReviewDay: false,
     completedAyahNumbers: [],
     isCompleted: false,
     xpReward: 150,
@@ -128,10 +272,15 @@ export function markAyahCompletedInTarget(
       target.completedAyahNumbers.push(ayahNumber);
     }
 
-    // Check if user completed all ayahs of today's target (or at least 5 ayahs for long surahs)
-    const requiredAyahs = Math.min(target.ayahCount, 10);
+    const requiredAyahs = Math.min(target.ayahCount, 5);
     if (target.completedAyahNumbers.length >= requiredAyahs && !target.isCompleted) {
       target.isCompleted = true;
+
+      // Mark in 365-day map
+      const map = getCompletedDaysMap();
+      map[target.date] = true;
+      saveCompletedDaysMap(map);
+
       if (!target.rewardClaimed) {
         target.rewardClaimed = true;
         const updatedProfile = addXpAndCheckStreak(target.xpReward);
@@ -145,6 +294,23 @@ export function markAyahCompletedInTarget(
   }
 
   return target;
+}
+
+export function getAnnualProgress(): AnnualProgress {
+  const map = getCompletedDaysMap();
+  const completedCount = Object.keys(map).length;
+  const currentDay = getCurrentDayNumber();
+  const curriculum = generate365DayCurriculum();
+  const end = curriculum[curriculum.length - 1]?.date || '2027-08-23';
+
+  return {
+    totalDays: 365,
+    completedDaysCount: completedCount,
+    currentDayNumber: currentDay,
+    completionPercentage: Math.round((completedCount / 365) * 100),
+    startDate: DEFAULT_START_DATE,
+    endDate: end
+  };
 }
 
 export function resetDailyTargetProgress(): DailyQuranTarget {

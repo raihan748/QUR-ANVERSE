@@ -8,16 +8,20 @@ import {
   RotateCcw, 
   BookOpen, 
   Settings2,
-  Trophy
+  Trophy,
+  Calendar
 } from 'lucide-react';
 import { NeobrutalCard } from './NeobrutalCard';
 import { 
   DailyQuranTarget, 
   getDailyTarget, 
   setCustomDailyTarget, 
-  resetDailyTargetProgress 
+  resetDailyTargetProgress,
+  getCurrentDayNumber,
+  RoadmapDayItem
 } from '../../services/dailyTargetService';
 import { SURAH_LIST } from '../../data/quranData';
+import { AnnualRoadmapModal } from '../dashboard/AnnualRoadmapModal';
 
 interface DailyTargetWidgetProps {
   onStartTarget?: (target: DailyQuranTarget) => void;
@@ -32,7 +36,9 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
 }) => {
   const [target, setTarget] = useState<DailyQuranTarget>(getDailyTarget());
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isRoadmapOpen, setIsRoadmapOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const currentDayNum = getCurrentDayNumber();
 
   useEffect(() => {
     setTarget(getDailyTarget());
@@ -42,6 +48,14 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
     const updated = setCustomDailyTarget(surahNumber);
     setTarget(updated);
     setIsModalOpen(false);
+    if (onTargetChanged) {
+      onTargetChanged(updated);
+    }
+  };
+
+  const handleSelectFromRoadmap = (day: RoadmapDayItem) => {
+    const updated = setCustomDailyTarget(day.surahNumber);
+    setTarget(updated);
     if (onTargetChanged) {
       onTargetChanged(updated);
     }
@@ -65,13 +79,13 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
         {/* Header Title & Actions */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black shadow-[2px_2px_0px_0px_#000]">
-              <Target className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-2xl bg-[#0B4627] text-[#F59E0B] border-2 border-black flex items-center justify-center font-black text-xs font-mono shadow-[2px_2px_0px_0px_#000]">
+              #{currentDayNum}
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded border border-amber-400">
-                  Target Tilawah & Muroja'ah Hari Ini
+                  Target Hari #{currentDayNum} / 365 Hari
                 </span>
                 {target.isCompleted && (
                   <span className="text-[10px] font-black uppercase text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded border border-emerald-400 flex items-center gap-1">
@@ -85,7 +99,15 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end flex-wrap">
+            <button
+              onClick={() => setIsRoadmapOpen(true)}
+              className="px-2.5 py-1.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Roadmap 365 Hari</span>
+            </button>
+
             <button
               onClick={() => setIsModalOpen(true)}
               className="px-2.5 py-1.5 bg-white hover:bg-amber-100 text-black border-2 border-black rounded-xl text-xs font-extrabold flex items-center gap-1 cursor-pointer"
@@ -129,15 +151,22 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
         <div className="flex items-center justify-between text-[11px] font-bold text-gray-700 pt-1 border-t border-amber-300">
           <span className="flex items-center gap-1 text-amber-900">
             <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
-            Bonus Target: <strong>+{target.xpReward} XP</strong> & Pertahankan Streak 🔥
+            Bonus Target Harian: <strong>+{target.xpReward} XP</strong> & Pertahankan Streak 🔥
           </span>
-          <span className="text-gray-500 text-[10px]">
-            Diperbarui Otomatis Setiap Hari
+          <span className="text-gray-600 text-[10px] font-mono font-bold">
+            Plan: 23 Agu 2026 – 23 Agu 2027 (1 Tahun)
           </span>
         </div>
       </div>
 
-      {/* MODAL GANTI TARGET HARIAN (NON-CLIPPING / FULL RESPONSIVE) */}
+      {/* 📅 MODAL ROADMAP 365 HARI (1 TAHUN KHATAM) */}
+      <AnnualRoadmapModal
+        isOpen={isRoadmapOpen}
+        onClose={() => setIsRoadmapOpen(false)}
+        onSelectTargetDay={handleSelectFromRoadmap}
+      />
+
+      {/* ⚙️ MODAL GANTI TARGET HARIAN */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white border-3 border-black rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-[8px_8px_0px_0px_#000] overflow-hidden">
