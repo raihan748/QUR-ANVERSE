@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Trophy, 
   Flame, 
   Sparkles, 
   ShieldAlert, 
@@ -9,13 +8,11 @@ import {
   Calendar, 
   TrendingUp, 
   Award,
-  Users,
   BookOpen
 } from 'lucide-react';
 import { UserProfile, WeakVerse, AchievementBadge } from '../../types';
 import { getWeakVerses, resolveWeakVerse, getStreakCalendar } from '../../services/offlineStorage';
 import { INITIAL_BADGES } from '../../data/achievementsData';
-import { fetchLeaderboardFromSupabase } from '../../services/supabaseClient';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { audioPlayer } from '../../services/audioPlayerService';
 import { EnterpriseArchitectureInspector } from './EnterpriseArchitectureInspector';
@@ -33,28 +30,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [weakVerses, setWeakVerses] = useState<WeakVerse[]>([]);
   const [streakCalendar, setStreakCalendar] = useState<Record<string, boolean>>({});
   const [badges, setBadges] = useState<AchievementBadge[]>(INITIAL_BADGES);
-  const [leaderboard, setLeaderboard] = useState<UserProfile[]>([]);
 
   useEffect(() => {
     setWeakVerses(getWeakVerses());
     setStreakCalendar(getStreakCalendar());
-    loadLeaderboard();
   }, []);
-
-  const loadLeaderboard = async () => {
-    const cloudBoard = await fetchLeaderboardFromSupabase();
-    if (cloudBoard.length > 0) {
-      setLeaderboard(cloudBoard);
-    } else {
-      // Offline fallback mock data
-      setLeaderboard([
-        { id: '1', fullName: 'Ustadz Ahmad Al-Hafidz', avatarUrl: '', hafidzLevel: 'Hafidz 30 Juz (Master)', totalXp: 12450, streakCount: 45, lastMurojaahDate: '2026-08-22' },
-        { id: '2', fullName: userProfile.fullName + ' (Anda)', avatarUrl: '', hafidzLevel: userProfile.hafidzLevel, totalXp: userProfile.totalXp, streakCount: userProfile.streakCount, lastMurojaahDate: '2026-08-22' },
-        { id: '3', fullName: 'Fatimah Az-Zahra', avatarUrl: '', hafidzLevel: 'Hafidzah Mutqin', totalXp: 4890, streakCount: 18, lastMurojaahDate: '2026-08-22' },
-        { id: '4', fullName: 'Zaid bin Tsabit', avatarUrl: '', hafidzLevel: 'Pejuang Tahfidz', totalXp: 3120, streakCount: 12, lastMurojaahDate: '2026-08-21' },
-      ]);
-    }
-  };
 
   const handleResolveWeak = (v: WeakVerse) => {
     resolveWeakVerse(v.surahNumber, v.ayahNumber);
@@ -207,50 +187,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </NeobrutalCard>
 
-      {/* GLOBAL LEADERBOARD */}
-      <NeobrutalCard variant="white" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
-        <div className="flex items-center justify-between border-b-2 border-dashed border-gray-300 pb-3 mb-4">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-[#0B4627]" />
-            <h3 className="text-base font-extrabold text-black">Papan Peringkat Santri (Leaderboard)</h3>
-          </div>
-          <span className="text-xs font-black text-[#0B4627] bg-[#D1FAE5] px-2 py-0.5 rounded border border-[#0B4627]">
-            Terkoneksi Supabase
-          </span>
-        </div>
 
-        <div className="space-y-2">
-          {leaderboard.map((user, idx) => (
-            <div
-              key={user.id || idx}
-              className={`p-3 rounded-xl border-2 border-black flex items-center justify-between transition-all ${
-                idx === 0
-                  ? 'bg-[#FEF3C7] shadow-[3px_3px_0px_0px_#D97706]'
-                  : 'bg-white shadow-[2px_2px_0px_0px_#111827]'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span
-                  className={`w-7 h-7 rounded-lg border border-black flex items-center justify-center font-black text-xs ${
-                    idx === 0 ? 'bg-[#F59E0B] text-black' : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  #{idx + 1}
-                </span>
-                <div>
-                  <p className="font-extrabold text-xs text-black">{user.fullName}</p>
-                  <p className="text-[10px] text-gray-500">{user.hafidzLevel}</p>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <p className="font-black text-xs text-[#0B4627]">{user.totalXp} XP</p>
-                <p className="text-[10px] text-orange-600 font-bold">🔥 {user.streakCount} Hari</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </NeobrutalCard>
 
       {/* BADGES COLLECTION */}
       <NeobrutalCard variant="white" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
