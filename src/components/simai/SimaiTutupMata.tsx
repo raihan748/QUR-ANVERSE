@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   EyeOff, 
   Volume2, 
@@ -13,15 +13,21 @@ import {
   Award,
   BookOpen,
   Globe,
-  Radio
+  Radio,
+  Zap,
+  Check,
+  Headphones,
+  Edit3
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Ayat, SimaiLevel, UserProfile, EvaluationResult } from '../../types';
-import { getRandomJuz29And30Ayat } from '../../data/quranData';
+import { simaiQueue, ALL_JUZ_29_SURAHS, ALL_JUZ_30_SURAHS } from '../../data/quranData';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { audioPlayer } from '../../services/audioPlayerService';
 import { speechEngine } from '../../services/speechEngine';
+import { audioRecorder } from '../../services/audioRecorderService';
 import { addXpAndCheckStreak } from '../../services/offlineStorage';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface SimaiTutupMataProps {
   userProfile: UserProfile;
@@ -32,31 +38,55 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
   userProfile,
   onProfileUpdated
 }) => {
+  const { language, t } = useLanguage();
   const [level, setLevel] = useState<SimaiLevel>('hafidz');
   const [juzFilter, setJuzFilter] = useState<29 | 30 | 'all'>('all');
-  const [speechLanguage, setSpeechLanguage] = useState<'ar-SA' | 'id-ID'>('ar-SA');
-  const [challengeData, setChallengeData] = useState<{ prompt: Ayat; next: Ayat }>(
-    getRandomJuz29And30Ayat('all')
+  const [speechLanguage, setSpeechLanguage] = useState<'ar-SA' | 'ar-KW' | 'id-ID'>('ar-SA');
+  const [inputTab, setInputTab] = useState<'voice' | 'chips' | 'demo'>('voice');
+  
+  const [challengeData, setChallengeData] = useState<{ prompt: Ayat; next: Ayat }>(() => 
+    simaiQueue.getNextChallenge('all', 'hardcore')
   );
+  
   const [isPlayingPrompt, setIsPlayingPrompt] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [micVolume, setMicVolume] = useState(0);
   const [spokenTranscript, setSpokenTranscript] = useState('');
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
+  
+  // Word chips state
+  const [wordChips, setWordChips] = useState<string[]>([]);
+  const [selectedChips, setSelectedChips] = useState<string[]>([]);
 
   useEffect(() => {
-    handleGenerateChallenge(juzFilter);
-  }, [juzFilter]);
+    handleGenerateChallenge(juzFilter, level);
+  }, [juzFilter, level]);
+
+  const mapLevelToDifficulty = (lvl: SimaiLevel): 'easy' | 'medium' | 'hardcore' => {
+    if (lvl === 'pemula') return 'easy';
+    if (lvl === 'hafidzah') return 'hardcore';
+    return 'medium';
+  };
 
   // Generate new Simai Challenge from Juz 29 & 30
-  const handleGenerateChallenge = async (filter = juzFilter) => {
+  const handleGenerateChallenge = async (filter = juzFilter, currentLvl = level) => {
     audioPlayer.stop();
     speechEngine.stopListening();
+    audioRecorder.stopRecording();
     setIsRecording(false);
+    setMicVolume(0);
     setEvaluation(null);
     setSpokenTranscript('');
+    setSelectedChips([]);
 
-    const newChallenge = getRandomJuz29And30Ayat(filter);
+    const diff = mapLevelToDifficulty(currentLvl);
+    const newChallenge = simaiQueue.getNextChallenge(filter, diff);
     setChallengeData(newChallenge);
+
+    // Setup word chips from target continuation
+    const words = newChallenge.next.arabicText.split(/\s+/).filter(Boolean);
+    const shuffled = [...words].sort(() => 0.5 - Math.random());
+    setWordChips(shuffled);
 
     // Auto play prompt audio
     setIsPlayingPrompt(true);
@@ -73,12 +103,21 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
     });
   };
 
-  // Start Mic Listening for continuation
-  const handleStartContinuation = () => {
+  // Start Mic Listening for continuation with live Decibel meter
+  const handleStartContinuation = async () => {
     audioPlayer.stop();
     setIsPlayingPrompt(false);
     setEvaluation(null);
     setSpokenTranscript('');
+
+    // Start Audio Recorder for decibel VU meter
+    try {
+      await audioRecorder.startRecording((vol) => {
+        setMicVolume(vol);
+      });
+    } catch {
+      // Continue even if audio recorder permissions vary
+    }
 
     speechEngine.setLanguage(speechLanguage);
     const started = speechEngine.startListening({
@@ -86,10 +125,10 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
       onInterimResult: (text) => setSpokenTranscript(text),
       onFinalResult: (text) => setSpokenTranscript(text),
       onError: (err) => {
-        console.warn(err);
+        console.warn('Speech engine:', err);
       },
       onEnd: () => {
-        // stay active until user stops
+        // stay active
       }
     });
 
@@ -99,7 +138,9 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
   // Stop and Evaluate Continuation
   const handleStopAndEvaluate = async () => {
     const finalAccumulated = speechEngine.stopListening();
+    await audioRecorder.stopRecording();
     setIsRecording(false);
+    setMicVolume(0);
 
     const targetAyat = challengeData.next;
     const cleanSpoken = (spokenTranscript || finalAccumulated || '').trim();
@@ -114,11 +155,52 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
       onProfileUpdated(updated);
     } else {
       audioPlayer.playCorrectionPromptSound();
-      // Auto play correct recitation from Syekh Mishary
       setTimeout(() => {
         audioPlayer.playAyat(targetAyat.surahNumber, targetAyat.numberInSurah);
       }, 800);
     }
+  };
+
+  // Chips submission evaluation
+  const handleEvaluateChips = () => {
+    const arrangedText = selectedChips.join(' ');
+    const targetAyat = challengeData.next;
+    const result = speechEngine.evaluateRecitation(arrangedText, targetAyat);
+    setEvaluation(result);
+
+    if (result.isPassed) {
+      audioPlayer.playSuccessChime();
+      confetti({ particleCount: 70, spread: 60 });
+      const updated = addXpAndCheckStreak(200);
+      onProfileUpdated(updated);
+    } else {
+      audioPlayer.playCorrectionPromptSound();
+      setTimeout(() => {
+        audioPlayer.playAyat(targetAyat.surahNumber, targetAyat.numberInSurah);
+      }, 800);
+    }
+  };
+
+  // 1-Click Live Presentation Demo Tester
+  const handleRunPresentationDemo = () => {
+    audioPlayer.stop();
+    setIsPlayingPrompt(false);
+    setIsRecording(false);
+    setMicVolume(0);
+
+    const targetAyat = challengeData.next;
+    const demoSim = speechEngine.simulateDemoRecitation(targetAyat);
+    setSpokenTranscript(targetAyat.arabicText);
+    setEvaluation(demoSim);
+
+    audioPlayer.playSuccessChime();
+    confetti({ particleCount: 90, spread: 70 });
+    const updated = addXpAndCheckStreak(200);
+    onProfileUpdated(updated);
+
+    setTimeout(() => {
+      audioPlayer.playAyat(targetAyat.surahNumber, targetAyat.numberInSurah);
+    }, 500);
   };
 
   return (
@@ -127,17 +209,23 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
       <NeobrutalCard variant="dark" className="p-5 border-3 border-black shadow-[6px_6px_0px_0px_#0B4627]">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
                 <EyeOff className="w-3.5 h-3.5" /> Mode Simai Tutup Mata
               </span>
               <span className="px-2 py-0.5 text-xs font-bold bg-[#10B981] text-black rounded border border-black">
-                Juz 29 & 30
+                48 Surat (Semua Juz 29 & 30)
+              </span>
+              <span className="px-2 py-0.5 text-xs font-bold bg-amber-400 text-black rounded border border-black">
+                ⚡ Sequence Non-Repeating
               </span>
             </div>
             <h2 className="text-2xl font-extrabold font-display text-white">
               Simai & Sambung Lisan Syekh Misyari
             </h2>
+            <p className="text-xs text-emerald-200 mt-0.5">
+              Uji ketajaman mutqin hafalan 11 Surat Juz 29 & 37 Surat Juz 30 dengan urutan acak dinamis tanpa pengulangan.
+            </p>
           </div>
 
           {/* Level Switcher */}
@@ -152,7 +240,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
-                {lvl}
+                {lvl === 'pemula' ? '🟢 Pemula' : lvl === 'hafidz' ? '🟡 Hafidz' : '🔥 Hafidzah (Sulit)'}
               </button>
             ))}
           </div>
@@ -162,7 +250,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
       {/* FILTER JUZ BUTTONS */}
       <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
         <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
-          <BookOpen className="w-3.5 h-3.5 text-[#0B4627]" /> PILIH CAKUPAN JUZ UNTUK SIMAI:
+          <BookOpen className="w-3.5 h-3.5 text-[#0B4627]" /> PILIH CAKUPAN JUZ UNTUK SIMAI (TOTAL 48 SURAT):
         </span>
         <div className="grid grid-cols-3 gap-2">
           <button
@@ -173,7 +261,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                 : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
             }`}
           >
-            Juz 29 & 30 (Semua)
+            Semua (Juz 29 & 30) • 48 Surat
           </button>
           <button
             onClick={() => setJuzFilter(29)}
@@ -183,7 +271,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                 : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
             }`}
           >
-            Khusus Juz 29
+            Khusus Juz 29 • 11 Surat
           </button>
           <button
             onClick={() => setJuzFilter(30)}
@@ -193,7 +281,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                 : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
             }`}
           >
-            Khusus Juz 30
+            Khusus Juz 30 • 37 Surat
           </button>
         </div>
       </div>
@@ -207,23 +295,30 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
 
         {/* Challenge Header */}
         <div className="flex items-center justify-between border-b border-emerald-900 pb-4">
-          <span className="px-3 py-1 bg-[#10B981] text-black text-xs font-black rounded-xl border-2 border-black">
-            Juz {challengeData.prompt.juz} • QS. {challengeData.prompt.surahName} (Ayat {challengeData.prompt.numberInSurah})
-          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="px-3 py-1 bg-[#10B981] text-black text-xs font-black rounded-xl border-2 border-black">
+              Juz {challengeData.prompt.juz} • QS. {challengeData.prompt.surahName} (Ayat {challengeData.prompt.numberInSurah})
+            </span>
+            {challengeData.prompt.numberInSurah >= 10 && (
+              <span className="px-2 py-0.5 bg-red-500 text-white text-[10px] font-black rounded-md border border-black uppercase flex items-center gap-0.5">
+                <Flame className="w-3 h-3 fill-white" /> Pertengahan Surat
+              </span>
+            )}
+          </div>
 
           <button
             onClick={() => handleGenerateChallenge()}
             className="px-3 py-1.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 neo-button cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Ganti Ayat Baru</span>
+            <span>Ganti Ayat Acak Baru</span>
           </button>
         </div>
 
         {/* 1. Ayat Pemicu (Audio & Large Text) */}
         <div className="space-y-4">
           <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-widest block">
-            1. Dengarkan Bacaan Syekh Misyari:
+            1. Dengarkan Lantunan Tartil Syekh Misyari Rasyid:
           </span>
 
           <div
@@ -243,74 +338,196 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
           </button>
         </div>
 
-        {/* 2. Tindakan: Sambung Lisan */}
+        {/* 2. AREA SAMBUNG LISAN & 3 METODE INPUT */}
         <div className="p-6 bg-black/40 border-2 border-emerald-500/40 rounded-2xl space-y-4 max-w-xl mx-auto">
-          <div className="flex items-center justify-between gap-2 border-b border-emerald-800 pb-2">
-            <span className="text-xs font-black text-[#F59E0B] uppercase tracking-wider block">
-              2. Sambung Ayat ke-{challengeData.next.numberInSurah}:
-            </span>
-
-            {/* Language Mode Switcher */}
-            <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-emerald-700">
-              <span className="text-[10px] text-emerald-300 flex items-center gap-0.5">
-                <Globe className="w-3 h-3" /> Mode:
-              </span>
-              <button
-                onClick={() => setSpeechLanguage('ar-SA')}
-                className={`px-2 py-0.5 text-[10px] font-black rounded ${
-                  speechLanguage === 'ar-SA' ? 'bg-[#10B981] text-black' : 'text-emerald-200 hover:text-white'
-                }`}
-              >
-                🇸🇦 Arab
-              </button>
-              <button
-                onClick={() => setSpeechLanguage('id-ID')}
-                className={`px-2 py-0.5 text-[10px] font-black rounded ${
-                  speechLanguage === 'id-ID' ? 'bg-[#F59E0B] text-black' : 'text-emerald-200 hover:text-white'
-                }`}
-              >
-                🇮🇩 Latin
-              </button>
-            </div>
+          {/* Method Selection Sub-Tabs */}
+          <div className="grid grid-cols-3 gap-1.5 p-1 bg-black/60 rounded-xl border border-emerald-800">
+            <button
+              onClick={() => setInputTab('voice')}
+              className={`py-1.5 text-xs font-black rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                inputTab === 'voice' ? 'bg-[#10B981] text-black shadow' : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              <Mic className="w-3.5 h-3.5" /> Mic Lisan
+            </button>
+            <button
+              onClick={() => setInputTab('chips')}
+              className={`py-1.5 text-xs font-black rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                inputTab === 'chips' ? 'bg-[#F59E0B] text-black shadow' : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              <Edit3 className="w-3.5 h-3.5" /> Susun Kata
+            </button>
+            <button
+              onClick={() => setInputTab('demo')}
+              className={`py-1.5 text-xs font-black rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                inputTab === 'demo' ? 'bg-amber-400 text-black shadow' : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5" /> Demo Juri
+            </button>
           </div>
 
-          {level === 'pemula' && (
-            <p className="text-xs text-gray-300 italic">
-              Petunjuk: Awal ayat dimulai dengan kata "{challengeData.next.arabicText.split(' ')[0]}..."
-            </p>
-          )}
+          <div className="flex items-center justify-between gap-2 border-b border-emerald-800 pb-2">
+            <span className="text-xs font-black text-[#F59E0B] uppercase tracking-wider block">
+              Sambung Ayat ke-{challengeData.next.numberInSurah}:
+            </span>
 
-          <div className="flex flex-col items-center gap-3">
-            {!isRecording ? (
-              <button
-                onClick={handleStartContinuation}
-                className="px-8 py-4 bg-[#10B981] hover:bg-[#059669] text-black border-3 border-black rounded-2xl text-base font-black flex items-center gap-2 neo-button shadow-[4px_4px_0px_0px_#F59E0B] cursor-pointer"
-              >
-                <Mic className="w-6 h-6" />
-                <span>Tekan & Sambung Lisan via Mic</span>
-              </button>
-            ) : (
-              <button
-                onClick={handleStopAndEvaluate}
-                className="px-8 py-4 bg-[#EF4444] hover:bg-[#DC2626] text-white border-3 border-black rounded-2xl text-base font-black flex items-center gap-2 neo-button animate-pulse cursor-pointer"
-              >
-                <MicOff className="w-6 h-6" />
-                <span>Selesai & Nilai Sambungan</span>
-              </button>
-            )}
-
-            {isRecording && (
-              <div className="flex items-center gap-2 p-2 bg-red-950/80 border border-red-500 rounded-xl text-xs font-bold text-red-300 animate-pulse">
-                <Radio className="w-4 h-4 animate-spin text-red-400" />
-                <span>Mikrofon Aktif Mendengarkan... Lafalkan ayat sambungan sekarang!</span>
+            {/* Dialect Selector */}
+            {inputTab === 'voice' && (
+              <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-emerald-700">
+                <span className="text-[10px] text-emerald-300 flex items-center gap-0.5">
+                  <Globe className="w-3 h-3" /> Dialek:
+                </span>
+                <button
+                  onClick={() => setSpeechLanguage('ar-SA')}
+                  className={`px-1.5 py-0.5 text-[10px] font-black rounded ${
+                    speechLanguage === 'ar-SA' ? 'bg-[#10B981] text-black' : 'text-emerald-200 hover:text-white'
+                  }`}
+                >
+                  🇸🇦 Arab
+                </button>
+                <button
+                  onClick={() => setSpeechLanguage('ar-KW')}
+                  className={`px-1.5 py-0.5 text-[10px] font-black rounded ${
+                    speechLanguage === 'ar-KW' ? 'bg-amber-400 text-black' : 'text-emerald-200 hover:text-white'
+                  }`}
+                >
+                  🇰🇼 Kuwait
+                </button>
+                <button
+                  onClick={() => setSpeechLanguage('id-ID')}
+                  className={`px-1.5 py-0.5 text-[10px] font-black rounded ${
+                    speechLanguage === 'id-ID' ? 'bg-[#F59E0B] text-black' : 'text-emerald-200 hover:text-white'
+                  }`}
+                >
+                  🇮🇩 Latin
+                </button>
               </div>
             )}
           </div>
 
+          {level === 'pemula' && (
+            <p className="text-xs text-emerald-300 italic">
+              Petunjuk Pemula: Awal ayat berikutnya dimulai dengan lafal "{challengeData.next.arabicText.split(' ')[0]}..."
+            </p>
+          )}
+
+          {/* TAB 1: VOICE MIC INPUT */}
+          {inputTab === 'voice' && (
+            <div className="flex flex-col items-center gap-3">
+              {!isRecording ? (
+                <button
+                  onClick={handleStartContinuation}
+                  className="px-8 py-4 bg-[#10B981] hover:bg-[#059669] text-black border-3 border-black rounded-2xl text-base font-black flex items-center gap-2 neo-button shadow-[4px_4px_0px_0px_#F59E0B] cursor-pointer"
+                >
+                  <Mic className="w-6 h-6" />
+                  <span>Tekan & Sambung Lisan via Mic</span>
+                </button>
+              ) : (
+                <div className="w-full space-y-3">
+                  <button
+                    onClick={handleStopAndEvaluate}
+                    className="w-full py-4 bg-[#EF4444] hover:bg-[#DC2626] text-white border-3 border-black rounded-2xl text-base font-black flex items-center justify-center gap-2 neo-button animate-pulse cursor-pointer"
+                  >
+                    <MicOff className="w-6 h-6" />
+                    <span>Selesai Melafalkan & Nilai Akurasi</span>
+                  </button>
+
+                  {/* VU Decibel Meter */}
+                  <div className="p-3 bg-black/80 border border-emerald-600 rounded-xl space-y-1.5">
+                    <div className="flex justify-between items-center text-[10px] font-mono text-emerald-400">
+                      <span className="flex items-center gap-1">
+                        <Radio className="w-3 h-3 text-red-500 animate-spin" /> MIKROFON AKTIF
+                      </span>
+                      <span>Level Input: {micVolume}%</span>
+                    </div>
+                    <div className="w-full bg-gray-900 h-2.5 rounded-full overflow-hidden border border-emerald-700/50">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-500 via-yellow-400 to-red-500 transition-all duration-75"
+                        style={{ width: `${Math.min(100, micVolume * 2.5)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: WORD CHIPS INPUT */}
+          {inputTab === 'chips' && (
+            <div className="space-y-3">
+              <span className="text-xs text-gray-300 block">
+                Susun kata-kata di bawah ini menjadi sambungan ayat yang benar:
+              </span>
+              
+              {/* Selected chips tray */}
+              <div className="min-h-[50px] p-3 bg-white/10 border-2 border-dashed border-emerald-400 rounded-xl flex flex-wrap gap-2 items-center justify-center" dir="rtl">
+                {selectedChips.length === 0 ? (
+                  <span className="text-xs text-gray-400 font-sans italic">Pilih potongan kata di bawah...</span>
+                ) : (
+                  selectedChips.map((word, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setSelectedChips(prev => prev.filter((_, i) => i !== idx));
+                        setWordChips(prev => [...prev, word]);
+                      }}
+                      className="px-3 py-1.5 bg-[#10B981] text-black font-quran text-lg font-bold rounded-lg border border-black hover:bg-red-400 transition-colors"
+                    >
+                      {word} ✕
+                    </button>
+                  ))
+                )}
+              </div>
+
+              {/* Available chips pool */}
+              <div className="flex flex-wrap gap-2 justify-center pt-2" dir="rtl">
+                {wordChips.map((word, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedChips(prev => [...prev, word]);
+                      setWordChips(prev => prev.filter((_, i) => i !== idx));
+                    }}
+                    className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white font-quran text-lg font-bold rounded-lg border border-emerald-500/50"
+                  >
+                    {word}
+                  </button>
+                ))}
+              </div>
+
+              {selectedChips.length > 0 && (
+                <button
+                  onClick={handleEvaluateChips}
+                  className="w-full py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs rounded-xl border-2 border-black neo-button mt-2 cursor-pointer"
+                >
+                  ✓ Periksa Susunan Kata
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: DEMO JURI (1-CLICK TEST) */}
+          {inputTab === 'demo' && (
+            <div className="p-4 bg-amber-950/40 border border-amber-500/50 rounded-xl space-y-3">
+              <span className="text-xs text-amber-200 block font-medium">
+                Tombol simulasi satu-klik untuk presentasi live di hadapan dewan juri tanpa terkendala noise mic.
+              </span>
+              <button
+                onClick={handleRunPresentationDemo}
+                className="w-full py-3 bg-amber-400 hover:bg-amber-300 text-black font-black text-sm rounded-xl border-2 border-black neo-button flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Zap className="w-4 h-4" />
+                <span>Simulasi Sambungan Hafalan Mutqin (96% Akurasi)</span>
+              </button>
+            </div>
+          )}
+
           {spokenTranscript && (
             <div className="p-3 bg-white/10 border border-white/20 rounded-xl text-left">
-              <span className="text-[10px] font-black text-emerald-300 block uppercase">Transkrip Suara Anda:</span>
-              <p className="text-sm font-semibold text-white mt-0.5">{spokenTranscript}</p>
+              <span className="text-[10px] font-black text-emerald-300 block uppercase">Transkrip Lafal Anda:</span>
+              <p className="text-base font-semibold text-white mt-0.5" dir="rtl">{spokenTranscript}</p>
             </div>
           )}
         </div>
@@ -339,7 +556,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                 onClick={() => handleGenerateChallenge()}
                 className="px-4 py-2 bg-[#0B4627] hover:bg-[#08351D] text-white text-xs font-black rounded-xl border-2 border-black neo-button flex items-center gap-1.5 cursor-pointer"
               >
-                <span>Tantangan Berikutnya</span>
+                <span>Tantangan Sequence Berikutnya</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -348,7 +565,15 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
 
             {/* Jawaban Lengkap */}
             <div className="p-4 bg-emerald-50 border-2 border-black rounded-xl space-y-2">
-              <span className="text-[10px] font-black text-emerald-900 uppercase">Kunci Sambungan Ayat:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-black text-emerald-900 uppercase">Kunci Sambungan Ayat:</span>
+                <button
+                  onClick={() => audioPlayer.playAyat(challengeData.next.surahNumber, challengeData.next.numberInSurah)}
+                  className="text-xs text-[#0B4627] font-bold flex items-center gap-1 hover:underline"
+                >
+                  <Volume2 className="w-3 h-3" /> Putar Suara Syekh Misyari
+                </button>
+              </div>
               <p className="font-quran text-2xl text-right leading-loose font-bold" dir="rtl">
                 {challengeData.next.arabicText}
               </p>

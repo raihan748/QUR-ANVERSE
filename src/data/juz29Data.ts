@@ -1,6 +1,8 @@
-// Authentic Comprehensive Dataset for Juz 29 (Surah 67 Al-Mulk to Surah 77 Al-Mursalat)
-// Featuring challenging Middle, Deep, and Ending Verses (Ayat 10, 15, 20, 25, 29, 30, 34, 40, 50)
+// ==============================================================================
+// Complete Dataset for Juz 29 (Surah 67 Al-Mulk to Surah 77 Al-Mursalat - All 11 Surahs)
+// Featuring challenging Middle, Deep, & Ending Verses (Ayat 10, 15, 20, 25, 29, 30, 34, 40, 50)
 // With Rasm Utsmani, Indonesian Kemenag Translation, Transliteration, & Syekh Mishary Audio
+// ==============================================================================
 
 import { Ayat } from '../types';
 import { formatAlafasyAudioUrl } from '../services/audioPlayerService';
@@ -411,6 +413,146 @@ export const JUZ_29_AYATS: Record<number, Ayat[]> = {
     }
   ],
 
+  // 72. Surah Al-Jinn (28 Ayat)
+  72: [
+    {
+      surahNumber: 72,
+      surahName: 'Al-Jinn',
+      numberInSurah: 1,
+      numberInQuran: 5448,
+      juz: 29,
+      arabicText: 'قُلْ أُوحِيَ إِلَيَّ أَنَّهُ اسْتَمَعَ نَفَرٌ مِّنَ الْجِنِّ فَقَالُوا إِنَّا سَمِعْنَا قُرْآنًا عَجَبًا',
+      transliteration: 'Qul ūḥiya ilayya annahustama\'a nafarum minal-jinni faqālū innā sami\'nā qur\'ānan \'ajabā(n)',
+      translation: 'Katakanlah (Muhammad), "Telah diwahyukan kepadaku bahwa sekumpulan jin telah mendengarkan (bacaan Al-Qur\'an), lalu mereka berkata, \'Kami telah mendengarkan bacaan yang menakjubkan,\'',
+      audioUrl: formatAlafasyAudioUrl(72, 1)
+    },
+    {
+      surahNumber: 72,
+      surahName: 'Al-Jinn',
+      numberInSurah: 2,
+      numberInQuran: 5449,
+      juz: 29,
+      arabicText: 'يَهْدِي إِلَى الرُّشْدِ فَآمَنَّا بِهِ ۖ وَلَن نُّشْرِكَ بِرَبِّنَا أَحَدًا',
+      transliteration: 'Yahdī ilar-rusydi fa\'āmannā bih(ī), wa lan nusyrika birabbinā aḥadā(n)',
+      translation: '(yang) memberi petunjuk kepada kebenaran, lalu kami beriman kepadanya. Dan kami sekali-kali tidak akan mempersekutukan sesuatu pun dengan Tuhan kami,',
+      audioUrl: formatAlafasyAudioUrl(72, 2)
+    },
+    {
+      surahNumber: 72,
+      surahName: 'Al-Jinn',
+      numberInSurah: 13,
+      numberInQuran: 5460,
+      juz: 29,
+      arabicText: 'وَأَنَّا لَمَّا سَمِعْنَا الْهُدَىٰ آمَنَّا بِهِ ۖ فَمَن يُؤْمِن بِرَبِّهِ فَلَا يَخَافُ بَخْسًا وَلَا رَهَقًا',
+      transliteration: 'Wa annā lammā sami\'nal-hudā āmannā bih(ī), famay yu\'mim birabbihī falā yakhāfu bakhsaw wa lā rahaqā(n)',
+      translation: 'Dan sesungguhnya kami ketika mendengar petunjuk (Al-Qur\'an), kami beriman kepadanya. Maka barang siapa beriman kepada Tuhannya, maka tidak perlu takut rugi atau dizalimi.',
+      audioUrl: formatAlafasyAudioUrl(72, 13)
+    },
+    {
+      surahNumber: 72,
+      surahName: 'Al-Jinn',
+      numberInSurah: 14,
+      numberInQuran: 5461,
+      juz: 29,
+      arabicText: 'وَأَنَّا مِنَّا الْمُسْلِمُونَ وَمِنَّا الْقَاسِطُونَ ۖ فَمَنْ أَسْلَمَ فَأُولَٰئِكَ تَحَرَّوْا رَشَدًا',
+      transliteration: 'Wa annā minnal-muslimūna wa minnal-qāsiṭūn(a), faman aslama fa\'ulā\'ika taḥarrau rasyadā(n)',
+      translation: 'Dan sesungguhnya di antara kami ada yang patuh dan ada yang menyimpang dari kebenaran. Barangsiapa yang patuh, maka mereka itu benar-benar telah memilih jalan yang lurus.',
+      audioUrl: formatAlafasyAudioUrl(72, 14)
+    },
+    {
+      surahNumber: 72,
+      surahName: 'Al-Jinn',
+      numberInSurah: 18,
+      numberInQuran: 5465,
+      juz: 29,
+      arabicText: 'وَأَنَّ الْمَسَاجِدَ لِلَّهِ فَلَا تَدْعُوا مَعَ اللَّهِ أَحَدًا',
+      transliteration: 'Wa annal-masājida lillāhi falā tad\'ū ma\'allāhi aḥadā(n)',
+      translation: 'Dan sesungguhnya masjid-masjid itu adalah untuk Allah. Maka janganlah kamu menyembah apa pun di dalamnya selain Allah.',
+      audioUrl: formatAlafasyAudioUrl(72, 18)
+    },
+    {
+      surahNumber: 72,
+      surahName: 'Al-Jinn',
+      numberInSurah: 19,
+      numberInQuran: 5466,
+      juz: 29,
+      arabicText: 'وَأَنَّهُ لَمَّا قَامَ عَبْدُ اللَّهِ يَدْعُوهُ كَادُوا يَكُونُونَ عَلَيْهِ لِبَدًا',
+      transliteration: 'Wa annahū lammā qāma \'abdullāhi yad\'ūhu kādū yakūnūna \'alaihi libadā(n)',
+      translation: 'Dan sesungguhnya ketika hamba Allah (Muhammad) berdiri menyembah-Nya (melaksanakan salat), mereka (jin-jin) itu berdesakan mengerumuninya.',
+      audioUrl: formatAlafasyAudioUrl(72, 19)
+    }
+  ],
+
+  // 73. Surah Al-Muzzammil (20 Ayat)
+  73: [
+    {
+      surahNumber: 73,
+      surahName: 'Al-Muzzammil',
+      numberInSurah: 1,
+      numberInQuran: 5476,
+      juz: 29,
+      arabicText: 'يَا أَيُّهَا الْمُزَّمِّلُ',
+      transliteration: 'Yā ayyuhal-muzzammil(u)',
+      translation: 'Wahai orang yang berselimut (Muhammad)!',
+      audioUrl: formatAlafasyAudioUrl(73, 1)
+    },
+    {
+      surahNumber: 73,
+      surahName: 'Al-Muzzammil',
+      numberInSurah: 2,
+      numberInQuran: 5477,
+      juz: 29,
+      arabicText: 'قُمِ اللَّيْلَ إِلَّا قَلِيلًا',
+      transliteration: 'Qumil-laila illā qalīlā(n)',
+      translation: 'Bangunlah (untuk salat) pada malam hari, kecuali sebagian kecil,',
+      audioUrl: formatAlafasyAudioUrl(73, 2)
+    },
+    {
+      surahNumber: 73,
+      surahName: 'Al-Muzzammil',
+      numberInSurah: 3,
+      numberInQuran: 5478,
+      juz: 29,
+      arabicText: 'نِّصْفَهُ أَوِ انقُصْ مِنْهُ قَلِيلًا',
+      transliteration: 'Niṣfahū awinquṣ minhu qalīlā(n)',
+      translation: '(yaitu) separuhnya atau kurangi sedikit dari itu,',
+      audioUrl: formatAlafasyAudioUrl(73, 3)
+    },
+    {
+      surahNumber: 73,
+      surahName: 'Al-Muzzammil',
+      numberInSurah: 4,
+      numberInQuran: 5479,
+      juz: 29,
+      arabicText: 'أَوْ زِدْ عَلَيْهِ وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا',
+      transliteration: 'Au zid \'alaihi wa rattilil-qur\'āna tartīlā(n)',
+      translation: 'atau lebih dari (separuh) itu, dan bacalah Al-Qur\'an itu dengan perlahan-lahan (tartil).',
+      audioUrl: formatAlafasyAudioUrl(73, 4)
+    },
+    {
+      surahNumber: 73,
+      surahName: 'Al-Muzzammil',
+      numberInSurah: 8,
+      numberInQuran: 5483,
+      juz: 29,
+      arabicText: 'وَاذْكُرِ اسْمَ رَبِّكَ وَتَبَتَّلْ إِلَيْهِ تَبْتِيلًا',
+      transliteration: 'Ważkurisma rabbika wa tabattal ilaihi tabtīlā(n)',
+      translation: 'Dan sebutlah nama Tuhanmu, dan beribadahlah kepada-Nya dengan sepenuh hati.',
+      audioUrl: formatAlafasyAudioUrl(73, 8)
+    },
+    {
+      surahNumber: 73,
+      surahName: 'Al-Muzzammil',
+      numberInSurah: 9,
+      numberInQuran: 5484,
+      juz: 29,
+      arabicText: 'رَّبُّ الْمَشْرِقِ وَالْمَغْرِبِ لَا إِلَٰهَ إِلَّا هُوَ فَاتَّخِذْهُ وَكِيلًا',
+      transliteration: 'Rabbul-masyriqi wal-magribi lā ilāha illā huwa fattakhiżhu wakīlā(n)',
+      translation: '(Dialah) Tuhan timur dan barat, tidak ada tuhan selain Dia, maka jadikanlah Dia sebagai pelindung.',
+      audioUrl: formatAlafasyAudioUrl(73, 9)
+    }
+  ],
+
   // 74. Surah Al-Muddassir (56 Ayat)
   74: [
     {
@@ -526,6 +668,76 @@ export const JUZ_29_AYATS: Record<number, Ayat[]> = {
       transliteration: 'Ṡumma inna \'alainā bayānah(ū)',
       translation: 'Kemudian sesungguhnya Kami yang akan menjelaskannya.',
       audioUrl: formatAlafasyAudioUrl(75, 19)
+    }
+  ],
+
+  // 76. Surah Al-Insan (31 Ayat)
+  76: [
+    {
+      surahNumber: 76,
+      surahName: 'Al-Insan',
+      numberInSurah: 1,
+      numberInQuran: 5592,
+      juz: 29,
+      arabicText: 'هَلْ أَتَىٰ عَلَى الْإِنسَانِ حِينٌ مِّنَ الدَّهْرِ لَمْ يَكُن شَيْئًا مَّذْكُورًا',
+      transliteration: 'Hal atā \'alal-insāni ḥīnum minad-dahri lam yakun syai\'am mażkūrā(n)',
+      translation: 'Bukankah pernah datang kepada manusia suatu waktu dari masa, yang ketika itu dia belum merupakan sesuatu yang dapat disebut?',
+      audioUrl: formatAlafasyAudioUrl(76, 1)
+    },
+    {
+      surahNumber: 76,
+      surahName: 'Al-Insan',
+      numberInSurah: 2,
+      numberInQuran: 5593,
+      juz: 29,
+      arabicText: 'إِنَّا خَلَقْنَا الْإِنسَانَ مِن نُّطْفَةٍ أَمْشَاجٍ نَّبْتَلِيهِ فَجَعَلْنَاهُ سَمِيعًا بَصِيرًا',
+      transliteration: 'Innā khalaqnal-insāna min nuṭfatin amsyājin nabtalīhi faja\'alnāhu samī\'am baṣīrā(n)',
+      translation: 'Sungguh, Kami telah menciptakan manusia dari setetes mani yang bercampur yang Kami hendak mengujinya (dengan perintah dan larangan), karena itu Kami jadikan dia mendengar dan melihat.',
+      audioUrl: formatAlafasyAudioUrl(76, 2)
+    },
+    {
+      surahNumber: 76,
+      surahName: 'Al-Insan',
+      numberInSurah: 8,
+      numberInQuran: 5599,
+      juz: 29,
+      arabicText: 'وَيُطْعِمُونَ الطَّعَامَ عَلَىٰ حُبِّهِ مِسْكِينًا وَيَتِيمًا وَأَسِيرًا',
+      transliteration: 'Wa yuṭ\'imūnaṭ-ṭa\'āma \'alā ḥubbihī miskīnaw wa yatīmaw wa asīrā(n)',
+      translation: 'Dan mereka memberikan makanan yang disukainya kepada orang miskin, anak yatim dan orang yang ditawan,',
+      audioUrl: formatAlafasyAudioUrl(76, 8)
+    },
+    {
+      surahNumber: 76,
+      surahName: 'Al-Insan',
+      numberInSurah: 9,
+      numberInQuran: 5600,
+      juz: 29,
+      arabicText: 'إِنَّمَا نُطْعِمُكُمْ لِوَجْهِ اللَّهِ لَا نُرِيدُ مِنكُمْ جَزَاءً وَلَا شُكُورًا',
+      transliteration: 'Innamā nuṭ\'imukum liwajhillāhi lā nurīdu minkum jazā\'aw wa lā syukūrā(n)',
+      translation: '(sambil berkata), "Sesungguhnya kami memberi makanan kepadamu hanyalah karena mengharapkan keridaan Allah, kami tidak mengharap balasan dan terima kasih dari kamu."',
+      audioUrl: formatAlafasyAudioUrl(76, 9)
+    },
+    {
+      surahNumber: 76,
+      surahName: 'Al-Insan',
+      numberInSurah: 21,
+      numberInQuran: 5612,
+      juz: 29,
+      arabicText: 'عَالِيَهُمْ ثِيَابُ سُندُسٍ خُضْرٌ وَإِسْتَبْرَقٌ ۖ وَحُلُّوا أَسَاوِرَ مِن فِضَّةٍ وَسَقَاهُمْ رَبُّهُمْ شَرَابًا طَهُورًا',
+      transliteration: '\'Āliyahum ṡiyābu sundusin khuḍruw wa istabraq(un), wa ḥullū asāwira min fiḍḍatin wa saqāhum rabbuhum syarāban ṭahūrā(n)',
+      translation: 'Mereka berpakaian sutra halus yang hijau dan sutra tebal dan memakai gelang terbuat dari perak, dan Tuhan memberikan kepada mereka minuman yang bersih (dan suci).',
+      audioUrl: formatAlafasyAudioUrl(76, 21)
+    },
+    {
+      surahNumber: 76,
+      surahName: 'Al-Insan',
+      numberInSurah: 22,
+      numberInQuran: 5613,
+      juz: 29,
+      arabicText: 'إِنَّ هَٰذَا كَانَ لَكُمْ جَزَاءً وَكَانَ سَعْيُكُم مَّشْكُورًا',
+      transliteration: 'Inna hāżā kāna lakum jazā\'aw wa kāna sa\'yukum masykūrā(n)',
+      translation: '"Sesungguhnya ini adalah balasan untukmu, dan segala usahamu diterima dan diakui (Allah)."',
+      audioUrl: formatAlafasyAudioUrl(76, 22)
     }
   ],
 
