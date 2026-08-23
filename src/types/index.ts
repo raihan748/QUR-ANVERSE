@@ -16,6 +16,7 @@ export interface SurahMeta {
   ayahCount: number;
   revelationPlace: 'Makkah' | 'Madinah';
   juzStart: number;
+  juzList?: number[];
 }
 
 export interface WordData {

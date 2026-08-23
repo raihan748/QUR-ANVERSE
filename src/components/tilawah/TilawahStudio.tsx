@@ -24,10 +24,10 @@ import {
   Settings2,
   Target
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { Ayat, SurahMeta, UserProfile, Bookmark } from '../../types';
-import { SURAH_LIST, getSurahAyahs } from '../../data/quranData';
-import { audioPlayer } from '../../services/audioPlayerService';
+import confetti from 'canvas-confetti';
+import { SURAH_LIST, getSurahAyahs, JUZ_MAP } from '../../data/quranData';
+import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { saveBookmark, setLastRead, addXpAndCheckStreak } from '../../services/offlineStorage';
 import { DailyTargetWidget } from '../common/DailyTargetWidget';
@@ -36,6 +36,7 @@ import {
   markAyahCompletedInTarget, 
   DailyQuranTarget 
 } from '../../services/dailyTargetService';
+import { Headphones } from 'lucide-react';
 
 interface TilawahStudioProps {
   userProfile?: UserProfile;
@@ -53,6 +54,10 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
   const [repeatCount, setRepeatCount] = useState<number>(1); // 1, 3, 5, 10, 999 (infinite)
   const [currentRepeatIteration, setCurrentRepeatIteration] = useState<number>(1);
   
+  // Reciter State
+  const [activeReciter, setActiveReciter] = useState<Reciter>(audioPlayer.getActiveReciter());
+  const [isReciterMenuOpen, setIsReciterMenuOpen] = useState<boolean>(false);
+
   // Customization State
   const [fontSize, setFontSize] = useState<number>(32);
   const [showTranslation, setShowTranslation] = useState<boolean>(true);
@@ -232,15 +237,71 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
                 <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
                   <BookOpen className="w-3.5 h-3.5" /> Studio Tilawah & Murottal
                 </span>
-                <span className="px-2 py-0.5 text-xs font-extrabold bg-white text-black rounded border border-black">
-                  Syekh Misyari Rasyid Al-Afasi
-                </span>
+                <div className="relative inline-block">
+                  <button
+                    onClick={() => setIsReciterMenuOpen(!isReciterMenuOpen)}
+                    className="px-2.5 py-0.5 text-xs font-black bg-[#F59E0B] hover:bg-[#D97706] text-black rounded border border-black flex items-center gap-1 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+                    title="Ganti Qari / Syekh Tilawah"
+                  >
+                    <Headphones className="w-3.5 h-3.5" />
+                    <span>{activeReciter.name}</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+
+                  {/* Dropdown Reciter Menu */}
+                  {isReciterMenuOpen && (
+                    <div className="absolute left-0 top-full mt-2 w-72 bg-white border-3 border-black rounded-2xl p-2 shadow-[6px_6px_0px_0px_#000] z-50 animate-in fade-in zoom-in-95 space-y-1">
+                      <div className="p-1.5 border-b-2 border-black flex items-center justify-between text-black">
+                        <span className="text-[11px] font-black text-[#0B4627]">Pilih Qari / Syekh Murottal:</span>
+                        <button
+                          onClick={() => setIsReciterMenuOpen(false)}
+                          className="text-xs font-bold text-gray-500 hover:text-black"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      {RECITERS_LIST.map((r) => {
+                        const isSelected = r.id === activeReciter.id;
+                        return (
+                          <button
+                            key={r.id}
+                            onClick={() => {
+                              audioPlayer.setActiveReciter(r.id);
+                              setActiveReciter(r);
+                              setIsReciterMenuOpen(false);
+                              if (isPlaying) {
+                                audioPlayer.playAyat(selectedSurahNumber, currentAyats[activeAyahIndex]?.numberInSurah || 1);
+                              }
+                            }}
+                            className={`w-full p-2 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
+                                : 'bg-[#F9FAFB] hover:bg-amber-50 text-gray-900'
+                            }`}
+                          >
+                            <div className="truncate pr-2">
+                              <p className="text-xs font-black truncate">{r.name}</p>
+                              <p className={`text-[10px] font-bold ${isSelected ? 'text-amber-300' : 'text-gray-600'}`}>
+                                {r.style}
+                              </p>
+                            </div>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold shrink-0 border ${
+                              isSelected ? 'bg-[#F59E0B] text-black border-black' : 'bg-gray-200 text-gray-700 border-gray-400'
+                            }`}>
+                              {r.bitrate}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
                 Tilawah & Murottal Berkelanjutan
               </h2>
               <p className="text-xs text-emerald-100 font-medium mt-0.5">
-                Dengarkan dan ikuti lantunan tartil ayat per ayat secara otomatis dengan fitur pengulangan (*tikrar*).
+                Dengarkan dan ikuti lantunan tartil ayat per ayat secara otomatis dengan audio HD Studio Master.
               </p>
             </div>
 
@@ -266,7 +327,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
                   {selectedSurahNumber}
                 </span>
                 <span className="text-sm font-extrabold">
-                  QS. {currentSurahMeta.latinName} ({currentSurahMeta.ayahCount} Ayat • Juz {currentSurahMeta.juzStart})
+                  QS. {currentSurahMeta.latinName} ({currentSurahMeta.ayahCount} Ayat • Juz {currentSurahMeta.juzList ? currentSurahMeta.juzList.join(', ') : currentSurahMeta.juzStart})
                 </span>
               </div>
               <span className="px-2 py-1 bg-amber-100 border border-black rounded-lg text-[10px] font-black uppercase text-amber-900">

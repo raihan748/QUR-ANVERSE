@@ -3,121 +3,281 @@ import { formatAlafasyAudioUrl } from '../services/audioPlayerService';
 import { JUZ_29_AYATS } from './juz29Data';
 import { JUZ_30_AYATS } from './juz30Data';
 
+// Authentic 30 Juz Mapping & Surah Directory (Standar Mushaf Utsmani Madinah / Kemenag RI)
+export interface JuzInfo {
+  number: number;
+  surahNumbers: number[];
+  name: string;
+  arabicName: string;
+  ayahRange: string;
+}
+
+export const JUZ_MAP: Record<number, JuzInfo> = {
+  1: { number: 1, surahNumbers: [1, 2], name: 'Al-Fatihah 1 - Al-Baqarah 141', arabicName: 'الجزء الأول', ayahRange: 'Al-Fatihah 1 – Al-Baqarah 141' },
+  2: { number: 2, surahNumbers: [2], name: 'Al-Baqarah 142 - 252', arabicName: 'الجزء الثاني', ayahRange: 'Al-Baqarah 142 – 252 (سَيَقُولُ)' },
+  3: { number: 3, surahNumbers: [2, 3], name: 'Al-Baqarah 253 - Ali \'Imran 92', arabicName: 'الجزء الثالث', ayahRange: 'Al-Baqarah 253 – Ali \'Imran 92 (تِلْكَ الرُّسُلُ)' },
+  4: { number: 4, surahNumbers: [3, 4], name: 'Ali \'Imran 93 - An-Nisa\' 23', arabicName: 'الجزء الرابع', ayahRange: 'Ali \'Imran 93 – An-Nisa\' 23 (لَنْ تَنَالُوا)' },
+  5: { number: 5, surahNumbers: [4], name: 'An-Nisa\' 24 - 147', arabicName: 'الجزء الخامس', ayahRange: 'An-Nisa\' 24 – 147 (وَالْمُحْصَنَاتُ)' },
+  6: { number: 6, surahNumbers: [4, 5], name: 'An-Nisa\' 148 - Al-Ma\'idah 81', arabicName: 'الجزء السادس', ayahRange: 'An-Nisa\' 148 – Al-Ma\'idah 81 (لَا يُحِبُّ اللَّهُ)' },
+  7: { number: 7, surahNumbers: [5, 6], name: 'Al-Ma\'idah 82 - Al-An\'am 110', arabicName: 'الجزء السابع', ayahRange: 'Al-Ma\'idah 82 – Al-An\'am 110 (وَإِذَا سَمِعُوا)' },
+  8: { number: 8, surahNumbers: [6, 7], name: 'Al-An\'am 111 - Al-A\'raf 87', arabicName: 'الجزء الثامن', ayahRange: 'Al-An\'am 111 – Al-A\'raf 87 (وَلَوْ أَنَّنَا)' },
+  9: { number: 9, surahNumbers: [7, 8], name: 'Al-A\'raf 88 - Al-Anfal 40', arabicName: 'الجزء التاسع', ayahRange: 'Al-A\'raf 88 – Al-Anfal 40 (قَالَ الْمَلَأُ)' },
+  10: { number: 10, surahNumbers: [8, 9], name: 'Al-Anfal 41 - At-Taubah 92', arabicName: 'الجزء العاشر', ayahRange: 'Al-Anfal 41 – At-Taubah 92 (وَاعْلَمُوا)' },
+  11: { number: 11, surahNumbers: [9, 10, 11], name: 'At-Taubah 93 - Hud 5', arabicName: 'الجزء الحادي عشر', ayahRange: 'At-Taubah 93 – Hud 5 (يَعْتَذِرُونَ)' },
+  12: { number: 12, surahNumbers: [11, 12], name: 'Hud 6 - Yusuf 52', arabicName: 'الجزء الثاني عشر', ayahRange: 'Hud 6 – Yusuf 52 (وَمَا مِنْ دَابَّةٍ)' },
+  13: { number: 13, surahNumbers: [12, 13, 14], name: 'Yusuf 53 - Ibrahim 52', arabicName: 'الجزء الثالث عشر', ayahRange: 'Yusuf 53 – Ibrahim 52 (وَمَا أُبَرِّئُ)' },
+  14: { number: 14, surahNumbers: [15, 16], name: 'Al-Hijr 1 - An-Nahl 128', arabicName: 'الجزء الرابع عشر', ayahRange: 'Al-Hijr 1 – An-Nahl 128 (رُبَمَا)' },
+  15: { number: 15, surahNumbers: [17, 18], name: 'Al-Isra\' 1 - Al-Kahf 74', arabicName: 'الجزء الخامس عشر', ayahRange: 'Al-Isra\' 1 – Al-Kahf 74 (سُبْحَانَ الَّذِي)' },
+  16: { number: 16, surahNumbers: [18, 19, 20], name: 'Al-Kahf 75 - Taha 135', arabicName: 'الجزء السادس عشر', ayahRange: 'Al-Kahf 75 – Taha 135 (قَالَ أَلَمْ أَقُلْ)' },
+  17: { number: 17, surahNumbers: [21, 22], name: 'Al-Anbiya\' 1 - Al-Hajj 78', arabicName: 'الجزء السابع عشر', ayahRange: 'Al-Anbiya\' 1 – Al-Hajj 78 (اقْتَرَبَ لِلنَّاسِ)' },
+  18: { number: 18, surahNumbers: [23, 24, 25], name: 'Al-Mu\'minun 1 - Al-Furqan 20', arabicName: 'الجزء الثامن عشر', ayahRange: 'Al-Mu\'minun 1 – Al-Furqan 20 (قَدْ أَفْلَحَ)' },
+  19: { number: 19, surahNumbers: [25, 26, 27], name: 'Al-Furqan 21 - An-Naml 55', arabicName: 'الجزء التاسع عشر', ayahRange: 'Al-Furqan 21 – An-Naml 55 (وَقَالَ الَّذِينَ)' },
+  20: { number: 20, surahNumbers: [27, 28, 29], name: 'An-Naml 56 - Al-\'Ankabut 45', arabicName: 'الجزء العشرون', ayahRange: 'An-Naml 56 – Al-\'Ankabut 45 (فَمَا كَانَ جَوَابَ)' },
+  21: { number: 21, surahNumbers: [29, 30, 31, 32, 33], name: 'Al-\'Ankabut 46 - Al-Ahzab 30', arabicName: 'الجزء الحادي والعشرون', ayahRange: 'Al-\'Ankabut 46 – Al-Ahzab 30 (وَلَا تُجَادِلُوا)' },
+  22: { number: 22, surahNumbers: [33, 34, 35, 36], name: 'Al-Ahzab 31 - Yasin 27', arabicName: 'الجزء الثاني والعشرون', ayahRange: 'Al-Ahzab 31 – Yasin 27 (وَمَنْ يَقْنُتْ)' },
+  23: { number: 23, surahNumbers: [36, 37, 38, 39], name: 'Yasin 28 - Az-Zumar 31', arabicName: 'الجزء الثالث والعشرون', ayahRange: 'Yasin 28 – Az-Zumar 31 (وَمَا أَنْزَلْنَا)' },
+  24: { number: 24, surahNumbers: [39, 40, 41], name: 'Az-Zumar 32 - Fussilat 46', arabicName: 'الجزء الرابع والعشرون', ayahRange: 'Az-Zumar 32 – Fussilat 46 (فَمَنْ أَظْلَمُ)' },
+  25: { number: 25, surahNumbers: [41, 42, 43, 44, 45], name: 'Fussilat 47 - Al-Jasiyah 37', arabicName: 'الجزء الخامس والعشرون', ayahRange: 'Fussilat 47 – Al-Jasiyah 37 (إِلَيْهِ يُرَدُّ)' },
+  26: { number: 26, surahNumbers: [46, 47, 48, 49, 50, 51], name: 'Al-Ahqaf 1 - Az-Zariyat 30', arabicName: 'الجزء السادس والعشرون', ayahRange: 'Al-Ahqaf 1 – Az-Zariyat 30 (حم)' },
+  27: { number: 27, surahNumbers: [51, 52, 53, 54, 55, 56, 57], name: 'Az-Zariyat 31 - Al-Hadid 29', arabicName: 'الجزء السابع والعشرون', ayahRange: 'Az-Zariyat 31 – Al-Hadid 29 (قَالَ فَمَا خَطْبُكُمْ)' },
+  28: { number: 28, surahNumbers: [58, 59, 60, 61, 62, 63, 64, 65, 66], name: 'Al-Mujadilah 1 - At-Tahrim 12', arabicName: 'الجزء الثامن والعشرون', ayahRange: 'Al-Mujadilah 1 – At-Tahrim 12 (قَدْ سَمِعَ)' },
+  29: { number: 29, surahNumbers: [67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77], name: 'Al-Mulk 1 - Al-Mursalat 50', arabicName: 'الجزء التاسع والعشرون', ayahRange: 'Al-Mulk 1 – Al-Mursalat 50 (تَبَارَكَ الَّذِي)' },
+  30: { number: 30, surahNumbers: Array.from({ length: 37 }, (_, i) => 78 + i), name: 'An-Naba\' 1 - An-Nas 6 (Juz \'Amma)', arabicName: 'الجزء الثلاثون (جزء عم)', ayahRange: 'An-Naba\' 1 – An-Nas 6 (عَمَّ يَتَسَاءَلُونَ)' }
+};
+
+export function getSurahsInJuz(juzNumber: number): SurahMeta[] {
+  const juz = JUZ_MAP[juzNumber];
+  if (!juz) return [];
+  return SURAH_LIST.filter(s => juz.surahNumbers.includes(s.number));
+}
+
+export function getSurahJuzList(surahNumber: number): number[] {
+  const result: number[] = [];
+  for (let j = 1; j <= 30; j++) {
+    if (JUZ_MAP[j]?.surahNumbers.includes(surahNumber)) {
+      result.push(j);
+    }
+  }
+  return result.length > 0 ? result : [1];
+}
+
+export function getAyatJuzNumber(surahNumber: number, ayahNumber: number): number {
+  if (surahNumber === 1) return 1;
+  if (surahNumber === 2) {
+    if (ayahNumber <= 141) return 1;
+    if (ayahNumber <= 252) return 2;
+    return 3;
+  }
+  if (surahNumber === 3) {
+    if (ayahNumber <= 92) return 3;
+    return 4;
+  }
+  if (surahNumber === 4) {
+    if (ayahNumber <= 23) return 4;
+    if (ayahNumber <= 147) return 5;
+    return 6;
+  }
+  if (surahNumber === 5) {
+    if (ayahNumber <= 81) return 6;
+    return 7;
+  }
+  if (surahNumber === 6) {
+    if (ayahNumber <= 110) return 7;
+    return 8;
+  }
+  if (surahNumber === 7) {
+    if (ayahNumber <= 87) return 8;
+    return 9;
+  }
+  if (surahNumber === 8) {
+    if (ayahNumber <= 40) return 9;
+    return 10;
+  }
+  if (surahNumber === 9) {
+    if (ayahNumber <= 92) return 10;
+    return 11;
+  }
+  if (surahNumber === 10) return 11;
+  if (surahNumber === 11) {
+    if (ayahNumber <= 5) return 11;
+    return 12;
+  }
+  if (surahNumber === 12) {
+    if (ayahNumber <= 52) return 12;
+    return 13;
+  }
+  if (surahNumber === 13 || surahNumber === 14) return 13;
+  if (surahNumber === 15 || surahNumber === 16) return 14;
+  if (surahNumber === 17) return 15;
+  if (surahNumber === 18) {
+    if (ayahNumber <= 74) return 15;
+    return 16;
+  }
+  if (surahNumber === 19 || surahNumber === 20) return 16;
+  if (surahNumber === 21 || surahNumber === 22) return 17;
+  if (surahNumber === 23 || surahNumber === 24) return 18;
+  if (surahNumber === 25) {
+    if (ayahNumber <= 20) return 18;
+    return 19;
+  }
+  if (surahNumber === 26) return 19;
+  if (surahNumber === 27) {
+    if (ayahNumber <= 55) return 19;
+    return 20;
+  }
+  if (surahNumber === 28) return 20;
+  if (surahNumber === 29) {
+    if (ayahNumber <= 45) return 20;
+    return 21;
+  }
+  if (surahNumber >= 30 && surahNumber <= 32) return 21;
+  if (surahNumber === 33) {
+    if (ayahNumber <= 30) return 21;
+    return 22;
+  }
+  if (surahNumber === 34 || surahNumber === 35) return 22;
+  if (surahNumber === 36) {
+    if (ayahNumber <= 27) return 22;
+    return 23;
+  }
+  if (surahNumber === 37 || surahNumber === 38) return 23;
+  if (surahNumber === 39) {
+    if (ayahNumber <= 31) return 23;
+    return 24;
+  }
+  if (surahNumber === 40) return 24;
+  if (surahNumber === 41) {
+    if (ayahNumber <= 46) return 24;
+    return 25;
+  }
+  if (surahNumber >= 42 && surahNumber <= 45) return 25;
+  if (surahNumber >= 46 && surahNumber <= 50) return 26;
+  if (surahNumber === 51) {
+    if (ayahNumber <= 30) return 26;
+    return 27;
+  }
+  if (surahNumber >= 52 && surahNumber <= 57) return 27;
+  if (surahNumber >= 58 && surahNumber <= 66) return 28;
+  if (surahNumber >= 67 && surahNumber <= 77) return 29;
+  if (surahNumber >= 78 && surahNumber <= 114) return 30;
+  return 1;
+}
+
 export const SURAH_LIST: SurahMeta[] = [
-  { number: 1, name: 'الفاتحة', latinName: 'Al-Fatihah', meaning: 'Pembukaan', ayahCount: 7, revelationPlace: 'Makkah', juzStart: 1 },
-  { number: 2, name: 'البقرة', latinName: 'Al-Baqarah', meaning: 'Sapi Betina', ayahCount: 286, revelationPlace: 'Madinah', juzStart: 1 },
-  { number: 3, name: 'آل عمران', latinName: 'Ali \'Imran', meaning: 'Keluarga Imran', ayahCount: 200, revelationPlace: 'Madinah', juzStart: 3 },
-  { number: 4, name: 'النساء', latinName: 'An-Nisa\'', meaning: 'Wanita', ayahCount: 176, revelationPlace: 'Madinah', juzStart: 4 },
-  { number: 5, name: 'المائدة', latinName: 'Al-Ma\'idah', meaning: 'Hidangan', ayahCount: 120, revelationPlace: 'Madinah', juzStart: 6 },
-  { number: 6, name: 'الأنعام', latinName: 'Al-An\'am', meaning: 'Binatang Ternak', ayahCount: 165, revelationPlace: 'Makkah', juzStart: 7 },
-  { number: 7, name: 'الأعراف', latinName: 'Al-A\'raf', meaning: 'Tempat Tertinggi', ayahCount: 206, revelationPlace: 'Makkah', juzStart: 8 },
-  { number: 8, name: 'الأنفال', latinName: 'Al-Anfal', meaning: 'Harta Rampasan Perang', ayahCount: 75, revelationPlace: 'Madinah', juzStart: 9 },
-  { number: 9, name: 'التوبة', latinName: 'At-Taubah', meaning: 'Pengampunan', ayahCount: 129, revelationPlace: 'Madinah', juzStart: 10 },
-  { number: 10, name: 'يونس', latinName: 'Yunus', meaning: 'Nabi Yunus', ayahCount: 109, revelationPlace: 'Makkah', juzStart: 11 },
-  { number: 11, name: 'هود', latinName: 'Hud', meaning: 'Nabi Hud', ayahCount: 123, revelationPlace: 'Makkah', juzStart: 11 },
-  { number: 12, name: 'يوسف', latinName: 'Yusuf', meaning: 'Nabi Yusuf', ayahCount: 111, revelationPlace: 'Makkah', juzStart: 12 },
-  { number: 13, name: 'الرعد', latinName: 'Ar-Ra\'d', meaning: 'Guruh', ayahCount: 43, revelationPlace: 'Madinah', juzStart: 13 },
-  { number: 14, name: 'إبراهيم', latinName: 'Ibrahim', meaning: 'Nabi Ibrahim', ayahCount: 52, revelationPlace: 'Makkah', juzStart: 13 },
-  { number: 15, name: 'الحجر', latinName: 'Al-Hijr', meaning: 'Gunung Al-Hijr', ayahCount: 99, revelationPlace: 'Makkah', juzStart: 14 },
-  { number: 16, name: 'النحل', latinName: 'An-Nahl', meaning: 'Lebah', ayahCount: 128, revelationPlace: 'Makkah', juzStart: 14 },
-  { number: 17, name: 'الإسراء', latinName: 'Al-Isra\'', meaning: 'Perjalanan Malam', ayahCount: 111, revelationPlace: 'Makkah', juzStart: 15 },
-  { number: 18, name: 'الكهف', latinName: 'Al-Kahf', meaning: 'Penghuni Gua', ayahCount: 110, revelationPlace: 'Makkah', juzStart: 15 },
-  { number: 19, name: 'مريم', latinName: 'Maryam', meaning: 'Maryam', ayahCount: 98, revelationPlace: 'Makkah', juzStart: 16 },
-  { number: 20, name: 'طه', latinName: 'Taha', meaning: 'Taha', ayahCount: 135, revelationPlace: 'Makkah', juzStart: 16 },
-  { number: 21, name: 'الأنبياء', latinName: 'Al-Anbiya\'', meaning: 'Para Nabi', ayahCount: 112, revelationPlace: 'Makkah', juzStart: 17 },
-  { number: 22, name: 'الحج', latinName: 'Al-Hajj', meaning: 'Haji', ayahCount: 78, revelationPlace: 'Madinah', juzStart: 17 },
-  { number: 23, name: 'المؤمنون', latinName: 'Al-Mu\'minun', meaning: 'Orang-Orang Mukmin', ayahCount: 118, revelationPlace: 'Makkah', juzStart: 18 },
-  { number: 24, name: 'النور', latinName: 'An-Nur', meaning: 'Cahaya', ayahCount: 64, revelationPlace: 'Madinah', juzStart: 18 },
-  { number: 25, name: 'الفرقان', latinName: 'Al-Furqan', meaning: 'Pembeda', ayahCount: 77, revelationPlace: 'Makkah', juzStart: 18 },
-  { number: 26, name: 'الشعراء', latinName: 'Asy-Syu\'ara\'', meaning: 'Penyair', ayahCount: 227, revelationPlace: 'Makkah', juzStart: 19 },
-  { number: 27, name: 'النمل', latinName: 'An-Naml', meaning: 'Semut', ayahCount: 93, revelationPlace: 'Makkah', juzStart: 19 },
-  { number: 28, name: 'القصص', latinName: 'Al-Qasas', meaning: 'Kisah-Kisah', ayahCount: 88, revelationPlace: 'Makkah', juzStart: 20 },
-  { number: 29, name: 'العنكبوت', latinName: 'Al-\'Ankabut', meaning: 'Laba-Laba', ayahCount: 69, revelationPlace: 'Makkah', juzStart: 20 },
-  { number: 30, name: 'الروم', latinName: 'Ar-Rum', meaning: 'Bangsa Romawi', ayahCount: 60, revelationPlace: 'Makkah', juzStart: 21 },
-  { number: 31, name: 'لقمان', latinName: 'Luqman', meaning: 'Luqman', ayahCount: 34, revelationPlace: 'Makkah', juzStart: 21 },
-  { number: 32, name: 'السجدة', latinName: 'As-Sajdah', meaning: 'Sujud', ayahCount: 30, revelationPlace: 'Makkah', juzStart: 21 },
-  { number: 33, name: 'الأحزاب', latinName: 'Al-Ahzab', meaning: 'Golongan yang Bersekutu', ayahCount: 73, revelationPlace: 'Madinah', juzStart: 21 },
-  { number: 34, name: 'سبأ', latinName: 'Saba\'', meaning: 'Kaum Saba\'', ayahCount: 54, revelationPlace: 'Makkah', juzStart: 22 },
-  { number: 35, name: 'فاطر', latinName: 'Fatir', meaning: 'Pencipta', ayahCount: 45, revelationPlace: 'Makkah', juzStart: 22 },
-  { number: 36, name: 'يس', latinName: 'Yasin', meaning: 'Yasin', ayahCount: 83, revelationPlace: 'Makkah', juzStart: 22 },
-  { number: 37, name: 'الصافات', latinName: 'As-Saffat', meaning: 'Barisan-Barisan', ayahCount: 182, revelationPlace: 'Makkah', juzStart: 23 },
-  { number: 38, name: 'ص', latinName: 'Sad', meaning: 'Sad', ayahCount: 88, revelationPlace: 'Makkah', juzStart: 23 },
-  { number: 39, name: 'الزمر', latinName: 'Az-Zumar', meaning: 'Rombongan', ayahCount: 75, revelationPlace: 'Makkah', juzStart: 23 },
-  { number: 40, name: 'غافر', latinName: 'Ghafir', meaning: 'Yang Mengampuni', ayahCount: 85, revelationPlace: 'Makkah', juzStart: 24 },
-  { number: 41, name: 'فصلت', latinName: 'Fussilat', meaning: 'Yang Dijelaskan', ayahCount: 54, revelationPlace: 'Makkah', juzStart: 24 },
-  { number: 42, name: 'الشورى', latinName: 'Asy-Syura', meaning: 'Musyawarah', ayahCount: 53, revelationPlace: 'Makkah', juzStart: 25 },
-  { number: 43, name: 'الزخرف', latinName: 'Az-Zukhruf', meaning: 'Perhiasan', ayahCount: 89, revelationPlace: 'Makkah', juzStart: 25 },
-  { number: 44, name: 'الدخان', latinName: 'Ad-Dukhan', meaning: 'Kabut', ayahCount: 59, revelationPlace: 'Makkah', juzStart: 25 },
-  { number: 45, name: 'الجاثية', latinName: 'Al-Jasiyah', meaning: 'Yang Berlutut', ayahCount: 37, revelationPlace: 'Makkah', juzStart: 25 },
-  { number: 46, name: 'الأحقاف', latinName: 'Al-Ahqaf', meaning: 'Bukit-Bukit Pasir', ayahCount: 35, revelationPlace: 'Makkah', juzStart: 26 },
-  { number: 47, name: 'محمد', latinName: 'Muhammad', meaning: 'Nabi Muhammad', ayahCount: 38, revelationPlace: 'Madinah', juzStart: 26 },
-  { number: 48, name: 'الفتح', latinName: 'Al-Fath', meaning: 'Kemenangan', ayahCount: 29, revelationPlace: 'Madinah', juzStart: 26 },
-  { number: 49, name: 'الحجرات', latinName: 'Al-Hujurat', meaning: 'Kamar-Kamar', ayahCount: 18, revelationPlace: 'Madinah', juzStart: 26 },
-  { number: 50, name: 'ق', latinName: 'Qaf', meaning: 'Qaf', ayahCount: 45, revelationPlace: 'Makkah', juzStart: 26 },
-  { number: 51, name: 'الذاريات', latinName: 'Az-Zariyat', meaning: 'Angin yang Menerbangkan', ayahCount: 60, revelationPlace: 'Makkah', juzStart: 26 },
-  { number: 52, name: 'الطور', latinName: 'At-Tur', meaning: 'Bukit Tursina', ayahCount: 49, revelationPlace: 'Makkah', juzStart: 27 },
-  { number: 53, name: 'النجم', latinName: 'An-Najm', meaning: 'Bintang', ayahCount: 62, revelationPlace: 'Makkah', juzStart: 27 },
-  { number: 54, name: 'القمر', latinName: 'Al-Qamar', meaning: 'Bulan', ayahCount: 55, revelationPlace: 'Makkah', juzStart: 27 },
-  { number: 55, name: 'الرحمن', latinName: 'Ar-Rahman', meaning: 'Maha Pengasih', ayahCount: 78, revelationPlace: 'Madinah', juzStart: 27 },
-  { number: 56, name: 'الواقعة', latinName: 'Al-Waqi\'ah', meaning: 'Hari Kiamat', ayahCount: 96, revelationPlace: 'Makkah', juzStart: 27 },
-  { number: 57, name: 'الحديد', latinName: 'Al-Hadid', meaning: 'Besi', ayahCount: 29, revelationPlace: 'Madinah', juzStart: 27 },
-  { number: 58, name: 'المجادلة', latinName: 'Al-Mujadilah', meaning: 'Gugatan', ayahCount: 22, revelationPlace: 'Madinah', juzStart: 28 },
-  { number: 59, name: 'الحشر', latinName: 'Al-Hasyr', meaning: 'Pengusiran', ayahCount: 24, revelationPlace: 'Madinah', juzStart: 28 },
-  { number: 60, name: 'الممتحنة', latinName: 'Al-Mumtahanah', meaning: 'Wanita yang Diuji', ayahCount: 13, revelationPlace: 'Madinah', juzStart: 28 },
-  { number: 61, name: 'الصف', latinName: 'As-Saff', meaning: 'Barisan', ayahCount: 14, revelationPlace: 'Madinah', juzStart: 28 },
-  { number: 62, name: 'الجمعة', latinName: 'Al-Jumu\'ah', meaning: 'Hari Jumat', ayahCount: 11, revelationPlace: 'Madinah', juzStart: 28 },
-  { number: 63, name: 'المنافقون', latinName: 'Al-Munafiqun', meaning: 'Orang-Orang Munafik', ayahCount: 11, revelationPlace: 'Madinah', juzStart: 28 },
-  { number: 64, name: 'التغابن', latinName: 'At-Taghabun', meaning: 'Hari Ditampakkan Kesalahan', ayahCount: 18, revelationPlace: 'Madinah', juzStart: 28 },
-  { number: 65, name: 'الطلاق', latinName: 'At-Talaq', meaning: 'Talak', ayahCount: 12, revelationPlace: 'Madinah', juzStart: 28 },
-  { number: 66, name: 'التحريم', latinName: 'At-Tahrim', meaning: 'Pengharaman', ayahCount: 12, revelationPlace: 'Madinah', juzStart: 28 },
-  { number: 67, name: 'الملك', latinName: 'Al-Mulk', meaning: 'Kerajaan', ayahCount: 30, revelationPlace: 'Makkah', juzStart: 29 },
-  { number: 68, name: 'القلم', latinName: 'Al-Qalam', meaning: 'Pena', ayahCount: 52, revelationPlace: 'Makkah', juzStart: 29 },
-  { number: 69, name: 'الحاقة', latinName: 'Al-Haqqah', meaning: 'Hari Kiamat', ayahCount: 52, revelationPlace: 'Makkah', juzStart: 29 },
-  { number: 70, name: 'المعارج', latinName: 'Al-Ma\'arij', meaning: 'Tempat Naik', ayahCount: 44, revelationPlace: 'Makkah', juzStart: 29 },
-  { number: 71, name: 'نوح', latinName: 'Nuh', meaning: 'Nabi Nuh', ayahCount: 28, revelationPlace: 'Makkah', juzStart: 29 },
-  { number: 72, name: 'الجن', latinName: 'Al-Jinn', meaning: 'Jin', ayahCount: 28, revelationPlace: 'Makkah', juzStart: 29 },
-  { number: 73, name: 'المزمل', latinName: 'Al-Muzzammil', meaning: 'Orang yang Berselimut', ayahCount: 20, revelationPlace: 'Makkah', juzStart: 29 },
-  { number: 74, name: 'المدثر', latinName: 'Al-Muddassir', meaning: 'Orang yang Berkemul', ayahCount: 56, revelationPlace: 'Makkah', juzStart: 29 },
-  { number: 75, name: 'القيامة', latinName: 'Al-Qiyamah', meaning: 'Hari Kiamat', ayahCount: 40, revelationPlace: 'Makkah', juzStart: 29 },
-  { number: 76, name: 'الإنسان', latinName: 'Al-Insan', meaning: 'Manusia', ayahCount: 31, revelationPlace: 'Madinah', juzStart: 29 },
-  { number: 77, name: 'المرسلات', latinName: 'Al-Mursalat', meaning: 'Malaikat yang Diutus', ayahCount: 50, revelationPlace: 'Makkah', juzStart: 29 },
-  { number: 78, name: 'النبأ', latinName: 'An-Naba\'', meaning: 'Berita Besar', ayahCount: 40, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 79, name: 'النازعات', latinName: 'An-Nazi\'at', meaning: 'Malaikat Pencabut Nyawa', ayahCount: 46, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 80, name: 'عبس', latinName: '\'Abasa', meaning: 'Bermuka Masam', ayahCount: 42, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 81, name: 'التكوير', latinName: 'At-Takwir', meaning: 'Penggulungan', ayahCount: 29, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 82, name: 'الانفطار', latinName: 'Al-Infitar', meaning: 'Terbelah', ayahCount: 19, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 83, name: 'المطففين', latinName: 'Al-Mutaffifin', meaning: 'Orang-Orang Curang', ayahCount: 36, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 84, name: 'الانشقاق', latinName: 'Al-Insyiqaq', meaning: 'Terbelah', ayahCount: 25, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 85, name: 'البروج', latinName: 'Al-Buruj', meaning: 'Gugusan Bintang', ayahCount: 22, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 86, name: 'الطارق', latinName: 'At-Tariq', meaning: 'Yang Datang di Malam Hari', ayahCount: 17, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 87, name: 'الأعلى', latinName: 'Al-A\'la', meaning: 'Maha Tinggi', ayahCount: 19, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 88, name: 'الغاشية', latinName: 'Al-Ghasyiyah', meaning: 'Hari Pembalasan', ayahCount: 26, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 89, name: 'الفجر', latinName: 'Al-Fajr', meaning: 'Fajar', ayahCount: 30, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 90, name: 'البلد', latinName: 'Al-Balad', meaning: 'Negeri', ayahCount: 20, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 91, name: 'الشمس', latinName: 'Asy-Syams', meaning: 'Matahari', ayahCount: 15, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 92, name: 'الليل', latinName: 'Al-Lail', meaning: 'Malam', ayahCount: 21, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 93, name: 'الضحى', latinName: 'Ad-Duha', meaning: 'Waktu Dhuha', ayahCount: 11, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 94, name: 'الشرح', latinName: 'Asy-Syarh', meaning: 'Kelapangan', ayahCount: 8, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 95, name: 'التين', latinName: 'At-Tin', meaning: 'Buah Tin', ayahCount: 8, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 96, name: 'العلق', latinName: 'Al-\'Alaq', meaning: 'Segumpal Darah', ayahCount: 19, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 97, name: 'القدر', latinName: 'Al-Qadr', meaning: 'Kemuliaan', ayahCount: 5, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 98, name: 'البينة', latinName: 'Al-Bayyinah', meaning: 'Bukti Nyata', ayahCount: 8, revelationPlace: 'Madinah', juzStart: 30 },
-  { number: 99, name: 'الزلزلة', latinName: 'Az-Zalzalah', meaning: 'Guncangan', ayahCount: 8, revelationPlace: 'Madinah', juzStart: 30 },
-  { number: 100, name: 'العاديات', latinName: 'Al-\'Adiyat', meaning: 'Kuda yang Berlari Kencang', ayahCount: 11, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 101, name: 'القارعة', latinName: 'Al-Qari\'ah', meaning: 'Hari Kiamat yang Menggemparkan', ayahCount: 11, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 102, name: 'التكاثر', latinName: 'At-Takasur', meaning: 'Bermegah-Megahan', ayahCount: 8, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 103, name: 'العصر', latinName: 'Al-\'Asr', meaning: 'Masa / Waktu', ayahCount: 3, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 104, name: 'الهمزة', latinName: 'Al-Humazah', meaning: 'Pengumpat', ayahCount: 9, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 105, name: 'الفيل', latinName: 'Al-Fil', meaning: 'Gajah', ayahCount: 5, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 106, name: 'قريش', latinName: 'Quraisy', meaning: 'Suku Quraisy', ayahCount: 4, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 107, name: 'الماعون', latinName: 'Al-Ma\'un', meaning: 'Barang-Barang yang Berguna', ayahCount: 7, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 108, name: 'الكوثر', latinName: 'Al-Kausar', meaning: 'Nikmat yang Berlimpah', ayahCount: 3, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 109, name: 'الكافرون', latinName: 'Al-Kafirun', meaning: 'Orang-Orang Kafir', ayahCount: 6, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 110, name: 'النصر', latinName: 'An-Nasr', meaning: 'Pertolongan', ayahCount: 3, revelationPlace: 'Madinah', juzStart: 30 },
-  { number: 111, name: 'المسد', latinName: 'Al-Lahab', meaning: 'Gejolak Api / Sabut', ayahCount: 5, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 112, name: 'الإخلاص', latinName: 'Al-Ikhlas', meaning: 'Kemurnian Keesaan Allah', ayahCount: 4, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 113, name: 'الفلق', latinName: 'Al-Falaq', meaning: 'Waktu Subuh', ayahCount: 5, revelationPlace: 'Makkah', juzStart: 30 },
-  { number: 114, name: 'الناس', latinName: 'An-Nas', meaning: 'Manusia', ayahCount: 6, revelationPlace: 'Makkah', juzStart: 30 }
+  { number: 1, name: 'الفاتحة', latinName: 'Al-Fatihah', meaning: 'Pembukaan', ayahCount: 7, revelationPlace: 'Makkah', juzStart: 1, juzList: [1] },
+  { number: 2, name: 'البقرة', latinName: 'Al-Baqarah', meaning: 'Sapi Betina', ayahCount: 286, revelationPlace: 'Madinah', juzStart: 1, juzList: [1, 2, 3] },
+  { number: 3, name: 'آل عمران', latinName: 'Ali \'Imran', meaning: 'Keluarga Imran', ayahCount: 200, revelationPlace: 'Madinah', juzStart: 3, juzList: [3, 4] },
+  { number: 4, name: 'النساء', latinName: 'An-Nisa\'', meaning: 'Wanita', ayahCount: 176, revelationPlace: 'Madinah', juzStart: 4, juzList: [4, 5, 6] },
+  { number: 5, name: 'المائدة', latinName: 'Al-Ma\'idah', meaning: 'Hidangan', ayahCount: 120, revelationPlace: 'Madinah', juzStart: 6, juzList: [6, 7] },
+  { number: 6, name: 'الأنعام', latinName: 'Al-An\'am', meaning: 'Binatang Ternak', ayahCount: 165, revelationPlace: 'Makkah', juzStart: 7, juzList: [7, 8] },
+  { number: 7, name: 'الأعراف', latinName: 'Al-A\'raf', meaning: 'Tempat Tertinggi', ayahCount: 206, revelationPlace: 'Makkah', juzStart: 8, juzList: [8, 9] },
+  { number: 8, name: 'الأنفال', latinName: 'Al-Anfal', meaning: 'Harta Rampasan Perang', ayahCount: 75, revelationPlace: 'Madinah', juzStart: 9, juzList: [9, 10] },
+  { number: 9, name: 'التوبة', latinName: 'At-Taubah', meaning: 'Pengampunan', ayahCount: 129, revelationPlace: 'Madinah', juzStart: 10, juzList: [10, 11] },
+  { number: 10, name: 'يونس', latinName: 'Yunus', meaning: 'Nabi Yunus', ayahCount: 109, revelationPlace: 'Makkah', juzStart: 11, juzList: [11] },
+  { number: 11, name: 'هود', latinName: 'Hud', meaning: 'Nabi Hud', ayahCount: 123, revelationPlace: 'Makkah', juzStart: 11, juzList: [11, 12] },
+  { number: 12, name: 'يوسف', latinName: 'Yusuf', meaning: 'Nabi Yusuf', ayahCount: 111, revelationPlace: 'Makkah', juzStart: 12, juzList: [12, 13] },
+  { number: 13, name: 'الرعد', latinName: 'Ar-Ra\'d', meaning: 'Guruh', ayahCount: 43, revelationPlace: 'Madinah', juzStart: 13, juzList: [13] },
+  { number: 14, name: 'إبراهيم', latinName: 'Ibrahim', meaning: 'Nabi Ibrahim', ayahCount: 52, revelationPlace: 'Makkah', juzStart: 13, juzList: [13] },
+  { number: 15, name: 'الحجر', latinName: 'Al-Hijr', meaning: 'Gunung Al-Hijr', ayahCount: 99, revelationPlace: 'Makkah', juzStart: 14, juzList: [14] },
+  { number: 16, name: 'النحل', latinName: 'An-Nahl', meaning: 'Lebah', ayahCount: 128, revelationPlace: 'Makkah', juzStart: 14, juzList: [14] },
+  { number: 17, name: 'الإسراء', latinName: 'Al-Isra\'', meaning: 'Perjalanan Malam', ayahCount: 111, revelationPlace: 'Makkah', juzStart: 15, juzList: [15] },
+  { number: 18, name: 'الكهف', latinName: 'Al-Kahf', meaning: 'Penghuni Gua', ayahCount: 110, revelationPlace: 'Makkah', juzStart: 15, juzList: [15, 16] },
+  { number: 19, name: 'مريم', latinName: 'Maryam', meaning: 'Maryam', ayahCount: 98, revelationPlace: 'Makkah', juzStart: 16, juzList: [16] },
+  { number: 20, name: 'طه', latinName: 'Taha', meaning: 'Taha', ayahCount: 135, revelationPlace: 'Makkah', juzStart: 16, juzList: [16] },
+  { number: 21, name: 'الأنبياء', latinName: 'Al-Anbiya\'', meaning: 'Para Nabi', ayahCount: 112, revelationPlace: 'Makkah', juzStart: 17, juzList: [17] },
+  { number: 22, name: 'الحج', latinName: 'Al-Hajj', meaning: 'Haji', ayahCount: 78, revelationPlace: 'Madinah', juzStart: 17, juzList: [17] },
+  { number: 23, name: 'المؤمنون', latinName: 'Al-Mu\'minun', meaning: 'Orang-Orang Mukmin', ayahCount: 118, revelationPlace: 'Makkah', juzStart: 18, juzList: [18] },
+  { number: 24, name: 'النور', latinName: 'An-Nur', meaning: 'Cahaya', ayahCount: 64, revelationPlace: 'Madinah', juzStart: 18, juzList: [18] },
+  { number: 25, name: 'الفرقان', latinName: 'Al-Furqan', meaning: 'Pembeda', ayahCount: 77, revelationPlace: 'Makkah', juzStart: 18, juzList: [18, 19] },
+  { number: 26, name: 'الشعراء', latinName: 'Asy-Syu\'ara\'', meaning: 'Penyair', ayahCount: 227, revelationPlace: 'Makkah', juzStart: 19, juzList: [19] },
+  { number: 27, name: 'النمل', latinName: 'An-Naml', meaning: 'Semut', ayahCount: 93, revelationPlace: 'Makkah', juzStart: 19, juzList: [19, 20] },
+  { number: 28, name: 'القصص', latinName: 'Al-Qasas', meaning: 'Kisah-Kisah', ayahCount: 88, revelationPlace: 'Makkah', juzStart: 20, juzList: [20] },
+  { number: 29, name: 'العنكبوت', latinName: 'Al-\'Ankabut', meaning: 'Laba-Laba', ayahCount: 69, revelationPlace: 'Makkah', juzStart: 20, juzList: [20, 21] },
+  { number: 30, name: 'الروم', latinName: 'Ar-Rum', meaning: 'Bangsa Romawi', ayahCount: 60, revelationPlace: 'Makkah', juzStart: 21, juzList: [21] },
+  { number: 31, name: 'لقمان', latinName: 'Luqman', meaning: 'Luqman', ayahCount: 34, revelationPlace: 'Makkah', juzStart: 21, juzList: [21] },
+  { number: 32, name: 'السجدة', latinName: 'As-Sajdah', meaning: 'Sujud', ayahCount: 30, revelationPlace: 'Makkah', juzStart: 21, juzList: [21] },
+  { number: 33, name: 'الأحزاب', latinName: 'Al-Ahzab', meaning: 'Golongan yang Bersekutu', ayahCount: 73, revelationPlace: 'Madinah', juzStart: 21, juzList: [21, 22] },
+  { number: 34, name: 'سبأ', latinName: 'Saba\'', meaning: 'Kaum Saba\'', ayahCount: 54, revelationPlace: 'Makkah', juzStart: 22, juzList: [22] },
+  { number: 35, name: 'فاطر', latinName: 'Fatir', meaning: 'Pencipta', ayahCount: 45, revelationPlace: 'Makkah', juzStart: 22, juzList: [22] },
+  { number: 36, name: 'يس', latinName: 'Yasin', meaning: 'Yasin', ayahCount: 83, revelationPlace: 'Makkah', juzStart: 22, juzList: [22, 23] },
+  { number: 37, name: 'الصافات', latinName: 'As-Saffat', meaning: 'Barisan-Barisan', ayahCount: 182, revelationPlace: 'Makkah', juzStart: 23, juzList: [23] },
+  { number: 38, name: 'ص', latinName: 'Sad', meaning: 'Sad', ayahCount: 88, revelationPlace: 'Makkah', juzStart: 23, juzList: [23] },
+  { number: 39, name: 'الزمر', latinName: 'Az-Zumar', meaning: 'Rombongan', ayahCount: 75, revelationPlace: 'Makkah', juzStart: 23, juzList: [23, 24] },
+  { number: 40, name: 'غافر', latinName: 'Ghafir', meaning: 'Yang Mengampuni', ayahCount: 85, revelationPlace: 'Makkah', juzStart: 24, juzList: [24] },
+  { number: 41, name: 'فصلت', latinName: 'Fussilat', meaning: 'Yang Dijelaskan', ayahCount: 54, revelationPlace: 'Makkah', juzStart: 24, juzList: [24, 25] },
+  { number: 42, name: 'الشورى', latinName: 'Asy-Syura', meaning: 'Musyawarah', ayahCount: 53, revelationPlace: 'Makkah', juzStart: 25, juzList: [25] },
+  { number: 43, name: 'الزخرف', latinName: 'Az-Zukhruf', meaning: 'Perhiasan', ayahCount: 89, revelationPlace: 'Makkah', juzStart: 25, juzList: [25] },
+  { number: 44, name: 'الدخان', latinName: 'Ad-Dukhan', meaning: 'Kabut', ayahCount: 59, revelationPlace: 'Makkah', juzStart: 25, juzList: [25] },
+  { number: 45, name: 'الجاثية', latinName: 'Al-Jasiyah', meaning: 'Yang Berlutut', ayahCount: 37, revelationPlace: 'Makkah', juzStart: 25, juzList: [25] },
+  { number: 46, name: 'الأحقاف', latinName: 'Al-Ahqaf', meaning: 'Bukit-Bukit Pasir', ayahCount: 35, revelationPlace: 'Makkah', juzStart: 26, juzList: [26] },
+  { number: 47, name: 'محمد', latinName: 'Muhammad', meaning: 'Nabi Muhammad', ayahCount: 38, revelationPlace: 'Madinah', juzStart: 26, juzList: [26] },
+  { number: 48, name: 'الفتح', latinName: 'Al-Fath', meaning: 'Kemenangan', ayahCount: 29, revelationPlace: 'Madinah', juzStart: 26, juzList: [26] },
+  { number: 49, name: 'الحجرات', latinName: 'Al-Hujurat', meaning: 'Kamar-Kamar', ayahCount: 18, revelationPlace: 'Madinah', juzStart: 26, juzList: [26] },
+  { number: 50, name: 'ق', latinName: 'Qaf', meaning: 'Qaf', ayahCount: 45, revelationPlace: 'Makkah', juzStart: 26, juzList: [26] },
+  { number: 51, name: 'الذاريات', latinName: 'Az-Zariyat', meaning: 'Angin yang Menerbangkan', ayahCount: 60, revelationPlace: 'Makkah', juzStart: 26, juzList: [26, 27] },
+  { number: 52, name: 'الطور', latinName: 'At-Tur', meaning: 'Bukit Tursina', ayahCount: 49, revelationPlace: 'Makkah', juzStart: 27, juzList: [27] },
+  { number: 53, name: 'النجم', latinName: 'An-Najm', meaning: 'Bintang', ayahCount: 62, revelationPlace: 'Makkah', juzStart: 27, juzList: [27] },
+  { number: 54, name: 'القمر', latinName: 'Al-Qamar', meaning: 'Bulan', ayahCount: 55, revelationPlace: 'Makkah', juzStart: 27, juzList: [27] },
+  { number: 55, name: 'الرحمن', latinName: 'Ar-Rahman', meaning: 'Maha Pengasih', ayahCount: 78, revelationPlace: 'Madinah', juzStart: 27, juzList: [27] },
+  { number: 56, name: 'الواقعة', latinName: 'Al-Waqi\'ah', meaning: 'Hari Kiamat', ayahCount: 96, revelationPlace: 'Makkah', juzStart: 27, juzList: [27] },
+  { number: 57, name: 'الحديد', latinName: 'Al-Hadid', meaning: 'Besi', ayahCount: 29, revelationPlace: 'Madinah', juzStart: 27, juzList: [27] },
+  { number: 58, name: 'المجادلة', latinName: 'Al-Mujadilah', meaning: 'Gugatan', ayahCount: 22, revelationPlace: 'Madinah', juzStart: 28, juzList: [28] },
+  { number: 59, name: 'الحشر', latinName: 'Al-Hasyr', meaning: 'Pengusiran', ayahCount: 24, revelationPlace: 'Madinah', juzStart: 28, juzList: [28] },
+  { number: 60, name: 'الممتحنة', latinName: 'Al-Mumtahanah', meaning: 'Wanita yang Diuji', ayahCount: 13, revelationPlace: 'Madinah', juzStart: 28, juzList: [28] },
+  { number: 61, name: 'الصف', latinName: 'As-Saff', meaning: 'Barisan', ayahCount: 14, revelationPlace: 'Madinah', juzStart: 28, juzList: [28] },
+  { number: 62, name: 'الجمعة', latinName: 'Al-Jumu\'ah', meaning: 'Hari Jumat', ayahCount: 11, revelationPlace: 'Madinah', juzStart: 28, juzList: [28] },
+  { number: 63, name: 'المنافقون', latinName: 'Al-Munafiqun', meaning: 'Orang-Orang Munafik', ayahCount: 11, revelationPlace: 'Madinah', juzStart: 28, juzList: [28] },
+  { number: 64, name: 'التغابن', latinName: 'At-Taghabun', meaning: 'Hari Ditampakkan Kesalahan', ayahCount: 18, revelationPlace: 'Madinah', juzStart: 28, juzList: [28] },
+  { number: 65, name: 'الطلاق', latinName: 'At-Talaq', meaning: 'Talak', ayahCount: 12, revelationPlace: 'Madinah', juzStart: 28, juzList: [28] },
+  { number: 66, name: 'التحريم', latinName: 'At-Tahrim', meaning: 'Pengharaman', ayahCount: 12, revelationPlace: 'Madinah', juzStart: 28, juzList: [28] },
+  { number: 67, name: 'الملك', latinName: 'Al-Mulk', meaning: 'Kerajaan', ayahCount: 30, revelationPlace: 'Makkah', juzStart: 29, juzList: [29] },
+  { number: 68, name: 'القلم', latinName: 'Al-Qalam', meaning: 'Pena', ayahCount: 52, revelationPlace: 'Makkah', juzStart: 29, juzList: [29] },
+  { number: 69, name: 'الحاقة', latinName: 'Al-Haqqah', meaning: 'Hari Kiamat', ayahCount: 52, revelationPlace: 'Makkah', juzStart: 29, juzList: [29] },
+  { number: 70, name: 'المعارج', latinName: 'Al-Ma\'arij', meaning: 'Tempat Naik', ayahCount: 44, revelationPlace: 'Makkah', juzStart: 29, juzList: [29] },
+  { number: 71, name: 'نوح', latinName: 'Nuh', meaning: 'Nabi Nuh', ayahCount: 28, revelationPlace: 'Makkah', juzStart: 29, juzList: [29] },
+  { number: 72, name: 'الجن', latinName: 'Al-Jinn', meaning: 'Jin', ayahCount: 28, revelationPlace: 'Makkah', juzStart: 29, juzList: [29] },
+  { number: 73, name: 'المزمل', latinName: 'Al-Muzzammil', meaning: 'Orang yang Berselimut', ayahCount: 20, revelationPlace: 'Makkah', juzStart: 29, juzList: [29] },
+  { number: 74, name: 'المدثر', latinName: 'Al-Muddassir', meaning: 'Orang yang Berkemul', ayahCount: 56, revelationPlace: 'Makkah', juzStart: 29, juzList: [29] },
+  { number: 75, name: 'القيامة', latinName: 'Al-Qiyamah', meaning: 'Hari Kiamat', ayahCount: 40, revelationPlace: 'Makkah', juzStart: 29, juzList: [29] },
+  { number: 76, name: 'الإنسان', latinName: 'Al-Insan', meaning: 'Manusia', ayahCount: 31, revelationPlace: 'Madinah', juzStart: 29, juzList: [29] },
+  { number: 77, name: 'المرسلات', latinName: 'Al-Mursalat', meaning: 'Malaikat yang Diutus', ayahCount: 50, revelationPlace: 'Makkah', juzStart: 29, juzList: [29] },
+  { number: 78, name: 'النبأ', latinName: 'An-Naba\'', meaning: 'Berita Besar', ayahCount: 40, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 79, name: 'النازعات', latinName: 'An-Nazi\'at', meaning: 'Malaikat Pencabut Nyawa', ayahCount: 46, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 80, name: 'عبس', latinName: '\'Abasa', meaning: 'Bermuka Masam', ayahCount: 42, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 81, name: 'التكوير', latinName: 'At-Takwir', meaning: 'Penggulungan', ayahCount: 29, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 82, name: 'الانفطار', latinName: 'Al-Infitar', meaning: 'Terbelah', ayahCount: 19, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 83, name: 'المطففين', latinName: 'Al-Mutaffifin', meaning: 'Orang-Orang Curang', ayahCount: 36, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 84, name: 'الانشقاق', latinName: 'Al-Insyiqaq', meaning: 'Terbelah', ayahCount: 25, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 85, name: 'البروج', latinName: 'Al-Buruj', meaning: 'Gugusan Bintang', ayahCount: 22, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 86, name: 'الطارق', latinName: 'At-Tariq', meaning: 'Yang Datang di Malam Hari', ayahCount: 17, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 87, name: 'الأعلى', latinName: 'Al-A\'la', meaning: 'Maha Tinggi', ayahCount: 19, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 88, name: 'الغاشية', latinName: 'Al-Ghasyiyah', meaning: 'Hari Pembalasan', ayahCount: 26, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 89, name: 'الفجر', latinName: 'Al-Fajr', meaning: 'Fajar', ayahCount: 30, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 90, name: 'البلد', latinName: 'Al-Balad', meaning: 'Negeri', ayahCount: 20, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 91, name: 'الشمس', latinName: 'Asy-Syams', meaning: 'Matahari', ayahCount: 15, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 92, name: 'الليل', latinName: 'Al-Lail', meaning: 'Malam', ayahCount: 21, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 93, name: 'الضحى', latinName: 'Ad-Duha', meaning: 'Waktu Dhuha', ayahCount: 11, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 94, name: 'الشرح', latinName: 'Asy-Syarh', meaning: 'Kelapangan', ayahCount: 8, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 95, name: 'التين', latinName: 'At-Tin', meaning: 'Buah Tin', ayahCount: 8, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 96, name: 'العلق', latinName: 'Al-\'Alaq', meaning: 'Segumpal Darah', ayahCount: 19, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 97, name: 'القدر', latinName: 'Al-Qadr', meaning: 'Kemuliaan', ayahCount: 5, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 98, name: 'البينة', latinName: 'Al-Bayyinah', meaning: 'Bukti Nyata', ayahCount: 8, revelationPlace: 'Madinah', juzStart: 30, juzList: [30] },
+  { number: 99, name: 'الزلزلة', latinName: 'Az-Zalzalah', meaning: 'Guncangan', ayahCount: 8, revelationPlace: 'Madinah', juzStart: 30, juzList: [30] },
+  { number: 100, name: 'العاديات', latinName: 'Al-\'Adiyat', meaning: 'Kuda yang Berlari Kencang', ayahCount: 11, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 101, name: 'القارعة', latinName: 'Al-Qari\'ah', meaning: 'Hari Kiamat yang Menggemparkan', ayahCount: 11, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 102, name: 'التكاثر', latinName: 'At-Takasur', meaning: 'Bermegah-Megahan', ayahCount: 8, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 103, name: 'العصر', latinName: 'Al-\'Asr', meaning: 'Masa / Waktu', ayahCount: 3, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 104, name: 'الهمزة', latinName: 'Al-Humazah', meaning: 'Pengumpat', ayahCount: 9, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 105, name: 'الفيل', latinName: 'Al-Fil', meaning: 'Gajah', ayahCount: 5, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 106, name: 'قريش', latinName: 'Quraisy', meaning: 'Suku Quraisy', ayahCount: 4, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 107, name: 'الماعون', latinName: 'Al-Ma\'un', meaning: 'Barang-Barang yang Berguna', ayahCount: 7, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 108, name: 'الكوثر', latinName: 'Al-Kausar', meaning: 'Nikmat yang Berlimpah', ayahCount: 3, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 109, name: 'الكافرون', latinName: 'Al-Kafirun', meaning: 'Orang-Orang Kafir', ayahCount: 6, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 110, name: 'النصر', latinName: 'An-Nasr', meaning: 'Pertolongan', ayahCount: 3, revelationPlace: 'Madinah', juzStart: 30, juzList: [30] },
+  { number: 111, name: 'المسد', latinName: 'Al-Lahab', meaning: 'Gejolak Api / Sabut', ayahCount: 5, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 112, name: 'الإخلاص', latinName: 'Al-Ikhlas', meaning: 'Kemurnian Keesaan Allah', ayahCount: 4, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 113, name: 'الفلق', latinName: 'Al-Falaq', meaning: 'Waktu Subuh', ayahCount: 5, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] },
+  { number: 114, name: 'الناس', latinName: 'An-Nas', meaning: 'Manusia', ayahCount: 6, revelationPlace: 'Makkah', juzStart: 30, juzList: [30] }
 ];
 
 export const SURAHS_DIRECTORY = SURAH_LIST;
@@ -732,7 +892,7 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
       arabicText: String(a.teksArab || ''),
       translation: String(a.teksIndonesia || ''),
       transliteration: String(a.teksLatin || ''),
-      juz: Number(data.juzStart) || (safeSurahNo >= 78 ? 30 : safeSurahNo >= 67 ? 29 : 1),
+      juz: getAyatJuzNumber(safeSurahNo, Number(a.nomorAyat) || 1),
       audioUrl: formatAlafasyAudioUrl(safeSurahNo, Number(a.nomorAyat) || 1),
       tafsirShort: a.tafsirKemenag ? String(a.tafsirKemenag) : undefined
     }));
@@ -754,7 +914,7 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
       arabicText: `بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ (${meta.latinName} Ayat ${i + 1})`,
       translation: `Terjemahan ayat ke-${i + 1} Surat ${meta.latinName}.`,
       transliteration: `Bismillāhir-raḥmānir-raḥīm (${meta.latinName} ${i + 1})`,
-      juz: meta.juzStart,
+      juz: getAyatJuzNumber(safeSurahNo, i + 1),
       audioUrl: formatAlafasyAudioUrl(safeSurahNo, i + 1)
     }));
     return generated;

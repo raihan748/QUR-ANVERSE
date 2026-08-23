@@ -143,7 +143,7 @@ export const MushafView: React.FC = () => {
                 {currentSurahMeta.revelationPlace} • {currentSurahMeta.ayahCount} Ayat
               </span>
               <span className="px-2 py-0.5 text-xs font-bold bg-[#10B981] text-black rounded border border-black">
-                Juz {currentSurahMeta.juzStart}
+                Juz {currentSurahMeta.juzList ? currentSurahMeta.juzList.join(', ') : currentSurahMeta.juzStart}
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
