@@ -144,7 +144,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         {weakVerses.length === 0 ? (
           <div className="text-center py-6 text-xs font-bold text-gray-500">
-            🎉 Belum ada ayat lemah tercatat. Semua setoran muroja'ah Anda lulus di atas 80%!
+            🌱 Belum ada ayat lemah tercatat. Mulai setoran muroja'ah Anda untuk melatih hafalan dari nol!
           </div>
         ) : (
           <div className="space-y-3">

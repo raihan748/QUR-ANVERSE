@@ -7,8 +7,7 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     description: 'Menyelesaikan 1 setoran Muroja\'ah AI dengan skor akurasi di atas 80%.',
     icon: '🌟',
     category: 'murojaah',
-    unlocked: true,
-    unlockedAt: '2026-08-20',
+    unlocked: false,
     xpReward: 200
   },
   {
@@ -17,8 +16,7 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     description: 'Menuntaskan seluruh ayat Surat Al-Fatihah dengan nilai tajwid 100%.',
     icon: '👑',
     category: 'murojaah',
-    unlocked: true,
-    unlockedAt: '2026-08-21',
+    unlocked: false,
     xpReward: 350
   },
   {
@@ -27,8 +25,7 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     description: 'Melakukan muroja\'ah berturut-turut tanpa putus selama 7 hari.',
     icon: '🔥',
     category: 'streak',
-    unlocked: true,
-    unlockedAt: '2026-08-22',
+    unlocked: false,
     xpReward: 500
   },
   {
@@ -59,22 +56,21 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     xpReward: 750
   },
   {
-    id: 'badge_quran_explorer',
-    title: 'Penjelajah Mushaf',
-    description: 'Membuka dan membaca arti per kata di lebih dari 10 ayat.',
-    icon: '📖',
-    category: 'mushaf',
-    unlocked: true,
-    unlockedAt: '2026-08-22',
-    xpReward: 300
-  },
-  {
-    id: 'badge_weak_healer',
-    title: 'Penyembuh Ayat Lemah',
-    description: 'Memperbaiki 3 ayat lemah menjadi tuntas dengan metode Tikrar 1-5-10.',
-    icon: '🛡️',
+    id: 'badge_juz_30',
+    title: 'Penjaga Juz 30 (Juz \'Amma)',
+    description: 'Menyelesaikan muroja\'ah seluruh 37 surat di Juz 30.',
+    icon: '📗',
     category: 'murojaah',
     unlocked: false,
-    xpReward: 800
+    xpReward: 1500
+  },
+  {
+    id: 'badge_juz_29',
+    title: 'Penjaga Juz 29 (Tabarak)',
+    description: 'Menyelesaikan muroja\'ah seluruh 11 surat di Juz 29.',
+    icon: '📘',
+    category: 'murojaah',
+    unlocked: false,
+    xpReward: 1800
   }
 ];

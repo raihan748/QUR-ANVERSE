@@ -17,14 +17,14 @@ export function sanitizeInput(input: string, maxLength: number = 200): string {
     .substring(0, maxLength);
 }
 
-// Default Initial Profile
+// Default Initial Profile (Strictly 0 for fresh user progression)
 export const defaultProfile: UserProfile = {
   id: 'guest_hafidz_' + Math.random().toString(36).substring(2, 9),
   fullName: 'Hafidz QURANVERSE',
   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   hafidzLevel: 'Santri Pemula',
-  totalXp: 1250,
-  streakCount: 7,
+  totalXp: 0,
+  streakCount: 0,
   lastMurojaahDate: new Date().toISOString().split('T')[0]
 };
 
@@ -37,13 +37,22 @@ export function getLocalProfile(): UserProfile {
       return defaultProfile;
     }
     const parsed = JSON.parse(raw);
+
+    // Auto-migrate if user had old mock 1250 XP
+    let xp = Math.max(0, Number(parsed.totalXp) || 0);
+    let streak = Math.max(0, Number(parsed.streakCount) || 0);
+    if (xp === 1250 && streak === 7) {
+      xp = 0;
+      streak = 0;
+    }
+
     return {
       id: sanitizeInput(parsed.id || defaultProfile.id, 50),
       fullName: sanitizeInput(parsed.fullName || defaultProfile.fullName, 100),
       avatarUrl: sanitizeInput(parsed.avatarUrl || defaultProfile.avatarUrl, 300),
       hafidzLevel: sanitizeInput(parsed.hafidzLevel || defaultProfile.hafidzLevel, 50),
-      totalXp: Math.max(0, Number(parsed.totalXp) || 0),
-      streakCount: Math.max(0, Number(parsed.streakCount) || 1),
+      totalXp: xp,
+      streakCount: streak,
       lastMurojaahDate: sanitizeInput(parsed.lastMurojaahDate || defaultProfile.lastMurojaahDate, 20)
     };
   } catch {
