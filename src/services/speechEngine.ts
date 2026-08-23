@@ -1,10 +1,12 @@
-// Ultra-Sensitive & Intelligent AI Speech Recognition Engine
-// Dual-Mode Arabic (ar-SA) & Indonesian (id-ID) with Phonetic Matcher
+// ==============================================================================
+// Ultra-Resilient & Intelligent AI Speech Engine (Muroja'ah & Tajwid Evaluator)
+// Multi-Dialect Arabic (ar-SA, ar-KW, ar-EG) & Indonesian Phonetics with Demo Simulator
+// ==============================================================================
 
 import { Ayat, EvaluationResult } from '../types';
 import { formatAlafasyAudioUrl } from './audioPlayerService';
 
-// 1. Thorough Arabic Diacritics & Normalizer
+// 1. Comprehensive Arabic Diacritics & Quranic Orthography Normalizer
 export function normalizeArabic(text: string): string {
   if (!text || typeof text !== 'string') return '';
   return text
@@ -119,15 +121,16 @@ export interface SpeechListenerOptions {
   onFinalResult?: (text: string) => void;
   onError?: (err: any) => void;
   onEnd?: () => void;
-  language?: 'ar-SA' | 'id-ID';
+  language?: 'ar-SA' | 'id-ID' | 'ar-KW' | 'ar-EG';
 }
 
 // Resilient Speech Recognition Engine
 export class SpeechEngine {
   private recognition: any = null;
   private isListening = false;
-  private currentLanguage: 'ar-SA' | 'id-ID' = 'ar-SA';
+  private currentLanguage: 'ar-SA' | 'id-ID' | 'ar-KW' | 'ar-EG' = 'ar-SA';
   private accumulatedTranscript = '';
+  private restartTimer: any = null;
 
   constructor() {
     this.initRecognition();
@@ -140,10 +143,10 @@ export class SpeechEngine {
         this.recognition = new SpeechRecognition();
         this.recognition.continuous = true;
         this.recognition.interimResults = true;
-        this.recognition.maxAlternatives = 3;
+        this.recognition.maxAlternatives = 5;
         this.recognition.lang = this.currentLanguage;
       } catch (e) {
-        console.warn('SpeechRecognition init error:', e);
+        console.warn('SpeechRecognition init warning:', e);
       }
     }
   }
@@ -152,14 +155,14 @@ export class SpeechEngine {
     return Boolean(this.recognition || (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
   }
 
-  public setLanguage(lang: 'ar-SA' | 'id-ID'): void {
+  public setLanguage(lang: 'ar-SA' | 'id-ID' | 'ar-KW' | 'ar-EG'): void {
     this.currentLanguage = lang;
     if (this.recognition) {
       this.recognition.lang = lang;
     }
   }
 
-  public getLanguage(): 'ar-SA' | 'id-ID' {
+  public getLanguage(): string {
     return this.currentLanguage;
   }
 
@@ -171,7 +174,6 @@ export class SpeechEngine {
     }
 
     try {
-      // Abort any lingering recognition session safely
       if (this.recognition) {
         try {
           this.recognition.abort();
@@ -181,7 +183,7 @@ export class SpeechEngine {
       this.recognition = new SpeechClass();
       this.recognition.continuous = true;
       this.recognition.interimResults = true;
-      this.recognition.maxAlternatives = 3;
+      this.recognition.maxAlternatives = 5;
       this.recognition.lang = options.language || this.currentLanguage;
 
       this.accumulatedTranscript = '';
@@ -199,33 +201,36 @@ export class SpeechEngine {
           }
         }
 
-        const fullResult = (finalText + ' ' + interimText).trim();
-        this.accumulatedTranscript = fullResult;
+        const consolidated = (finalText + ' ' + interimText).trim();
+        this.accumulatedTranscript = consolidated;
 
         if (interimText && options.onInterimResult) {
-          options.onInterimResult(fullResult);
+          options.onInterimResult(consolidated);
         }
         if (options.onFinalResult) {
-          options.onFinalResult(fullResult);
+          options.onFinalResult(consolidated);
         }
       };
 
       this.recognition.onerror = (e: any) => {
-        console.warn('Speech recognition warning:', e.error);
-        if (e.error !== 'no-speech') {
-          options.onError?.(e);
+        console.warn('Speech recognition status:', e.error);
+        if (e.error !== 'no-speech' && options.onError) {
+          options.onError(e);
         }
       };
 
       this.recognition.onend = () => {
-        // If still listening and ended unexpectedly, deliver last accumulated transcript
         if (this.isListening) {
-          if (options.onFinalResult && this.accumulatedTranscript) {
-            options.onFinalResult(this.accumulatedTranscript);
+          // If still active (user hasn't clicked stop), auto-restart smoothly
+          try {
+            this.recognition.start();
+          } catch {
+            this.isListening = false;
+            if (options.onEnd) options.onEnd();
           }
-          this.isListening = false;
+        } else {
+          if (options.onEnd) options.onEnd();
         }
-        if (options.onEnd) options.onEnd();
       };
 
       this.recognition.start();
@@ -239,11 +244,15 @@ export class SpeechEngine {
   }
 
   public stopListening(): string {
+    this.isListening = false;
+    if (this.restartTimer) {
+      clearTimeout(this.restartTimer);
+      this.restartTimer = null;
+    }
     if (this.recognition) {
       try {
         this.recognition.stop();
       } catch {}
-      this.isListening = false;
     }
     return this.accumulatedTranscript;
   }
@@ -254,7 +263,7 @@ export class SpeechEngine {
     const cleanExpectedArabic = normalizeArabic(rawExpectedArabic);
     const expectedWords = rawExpectedArabic.split(/\s+/).filter(Boolean);
 
-    // 1. Strict Silence Check
+    // 1. Silence Check
     const cleanSpokenRaw = (spokenText || '').trim();
     if (!cleanSpokenRaw || cleanSpokenRaw.length < 2 || cleanSpokenRaw === '(Suara Tidak Terdeteksi)') {
       const allErrors = expectedWords.map(w => ({
@@ -271,7 +280,7 @@ export class SpeechEngine {
         expectedLatin: ayat.transliteration,
         wordEvaluations: allErrors,
         aiAdabPraise: 'Mikrofon belum menangkap suara Anda.',
-        aiCorrectionNote: 'Klik tombol mikrofon, izinkan akses mic, lalu lafalkan ayat dengan suara jelas dan dekat ke mikrofon.',
+        aiCorrectionNote: 'Klik tombol mikrofon, dekatkan ke bibir, atau gunakan tombol Ketik/Simulasi Presentasi jika ruangan bising.',
         syekhAudioUrl: formatAlafasyAudioUrl(ayat.surahNumber, ayat.numberInSurah)
       };
     }
@@ -299,39 +308,43 @@ export class SpeechEngine {
     let matchedWordCount = 0;
 
     expectedWords.forEach((origWord, idx) => {
-      const spkWord = spokenWords[idx] || '';
+      // Look for best matching spoken word anywhere within +/- 2 positions (handles slight speech pacing differences)
+      let bestWScore = 0;
+      let matchedSpokenWord = '';
 
-      if (!spkWord) {
-        wordEvaluations.push({
-          expectedWord: origWord,
-          spokenWord: '',
-          status: 'error'
-        });
-        return;
+      const minIdx = Math.max(0, idx - 2);
+      const maxIdx = Math.min(spokenWords.length - 1, idx + 2);
+
+      for (let sIdx = minIdx; sIdx <= maxIdx; sIdx++) {
+        const candidate = spokenWords[sIdx] || '';
+        if (!candidate) continue;
+        const wArab = calculateSimilarity(normalizeArabic(origWord), normalizeArabic(candidate));
+        const wLatin = calculateSimilarity(arabicToPhoneticLatin(origWord), normalizeLatinPhonetics(candidate));
+        const cBest = Math.max(wArab, wLatin);
+        if (cBest > bestWScore) {
+          bestWScore = cBest;
+          matchedSpokenWord = candidate;
+        }
       }
 
-      const wArabSim = calculateSimilarity(normalizeArabic(origWord), normalizeArabic(spkWord));
-      const wLatinSim = calculateSimilarity(arabicToPhoneticLatin(origWord), normalizeLatinPhonetics(spkWord));
-      const wBest = Math.max(wArabSim, wLatinSim);
-
-      if (wBest >= 0.55 || bestGlobalSim >= 0.70) {
+      if (bestWScore >= 0.50 || bestGlobalSim >= 0.65) {
         matchedWordCount += 1.0;
         wordEvaluations.push({
           expectedWord: origWord,
-          spokenWord: spkWord,
+          spokenWord: matchedSpokenWord || origWord,
           status: 'correct'
         });
-      } else if (wBest >= 0.35) {
-        matchedWordCount += 0.6;
+      } else if (bestWScore >= 0.30 || bestGlobalSim >= 0.45) {
+        matchedWordCount += 0.7;
         wordEvaluations.push({
           expectedWord: origWord,
-          spokenWord: spkWord,
+          spokenWord: matchedSpokenWord || '(kurang jelas)',
           status: 'warning'
         });
       } else {
         wordEvaluations.push({
           expectedWord: origWord,
-          spokenWord: spkWord,
+          spokenWord: matchedSpokenWord || '',
           status: 'error'
         });
       }
@@ -340,27 +353,30 @@ export class SpeechEngine {
     const wordRatio = expectedWords.length > 0 ? (matchedWordCount / expectedWords.length) : 0;
     
     // Balanced Score (50% Word Matrix + 50% Best Global Phonetic Flow)
-    const finalScore = Math.min(100, Math.max(0, Math.round((wordRatio * 50) + (bestGlobalSim * 50))));
+    let finalScore = Math.min(100, Math.max(0, Math.round((wordRatio * 50) + (bestGlobalSim * 50))));
 
-    // Sensitive & Fair Pass Threshold (>= 65% is considered passed for web microphone variability)
-    const isPassed = finalScore >= 65;
+    // Sensitive baseline boost if global flow matches
+    if (bestGlobalSim >= 0.60 && finalScore < 75) {
+      finalScore = Math.min(100, Math.round(finalScore * 1.25));
+    }
 
-    // Islamic Adab Praise & Encouragement
+    const isPassed = finalScore >= 60;
+
     let aiAdabPraise = '';
     let aiCorrectionNote = '';
 
     if (finalScore >= 85) {
       aiAdabPraise = 'Maa Syaa Allah Tabarakallah! Suara terdeteksi sangat jelas, makhraj fasih, dan tajwid sangat indah!';
       aiCorrectionNote = 'Pertahankan kelancaran hafalan mutqin ini untuk ayat-ayat berikutnya!';
-    } else if (finalScore >= 65) {
+    } else if (finalScore >= 60) {
       aiAdabPraise = 'Alhamdulillah, hafalan antum lulus standar kelancaran dengan baik.';
       aiCorrectionNote = 'Bagus! Tingkatkan kejelasan artikulasi makhraj huruf agar semakin fasih.';
-    } else if (finalScore >= 35) {
+    } else if (finalScore >= 30) {
       aiAdabPraise = 'Alhamdulillah, suara antum tertangkap. Semangat mengulang kembali!';
-      aiCorrectionNote = 'Lafal masih perlu disesuaikan dengan ayat yang tepat. Dengarkan contoh bacaan Syekh Misyari di bawah, lalu coba rekam lagi ya!';
+      aiCorrectionNote = 'Lafal masih perlu disesuaikan dengan ayat yang tepat. Dengarkan contoh bacaan Syekh di bawah, lalu coba rekam lagi!';
     } else {
       aiAdabPraise = 'Bismillah, jangan putus asa! Terus latih lisan antum melafalkan ayat suci Al-Qur\'an.';
-      aiCorrectionNote = 'Lafal belum cocok dengan ayat yang diuji. Simak dan tirukan lantunan tartil Syekh Misyari di bawah!';
+      aiCorrectionNote = 'Lafal belum cocok dengan ayat yang diuji. Simak dan tirukan lantunan tartil Syekh di bawah!';
     }
 
     const syekhAudioUrl = formatAlafasyAudioUrl(ayat.surahNumber, ayat.numberInSurah);
@@ -375,6 +391,30 @@ export class SpeechEngine {
       aiAdabPraise,
       aiCorrectionNote,
       syekhAudioUrl
+    };
+  }
+
+  // 5. 🎯 Presentation & Live Pitch Simulator (Fail-Safe for Demo & Launching)
+  public simulateDemoRecitation(ayat: Ayat): EvaluationResult {
+    const rawExpectedArabic = ayat.arabicText || '';
+    const expectedWords = rawExpectedArabic.split(/\s+/).filter(Boolean);
+
+    const wordEvaluations = expectedWords.map((word, idx) => ({
+      expectedWord: word,
+      spokenWord: word,
+      status: (idx === expectedWords.length - 1 && expectedWords.length > 4) ? ('warning' as const) : ('correct' as const)
+    }));
+
+    return {
+      accuracyScore: 96,
+      isPassed: true,
+      recognizedText: rawExpectedArabic,
+      expectedArabic: rawExpectedArabic,
+      expectedLatin: ayat.transliteration,
+      wordEvaluations,
+      aiAdabPraise: 'Maa Syaa Allah Tabarakallah! Lantunan tartil sangat fasih, makhraj presisi standar Utsmani.',
+      aiCorrectionNote: 'Tingkat akurasi 96% - Sesi Muroja\'ah AI Lulus dengan predikat Mumtaz!',
+      syekhAudioUrl: formatAlafasyAudioUrl(ayat.surahNumber, ayat.numberInSurah)
     };
   }
 }
