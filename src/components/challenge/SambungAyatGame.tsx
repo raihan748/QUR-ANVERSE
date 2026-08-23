@@ -32,6 +32,7 @@ import { audioPlayer } from '../../services/audioPlayerService';
 import { speechEngine } from '../../services/speechEngine';
 import { audioRecorder } from '../../services/audioRecorderService';
 import { addXpAndCheckStreak } from '../../services/offlineStorage';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface SambungAyatGameProps {
   userProfile: UserProfile;
@@ -44,6 +45,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
   userProfile,
   onProfileUpdated
 }) => {
+  const { language, t } = useLanguage();
   const [mode, setMode] = useState<ChallengeMode>('ai');
   const [inputType, setInputType] = useState<AnswerInputType>('quiz');
   const [juzFilter, setJuzFilter] = useState<29 | 30 | 'all'>('all');
@@ -288,25 +290,25 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
-                <Swords className="w-3.5 h-3.5" /> Sambung Ayat AI Arena
+                <Swords className="w-3.5 h-3.5" /> {language === 'ar' ? 'مسابقة وصل الآيات' : 'Sambung Ayat AI Arena'}
               </span>
               <span className="px-2 py-0.5 text-xs font-extrabold bg-[#10B981] text-black rounded border border-black">
-                Juz 29 & 30
+                {language === 'ar' ? 'الجزء ٢٩ و ٣٠' : 'Juz 29 & 30'}
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
-              Tantangan Sambung Ayat
+              {t.challengeArenaTitle}
             </h2>
             <p className="text-xs text-gray-300 font-medium mt-1">
-              Dengarkan potongan ayat Syekh Misyari, lalu sambung ayat berikutnya via Pilihan Ganda, Suara Mic, atau Ketik!
+              {t.challengeArenaSub}
             </p>
           </div>
 
           {/* XP & Combo Display */}
           <div className="flex items-center gap-2">
             <div className="px-3 py-2 bg-[#F59E0B] text-black border-2 border-black rounded-xl font-mono text-center">
-              <span className="text-[10px] font-extrabold block">SKOR GAME</span>
-              <span className="text-xl font-black">{gameScore} XP</span>
+              <span className="text-[10px] font-extrabold block">{t.totalScore}</span>
+              <span className="text-xl font-black">{gameScore} {t.points}</span>
             </div>
             {comboStreak > 1 && (
               <div className="px-3 py-2 bg-[#EF4444] text-white border-2 border-black rounded-xl font-mono text-center animate-bounce">
@@ -325,7 +327,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
         {/* 1. Scope Juz */}
         <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
           <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
-            <BookOpen className="w-3.5 h-3.5 text-[#0B4627]" /> CAKUPAN JUZ:
+            <BookOpen className="w-3.5 h-3.5 text-[#0B4627]" /> {t.scopeJuzTitle}
           </span>
           <div className="grid grid-cols-3 gap-1.5">
             <button
@@ -336,7 +338,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              29 & 30
+              {language === 'ar' ? '٢٩ و ٣٠' : '29 & 30'}
             </button>
             <button
               onClick={() => { setJuzFilter(29); loadChallenge(29, difficulty); }}
@@ -346,7 +348,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              Juz 29
+              {language === 'ar' ? 'جزء ٢٩' : 'Juz 29'}
             </button>
             <button
               onClick={() => { setJuzFilter(30); loadChallenge(30, difficulty); }}
@@ -356,7 +358,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              Juz 30
+              {language === 'ar' ? 'جزء ٣٠' : 'Juz 30'}
             </button>
           </div>
         </div>
@@ -364,7 +366,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
         {/* 2. Tingkat Kesulitan (Sulit / Pertengahan Surat vs Sedang vs Mudah) */}
         <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
           <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
-            <Flame className="w-3.5 h-3.5 text-red-500 fill-red-500" /> TINGKAT KESULITAN:
+            <Flame className="w-3.5 h-3.5 text-red-500 fill-red-500" /> {t.difficultyTitle}
           </span>
           <div className="grid grid-cols-3 gap-1.5">
             <button
@@ -374,9 +376,8 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   ? 'bg-[#EF4444] text-white shadow-[2px_2px_0px_0px_#000]'
                   : 'bg-gray-100 text-gray-800 hover:bg-red-50'
               }`}
-              title="Menguji ayat pertengahan surat (Ayat 15, 20, 29, 34, 40, dll.)"
             >
-              🔥 Sulit (Tengah)
+              {t.diffHardcore}
             </button>
             <button
               onClick={() => { setDifficulty('medium'); loadChallenge(juzFilter, 'medium'); }}
@@ -386,7 +387,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   : 'bg-gray-100 text-gray-800 hover:bg-amber-50'
               }`}
             >
-              ⚡ Sedang
+              {t.diffMedium}
             </button>
             <button
               onClick={() => { setDifficulty('easy'); loadChallenge(juzFilter, 'easy'); }}
@@ -396,7 +397,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   : 'bg-gray-100 text-gray-800 hover:bg-emerald-50'
               }`}
             >
-              🌱 Mudah
+              {t.diffEasy}
             </button>
           </div>
         </div>
@@ -404,7 +405,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
         {/* 3. Input Method Selector (Pilihan Ganda / Suara Mic / Ketik) */}
         <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
           <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
-            <Zap className="w-3.5 h-3.5 text-[#F59E0B]" /> METODE MENJAWAB:
+            <Zap className="w-3.5 h-3.5 text-[#F59E0B]" /> {t.methodTitle}
           </span>
           <div className="grid grid-cols-3 gap-1.5">
             <button
@@ -415,7 +416,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              🎯 Pilihan
+              {t.methodQuiz}
             </button>
             <button
               onClick={() => setInputType('voice')}
@@ -425,7 +426,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              🎙️ Suara
+              {t.methodVoice}
             </button>
             <button
               onClick={() => setInputType('text')}
@@ -435,7 +436,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               }`}
             >
-              ✍️ Ketik
+              {t.methodText}
             </button>
           </div>
         </div>
@@ -447,15 +448,17 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
         <div className="flex items-center justify-between border-b-2 border-black pb-4">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 bg-[#0B4627] text-white text-xs font-black rounded-lg border border-black">
-              Juz {challengeData.prompt.juz}
+              {language === 'ar' ? `الجزء ${challengeData.prompt.juz}` : `Juz ${challengeData.prompt.juz}`}
             </span>
             {difficulty === 'hardcore' && (
               <span className="px-2.5 py-0.5 bg-[#EF4444] text-white text-[10px] font-black rounded-lg border border-black uppercase flex items-center gap-1 animate-pulse">
-                <Flame className="w-3 h-3 fill-white" /> Sulit (Pertengahan Surat)
+                <Flame className="w-3 h-3 fill-white" /> {t.diffHardcore}
               </span>
             )}
             <h3 className="text-lg font-black text-black">
-              QS. {challengeData.prompt.surahName} (Ayat {challengeData.prompt.numberInSurah})
+              {language === 'ar'
+                ? `سورة ${challengeData.prompt.surahName} (الآية ${challengeData.prompt.numberInSurah})`
+                : `QS. ${challengeData.prompt.surahName} (Ayat ${challengeData.prompt.numberInSurah})`}
             </h3>
           </div>
 
@@ -464,7 +467,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
             className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-black border-2 border-black rounded-xl text-xs font-extrabold flex items-center gap-1 neo-button cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Acak Soal Baru</span>
+            <span>{t.newQuestion}</span>
           </button>
         </div>
 
@@ -472,29 +475,31 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
         <div className="p-5 bg-[#F8F5EE] border-3 border-black rounded-2xl space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-extrabold text-[#0B4627] uppercase tracking-wider">
-              1. Dengarkan Ayat Pemicu:
+              {t.listenPrompt}
             </span>
             <button
               onClick={() => audioPlayer.playAyat(challengeData.prompt.surahNumber, challengeData.prompt.numberInSurah)}
               className="px-3 py-1 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-lg text-xs font-black flex items-center gap-1.5 neo-button cursor-pointer"
             >
               <Volume2 className="w-3.5 h-3.5" />
-              <span>Putar Audio Syekh</span>
+              <span>{t.playSheikhVoice}</span>
             </button>
           </div>
 
           <div className="font-quran text-2xl sm:text-3xl text-right leading-loose text-black pt-2 font-bold" dir="rtl">
             {challengeData.prompt.arabicText}
           </div>
-          <p className="text-xs text-gray-700 italic border-t border-gray-300 pt-2 font-medium">
-            "{challengeData.prompt.translation}"
-          </p>
+          {language === 'id' && (
+            <p className="text-xs text-gray-700 italic border-t border-gray-300 pt-2 font-medium">
+              "{challengeData.prompt.translation}"
+            </p>
+          )}
         </div>
 
         {/* 2. AREA SAMBUNG AYAT SESUAI METODE PILIHAN */}
         <div className="space-y-4">
           <div className="inline-block px-3 py-1 bg-[#FEF3C7] border-2 border-black rounded-full text-xs font-extrabold text-black">
-            🎯 Sambung Ayat Lanjutan Berikutnya:
+            🎯 {t.continuePrompt}
           </div>
 
           {/* METHOD 1: PILIHAN GANDA (100% BEBAS ERROR / DEVICE RAMAH) */}

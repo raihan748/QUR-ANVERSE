@@ -22,6 +22,7 @@ import {
 } from '../../services/dailyTargetService';
 import { SURAH_LIST } from '../../data/quranData';
 import { AnnualRoadmapModal } from '../dashboard/AnnualRoadmapModal';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface DailyTargetWidgetProps {
   onStartTarget?: (target: DailyQuranTarget) => void;
@@ -34,6 +35,7 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
   onTargetChanged,
   compact = false
 }) => {
+  const { language, t } = useLanguage();
   const [target, setTarget] = useState<DailyQuranTarget>(getDailyTarget());
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isRoadmapOpen, setIsRoadmapOpen] = useState<boolean>(false);
@@ -85,16 +87,18 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
             <div>
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded border border-amber-400">
-                  Target Hari #{currentDayNum} / 365 Hari
+                  {language === 'ar' ? `ورد اليوم #${currentDayNum} من ٣٦٥ يوماً` : `Target Hari #${currentDayNum} / 365 Hari`}
                 </span>
                 {target.isCompleted && (
                   <span className="text-[10px] font-black uppercase text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded border border-emerald-400 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Khatam Hari Ini!
+                    <CheckCircle2 className="w-3 h-3" /> {language === 'ar' ? 'اكتمل ورد اليوم!' : 'Khatam Hari Ini!'}
                   </span>
                 )}
               </div>
               <h3 className="text-base sm:text-lg font-black text-black">
-                QS. {target.surahName} ({target.surahArabic}) • {target.ayahCount} Ayat (Juz {target.juz})
+                {language === 'ar' 
+                  ? `سورة ${target.surahArabic} (${target.ayahCount} آية - الجزء ${target.juz})`
+                  : `QS. ${target.surahName} (${target.surahArabic}) • ${target.ayahCount} Ayat (Juz ${target.juz})`}
               </h3>
             </div>
           </div>
@@ -105,7 +109,7 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
               className="px-2.5 py-1.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer"
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span>Roadmap 365 Hari</span>
+              <span>{language === 'ar' ? 'خطة ٣٦٥ يوماً' : 'Roadmap 365 Hari'}</span>
             </button>
 
             <button
@@ -113,7 +117,7 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
               className="px-2.5 py-1.5 bg-white hover:bg-amber-100 text-black border-2 border-black rounded-xl text-xs font-extrabold flex items-center gap-1 cursor-pointer"
             >
               <Settings2 className="w-3.5 h-3.5" />
-              <span>Ganti Target</span>
+              <span>{language === 'ar' ? 'تغيير السورة' : 'Ganti Target'}</span>
             </button>
 
             {onStartTarget && (
@@ -121,7 +125,7 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
                 onClick={() => onStartTarget(target)}
                 className="px-4 py-1.5 bg-[#0B4627] hover:bg-[#08331c] text-[#F59E0B] border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 neo-button cursor-pointer"
               >
-                <span>Mulai Baca Target</span>
+                <span>{t.dailyTargetAction}</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             )}
@@ -132,7 +136,9 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs font-black text-gray-800">
             <span>
-              Kemajuan Bacaan: <strong>{target.completedAyahNumbers.length}</strong> dari <strong>{target.ayahCount}</strong> Ayat
+              {language === 'ar'
+                ? `التقدم: ${target.completedAyahNumbers.length} من ${target.ayahCount} آية`
+                : `Kemajuan Bacaan: ${target.completedAyahNumbers.length} dari ${target.ayahCount} Ayat`}
             </span>
             <span className="text-amber-900 font-mono font-black">{progressPercentage}%</span>
           </div>
@@ -151,10 +157,12 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
         <div className="flex items-center justify-between text-[11px] font-bold text-gray-700 pt-1 border-t border-amber-300">
           <span className="flex items-center gap-1 text-amber-900">
             <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
-            Bonus Target Harian: <strong>+{target.xpReward} XP</strong> & Pertahankan Streak 🔥
+            {language === 'ar'
+              ? `مكافأة الإنجاز اليومي: +${target.xpReward} نقطة والمحافظة على المواظبة 🔥`
+              : `Bonus Target Harian: +${target.xpReward} XP & Pertahankan Streak 🔥`}
           </span>
           <span className="text-gray-600 text-[10px] font-mono font-bold">
-            Plan: 23 Agu 2026 – 23 Agu 2027 (1 Tahun)
+            {language === 'ar' ? 'خطة سنوية متكاملة (١٤٤٨ هـ)' : 'Plan: 23 Agu 2026 – 23 Agu 2027 (1 Tahun)'}
           </span>
         </div>
       </div>

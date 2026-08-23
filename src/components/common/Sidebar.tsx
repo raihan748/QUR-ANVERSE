@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { NavigationTab, PrayerTime } from '../../types';
 import { NeobrutalCard } from './NeobrutalCard';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface SidebarProps {
   activeTab: NavigationTab;
@@ -28,71 +29,73 @@ export const Sidebar: React.FC<SidebarProps> = ({
   nextPrayer,
   countdownStr
 }) => {
+  const { language, t, isRtl } = useLanguage();
+
   const navItems = [
     {
       id: 'mushaf' as NavigationTab,
-      label: 'Al-Qur\'an Biasa',
-      sublabel: '30 Juz Rasm Utsmani',
+      label: t.nav_mushaf,
+      sublabel: t.nav_mushafSub,
       icon: BookOpen,
-      badge: '30 Juz',
+      badge: language === 'ar' ? '٣٠ جزء' : '30 Juz',
       color: 'bg-[#0B4627]',
       isPrimary: true
     },
     {
       id: 'tilawah' as NavigationTab,
-      label: 'Tilawah & Murottal',
-      sublabel: 'Audio Syekh & Tikrar',
+      label: t.nav_tilawah,
+      sublabel: t.nav_tilawahSub,
       icon: Sparkles,
-      badge: 'Auto Putar',
+      badge: language === 'ar' ? 'تشغيل تلقائي' : 'Auto Putar',
       color: 'bg-[#059669]',
       isPrimary: true
     },
     {
       id: 'murojaah_ai' as NavigationTab,
-      label: 'Muroja\'ah AI Real-Time',
-      sublabel: 'Koreksi Suara & Tajwid',
+      label: t.nav_murojaah_ai,
+      sublabel: t.nav_murojaah_aiSub,
       icon: Mic2,
-      badge: 'AI Cerdas',
+      badge: language === 'ar' ? 'ذكاء اصطناعي' : 'AI Cerdas',
       color: 'bg-[#D97706]',
       isPrimary: true
     },
     {
       id: 'simai' as NavigationTab,
-      label: 'Muroja\'ah Tutup Mata',
-      sublabel: 'Mode Simai Lisan',
+      label: t.nav_simai,
+      sublabel: t.nav_simaiSub,
       icon: EyeOff,
-      badge: '3 Level',
+      badge: language === 'ar' ? '٣ مستويات' : '3 Level',
       color: 'bg-[#4B5563]'
     },
     {
       id: 'challenge' as NavigationTab,
-      label: 'Sambung Ayat Game',
-      sublabel: 'Audio vs Audio Challenge',
+      label: t.nav_challenge,
+      sublabel: t.nav_challengeSub,
       icon: Swords,
-      badge: 'XP & Badges',
+      badge: language === 'ar' ? 'تحدي ونقاط' : 'XP & Badges',
       color: 'bg-[#9333EA]'
     },
     {
       id: 'prayer' as NavigationTab,
-      label: 'Waktu Shalat & Adzan',
-      sublabel: 'Makassar (WITA)',
+      label: t.nav_prayer,
+      sublabel: t.nav_prayerSub,
       icon: Compass,
-      badge: 'Auto Adzan',
+      badge: language === 'ar' ? 'أذان تلقائي' : 'Auto Adzan',
       color: 'bg-[#059669]'
     },
     {
       id: 'dashboard' as NavigationTab,
-      label: 'Dashboard & Statistik',
-      sublabel: 'Ayat Lemah & Progres',
+      label: t.nav_dashboard,
+      sublabel: t.nav_dashboardSub,
       icon: LayoutDashboard,
       color: 'bg-[#2563EB]'
     },
     {
       id: 'download' as NavigationTab,
-      label: 'Download Paket Offline',
-      sublabel: '100% Bebas Kuota',
+      label: t.nav_download,
+      sublabel: t.nav_downloadSub,
       icon: DownloadCloud,
-      badge: 'Offline',
+      badge: language === 'ar' ? 'بدون شبكة' : 'Offline',
       color: 'bg-[#0B4627]'
     }
   ];
@@ -103,10 +106,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Section Title */}
         <div className="px-2 py-1 flex items-center justify-between">
           <span className="text-[11px] font-black tracking-wider text-gray-700 uppercase">
-            QURANVERSE MENU
+            {language === 'ar' ? 'قائمة عالم القرآن' : 'QURANVERSE MENU'}
           </span>
           <span className="flex items-center gap-1 text-[10px] font-extrabold text-[#0B4627] bg-[#D1FAE5] px-2 py-0.5 border border-[#0B4627] rounded-md shadow-xs">
-            <Sparkles className="w-3 h-3 text-[#D97706]" /> Standar Kemenag RI
+            <Sparkles className="w-3 h-3 text-[#D97706]" /> {t.standardBadge}
           </span>
         </div>
 

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { NavigationTab } from '../../types';
 import { NeobrutalCard } from '../common/NeobrutalCard';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface LandingHeroShowcaseProps {
   onSelectTab: (tab: NavigationTab) => void;
@@ -28,6 +29,8 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
   onOpenInstallModal,
   onOpenAuthModal
 }) => {
+  const { language, t, isRtl } = useLanguage();
+
   return (
     <section className="mb-8 space-y-6">
       {/* HERO BANNER SECTION (Slide from Left + Slide from Right + Emerge) */}
@@ -47,22 +50,22 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F59E0B] text-black font-extrabold text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] animate-pop">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>QURANVERSE AI PLATFORM</span>
+                <span>{language === 'ar' ? 'منصة عالم القرآن الذكية' : 'QURANVERSE AI PLATFORM'}</span>
               </span>
               <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/20 text-white font-bold text-xs rounded-xl border border-white/30 backdrop-blur-xs">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
-                <span>Rasm Utsmani & Audio Syekh Misyari</span>
+                <span>{language === 'ar' ? 'الرسم العثماني وصوت الشيخ مشاري العفاسي' : 'Rasm Utsmani & Audio Syekh Misyari'}</span>
               </span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-5xl font-black font-display text-white leading-tight tracking-tight">
-              AI Guru Ngaji Interaktif untuk <span className="text-[#F59E0B] underline decoration-wavy decoration-black">Baca, Hafalan & Muroja'ah</span>
+              {t.heroTitle} <span className="text-[#F59E0B] underline decoration-wavy decoration-black">{t.heroTitleHighlight}</span>
             </h1>
 
             {/* Value Proposition */}
             <p className="text-sm sm:text-base text-emerald-100 font-medium leading-relaxed max-w-xl">
-              Platform modern berarsitektur Islamic Neobrutalism. Evaluasi kelancaran makhraj & tajwid secara real-time, mode simai tutup mata, game sambung ayat, hingga jadwal shalat & adzan Makassar otomatis.
+              {t.heroDesc}
             </p>
 
             {/* SCROLL TO ACTION BUTTONS */}
@@ -73,7 +76,7 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
                 className="px-5 py-3.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000] group"
               >
                 <Mic2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span>Mulai Muroja'ah AI Sekarang</span>
+                <span>{t.heroStartMurojaah}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -83,7 +86,7 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
                 className="px-5 py-3.5 bg-[#10B981] hover:bg-[#059669] text-black font-black text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000]"
               >
                 <Sparkles className="w-5 h-5 text-black" />
-                <span>Mode Tilawah</span>
+                <span>{t.heroModeTilawah}</span>
               </button>
 
               {/* Action 3: Open Mushaf 30 Juz */}
@@ -92,7 +95,7 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
                 className="px-4 py-3.5 bg-[#FFFDF7] hover:bg-white text-black font-black text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000]"
               >
                 <BookOpen className="w-4 h-4 text-[#0B4627]" />
-                <span>Mushaf 30 Juz</span>
+                <span>{t.heroOpenMushaf}</span>
               </button>
 
               {/* Action 4: Install App */}
@@ -101,20 +104,20 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
                 className="px-4 py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000]"
               >
                 <Download className="w-4 h-4 text-[#F59E0B]" />
-                <span>Install APK</span>
+                <span>{t.heroInstallApk}</span>
               </button>
             </div>
 
             {/* Micro Feature Highlights */}
             <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-extrabold text-emerald-200">
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#F59E0B]" /> 100% Offline Ready
+                <CheckCircle2 className="w-4 h-4 text-[#F59E0B]" /> {t.heroOfflineReady}
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#F59E0B]" /> Zero Cost (Bebas API Key)
+                <CheckCircle2 className="w-4 h-4 text-[#F59E0B]" /> {t.heroZeroCost}
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#F59E0B]" /> Standar Kemenag RI
+                <CheckCircle2 className="w-4 h-4 text-[#F59E0B]" /> {t.standardBadge}
               </span>
             </div>
           </div>
@@ -124,7 +127,7 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
             <div className="relative">
               {/* Floating Badge */}
               <div className="absolute -top-4 -right-2 z-20 px-3 py-1 bg-[#10B981] text-black font-black text-xs rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] animate-float flex items-center gap-1">
-                <Mic2 className="w-3.5 h-3.5 text-black" /> Live Koreksi Lisan AI
+                <Mic2 className="w-3.5 h-3.5 text-black" /> {t.heroLiveBadge}
               </div>
 
               {/* Interactive Showcase Card */}
