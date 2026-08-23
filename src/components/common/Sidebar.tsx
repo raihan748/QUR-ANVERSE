@@ -105,8 +105,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <span className="text-[11px] font-black tracking-wider text-gray-700 uppercase">
             QURANVERSE MENU
           </span>
-          <span className="flex items-center gap-1 text-[10px] font-extrabold text-[#0B4627] bg-[#D1FAE5] px-2 py-0.5 border border-[#0B4627] rounded-md animate-pulse">
-            <Sparkles className="w-3 h-3 text-[#D97706]" /> No. 1 di RI
+          <span className="flex items-center gap-1 text-[10px] font-extrabold text-[#0B4627] bg-[#D1FAE5] px-2 py-0.5 border border-[#0B4627] rounded-md shadow-xs">
+            <Sparkles className="w-3 h-3 text-[#D97706]" /> Standar Kemenag RI
           </span>
         </div>
 

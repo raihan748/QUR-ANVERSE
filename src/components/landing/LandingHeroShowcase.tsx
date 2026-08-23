@@ -57,7 +57,7 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
 
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-5xl font-black font-display text-white leading-tight tracking-tight">
-              AI Guru Ngaji Pribadi No. 1 untuk <span className="text-[#F59E0B] underline decoration-wavy decoration-black">Baca, Hafalan & Muroja'ah</span>
+              AI Guru Ngaji Interaktif untuk <span className="text-[#F59E0B] underline decoration-wavy decoration-black">Baca, Hafalan & Muroja'ah</span>
             </h1>
 
             {/* Value Proposition */}
@@ -123,8 +123,8 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
           <div className="lg:col-span-5 animate-slide-right">
             <div className="relative">
               {/* Floating Badge */}
-              <div className="absolute -top-4 -right-2 z-20 px-3 py-1 bg-[#10B981] text-black font-black text-xs rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] animate-float">
-                🔥 98.5% Akurasi Suara
+              <div className="absolute -top-4 -right-2 z-20 px-3 py-1 bg-[#10B981] text-black font-black text-xs rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] animate-float flex items-center gap-1">
+                <Mic2 className="w-3.5 h-3.5 text-black" /> Live Koreksi Lisan AI
               </div>
 
               {/* Interactive Showcase Card */}
