@@ -15,7 +15,7 @@ import { getWeakVerses, resolveWeakVerse, getStreakCalendar } from '../../servic
 import { INITIAL_BADGES } from '../../data/achievementsData';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { audioPlayer } from '../../services/audioPlayerService';
-import { EnterpriseArchitectureInspector } from './EnterpriseArchitectureInspector';
+import { TahfidzMasteryAnalytics } from './TahfidzMasteryAnalytics';
 import { DailyTargetWidget } from '../common/DailyTargetWidget';
 
 interface DashboardViewProps {
@@ -81,8 +81,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* 🎯 TARGET TILAWAH & MUROJA'AH HARI INI */}
       <DailyTargetWidget onStartTarget={() => onNavigateToMurojaah()} />
 
-      {/* ENTERPRISE ARCHITECTURE & APSI CORE INSPECTOR */}
-      <EnterpriseArchitectureInspector />
+      {/* 📊 STATISTIK KELANCARAN & ANALISIS TAJWID (PENGGANTI INSPEKTOR) */}
+      <TahfidzMasteryAnalytics 
+        userProfile={userProfile} 
+        onNavigateToMurojaah={onNavigateToMurojaah} 
+      />
 
       {/* 30-DAY STREAK TRACKER */}
       <NeobrutalCard variant="white" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
