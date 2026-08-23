@@ -448,7 +448,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
         {/* 2. AREA SAMBUNG AYAT SESUAI METODE PILIHAN */}
         <div className="space-y-4">
           <div className="inline-block px-3 py-1 bg-[#FEF3C7] border-2 border-black rounded-full text-xs font-extrabold text-black">
-            🎯 Sambung Ayat ke-{challengeData.next.numberInSurah} Surat {challengeData.next.surahName}
+            🎯 Sambung Ayat Lanjutan Berikutnya:
           </div>
 
           {/* METHOD 1: PILIHAN GANDA (100% BEBAS ERROR / DEVICE RAMAH) */}
@@ -485,9 +485,16 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                         <span className="w-6 h-6 rounded-lg bg-black text-white font-mono text-xs flex items-center justify-center font-bold">
                           {String.fromCharCode(65 + idx)}
                         </span>
-                        <span className="text-[10px] font-bold text-gray-500">
-                          QS. {opt.surahName} : {opt.numberInSurah}
-                        </span>
+                        {/* HIDE SURAH NAME BEFORE ANSWERING SO IT DOES NOT LEAK THE ANSWER */}
+                        {isAnswered ? (
+                          <span className="text-[10px] font-black text-gray-800">
+                            QS. {opt.surahName} : {opt.numberInSurah}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-gray-400">
+                            Opsi {String.fromCharCode(65 + idx)}
+                          </span>
+                        )}
                       </div>
                       <p className="font-quran text-lg leading-relaxed font-bold text-black pt-1" dir="rtl">
                         {opt.arabicText}
