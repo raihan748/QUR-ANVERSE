@@ -12,34 +12,110 @@ import {
   HeartHandshake,
   ShieldAlert,
   Flame,
-  Award
+  Award,
+  Target,
+  Search,
+  BookOpen,
+  Settings2,
+  Play
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { Ayat, EvaluationResult, UserProfile } from '../../types';
-import { getRandomAyatFromAvailable, SURAH_LIST, CORE_AYATS_DB } from '../../data/quranData';
+import { Ayat, EvaluationResult, UserProfile, SurahMeta } from '../../types';
+import { getRandomAyatFromAvailable, SURAH_LIST, CORE_AYATS_DB, getSurahAyahs } from '../../data/quranData';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { speechEngine } from '../../services/speechEngine';
 import { audioPlayer } from '../../services/audioPlayerService';
 import { recordWeakVerse, resolveWeakVerse, addXpAndCheckStreak } from '../../services/offlineStorage';
 import { recordMurojaahLogToSupabase } from '../../services/supabaseClient';
+import { 
+  DailyQuranTarget, 
+  getDailyTarget, 
+  setCustomDailyTarget, 
+  markAyahCompletedInTarget 
+} from '../../services/dailyTargetService';
+import { DailyTargetWidget } from '../common/DailyTargetWidget';
 
 interface MurojaahStudioProps {
   userProfile: UserProfile;
   onProfileUpdated: (profile: UserProfile) => void;
 }
 
+type MurojaahMode = 'daily_target' | 'random' | 'custom_surah';
+
 export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   userProfile,
   onProfileUpdated
 }) => {
+  // Mode selection: default to daily target (user reads today's target)
+  const [studyMode, setStudyMode] = useState<MurojaahMode>('daily_target');
+  const [dailyTarget, setDailyTarget] = useState<DailyQuranTarget>(getDailyTarget());
+
+  // Current Target Surah Ayats for Sequential Recitation
+  const [surahAyats, setSurahAyats] = useState<Ayat[]>([]);
+  const [currentAyahIndex, setCurrentAyahIndex] = useState<number>(0);
   const [currentAyat, setCurrentAyat] = useState<Ayat>(getRandomAyatFromAvailable());
+
+  // Recording & Evaluation State
   const [isRecording, setIsRecording] = useState(false);
+  const [speechLanguage, setSpeechLanguage] = useState<'ar-SA' | 'id-ID'>('ar-SA');
   const [spokenTranscript, setSpokenTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [isPlayingSyekh, setIsPlayingSyekh] = useState(false);
+
+  // Filter & Modal State
   const [filterJuz, setFilterJuz] = useState<number | undefined>(undefined);
   const [filterSurah, setFilterSurah] = useState<number | undefined>(undefined);
+  const [isSurahModalOpen, setIsSurahModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Load ayahs for daily target or custom surah
+  useEffect(() => {
+    const targetSurahNo = studyMode === 'daily_target' ? dailyTarget.surahNumber : (filterSurah || 67);
+    getSurahAyahs(targetSurahNo).then((ayats) => {
+      setSurahAyats(ayats);
+      if (ayats.length > 0) {
+        if (studyMode === 'daily_target') {
+          // Find first uncompleted ayah or start at index 0
+          const firstUncompleted = ayats.findIndex(
+            (a) => !dailyTarget.completedAyahNumbers.includes(a.numberInSurah)
+          );
+          const startIdx = firstUncompleted >= 0 ? firstUncompleted : 0;
+          setCurrentAyahIndex(startIdx);
+          setCurrentAyat(ayats[startIdx]);
+        } else {
+          setCurrentAyahIndex(0);
+          setCurrentAyat(ayats[0]);
+        }
+      }
+    });
+  }, [studyMode, dailyTarget.surahNumber, filterSurah]);
+
+  // Switch to next ayah in daily target sequence
+  const handleAdvanceToNextAyah = () => {
+    speechEngine.stopListening();
+    audioPlayer.stop();
+    setIsRecording(false);
+    setIsPlayingSyekh(false);
+    setEvaluation(null);
+    setSpokenTranscript('');
+    setInterimTranscript('');
+
+    if (studyMode === 'random') {
+      const next = getRandomAyatFromAvailable(filterJuz, filterSurah);
+      setCurrentAyat(next);
+    } else {
+      if (currentAyahIndex + 1 < surahAyats.length) {
+        const nextIdx = currentAyahIndex + 1;
+        setCurrentAyahIndex(nextIdx);
+        setCurrentAyat(surahAyats[nextIdx]);
+      } else {
+        // Completed All Verses in Surah!
+        confetti({ particleCount: 150, spread: 90 });
+        alert(`🎉 Maa Syaa Allah! Anda telah menuntaskan seluruh ayat Surat ${currentAyat.surahName}!`);
+      }
+    }
+  };
 
   // Generate new random verse
   const handleGenerateRandom = () => {
@@ -63,6 +139,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
     setInterimTranscript('');
 
     const started = speechEngine.startListening({
+      language: speechLanguage,
       onInterimResult: (text) => setInterimTranscript(text),
       onFinalResult: (text) => {
         setSpokenTranscript((prev) => (prev ? prev + ' ' + text : text));
@@ -111,6 +188,17 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       const updatedProfile = addXpAndCheckStreak(150);
       onProfileUpdated(updatedProfile);
 
+      // Track progress in Daily Target
+      const updatedTarget = markAyahCompletedInTarget(
+        currentAyat.surahNumber,
+        currentAyat.numberInSurah,
+        (profile, finishedTarget) => {
+          onProfileUpdated(profile);
+          confetti({ particleCount: 150, spread: 100 });
+        }
+      );
+      setDailyTarget(updatedTarget);
+
       // Resolve weak verse if previously recorded
       resolveWeakVerse(currentAyat.surahNumber, currentAyat.numberInSurah);
 
@@ -155,292 +243,300 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
     });
   };
 
+  const filteredSurahs = SURAH_LIST.filter(
+    (s) =>
+      s.latinName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.number.toString().includes(searchQuery) ||
+      s.meaning.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="space-y-6 pb-24 max-w-4xl mx-auto">
-      {/* Top Banner Studio */}
-      <NeobrutalCard variant="emerald" className="p-5 relative overflow-hidden shadow-[6px_6px_0px_0px_#111827]">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase">
-                AI Guru Ngaji Real-Time
-              </span>
-              <span className="px-2 py-0.5 text-xs font-extrabold bg-[#10B981] text-black rounded border border-black">
-                Target Kelulusan: &ge; 80%
-              </span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
-              Studio Muroja'ah 30 Juz
-            </h2>
-            <p className="text-xs text-emerald-200 font-medium">
-              Uji ketepatan makhraj, tajwid & hafalan Anda dengan koreksi suara cerdas.
-            </p>
-          </div>
+      {/* 🎯 1. DAILY TARGET WIDGET (TARGET HARI INI) */}
+      <DailyTargetWidget
+        onStartTarget={(target) => {
+          setStudyMode('daily_target');
+          setDailyTarget(target);
+        }}
+        onTargetChanged={(newTarget) => {
+          setDailyTarget(newTarget);
+          setStudyMode('daily_target');
+        }}
+      />
 
+      {/* 2. MODE SELECTOR TABS (TARGET HARIAN vs ACAK BEBAS vs PILIH SURAT) */}
+      <div className="p-3 bg-white border-3 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <button
-            onClick={handleGenerateRandom}
-            className="px-4 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl neo-button cursor-pointer font-extrabold text-xs flex items-center gap-2 shrink-0"
-          >
-            <Shuffle className="w-4 h-4" />
-            <span>Acak Soal Ayat Baru</span>
-          </button>
-        </div>
-      </NeobrutalCard>
-
-      {/* Filter Juz/Surah Quick Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-        <span className="font-extrabold text-gray-700 shrink-0">Cakupan Acak:</span>
-        <button
-          onClick={() => {
-            setFilterJuz(undefined);
-            setFilterSurah(undefined);
-          }}
-          className={`px-3 py-1.5 rounded-xl border-2 border-black font-extrabold cursor-pointer ${
-            filterJuz === undefined && filterSurah === undefined
-              ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-              : 'bg-white text-gray-800'
-          }`}
-        >
-          Semua 30 Juz
-        </button>
-        <button
-          onClick={() => {
-            setFilterJuz(30);
-            setFilterSurah(undefined);
-          }}
-          className={`px-3 py-1.5 rounded-xl border-2 border-black font-extrabold cursor-pointer ${
-            filterJuz === 30
-              ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-              : 'bg-white text-gray-800'
-          }`}
-        >
-          Khusus Juz 30 (Juz 'Amma)
-        </button>
-        <button
-          onClick={() => {
-            setFilterJuz(1);
-            setFilterSurah(1);
-          }}
-          className={`px-3 py-1.5 rounded-xl border-2 border-black font-extrabold cursor-pointer ${
-            filterSurah === 1
-              ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-              : 'bg-white text-gray-800'
-          }`}
-        >
-          Surah Al-Fatihah
-        </button>
-      </div>
-
-      {/* MAIN AYAT DISPLAY CARD (WAJIB TAMPILKAN TEKS AYAT AL-QUR'AN) */}
-      <NeobrutalCard variant="white" className="p-6 sm:p-8 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
-        {/* Ayah Header */}
-        <div className="flex items-center justify-between border-b-2 border-dashed border-gray-300 pb-3 mb-5">
-          <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-xl bg-[#0B4627] border-2 border-black flex items-center justify-center text-white font-extrabold text-xs shadow-[2px_2px_0px_0px_#000]">
-              {currentAyat.numberInSurah}
-            </span>
-            <div>
-              <p className="font-extrabold text-sm text-black">
-                Surat {currentAyat.surahName} (Ayat {currentAyat.numberInSurah})
-              </p>
-              <p className="text-[11px] text-gray-500 font-bold">Juz {currentAyat.juz}</p>
-            </div>
-          </div>
-
-          <button
-            onClick={handlePlaySyekhReference}
-            className={`px-3 py-1.5 rounded-xl border-2 border-black neo-button cursor-pointer flex items-center gap-1.5 text-xs font-extrabold ${
-              isPlayingSyekh ? 'bg-[#F59E0B] text-black animate-pulse' : 'bg-[#FFFDF7] text-[#0B4627]'
+            onClick={() => setStudyMode('daily_target')}
+            className={`py-2.5 px-3 rounded-xl border-2 border-black font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              studyMode === 'daily_target'
+                ? 'bg-[#0B4627] text-[#F59E0B] shadow-[2px_2px_0px_0px_#000]'
+                : 'bg-gray-100 text-gray-800 hover:bg-amber-50'
             }`}
           >
-            <Volume2 className="w-4 h-4" />
-            <span>{isPlayingSyekh ? 'Memutar Syekh...' : 'Dengar Syekh Misyari'}</span>
+            <Target className="w-4 h-4" />
+            <span>🎯 Target Hari Ini ({dailyTarget.surahName})</span>
+          </button>
+
+          <button
+            onClick={() => setStudyMode('random')}
+            className={`py-2.5 px-3 rounded-xl border-2 border-black font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              studyMode === 'random'
+                ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
+                : 'bg-gray-100 text-gray-800 hover:bg-amber-50'
+            }`}
+          >
+            <Shuffle className="w-4 h-4" />
+            <span>🎲 Acak Ayat (Juz 29 & 30)</span>
+          </button>
+
+          <button
+            onClick={() => setIsSurahModalOpen(true)}
+            className={`py-2.5 px-3 rounded-xl border-2 border-black font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              studyMode === 'custom_surah'
+                ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
+                : 'bg-gray-100 text-gray-800 hover:bg-amber-50'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>📖 Pilih Surat Tertentu ▾</span>
           </button>
         </div>
+      </div>
 
-        {/* Teks Ayat Al-Qur'an Lengkap Rasm Utsmani */}
-        <div className="py-4 text-center my-2">
-          <p
-            className="font-quran text-2xl sm:text-4xl text-emerald-950 font-bold leading-loose text-center"
+      {/* 3. ACTIVE AYAT DISPLAY & RECITER CARD */}
+      <NeobrutalCard className="p-6 space-y-6">
+        {/* Ayat Navigation & Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b-2 border-dashed border-gray-300 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-[#0B4627] text-[#F59E0B] border-2 border-black flex items-center justify-center font-mono font-black text-lg shadow-[2px_2px_0px_0px_#000]">
+              {currentAyat.numberInSurah}
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black text-gray-600">
+                  QS. {currentAyat.surahName} ({currentAyat.surahNumber}) • Ayat {currentAyat.numberInSurah}
+                </span>
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded text-[10px] font-black">
+                  Juz {currentAyat.juz || 30}
+                </span>
+              </div>
+              <h3 className="text-xl font-black text-black">
+                {studyMode === 'daily_target'
+                  ? `Target Harian: Ayat ${currentAyat.numberInSurah} dari ${surahAyats.length}`
+                  : `Muroja'ah Surat ${currentAyat.surahName}`}
+              </h3>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handlePlaySyekhReference}
+              disabled={isPlayingSyekh}
+              className="px-3 py-1.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 neo-button cursor-pointer"
+            >
+              <Volume2 className={`w-3.5 h-3.5 ${isPlayingSyekh ? 'animate-bounce' : ''}`} />
+              <span>{isPlayingSyekh ? 'Memutar...' : 'Dengar Syekh'}</span>
+            </button>
+
+            <button
+              onClick={studyMode === 'random' ? handleGenerateRandom : handleAdvanceToNextAyah}
+              className="px-3 py-1.5 bg-white hover:bg-gray-100 text-black border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer"
+            >
+              {studyMode === 'random' ? <Shuffle className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5" />}
+              <span>{studyMode === 'random' ? 'Acak Lain' : 'Ayat Selanjutnya'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Big Arabic Text (Rasm Utsmani) */}
+        <div className="p-6 bg-[#F8F5EE] border-3 border-black rounded-3xl text-center space-y-3">
+          <div
+            className="font-quran text-3xl sm:text-4xl lg:text-5xl leading-loose font-bold text-black select-none"
             dir="rtl"
           >
             {currentAyat.arabicText}
-          </p>
-        </div>
+          </div>
 
-        {/* Transliterasi & Terjemahan */}
-        <div className="border-t-2 border-dashed border-gray-200 pt-3 text-center space-y-1">
-          <p className="text-xs font-bold text-[#0B4627] italic">
-            {currentAyat.transliteration}
-          </p>
-          <p className="text-xs sm:text-sm text-gray-700 font-medium">
+          {currentAyat.transliteration && (
+            <p className="text-xs text-emerald-800 font-semibold italic max-w-2xl mx-auto">
+              "{currentAyat.transliteration}"
+            </p>
+          )}
+
+          <p className="text-xs text-gray-700 italic border-t border-gray-300 pt-2 max-w-2xl mx-auto font-medium">
             "{currentAyat.translation}"
           </p>
         </div>
-      </NeobrutalCard>
 
-      {/* RECORDING & SPEECH VISUALIZER CONTROLLER */}
-      <NeobrutalCard variant="sepia" className="p-6 text-center border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
-        {/* Animated Waveform if recording */}
-        {isRecording && (
-          <div className="flex items-center justify-center gap-1.5 h-12 mb-4">
-            <div className="w-1.5 bg-[#0B4627] rounded-full animate-wave-1"></div>
-            <div className="w-1.5 bg-[#10B981] rounded-full animate-wave-2"></div>
-            <div className="w-1.5 bg-[#F59E0B] rounded-full animate-wave-3"></div>
-            <div className="w-1.5 bg-[#0B4627] rounded-full animate-wave-4"></div>
-            <div className="w-1.5 bg-[#10B981] rounded-full animate-wave-5"></div>
+        {/* 4. MICROPHONE RECORDING & AI EVALUATION CONTROLS */}
+        <div className="p-5 bg-white border-3 border-black rounded-3xl space-y-4 shadow-[4px_4px_0px_0px_#111827]">
+          {/* Language Selector */}
+          <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+            <span className="text-xs font-bold text-gray-600">Model Bahasa Mikrofon:</span>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setSpeechLanguage('ar-SA')}
+                className={`px-2.5 py-1 text-xs font-black rounded-lg border cursor-pointer ${
+                  speechLanguage === 'ar-SA'
+                    ? 'bg-[#0B4627] text-white border-black'
+                    : 'bg-gray-100 text-black border-gray-300'
+                }`}
+              >
+                🇸🇦 Arab (ar-SA)
+              </button>
+              <button
+                onClick={() => setSpeechLanguage('id-ID')}
+                className={`px-2.5 py-1 text-xs font-black rounded-lg border cursor-pointer ${
+                  speechLanguage === 'id-ID'
+                    ? 'bg-[#F59E0B] text-black border-black'
+                    : 'bg-gray-100 text-black border-gray-300'
+                }`}
+              >
+                🇮🇩 Fonetik (id-ID)
+              </button>
+            </div>
           </div>
-        )}
 
-        <div className="mb-4">
-          <p className="text-sm font-extrabold text-black">
-            {isRecording
-              ? '🎙️ AI sedang mendengarkan bacaan Anda... Bacalah dengan tartil & fasih'
-              : evaluation
-              ? 'Evaluasi Selesai. Periksa koreksi tajwid di bawah.'
-              : 'Klik tombol Mikrofon di bawah, lalu bacalah ayat di atas dengan suara jelas'}
-          </p>
-          {(interimTranscript || spokenTranscript) && (
-            <p className="text-xs text-gray-600 bg-white/70 border border-gray-300 rounded-lg p-2 mt-2 font-arabic" dir="rtl">
-              {spokenTranscript} <span className="text-emerald-600 font-bold">{interimTranscript}</span>
-            </p>
-          )}
+          {/* Mic Action Bar */}
+          <div className="flex flex-col items-center justify-center gap-3 py-2">
+            <button
+              onClick={isRecording ? handleStopAndEvaluate : handleStartRecording}
+              className={`w-20 h-20 rounded-full border-4 border-black flex items-center justify-center transition-all cursor-pointer ${
+                isRecording
+                  ? 'bg-red-500 text-white animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.6)]'
+                  : 'bg-[#10B981] hover:bg-[#059669] text-black shadow-[4px_4px_0px_0px_#000] hover:scale-105'
+              }`}
+            >
+              {isRecording ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
+            </button>
+
+            <span className="text-xs font-black text-black">
+              {isRecording ? 'Sedang Merekam... Klik untuk Selesai & Evaluasi' : 'Klik Mikrofon & Baca Ayat di Atas'}
+            </span>
+
+            {/* Transcript Preview */}
+            {(spokenTranscript || interimTranscript) && (
+              <div className="w-full p-3 bg-amber-50 border-2 border-black rounded-xl text-center">
+                <span className="text-[10px] font-bold text-gray-500 block">Suara Anda Terdeteksi:</span>
+                <p className="font-quran text-lg font-bold text-black mt-0.5" dir="rtl">
+                  {spokenTranscript} {interimTranscript}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Big Mic Button */}
-        <div className="flex items-center justify-center gap-3">
-          {!isRecording ? (
-            <button
-              onClick={handleStartRecording}
-              className="px-6 py-4 bg-[#0B4627] hover:bg-[#064E3B] text-white font-black text-base rounded-2xl border-3 border-black neo-button flex items-center gap-3 cursor-pointer shadow-[5px_5px_0px_0px_#111827]"
-            >
-              <Mic className="w-6 h-6 text-[#F59E0B] animate-pulse" />
-              <span>Mulai Rekam & Baca</span>
-            </button>
-          ) : (
-            <button
-              onClick={handleStopAndEvaluate}
-              className="px-6 py-4 bg-[#DC2626] hover:bg-[#B91C1C] text-white font-black text-base rounded-2xl border-3 border-black neo-button flex items-center gap-3 cursor-pointer shadow-[5px_5px_0px_0px_#111827] animate-bounce"
-            >
-              <MicOff className="w-6 h-6 text-white" />
-              <span>Selesai & Evaluasi AI</span>
-            </button>
-          )}
-        </div>
-      </NeobrutalCard>
-
-      {/* AI EVALUATION RESULTS & ADAB BANNER */}
-      {evaluation && (
-        <div className="space-y-4 animate-in slide-in-from-bottom duration-300">
-          {/* Score Header Card */}
-          <NeobrutalCard
-            variant={evaluation.isPassed ? 'emerald' : 'gold'}
-            className="p-5 border-3 border-black shadow-[6px_6px_0px_0px_#111827]"
+        {/* 5. AI EVALUATION RESULT & FEEDBACK */}
+        {evaluation && (
+          <div
+            className={`p-5 rounded-3xl border-3 border-black space-y-3 ${
+              evaluation.isPassed ? 'bg-[#D1FAE5]' : 'bg-[#FEE2E2]'
+            }`}
           >
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-black border-2 border-white flex items-center justify-center text-white font-black text-2xl shadow-[2px_2px_0px_0px_#FFF]">
-                  {evaluation.accuracyScore}%
-                </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {evaluation.isPassed ? (
+                  <CheckCircle2 className="w-6 h-6 text-emerald-700" />
+                ) : (
+                  <AlertCircle className="w-6 h-6 text-red-700" />
+                )}
                 <div>
-                  <h4 className="text-lg font-black font-display">
-                    {evaluation.isPassed ? '🎉 LULUS STANDAR MUTQIN!' : '⚠️ BELUM MENCAPAI 80% (WAJIB ULANG)'}
+                  <h4 className="text-base font-black text-black">
+                    {evaluation.isPassed ? 'LULUS MUROJA\'AH (MUTQIN)' : 'PERLU PERBAIKAN BACAAN'}
                   </h4>
-                  <p className="text-xs font-semibold opacity-90">
-                    {evaluation.isPassed
-                      ? 'Skor di atas 80%. Bacaan Anda dinyatakan fasih dan lancar.'
-                      : 'Jangan berkecil hati! Dengarkan contoh Syekh Misyari lalu ulangi rekam.'}
-                  </p>
+                  <p className="text-xs font-bold text-gray-700">{evaluation.aiAdabPraise}</p>
                 </div>
               </div>
 
-              {evaluation.isPassed ? (
+              <div className="text-right">
+                <span className="text-2xl font-black font-mono text-black">
+                  {evaluation.accuracyScore}%
+                </span>
+                <span className="text-[10px] font-bold block text-gray-600">Akurasi</span>
+              </div>
+            </div>
+
+            {/* Action Next Step */}
+            <div className="pt-2 border-t border-black/10 flex items-center justify-between">
+              <button
+                onClick={handleStartRecording}
+                className="px-3.5 py-1.5 bg-white text-black border-2 border-black rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Ulangi Ayat Ini
+              </button>
+
+              {evaluation.isPassed && (
                 <button
-                  onClick={handleGenerateRandom}
-                  className="px-4 py-2.5 bg-white text-black font-extrabold text-xs rounded-xl border-2 border-black neo-button cursor-pointer flex items-center gap-1.5 shrink-0"
+                  onClick={handleAdvanceToNextAyah}
+                  className="px-5 py-2 bg-[#0B4627] text-white border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 neo-button cursor-pointer"
                 >
                   <span>Lanjut Ayat Berikutnya</span>
-                  <ArrowRight className="w-4 h-4 text-[#0B4627]" />
-                </button>
-              ) : (
-                <button
-                  onClick={handleStartRecording}
-                  className="px-4 py-2.5 bg-[#0B4627] text-white font-extrabold text-xs rounded-xl border-2 border-black neo-button cursor-pointer flex items-center gap-1.5 shrink-0"
-                >
-                  <RotateCcw className="w-4 h-4 text-[#F59E0B]" />
-                  <span>Ulangi Rekaman</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               )}
             </div>
-          </NeobrutalCard>
+          </div>
+        )}
+      </NeobrutalCard>
 
-          {/* Adab Santun AI Dialogue Box */}
-          <div className="p-4 bg-[#FFFDF7] border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827] space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#0B4627] text-white flex items-center justify-center text-xs font-bold">
-                🧕
-              </span>
-              <span className="text-xs font-extrabold text-black uppercase tracking-wider">
-                Nasihat & Adab Guru Ngaji AI:
-              </span>
+      {/* SEARCHABLE SURAH PICKER MODAL (NON-CLIPPING) */}
+      {isSurahModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border-3 border-black rounded-3xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-[8px_8px_0px_0px_#000] overflow-hidden">
+            <div className="p-4 bg-[#0B4627] text-white border-b-3 border-black flex items-center justify-between">
+              <div>
+                <h4 className="text-base font-black">Pilih Surat untuk Muroja'ah</h4>
+                <p className="text-xs text-emerald-200">Pilih surat dari Juz 1 sampai Juz 30</p>
+              </div>
+              <button
+                onClick={() => setIsSurahModalOpen(false)}
+                className="w-8 h-8 rounded-xl bg-white text-black font-black text-sm flex items-center justify-center border-2 border-black cursor-pointer hover:bg-red-500 hover:text-white"
+              >
+                ✕
+              </button>
             </div>
 
-            {/* Praise First */}
-            <p className="text-xs sm:text-sm font-bold text-[#0B4627] bg-[#D1FAE5] p-2.5 rounded-xl border border-[#0B4627]">
-              {evaluation.aiAdabPraise}
-            </p>
+            <div className="p-3 border-b-2 border-black bg-amber-50">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-3 text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Cari surat (contoh: Al-Mulk, Yasin, Al-Kahf, 67)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-white border-2 border-black rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
+                  autoFocus
+                />
+              </div>
+            </div>
 
-            {/* Correction Note */}
-            <p className="text-xs text-gray-800 bg-[#FEF3C7] p-2.5 rounded-xl border border-[#D97706] font-medium">
-              💡 {evaluation.aiCorrectionNote}
-            </p>
-          </div>
-
-          {/* WORD BY WORD ERROR HIGHLIGHTER */}
-          <div className="p-4 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
-            <p className="text-xs font-extrabold text-gray-800 mb-3 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#F59E0B]" />
-              Detail Evaluasi Kata per Kata (Warna Penanda):
-            </p>
-
-            <div className="flex flex-wrap flex-row-reverse gap-2 justify-center py-2" dir="rtl">
-              {evaluation.wordEvaluations.map((w, idx) => {
-                let badgeClass = 'bg-[#D1FAE5] text-[#064E3B] border-[#0B4627]'; // Correct (Green)
-                let statusLabel = 'Fasih';
-
-                if (w.status === 'warning') {
-                  badgeClass = 'bg-[#FEF3C7] text-[#92400E] border-[#D97706]'; // Warning (Yellow)
-                  statusLabel = 'Perhatikan Mad/Makhraj';
-                } else if (w.status === 'error') {
-                  badgeClass = 'bg-[#FEE2E2] text-[#991B1B] border-[#DC2626] animate-pulse'; // Error (Red)
-                  statusLabel = 'Keliru / Terlewat';
-                }
-
-                return (
-                  <div
-                    key={idx}
-                    className={`px-3 py-2 rounded-xl border-2 font-quran text-lg sm:text-xl font-bold flex flex-col items-center gap-0.5 ${badgeClass}`}
-                    title={statusLabel}
-                  >
-                    <span>{w.expectedWord}</span>
-                    <span className="text-[9px] font-sans font-extrabold opacity-80" dir="ltr">
-                      {statusLabel}
+            <div className="p-3 overflow-y-auto space-y-1.5 flex-1 max-h-96">
+              {filteredSurahs.map((s) => (
+                <button
+                  key={s.number}
+                  onClick={() => {
+                    setFilterSurah(s.number);
+                    setStudyMode('custom_surah');
+                    setIsSurahModalOpen(false);
+                  }}
+                  className="w-full p-2.5 rounded-xl border-2 border-black text-left flex items-center justify-between hover:bg-amber-50 transition-all cursor-pointer bg-white text-black"
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black">#{s.number}</span>
+                      <span className="font-extrabold text-xs">{s.latinName}</span>
+                      <span className="text-[10px] opacity-75">({s.meaning})</span>
+                    </div>
+                    <span className="text-[10px] opacity-80 block mt-0.5">
+                      {s.ayahCount} Ayat • Juz {s.juzStart} • {s.revelationPlace}
                     </span>
                   </div>
-                );
-              })}
-            </div>
 
-            <div className="flex justify-center gap-4 text-[11px] font-bold mt-4 pt-3 border-t border-gray-200">
-              <span className="flex items-center gap-1 text-green-700">
-                <span className="w-3 h-3 rounded-full bg-green-400 border border-black"></span> Benar & Fasih
-              </span>
-              <span className="flex items-center gap-1 text-amber-700">
-                <span className="w-3 h-3 rounded-full bg-yellow-400 border border-black"></span> Kurang Tepat
-              </span>
-              <span className="flex items-center gap-1 text-red-700">
-                <span className="w-3 h-3 rounded-full bg-red-400 border border-black"></span> Salah / Terlewat
-              </span>
+                  <span className="font-quran text-lg font-bold">{s.name}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>

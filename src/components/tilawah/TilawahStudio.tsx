@@ -20,7 +20,9 @@ import {
   ChevronDown,
   Search,
   Flame,
-  Award
+  Award,
+  Settings2,
+  Target
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Ayat, SurahMeta, UserProfile, Bookmark } from '../../types';
@@ -28,6 +30,12 @@ import { SURAH_LIST, getSurahAyahs } from '../../data/quranData';
 import { audioPlayer } from '../../services/audioPlayerService';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { saveBookmark, setLastRead, addXpAndCheckStreak } from '../../services/offlineStorage';
+import { DailyTargetWidget } from '../common/DailyTargetWidget';
+import { 
+  getDailyTarget, 
+  markAyahCompletedInTarget, 
+  DailyQuranTarget 
+} from '../../services/dailyTargetService';
 
 interface TilawahStudioProps {
   userProfile?: UserProfile;
@@ -50,9 +58,12 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
   const [showTranslation, setShowTranslation] = useState<boolean>(true);
   const [showTransliteration, setShowTransliteration] = useState<boolean>(true);
   const [isFocusMode, setIsFocusMode] = useState<boolean>(false);
+  const [isSurahModalOpen, setIsSurahModalOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [isSurahDropdownOpen, setIsSurahDropdownOpen] = useState<boolean>(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
+  const [juzFilterTab, setJuzFilterTab] = useState<'all' | 29 | 30 | 'popular'>('all');
+
+  // Daily Target State
+  const [dailyTarget, setDailyTarget] = useState<DailyQuranTarget>(getDailyTarget());
 
   // Refs for auto-scroll
   const ayahRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
@@ -90,7 +101,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
     }
   }, [activeAyahIndex, isPlaying]);
 
-  // Play a specific Ayah by index with repeat logic
+  // Play a specific Ayah by index with repeat logic & daily target tracking
   const playAyahAtIndex = async (index: number) => {
     if (!currentAyats[index]) return;
 
@@ -100,6 +111,17 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
     const targetAyat = currentAyats[index];
     setLastRead(targetAyat.surahNumber, targetAyat.numberInSurah, currentSurahMeta.latinName);
 
+    // Track progress in Daily Target
+    const updatedTarget = markAyahCompletedInTarget(
+      targetAyat.surahNumber,
+      targetAyat.numberInSurah,
+      (updatedProfile, finishedTarget) => {
+        if (onProfileUpdated) onProfileUpdated(updatedProfile);
+        confetti({ particleCount: 120, spread: 80 });
+      }
+    );
+    setDailyTarget(updatedTarget);
+
     await audioPlayer.playAyat(targetAyat.surahNumber, targetAyat.numberInSurah, () => {
       handleAyahEnded(index);
     });
@@ -107,7 +129,6 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
 
   // Handle Ayah Audio Ended (Advance or Repeat)
   const handleAyahEnded = (currentIndex: number) => {
-    // Check if we need to repeat the same ayah
     if (repeatCount > 1 && currentRepeatIteration < repeatCount) {
       setCurrentRepeatIteration((prev) => prev + 1);
       setTimeout(() => {
@@ -116,7 +137,6 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
       return;
     }
 
-    // Reset repeat iteration for next ayah
     setCurrentRepeatIteration(1);
 
     // Advance to next ayah if available
@@ -174,22 +194,43 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
     alert(`Ayat ${ayat.numberInSurah} Surat ${currentSurahMeta.latinName} berhasil ditandai ke Bookmark!`);
   };
 
-  const filteredSurahs = SURAH_LIST.filter(
-    s => s.latinName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-         s.number.toString().includes(searchQuery) ||
-         s.meaning.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSurahs = SURAH_LIST.filter((s) => {
+    const matchesSearch =
+      s.latinName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.number.toString().includes(searchQuery) ||
+      s.meaning.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    if (juzFilterTab === 29) return s.number >= 67 && s.number <= 77;
+    if (juzFilterTab === 30) return s.number >= 78 && s.number <= 114;
+    if (juzFilterTab === 'popular') return [1, 18, 36, 55, 56, 67, 78, 112, 113, 114].includes(s.number);
+    return true;
+  });
 
   return (
     <div className={`space-y-6 pb-28 max-w-4xl mx-auto transition-all ${isFocusMode ? 'bg-[#F8F5EE] py-4' : ''}`}>
+      {/* 🎯 1. DAILY TARGET WIDGET (TARGET TILAWAH HARI INI) */}
+      {!isFocusMode && (
+        <DailyTargetWidget
+          onStartTarget={(target) => {
+            setSelectedSurahNumber(target.surahNumber);
+          }}
+          onTargetChanged={(newTarget) => {
+            setDailyTarget(newTarget);
+            setSelectedSurahNumber(newTarget.surahNumber);
+          }}
+        />
+      )}
+
       {/* HEADER & SURAH SELECTOR */}
       {!isFocusMode && (
-        <NeobrutalCard variant="emerald" className="p-6 relative overflow-hidden shadow-[6px_6px_0px_0px_#111827]">
+        <NeobrutalCard variant="emerald" className="p-6 relative shadow-[6px_6px_0px_0px_#111827]">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
-                  <BookOpen className="w-3.5 h-3.5" /> Studio Tilawah
+                  <BookOpen className="w-3.5 h-3.5" /> Studio Tilawah & Murottal
                 </span>
                 <span className="px-2 py-0.5 text-xs font-extrabold bg-white text-black rounded border border-black">
                   Syekh Misyari Rasyid Al-Afasi
@@ -213,68 +254,139 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
             </button>
           </div>
 
-          {/* SURAH PICKER DROPDOWN */}
-          <div className="mt-4 pt-4 border-t border-emerald-700/50 flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[240px]">
-              <button
-                onClick={() => setIsSurahDropdownOpen(!isSurahDropdownOpen)}
-                className="w-full px-4 py-2.5 bg-white text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-between shadow-[3px_3px_0px_0px_#000] cursor-pointer"
-              >
-                <span>{selectedSurahNumber}. {currentSurahMeta.latinName} ({currentSurahMeta.ayahCount} Ayat • Juz {currentSurahMeta.juzStart})</span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
-
-              {isSurahDropdownOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border-3 border-black rounded-2xl shadow-[6px_6px_0px_0px_#111827] z-50 p-3 max-h-80 overflow-y-auto">
-                  <div className="relative mb-2">
-                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-500" />
-                    <input
-                      type="text"
-                      placeholder="Cari surat (contoh: Al-Mulk, Yasin, 67)..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-3 py-1.5 text-xs border-2 border-black rounded-lg focus:outline-none focus:bg-amber-50"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    {filteredSurahs.map((s) => (
-                      <button
-                        key={s.number}
-                        onClick={() => {
-                          setSelectedSurahNumber(s.number);
-                          setIsSurahDropdownOpen(false);
-                        }}
-                        className={`w-full p-2 text-left text-xs font-bold rounded-lg flex items-center justify-between hover:bg-emerald-50 transition-colors ${
-                          s.number === selectedSurahNumber ? 'bg-[#0B4627] text-white' : 'text-gray-800'
-                        }`}
-                      >
-                        <span>{s.number}. {s.latinName} ({s.meaning})</span>
-                        <span className="font-quran text-sm">{s.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* SURAH PICKER BUTTON & SHORTCUTS */}
+          <div className="mt-4 pt-4 border-t border-emerald-700/50 flex flex-wrap items-center justify-between gap-3">
+            {/* Click to open Full Searchable Modal */}
+            <button
+              onClick={() => setIsSurahModalOpen(true)}
+              className="flex-1 min-w-[240px] px-4 py-3 bg-white text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-between shadow-[3px_3px_0px_0px_#000] hover:bg-amber-50 cursor-pointer neo-button"
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-[#0B4627] text-white flex items-center justify-center font-mono text-xs">
+                  {selectedSurahNumber}
+                </span>
+                <span className="text-sm font-extrabold">
+                  QS. {currentSurahMeta.latinName} ({currentSurahMeta.ayahCount} Ayat • Juz {currentSurahMeta.juzStart})
+                </span>
+              </div>
+              <span className="px-2 py-1 bg-amber-100 border border-black rounded-lg text-[10px] font-black uppercase text-amber-900">
+                Pilih Surat Lain ▾
+              </span>
+            </button>
 
             {/* Quick Juz Jump (Juz 29 & 30 Shortcut) */}
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setSelectedSurahNumber(67)}
-                className="px-2.5 py-1.5 bg-[#F59E0B] text-black border-2 border-black rounded-lg text-xs font-black hover:bg-[#D97706] cursor-pointer"
+                className={`px-3 py-2 border-2 border-black rounded-xl text-xs font-black cursor-pointer transition-all ${
+                  selectedSurahNumber === 67 ? 'bg-[#0B4627] text-[#F59E0B] shadow-[2px_2px_0px_0px_#000]' : 'bg-[#F59E0B] text-black hover:bg-[#D97706]'
+                }`}
               >
                 Juz 29 (Al-Mulk)
               </button>
               <button
                 onClick={() => setSelectedSurahNumber(78)}
-                className="px-2.5 py-1.5 bg-[#10B981] text-black border-2 border-black rounded-lg text-xs font-black hover:bg-[#059669] cursor-pointer"
+                className={`px-3 py-2 border-2 border-black rounded-xl text-xs font-black cursor-pointer transition-all ${
+                  selectedSurahNumber === 78 ? 'bg-[#0B4627] text-[#10B981] shadow-[2px_2px_0px_0px_#000]' : 'bg-[#10B981] text-black hover:bg-[#059669]'
+                }`}
               >
                 Juz 30 (An-Naba')
               </button>
             </div>
           </div>
         </NeobrutalCard>
+      )}
+
+      {/* SEARCHABLE SURAH PICKER MODAL (NON-CLIPPING / FULL RESPONSIVE) */}
+      {isSurahModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border-3 border-black rounded-3xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-[8px_8px_0px_0px_#000] overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-4 bg-[#0B4627] text-white border-b-3 border-black flex items-center justify-between">
+              <div>
+                <h4 className="text-base font-black">Daftar 114 Surat Al-Qur'an</h4>
+                <p className="text-xs text-emerald-200">Pilih surat yang ingin dilantunkan dalam Tilawah</p>
+              </div>
+              <button
+                onClick={() => setIsSurahModalOpen(false)}
+                className="w-8 h-8 rounded-xl bg-white text-black font-black text-sm flex items-center justify-center border-2 border-black cursor-pointer hover:bg-red-500 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="p-3 border-b-2 border-black bg-amber-50">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-3 text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Cari surat (contoh: Al-Mulk, Yasin, Al-Kahf, 67)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-white border-2 border-black rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            {/* Category Tabs */}
+            <div className="px-3 py-2 bg-gray-100 border-b border-gray-300 flex items-center gap-1.5 overflow-x-auto text-[11px] font-black">
+              {[
+                { id: 'all' as const, label: 'Semua 114 Surat' },
+                { id: 29 as const, label: 'Juz 29 (67-77)' },
+                { id: 30 as const, label: 'Juz 30 (78-114)' },
+                { id: 'popular' as const, label: 'Surat Pilihan' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setJuzFilterTab(tab.id)}
+                  className={`px-3 py-1.5 rounded-lg border-2 border-black shrink-0 cursor-pointer font-bold ${
+                    juzFilterTab === tab.id
+                      ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
+                      : 'bg-white text-black hover:bg-amber-100'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Surah List Scrollable */}
+            <div className="p-3 overflow-y-auto space-y-1.5 flex-1 max-h-96">
+              {filteredSurahs.map((s) => {
+                const isSelected = s.number === selectedSurahNumber;
+                return (
+                  <button
+                    key={s.number}
+                    onClick={() => {
+                      setSelectedSurahNumber(s.number);
+                      setIsSurahModalOpen(false);
+                    }}
+                    className={`w-full p-2.5 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
+                        : 'bg-white hover:bg-amber-50 text-black'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-black">#{s.number}</span>
+                        <span className="font-extrabold text-xs">{s.latinName}</span>
+                        <span className="text-[10px] opacity-75">({s.meaning})</span>
+                      </div>
+                      <span className="text-[10px] opacity-80 block mt-0.5">
+                        {s.ayahCount} Ayat • Juz {s.juzStart} • {s.revelationPlace}
+                      </span>
+                    </div>
+
+                    <span className="font-quran text-lg font-bold">{s.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* FOCUS MODE EXIT BAR */}

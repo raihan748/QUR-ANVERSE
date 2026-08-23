@@ -19,6 +19,7 @@ import { fetchLeaderboardFromSupabase } from '../../services/supabaseClient';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { audioPlayer } from '../../services/audioPlayerService';
 import { EnterpriseArchitectureInspector } from './EnterpriseArchitectureInspector';
+import { DailyTargetWidget } from '../common/DailyTargetWidget';
 
 interface DashboardViewProps {
   userProfile: UserProfile;
@@ -96,6 +97,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </NeobrutalCard>
+
+      {/* 🎯 TARGET TILAWAH & MUROJA'AH HARI INI */}
+      <DailyTargetWidget onStartTarget={() => onNavigateToMurojaah()} />
 
       {/* ENTERPRISE ARCHITECTURE & APSI CORE INSPECTOR */}
       <EnterpriseArchitectureInspector />
