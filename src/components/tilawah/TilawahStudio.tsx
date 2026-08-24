@@ -13,20 +13,19 @@ import {
   Flame,
   Award,
   BookOpen,
-  Settings2,
   Zap,
   Activity,
-  Sliders,
   Check,
   Search,
   BookMarked,
   Info,
   HelpCircle,
-  Play
+  Play,
+  RotateCw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Ayat, UserProfile } from '../../types';
-import { SURAH_LIST, getSurahAyahs, getRandomAyatFromAvailable } from '../../data/quranData';
+import { SURAH_LIST, getSurahAyahs } from '../../data/quranData';
 import { 
   TAJWID_RULES_DB, 
   TajwidRule, 
@@ -157,7 +156,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
     }
   };
 
-  // Trigger Instant Auto-Tegur: Halt mic, lock word in glowing red, play correction sound & Syekh voice
+  // Trigger Instant Auto-Tegur: Halt mic, lock word in glowing red with wavy underline, play correction sound & Syekh voice
   const triggerAutoTegur = async (evalRes: TajwidEvaluation) => {
     setIsAutoTegurFired(true);
     speechEngine.stopListening();
@@ -188,7 +187,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
       await audioPlayer.playAyat(currentExamAyah.surahNumber, currentExamAyah.ayahNumber, () => {
         setIsPlayingSyekhGuide(false);
       });
-    }, 900);
+    }, 800);
   };
 
   const applyEvaluationResult = (evalRes: TajwidEvaluation) => {
@@ -212,6 +211,15 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
     await audioPlayer.playAyat(currentExamAyah.surahNumber, currentExamAyah.ayahNumber, () => {
       setIsPlayingSyekhGuide(false);
     });
+  };
+
+  // Reset status for Retry
+  const handleResetForRetry = () => {
+    stopAllAudioAndMic();
+    setEvaluation(null);
+    setIsAutoTegurFired(false);
+    setLiveTranscript('');
+    handleStartListening();
   };
 
   // ==============================================================================
@@ -240,6 +248,10 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
     handleSelectPreset(nextIdx);
   };
 
+  const erroneousWord = (evaluation?.errorWordIndex !== undefined && currentExamAyah.words[evaluation.errorWordIndex])
+    ? currentExamAyah.words[evaluation.errorWordIndex].text
+    : '';
+
   return (
     <div className="space-y-4 pb-24 max-w-4xl mx-auto">
       {/* 1. TOP HEADER: MODULE BADGE & EXAM SELECTOR */}
@@ -255,10 +267,10 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-extrabold font-display text-white">
-              Ujian Tajwid: QS. {currentExamAyah.surahName} (Ayat {currentExamAyah.ayahNumber})
+              QS. {currentExamAyah.surahName} (Ayat {currentExamAyah.ayahNumber})
             </h2>
             <p className="text-xs text-emerald-100 font-medium">
-              Fokus Hukum Utama: <span className="font-bold text-[#F59E0B]">{currentExamAyah.primaryRule.name}</span> ({currentExamAyah.primaryRule.arabicName})
+              Fokus Hukum: <span className="font-bold text-[#F59E0B]">{currentExamAyah.primaryRule.name}</span> ({currentExamAyah.primaryRule.arabicName})
             </p>
           </div>
 
@@ -302,9 +314,9 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
         </div>
       </NeobrutalCard>
 
-      {/* 2. MAIN 1-AYAT EXAM DISPLAY (WORD BY WORD WITH REAL-TIME LOCKED RED GLOW) */}
-      <NeobrutalCard variant="white" className="p-4 sm:p-6 border-2 border-black shadow-[3px_3px_0px_0px_#111827] space-y-4">
-        {/* Ayah Header Strip */}
+      {/* 2. MUSHAF-STYLE NATURAL AYAT DISPLAY (CONTINUOUS ARABIC SENTENCE WITH INLINE HIGHLIGHTING) */}
+      <NeobrutalCard variant="white" className="p-5 sm:p-7 border-2 border-black shadow-[3px_3px_0px_0px_#111827] space-y-4">
+        {/* Header Ribbon */}
         <div className="flex items-center justify-between border-b border-dashed border-gray-300 pb-2.5">
           <div className="flex items-center gap-2">
             <span className="w-7 h-7 rounded-lg border-2 border-black bg-[#0B4627] text-white flex items-center justify-center font-mono font-bold text-xs">
@@ -324,114 +336,111 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
               title="Dengarkan Suara Pembetulan Syekh Misyari"
             >
               <Volume2 className="w-3.5 h-3.5" />
-              <span>{isPlayingSyekhGuide ? 'Syekh Membaca...' : 'Dengar Syekh'}</span>
+              <span>{isPlayingSyekhGuide ? 'Syekh Membaca...' : 'Dengar Contoh Qari'}</span>
             </button>
           </div>
         </div>
 
-        {/* Big Arabic Words Display (Word by Word) */}
-        <div className="p-5 sm:p-7 bg-[#F8F5EE] border-2 border-black rounded-3xl text-center space-y-4">
-          <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 py-2" dir="rtl">
+        {/* Natural Flowing Arabic Sentence (Mushaf Typography) */}
+        <div className="p-6 sm:p-8 bg-[#FBF9F2] border-2 border-black rounded-3xl text-center space-y-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]">
+          <div 
+            className="font-quran text-3xl sm:text-4xl lg:text-5xl leading-relaxed sm:leading-loose text-emerald-950 font-bold tracking-wide select-none"
+            dir="rtl"
+          >
             {currentExamAyah.words.map((w, wIdx) => {
               const isLockedError = evaluation?.errorWordIndex === wIdx;
+              const isBeingRead = isListening && !isLockedError;
+
+              // Inline Highlight Styling without rigid boxes
+              let highlightClass = 'text-emerald-950 transition-all duration-200';
+
+              if (isLockedError) {
+                // Word turns glowing red with wavy underline when error detected
+                highlightClass = 'text-red-600 underline decoration-wavy decoration-red-500 decoration-2 font-black bg-red-100/90 rounded px-1.5 animate-pulse ring-2 ring-red-400';
+              } else if (isBeingRead) {
+                highlightClass = 'text-emerald-900';
+              }
 
               return (
-                <div key={wIdx} className="flex flex-col items-center gap-1">
-                  {/* Tajwid Rule Tag above word */}
-                  {w.ruleTitle && !isLockedError && (
-                    <span 
-                      className="px-2 py-0.5 text-[10px] font-black rounded-md border border-black uppercase text-white"
-                      style={{ backgroundColor: w.highlightColor || '#0B4627' }}
-                    >
-                      {w.ruleTitle}
-                    </span>
-                  )}
-
-                  {/* Locked Red Warning Tag if error detected */}
-                  {isLockedError && (
-                    <span className="px-2.5 py-0.5 text-[10px] font-black bg-red-600 text-white rounded-md border-2 border-black uppercase animate-bounce">
-                      ⚠️ TERKUNCI SALAH
-                    </span>
-                  )}
-
-                  {/* Word Card */}
-                  <div
-                    className={`px-3 sm:px-4 py-2 rounded-2xl border-3 border-black font-quran text-3xl sm:text-4xl lg:text-5xl font-bold transition-all ${
-                      isLockedError
-                        ? 'bg-red-600 text-white ring-4 ring-red-400 shadow-[0_0_20px_rgba(239,68,68,0.9)] animate-pulse scale-105'
-                        : (w.highlightColor
-                          ? 'bg-amber-50 text-black shadow-[2px_2px_0px_0px_#000]'
-                          : 'bg-white text-black shadow-[2px_2px_0px_0px_#000]')
-                    }`}
-                  >
+                <React.Fragment key={wIdx}>
+                  <span className={`inline-block mx-1.5 ${highlightClass}`}>
                     {w.text}
-                  </div>
-                </div>
+                  </span>
+                  {' '}
+                </React.Fragment>
               );
             })}
+            
+            {/* Elegant Ayah End Marker */}
+            <span className="inline-flex items-center justify-center w-9 h-9 rounded-full border-2 border-black bg-[#F59E0B] text-black font-quran text-sm font-black mx-2 align-middle shadow-[1px_1px_0px_0px_#000]">
+              ۝{currentExamAyah.ayahNumber}
+            </span>
           </div>
 
-          {/* Transliteration & Translation */}
-          <div className="border-t border-gray-300 pt-3 space-y-1">
-            <p className="text-sm font-bold text-[#0B4627] italic">
+          {/* Transliteration & Indonesian Translation */}
+          <div className="border-t border-gray-300/80 pt-3 space-y-1.5 text-center">
+            <p className="text-sm sm:text-base font-bold text-[#0B4627] italic font-serif">
               "{currentExamAyah.transliteration}"
             </p>
-            <p className="text-xs text-gray-700 italic font-medium max-w-2xl mx-auto">
+            <p className="text-xs sm:text-sm text-gray-700 italic font-medium max-w-2xl mx-auto leading-relaxed">
               "{currentExamAyah.translation}"
             </p>
           </div>
         </div>
 
-        {/* 3. REAL-TIME AUTO-TEGUR & KOTAK PEMBENARAN TAJWID (POPS UP ON ERROR) */}
+        {/* 3. BANNER / CARD PERINGATAN KOREKSI AI (AUTO-TEGUR REAL-TIME) */}
         {evaluation?.hasError && (
           <div className="p-5 bg-[#FEE2E2] border-3 border-red-600 rounded-3xl shadow-[4px_4px_0px_0px_#DC2626] space-y-3 animate-in fade-in zoom-in-95">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-8 h-8 text-red-600 shrink-0 mt-0.5" />
               <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-2 py-0.5 text-[10px] font-black bg-red-600 text-white rounded border border-black uppercase">
-                    Peringatan Auto-Tegur AI
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="px-2.5 py-0.5 text-[10px] font-black bg-red-600 text-white rounded border border-black uppercase">
+                    Auto-Tegur AI Aktif
                   </span>
-                  <span className="px-2 py-0.5 text-[10px] font-black bg-white text-red-800 rounded border border-red-400">
-                    Hukum: {evaluation.violatedRule?.name || currentExamAyah.primaryRule.name}
-                  </span>
+                  {erroneousWord && (
+                    <span className="px-2.5 py-0.5 text-xs font-black bg-white text-red-700 rounded border border-red-400 font-quran" dir="rtl">
+                      Kata: {erroneousWord}
+                    </span>
+                  )}
                 </div>
 
-                <h4 className="text-base font-black text-red-950 mt-1">
-                  {evaluation.mistakeTitle || 'Kesalahan Pelafalan Tajwid Terdeteksi'}
+                <h4 className="text-base font-black text-red-950">
+                  ⚠️ Tajwid Kurang Tepat pada kata "{erroneousWord || 'ayat ini'}"
                 </h4>
                 <p className="text-xs text-red-900 font-bold mt-1">
-                  {evaluation.mistakeExplanation || 'Terdapat kekeliruan makhraj atau panjang harakat pada kata yang terkunci.'}
+                  {evaluation.mistakeExplanation || 'Terdapat kekeliruan makhraj huruf atau panjang harakat yang tidak sesuai kaidah.'}
                 </p>
               </div>
             </div>
 
-            {/* Cara Membaca yang Benar */}
+            {/* Hukum Tajwid & Cara Membaca yang Benar */}
             <div className="p-3.5 bg-white border-2 border-red-500 rounded-2xl space-y-1">
               <span className="text-[11px] font-black text-[#0B4627] uppercase block flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4 text-[#059669]" /> Cara Membaca yang Benar (Standar Syathibiyyah):
+                <CheckCircle2 className="w-4 h-4 text-[#059669]" /> 
+                Hukum Tajwid & Penjelasan:
               </span>
               <p className="text-xs text-gray-900 font-extrabold leading-relaxed">
                 {evaluation.correctGuidance || currentExamAyah.primaryRule.correctGuide}
               </p>
             </div>
 
-            {/* Action Buttons: Wajib Ulang Bacaan */}
+            {/* Action Buttons: Dengar Contoh Qari & Ulangi Bacaan */}
             <div className="pt-2 border-t border-red-300 flex flex-col sm:flex-row items-center justify-between gap-2">
               <button
                 onClick={handlePlaySyekhGuide}
-                className="w-full sm:w-auto px-4 py-2 bg-white hover:bg-emerald-50 text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer neo-button"
+                className="w-full sm:w-auto px-4 py-2 bg-white hover:bg-emerald-50 text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer neo-button shadow-[2px_2px_0px_0px_#000]"
               >
                 <Volume2 className="w-4 h-4 text-[#0B4627]" />
-                <span>Simak Bimbingan Syekh Sekali Lagi</span>
+                <span>Dengar Contoh Qari</span>
               </button>
 
               <button
-                onClick={handleStartListening}
+                onClick={handleResetForRetry}
                 className="w-full sm:w-auto px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-[3px_3px_0px_0px_#000] animate-pulse"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span>Wajib Ulangi Lisan Sekarang</span>
+                <span>Ulangi Bacaan</span>
               </button>
             </div>
           </div>
@@ -448,7 +457,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
                     LULUS UJIAN TAJWID (MUMTAZ {evaluation.score}%)
                   </h4>
                   <p className="text-xs font-bold text-emerald-900">
-                    Maa Syaa Allah! Makhraj huruf, mad, dan ghunnah dilafalkan dengan sangat fasih.
+                    Maa Syaa Allah! Makhraj huruf, mad, dan ghunnah dilafalkan dengan sangat fasih dan tepat.
                   </p>
                 </div>
               </div>
@@ -470,14 +479,14 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
           </div>
         )}
 
-        {/* 5. MICROPHONE CONTROLS & LIVE DECIBEL METER */}
+        {/* 5. MAIN MIC CONTROLS & LIVE DECIBEL METER */}
         <div className="p-4 bg-white border-2 border-black rounded-2xl shadow-[2px_2px_0px_0px_#111827] space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2 border-b border-gray-200 pb-2.5">
             <span className="text-xs font-black text-gray-800 uppercase flex items-center gap-1.5">
               <Mic className="w-4 h-4 text-[#0B4627]" /> Perekam Ujian Lisan AI:
             </span>
 
-            {/* Dialect */}
+            {/* Dialect Switcher */}
             <div className="flex items-center gap-1 text-xs">
               <span className="font-bold text-gray-600 hidden sm:inline">Dialek:</span>
               <button
@@ -527,7 +536,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
                       ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.8)] scale-105'
                       : 'bg-[#10B981] hover:bg-[#059669] text-black shadow-[3px_3px_0px_0px_#000]'
                   }`}
-                  title={isListening ? 'Hentikan Perekaman' : 'Mulai Menyimak Bacaan Tajwid'}
+                  title={isListening ? 'Hentikan Perekaman' : 'Mulai Membaca'}
                 >
                   {isListening ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
                 </button>
@@ -535,12 +544,12 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
 
               <div>
                 <p className="text-xs font-black text-black">
-                  {isListening ? '🎙️ AI Menyimak Tajwid Anda Secara Langsung...' : 'Klik Mikrofon untuk Memulai Ujian Lisan'}
+                  {isListening ? '🎙️ AI Menyimak Pelafalan Anda Secara Langsung...' : 'Klik "Mulai Membaca" untuk Menguji Tajwid'}
                 </p>
                 <p className="text-[11px] text-gray-600">
                   {isListening
-                    ? 'Lafalkan ayat ini dengan tartil. Jika salah tajwid, sistem akan otomatis menegur seketika.'
-                    : 'Dekatkan mikrofon ke bibir dan baca dengan tajwid yang tepat.'}
+                    ? 'Lafalkan ayat dengan tartil. Jika terdeteksi kekeliruan tajwid, sistem akan otomatis menegur seketika.'
+                    : 'Dekatkan mikrofon ke bibir dan baca ayat dengan tajwid & makhraj yang benar.'}
                 </p>
               </div>
             </div>
@@ -561,7 +570,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
             )}
           </div>
 
-          {/* Spoken Text Preview */}
+          {/* Spoken Text Live Preview */}
           {liveTranscript && (
             <div className="p-2.5 bg-gray-50 border border-gray-300 rounded-xl text-center">
               <span className="text-[10px] text-gray-500 font-bold block">Suara Terdeteksi:</span>
@@ -586,7 +595,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
         </div>
 
         <p className="text-xs text-black font-medium">
-          Gunakan tombol di bawah untuk menguji respons real-time sistem Auto-Tegur saat mendeteksi berbagai jenis kesalahan tajwid:
+          Gunakan tombol simulasi berikut untuk menguji reaksi sistem Auto-Tegur secara instan di hadapan juri:
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-1">
