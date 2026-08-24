@@ -12,7 +12,8 @@ import {
   Minimize2, 
   Info,
   Layers,
-  Image as ImageIcon
+  Image as ImageIcon,
+  RotateCcw
 } from 'lucide-react';
 import { 
   SURAH_LIST, 
@@ -20,7 +21,8 @@ import {
   SURAH_PAGE_STARTS, 
   getJuzForPage, 
   getPrimarySurahForPage, 
-  getMadinahPageFallbackUrls 
+  getMadinahPageFallbackUrls,
+  getSurahAyahs 
 } from '../../data/quranData';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { saveBookmark, setLastRead } from '../../services/offlineStorage';
@@ -59,6 +61,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const [viewMode, setViewMode] = useState<'layout' | 'scan'>('layout');
   const [mushafLines, setMushafLines] = useState<MushafPageLine[]>([]);
   const [isLoadingPage, setIsLoadingPage] = useState<boolean>(true);
+  const [reloadKey, setReloadKey] = useState<number>(0);
 
   // Scan Image State
   const [scanLoaded, setScanLoaded] = useState<boolean>(false);
@@ -134,11 +137,31 @@ export const PhysicalMushafPageReader: React.FC = () => {
               verseRange: `${a.surah.number}:${a.numberInSurah}`
             }));
             setMushafLines(lines);
+            try {
+              localStorage.setItem(cacheKey, JSON.stringify(lines));
+            } catch {}
             return;
           }
         }
       } catch (apiErr) {
-        console.warn('API fallback also failed:', apiErr);
+        console.warn('API fallback also failed, attempting core surah ayahs fallback:', apiErr);
+      }
+
+      // 4. Ultimate Fallback: Load from Core In-Memory / Equran Database
+      try {
+        const coreAyats = await getSurahAyahs(primarySurah.number);
+        if (coreAyats && coreAyats.length > 0 && isMounted) {
+          const lines: MushafPageLine[] = coreAyats.map((a, idx) => ({
+            line: idx + 1,
+            type: 'text',
+            text: `${a.arabicText} ۝${a.numberInSurah}`,
+            verseRange: `${a.surahNumber}:${a.numberInSurah}`
+          }));
+          setMushafLines(lines);
+          return;
+        }
+      } catch (coreErr) {
+        console.warn('Core ayahs fallback failed:', coreErr);
       }
     };
 
@@ -149,7 +172,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [currentPage]);
+  }, [currentPage, reloadKey]);
 
   // Reset scan state on page change
   useEffect(() => {
@@ -485,13 +508,28 @@ export const PhysicalMushafPageReader: React.FC = () => {
                 })
               ) : (
                 !isLoadingPage && (
-                  <div className="text-center py-12 space-y-3 font-sans" dir="ltr">
-                    <p className="font-quran text-2xl text-emerald-900 font-bold leading-loose">
-                      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                    </p>
-                    <p className="text-sm font-bold text-gray-700">
-                      Halaman {currentPage} (Juz {juzNumber} - Surat {primarySurah.latinName})
-                    </p>
+                  <div className="text-center py-10 px-4 space-y-4 font-sans" dir="ltr">
+                    <div className="w-14 h-14 bg-amber-100 border-2 border-black rounded-2xl flex items-center justify-center mx-auto text-amber-900 shadow-[3px_3px_0px_0px_#000]">
+                      <BookOpen className="w-7 h-7" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-quran text-2xl text-emerald-900 font-bold leading-loose">
+                        بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                      </p>
+                      <h4 className="text-base font-black text-black">
+                        Halaman {currentPage} (Juz {juzNumber} - Surat {primarySurah.latinName})
+                      </h4>
+                      <p className="text-xs text-gray-600 max-w-sm mx-auto">
+                        Sedang menghubungkan ke server mushaf. Klik tombol di bawah untuk memuat baris ayat halaman {currentPage}.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setReloadKey((prev) => prev + 1)}
+                      className="px-4 py-2 bg-[#0B4627] hover:bg-[#07301B] text-white border-2 border-black rounded-xl font-black text-xs cursor-pointer shadow-[3px_3px_0px_0px_#000] inline-flex items-center gap-2 transition-all hover:scale-105"
+                    >
+                      <RotateCcw className="w-4 h-4 text-[#F59E0B]" />
+                      <span>Muat Baris Ayat Halaman {currentPage}</span>
+                    </button>
                   </div>
                 )
               )}
