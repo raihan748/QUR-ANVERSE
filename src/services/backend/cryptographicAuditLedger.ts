@@ -16,7 +16,8 @@ export class CryptographicAuditLedger {
   /**
    * Pure JS SHA-256 implementation with clean TypeScript integer arithmetic
    */
-  private sha256(ascii: string): string {
+  private sha256(rawStr: string): string {
+    const ascii = unescape(encodeURIComponent(String(rawStr || '')));
     const mathPow = Math.pow;
     const maxWord = mathPow(2, 32);
     let i = 0, j = 0;

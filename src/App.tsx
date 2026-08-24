@@ -18,6 +18,8 @@ import { PrayerTimesBanner } from './components/adzan/PrayerTimesBanner';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { DownloadCenter } from './components/offline/DownloadCenter';
 
+import { ErrorBoundary } from './components/common/ErrorBoundary';
+
 export function App() {
   const [activeTab, setActiveTab] = useState<NavigationTab>('murojaah_ai');
   const [userProfile, setUserProfile] = useState<UserProfile>(getLocalProfile());
@@ -73,49 +75,51 @@ export function App() {
 
         {/* Main Content Area with Rich Entrance Animations */}
         <main className="flex-1 p-4 sm:p-6 lg:p-7 min-w-0">
-          {/* Dynamic Tab View Container with Smooth Transitions */}
-          <div key={activeTab} className="animate-fade-up">
-            {activeTab === 'mushaf' && <MushafView />}
+          {/* Dynamic Tab View Container with Error Boundary & Smooth Transitions */}
+          <ErrorBoundary>
+            <div key={activeTab} className="animate-fade-up">
+              {activeTab === 'mushaf' && <MushafView />}
 
-            {activeTab === 'tilawah' && (
-              <TilawahStudio
-                userProfile={userProfile}
-                onProfileUpdated={handleProfileUpdated}
-              />
-            )}
+              {activeTab === 'tilawah' && (
+                <TilawahStudio
+                  userProfile={userProfile}
+                  onProfileUpdated={handleProfileUpdated}
+                />
+              )}
 
-            {activeTab === 'murojaah_ai' && (
-              <MurojaahStudio
-                userProfile={userProfile}
-                onProfileUpdated={handleProfileUpdated}
-              />
-            )}
+              {activeTab === 'murojaah_ai' && (
+                <MurojaahStudio
+                  userProfile={userProfile}
+                  onProfileUpdated={handleProfileUpdated}
+                />
+              )}
 
-            {activeTab === 'simai' && (
-              <SimaiTutupMata
-                userProfile={userProfile}
-                onProfileUpdated={handleProfileUpdated}
-              />
-            )}
+              {activeTab === 'simai' && (
+                <SimaiTutupMata
+                  userProfile={userProfile}
+                  onProfileUpdated={handleProfileUpdated}
+                />
+              )}
 
-            {activeTab === 'challenge' && (
-              <SambungAyatGame
-                userProfile={userProfile}
-                onProfileUpdated={handleProfileUpdated}
-              />
-            )}
+              {activeTab === 'challenge' && (
+                <SambungAyatGame
+                  userProfile={userProfile}
+                  onProfileUpdated={handleProfileUpdated}
+                />
+              )}
 
-            {activeTab === 'prayer' && <PrayerTimesBanner />}
+              {activeTab === 'prayer' && <PrayerTimesBanner />}
 
-            {activeTab === 'dashboard' && (
-              <DashboardView
-                userProfile={userProfile}
-                onNavigateToMurojaah={() => handleSelectTabWithScroll('murojaah_ai')}
-              />
-            )}
+              {activeTab === 'dashboard' && (
+                <DashboardView
+                  userProfile={userProfile}
+                  onNavigateToMurojaah={() => handleSelectTabWithScroll('murojaah_ai')}
+                />
+              )}
 
-            {activeTab === 'download' && <DownloadCenter />}
-          </div>
+              {activeTab === 'download' && <DownloadCenter />}
+            </div>
+          </ErrorBoundary>
         </main>
       </div>
 

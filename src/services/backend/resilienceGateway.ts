@@ -181,8 +181,9 @@ export class LRUCache<K, V> {
     };
 
     if (this.map.size >= this.capacity && this.tail) {
-      this.map.delete(this.tail.key);
-      this.removeNode(this.tail);
+      const oldTail = this.tail;
+      this.removeNode(oldTail);
+      this.map.delete(oldTail.key);
     }
 
     this.addToHead(newNode);

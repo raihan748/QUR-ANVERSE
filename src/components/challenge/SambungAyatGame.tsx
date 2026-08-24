@@ -86,6 +86,11 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
 
   useEffect(() => {
     loadChallenge(juzFilter);
+    return () => {
+      audioPlayer.stop();
+      speechEngine.stopListening();
+      audioRecorder.stopRecording();
+    };
   }, [juzFilter]);
 
   // Timer Effect

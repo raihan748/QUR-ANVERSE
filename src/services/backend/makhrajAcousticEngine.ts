@@ -286,9 +286,9 @@ export class MakhrajAcousticEngine {
     }
     path.reverse();
 
-    const rawDistance = dtwMatrix[N][M];
-    const normalizedDistance = Math.min(1.0, rawDistance / (N + M));
-    const similarityPct = Math.max(0, Math.round((1 - normalizedDistance) * 100));
+    const rawDistance = Number.isFinite(dtwMatrix[N][M]) ? dtwMatrix[N][M] : (N + M);
+    const normalizedDistance = Math.min(1.0, Math.max(0, rawDistance / (N + M)));
+    const similarityPct = Math.max(0, Math.min(100, Math.round((1 - normalizedDistance) * 100)));
 
     const userDuration = userSeries[N - 1]?.timestampMs || 0;
     const refDuration = referenceSeries[M - 1]?.timestampMs || 0;

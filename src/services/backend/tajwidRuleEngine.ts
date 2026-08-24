@@ -27,6 +27,7 @@ export class TajwidRuleEngine {
    * Emits formal Tajwid tokens with character offsets, rules, beat counts, and color styling.
    */
   public analyzeAyat(surahNumber: number, ayahNumber: number, rawArabic: string): TajwidAnalysisResult {
+    const safeArabic = String(rawArabic || '').trim();
     const tokens: TajwidToken[] = [];
     const ruleSummary: Record<TajwidRuleType, number> = {
       idgham_bighunnah: 0,
@@ -48,12 +49,25 @@ export class TajwidRuleEngine {
     };
 
     let totalBeats = 0;
-    const len = rawArabic.length;
+    const len = safeArabic.length;
+    if (len === 0) {
+      return {
+        surahNumber,
+        ayahNumber,
+        rawArabic: '',
+        normalizedArabic: '',
+        tokens: [],
+        ruleSummary,
+        totalRulesDetected: 0,
+        expectedHarakatTotalBeats: 0,
+        astTreeJson: '{}'
+      };
+    }
 
     // Helper: Strip spaces to inspect lookahead
     const getNextNonSpaceChar = (fromIdx: number): { char: string; index: number } | null => {
       for (let i = fromIdx + 1; i < len; i++) {
-        const c = rawArabic[i];
+        const c = safeArabic[i];
         if (c !== ' ' && c !== '\n' && c !== '\t') {
           return { char: c, index: i };
         }
@@ -63,9 +77,9 @@ export class TajwidRuleEngine {
 
     // Parser Loop
     for (let i = 0; i < len; i++) {
-      const currentChar = rawArabic[i];
-      const nextChar = rawArabic[i + 1] || '';
-      const thirdChar = rawArabic[i + 2] || '';
+      const currentChar = safeArabic[i];
+      const nextChar = safeArabic[i + 1] || '';
+      const thirdChar = safeArabic[i + 2] || '';
 
       // 1. Ghunnah Musyaddadah: Nun (ن) or Mim (م) with Shaddah (ّ)
       if ((currentChar === 'ن' || currentChar === 'م') && (nextChar === SHADDAH_CHAR || thirdChar === SHADDAH_CHAR)) {

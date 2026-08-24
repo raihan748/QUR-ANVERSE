@@ -65,6 +65,11 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
 
   useEffect(() => {
     handleGenerateChallenge(juzFilter, level);
+    return () => {
+      audioPlayer.stop();
+      speechEngine.stopListening();
+      audioRecorder.stopRecording();
+    };
   }, [juzFilter, level]);
 
   const mapLevelToDifficulty = (lvl: SimaiLevel): 'easy' | 'medium' | 'hardcore' => {

@@ -124,7 +124,7 @@ export function calculateSimilarity(s1: string, s2: string): number {
   return Math.max(0, 1 - distance / maxLen);
 }
 
-// Word-level Matcher with Multi-Variant Tolerance
+// Word-level Matcher with Multi-Variant Tolerance & Particle Handling
 export function isWordMatch(targetArabic: string, candidateSpoken: string): boolean {
   if (!targetArabic || !candidateSpoken) return false;
 
@@ -132,17 +132,22 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string): bool
   const sArab = normalizeArabic(candidateSpoken);
 
   if (tArab === sArab) return true;
+  if (!tArab || !sArab) return false;
+
+  // Substring containment for connected Quranic particles (e.g. "بِالْـ", "وَالْـ", "فَـ")
+  if (tArab.length >= 3 && (sArab.includes(tArab) || tArab.includes(sArab))) return true;
 
   const arabSim = calculateSimilarity(tArab, sArab);
-  if (arabSim >= 0.65) return true;
+  if (arabSim >= 0.62) return true;
 
   const tLatin = arabicToPhoneticLatin(targetArabic);
   const sLatin = normalizeLatinPhonetics(candidateSpoken);
 
   if (tLatin === sLatin) return true;
+  if (tLatin.length >= 3 && (sLatin.includes(tLatin) || tLatin.includes(sLatin))) return true;
 
   const latinSim = calculateSimilarity(tLatin, sLatin);
-  return Math.max(arabSim, latinSim) >= 0.52;
+  return Math.max(arabSim, latinSim) >= 0.50;
 }
 
 export interface SpeechListenerOptions {
