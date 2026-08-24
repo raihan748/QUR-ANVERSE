@@ -136,7 +136,7 @@ export class QuranKnowledgeGraph {
     const N = this.nodes.size;
     const E = this.edges.length;
     const maxEdges = N > 1 ? (N * (N - 1)) / 2 : 1;
-    const density = Number((E / maxEdges).toFixed(4));
+    const density = Math.min(1.0, Math.max(0, Number((E / maxEdges).toFixed(4))));
 
     return {
       totalNodes: N,
