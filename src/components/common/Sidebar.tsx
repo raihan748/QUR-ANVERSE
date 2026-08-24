@@ -8,9 +8,10 @@ import {
   LayoutDashboard, 
   DownloadCloud, 
   Clock, 
-  MapPin,
-  Sparkles,
-  Zap
+  MapPin, 
+  Sparkles, 
+  Zap,
+  ShieldAlert
 } from 'lucide-react';
 import { NavigationTab, PrayerTime } from '../../types';
 import { NeobrutalCard } from './NeobrutalCard';
@@ -45,9 +46,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'tilawah' as NavigationTab,
       label: t.nav_tilawah,
       sublabel: t.nav_tilawahSub,
-      icon: Sparkles,
-      badge: language === 'ar' ? 'تشغيل تلقائي' : 'Auto Putar',
-      color: 'bg-[#059669]',
+      icon: ShieldAlert,
+      badge: language === 'ar' ? 'تنبيه فوري' : 'Auto-Tegur 🎙️',
+      color: 'bg-red-600',
       isPrimary: true
     },
     {

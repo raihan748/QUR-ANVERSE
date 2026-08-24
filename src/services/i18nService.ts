@@ -21,8 +21,8 @@ export const translations = {
     // Navigation Tabs
     nav_mushaf: 'Al-Qur\'an Biasa',
     nav_mushafSub: '30 Juz Rasm Utsmani',
-    nav_tilawah: 'Tilawah & Murottal',
-    nav_tilawahSub: 'Audio Syekh & Tikrar',
+    nav_tilawah: 'AI Ujian & Koreksi Tajwid',
+    nav_tilawahSub: 'Deteksi Kesalahan & Auto-Tegur',
     nav_murojaah_ai: 'Muroja\'ah AI Real-Time',
     nav_murojaah_aiSub: 'Koreksi Suara & Tajwid',
     nav_simai: 'Muroja\'ah Tutup Mata',
@@ -108,8 +108,8 @@ export const translations = {
     // Navigation Tabs
     nav_mushaf: 'المصحف الشريف',
     nav_mushafSub: '٣٠ جزءاً بالرسم العثماني',
-    nav_tilawah: 'التلاوة والترتيل',
-    nav_tilawahSub: 'بصوت الشيخ وتكرار الآيات',
+    nav_tilawah: 'اختبار وتصحيح التجويد الذكي',
+    nav_tilawahSub: 'كشف الأخطاء والتنبيه الصوتي التلقائي',
     nav_murojaah_ai: 'المراجعة الذكية الفورية',
     nav_murojaah_aiSub: 'تصحيح الصوت والتجويد والمخارج',
     nav_simai: 'التسميع غيباً (إخفاء المصحف)',
