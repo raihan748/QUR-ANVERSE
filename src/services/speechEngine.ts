@@ -1,6 +1,7 @@
 // ==============================================================================
 // Ultra-Resilient & Intelligent AI Speech Engine (Muroja'ah & Tajwid Evaluator)
-// Multi-Dialect Arabic (ar-SA, ar-KW, ar-EG) & Indonesian Phonetics with Demo Simulator
+// Multi-Dialect Arabic (ar-SA, ar-KW, ar-EG) & Multi-Accent Phonetics
+// Hardened for High Accuracy, Continuous Stream Tracking & Zero-Fake Production
 // ==============================================================================
 
 import { Ayat, EvaluationResult } from '../types';
@@ -10,29 +11,35 @@ import { formatAlafasyAudioUrl } from './audioPlayerService';
 export function normalizeArabic(text: string): string {
   if (!text || typeof text !== 'string') return '';
   return text
-    // Strip all tashkeel / harakat / Quranic annotation marks
-    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u08D4-\u08E1\u08E3-\u08FF]/g, '')
-    // Strip Tatweel
+    // 1. Strip Zero-Width Characters, Non-Joiners, and Hidden Formatting
+    .replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00AD\u200C\u200D]/g, '')
+    // 2. Strip all Quranic Waqf / Stop / Sajdah / Rub El Hizb Marks
+    .replace(/[\u06D6-\u06ED\u08D4-\u08E1\u08E3-\u08FF\u0610-\u061A]/g, '')
+    // 3. Strip all Tashkeel / Harakat (Fatha, Damma, Kasra, Sukun, Shaddah, Tanween)
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    // 4. Strip Tatweel / Kashida
     .replace(/\u0640/g, '')
-    // Normalize Alif forms (إ, أ, آ, ٱ, etc.) -> ا
-    .replace(/[\u0622\u0623\u0625\u0671\u0672\u0673\u0675]/g, 'ا')
-    // Normalize Taa Marbutah (ة) -> ه
-    .replace(/\u0629/g, 'ه')
-    // Normalize Yaa / Alif Maqsurah (ى, ي, ۍ, etc.) -> ي
-    .replace(/[\u0649\u064A\u06D0\u06D1]/g, 'ي')
-    // Normalize Waw forms (ؤ) -> و
-    .replace(/\u0624/g, 'و')
-    // Normalize Hamzah standalone
-    .replace(/\u0621/g, '')
-    // Normalize Kaf variations
+    // 5. Normalize Alif variants (إ, أ, آ, ٱ, ٲ, ٳ, ٵ) -> ا
+    .replace(/[\u0622\u0623\u0625\u0671\u0672\u0673\u0675\u0670]/g, 'ا')
+    // 6. Normalize Taa Marbutah (ة) -> ه
+    .replace(/[\u0629\u06C0]/g, 'ه')
+    // 7. Normalize Yaa / Alif Maqsurah (ى, ي, ۍ, ۑ, etc.) -> ي
+    .replace(/[\u0649\u064A\u06D0\u06D1\u06CC]/g, 'ي')
+    // 8. Normalize Waw forms (ؤ, ۄ, ۅ) -> و
+    .replace(/[\u0624\u06C4\u06C5]/g, 'و')
+    // 9. Normalize Standalone / Carrier Hamzah (ء, ئ)
+    .replace(/[\u0621\u0626]/g, '')
+    // 10. Normalize Kaf variations (ك, ک, ڪ) -> ك
     .replace(/[\u06A9\u06AA]/g, 'ك')
-    // Strip non-Arabic letters
+    // 11. Normalize Ha variants
+    .replace(/[\u06BE\u06C1\u06C2\u06C3]/g, 'ه')
+    // 12. Strip non-Arabic letters
     .replace(/[^\u0621-\u064A\s]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-// 2. Arabic to Latin Sound Converter (Phonetic Transliteration)
+// 2. Arabic to Universal Phonetic Latin Converter
 export function arabicToPhoneticLatin(text: string): string {
   if (!text) return '';
   const cleanArab = normalizeArabic(text);
@@ -54,27 +61,28 @@ export function arabicToPhoneticLatin(text: string): string {
   return normalizeLatinPhonetics(result);
 }
 
-// 3. Universal Latin Phonetic Normalizer (Matches Indonesian accent & spelling habits)
+// 3. Universal Latin Phonetic Normalizer (Matches Indonesian, Gulf & Asian speech habits)
 export function normalizeLatinPhonetics(text: string): string {
   if (!text || typeof text !== 'string') return '';
   return text
     .toLowerCase()
-    // Remove apostrophes, hyphens, glottal marks
-    .replace(/['`\-_ʻ’‘"]/g, '')
-    // Indonesian vowel habit: 'o' -> 'a' (e.g. rohman -> rahman, alloh -> allah, sholat -> salat)
+    // Remove apostrophes, hyphens, glottal marks, numbers used for arabic letters (2, 3, 7)
+    .replace(/['`\-_ʻ’‘"23789]/g, '')
+    // Indonesian & Asian vowel shift: 'o' -> 'a' (e.g. rohman -> rahman, alloh -> allah, sholat -> salat)
     .replace(/o/g, 'a')
-    // Normalize duplicate vowels (aa -> a, ii -> i, uu -> u, ee -> e)
+    // Normalize elongated vowels
     .replace(/aa+/g, 'a')
-    .replace(/ii+/g, 'i')
-    .replace(/uu+/g, 'u')
+    .replace(/ii+|iy+/g, 'i')
+    .replace(/uu+|uw+/g, 'u')
     .replace(/ee+/g, 'e')
-    // Normalize phonetic pairs
-    .replace(/dz|dh|zh/g, 'z')
+    // Normalize phonetic sound clusters
+    .replace(/dz|dh|zh|dj/g, 'z')
     .replace(/th|ts/g, 't')
     .replace(/sh|sy/g, 's')
     .replace(/kh/g, 'k')
     .replace(/gh/g, 'g')
-    .replace(/ph|v/g, 'f')
+    .replace(/ph|v|p/g, 'f')
+    .replace(/q/g, 'k')
     .replace(/ch/g, 'c')
     // Remove non-alphanumeric
     .replace(/[^a-z0-9\s]/g, '')
@@ -116,6 +124,27 @@ export function calculateSimilarity(s1: string, s2: string): number {
   return Math.max(0, 1 - distance / maxLen);
 }
 
+// Word-level Matcher with Multi-Variant Tolerance
+export function isWordMatch(targetArabic: string, candidateSpoken: string): boolean {
+  if (!targetArabic || !candidateSpoken) return false;
+
+  const tArab = normalizeArabic(targetArabic);
+  const sArab = normalizeArabic(candidateSpoken);
+
+  if (tArab === sArab) return true;
+
+  const arabSim = calculateSimilarity(tArab, sArab);
+  if (arabSim >= 0.65) return true;
+
+  const tLatin = arabicToPhoneticLatin(targetArabic);
+  const sLatin = normalizeLatinPhonetics(candidateSpoken);
+
+  if (tLatin === sLatin) return true;
+
+  const latinSim = calculateSimilarity(tLatin, sLatin);
+  return Math.max(arabSim, latinSim) >= 0.52;
+}
+
 export interface SpeechListenerOptions {
   onInterimResult?: (text: string) => void;
   onFinalResult?: (text: string) => void;
@@ -130,7 +159,7 @@ export class SpeechEngine {
   private isListening = false;
   private currentLanguage: 'ar-SA' | 'id-ID' | 'ar-KW' | 'ar-EG' = 'ar-SA';
   private accumulatedTranscript = '';
-  private restartTimer: any = null;
+  private restartTimeout: any = null;
 
   constructor() {
     this.initRecognition();
@@ -213,21 +242,28 @@ export class SpeechEngine {
       };
 
       this.recognition.onerror = (e: any) => {
-        console.warn('Speech recognition status:', e.error);
-        if (e.error !== 'no-speech' && options.onError) {
+        if (e.error !== 'no-speech' && e.error !== 'audio-capture') {
+          console.warn('Speech recognition warning:', e.error);
+        }
+        if (options.onError) {
           options.onError(e);
         }
       };
 
       this.recognition.onend = () => {
         if (this.isListening) {
-          // If still active (user hasn't clicked stop), auto-restart smoothly
-          try {
-            this.recognition.start();
-          } catch {
-            this.isListening = false;
-            if (options.onEnd) options.onEnd();
-          }
+          // Resilient Auto-restart on brief silence or browser disconnect
+          if (this.restartTimeout) clearTimeout(this.restartTimeout);
+          this.restartTimeout = setTimeout(() => {
+            if (this.isListening && this.recognition) {
+              try {
+                this.recognition.start();
+              } catch {
+                this.isListening = false;
+                if (options.onEnd) options.onEnd();
+              }
+            }
+          }, 250);
         } else {
           if (options.onEnd) options.onEnd();
         }
@@ -245,9 +281,9 @@ export class SpeechEngine {
 
   public stopListening(): string {
     this.isListening = false;
-    if (this.restartTimer) {
-      clearTimeout(this.restartTimer);
-      this.restartTimer = null;
+    if (this.restartTimeout) {
+      clearTimeout(this.restartTimeout);
+      this.restartTimeout = null;
     }
     if (this.recognition) {
       try {
@@ -280,7 +316,7 @@ export class SpeechEngine {
         expectedLatin: ayat.transliteration,
         wordEvaluations: allErrors,
         aiAdabPraise: 'Mikrofon belum menangkap suara Anda.',
-        aiCorrectionNote: 'Klik tombol mikrofon, dekatkan ke bibir, atau gunakan tombol Ketik/Simulasi Presentasi jika ruangan bising.',
+        aiCorrectionNote: 'Klik tombol mikrofon, dekatkan ke bibir, lalu lantunkan ayat dengan tartil.',
         syekhAudioUrl: formatAlafasyAudioUrl(ayat.surahNumber, ayat.numberInSurah)
       };
     }
@@ -308,12 +344,11 @@ export class SpeechEngine {
     let matchedWordCount = 0;
 
     expectedWords.forEach((origWord, idx) => {
-      // Look for best matching spoken word anywhere within +/- 2 positions (handles slight speech pacing differences)
       let bestWScore = 0;
       let matchedSpokenWord = '';
 
-      const minIdx = Math.max(0, idx - 2);
-      const maxIdx = Math.min(spokenWords.length - 1, idx + 2);
+      const minIdx = Math.max(0, idx - 3);
+      const maxIdx = Math.min(spokenWords.length - 1, idx + 3);
 
       for (let sIdx = minIdx; sIdx <= maxIdx; sIdx++) {
         const candidate = spokenWords[sIdx] || '';
@@ -327,14 +362,14 @@ export class SpeechEngine {
         }
       }
 
-      if (bestWScore >= 0.50 || bestGlobalSim >= 0.65) {
+      if (bestWScore >= 0.48 || bestGlobalSim >= 0.65) {
         matchedWordCount += 1.0;
         wordEvaluations.push({
           expectedWord: origWord,
           spokenWord: matchedSpokenWord || origWord,
           status: 'correct'
         });
-      } else if (bestWScore >= 0.30 || bestGlobalSim >= 0.45) {
+      } else if (bestWScore >= 0.28 || bestGlobalSim >= 0.42) {
         matchedWordCount += 0.7;
         wordEvaluations.push({
           expectedWord: origWord,
@@ -356,7 +391,7 @@ export class SpeechEngine {
     let finalScore = Math.min(100, Math.max(0, Math.round((wordRatio * 50) + (bestGlobalSim * 50))));
 
     // Sensitive baseline boost if global flow matches
-    if (bestGlobalSim >= 0.60 && finalScore < 75) {
+    if (bestGlobalSim >= 0.58 && finalScore < 75) {
       finalScore = Math.min(100, Math.round(finalScore * 1.25));
     }
 
@@ -393,35 +428,11 @@ export class SpeechEngine {
       syekhAudioUrl
     };
   }
-
-  // 5. 🎯 Presentation & Live Pitch Simulator (Fail-Safe for Demo & Launching)
-  public simulateDemoRecitation(ayat: Ayat): EvaluationResult {
-    const rawExpectedArabic = ayat.arabicText || '';
-    const expectedWords = rawExpectedArabic.split(/\s+/).filter(Boolean);
-
-    const wordEvaluations = expectedWords.map((word, idx) => ({
-      expectedWord: word,
-      spokenWord: word,
-      status: (idx === expectedWords.length - 1 && expectedWords.length > 4) ? ('warning' as const) : ('correct' as const)
-    }));
-
-    return {
-      accuracyScore: 96,
-      isPassed: true,
-      recognizedText: rawExpectedArabic,
-      expectedArabic: rawExpectedArabic,
-      expectedLatin: ayat.transliteration,
-      wordEvaluations,
-      aiAdabPraise: 'Maa Syaa Allah Tabarakallah! Lantunan tartil sangat fasih, makhraj presisi standar Utsmani.',
-      aiCorrectionNote: 'Tingkat akurasi 96% - Sesi Muroja\'ah AI Lulus dengan predikat Mumtaz!',
-      syekhAudioUrl: formatAlafasyAudioUrl(ayat.surahNumber, ayat.numberInSurah)
-    };
-  }
 }
 
 // ==============================================================================
 // CONTINUOUS MULTI-VERSE MUROJA'AH REAL-TIME ENGINE
-// Melacak pelafalan beruntun beberapa ayat sekaligus tanpa henti
+// Melacak pelafalan beruntun beberapa ayat sekaligus tanpa henti dengan Greedy Matcher
 // ==============================================================================
 
 export interface ContinuousTrackerCallbacks {
@@ -495,45 +506,41 @@ export class ContinuousMurojaahTracker {
 
     if (spokenWords.length === 0 || expectedWords.length === 0) return;
 
-    // Check words against expected current word
-    const targetWord = expectedWords[this.currentWordIndex];
-    if (!targetWord) return;
+    // Greedy consecutive word matching
+    let matchedAny = false;
+    const spokenWindow = spokenWords.slice(-8); // Inspect recent spoken words chunk
 
-    const cleanTargetArab = normalizeArabic(targetWord);
-    const cleanTargetLatin = arabicToPhoneticLatin(targetWord);
+    while (this.currentWordIndex < expectedWords.length) {
+      const targetWord = expectedWords[this.currentWordIndex];
+      let foundWord = false;
 
-    let foundMatch = false;
+      for (const spoken of spokenWindow) {
+        if (isWordMatch(targetWord, spoken)) {
+          foundWord = true;
+          break;
+        }
+      }
 
-    // Look through recent spoken words
-    const recentSpoken = spokenWords.slice(-4);
-    for (const spoken of recentSpoken) {
-      const spArab = normalizeArabic(spoken);
-      const spLatin = normalizeLatinPhonetics(spoken);
+      if (foundWord) {
+        if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
+          this.matchedWordsMap.set(this.currentAyahIndex, new Set());
+        }
+        this.matchedWordsMap.get(this.currentAyahIndex)!.add(this.currentWordIndex);
+        this.matchedWordsCount++;
+        matchedAny = true;
 
-      const simArab = calculateSimilarity(cleanTargetArab, spArab);
-      const simLatin = calculateSimilarity(cleanTargetLatin, spLatin);
-      const best = Math.max(simArab, simLatin);
+        if (this.callbacks) {
+          this.callbacks.onWordMatched(this.currentAyahIndex, this.currentWordIndex, targetWord);
+        }
 
-      if (best >= 0.45) {
-        foundMatch = true;
-        break;
+        this.currentWordIndex++;
+      } else {
+        break; // Stop continuous sequence if word is not yet spoken
       }
     }
 
-    if (foundMatch) {
-      // Record match
-      if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
-        this.matchedWordsMap.set(this.currentAyahIndex, new Set());
-      }
-      this.matchedWordsMap.get(this.currentAyahIndex)!.add(this.currentWordIndex);
-      this.matchedWordsCount++;
+    if (matchedAny) {
       this.lastMatchTime = Date.now();
-
-      if (this.callbacks) {
-        this.callbacks.onWordMatched(this.currentAyahIndex, this.currentWordIndex, targetWord);
-      }
-
-      this.currentWordIndex++;
       this.resetHesitationWatchdog();
 
       // Check if current Ayah is finished
@@ -549,7 +556,7 @@ export class ContinuousMurojaahTracker {
         if (this.currentAyahIndex >= this.targetAyats.length) {
           this.isActive = false;
           this.clearHesitationWatchdog();
-          const score = Math.max(70, Math.round(100 - (this.totalErrors * 5)));
+          const score = Math.max(70, Math.round(100 - (this.totalErrors * 4)));
           if (this.callbacks) {
             this.callbacks.onPassageCompleted(score);
           }
@@ -577,7 +584,7 @@ export class ContinuousMurojaahTracker {
           this.callbacks.onErrorDetected(
             this.currentAyahIndex,
             this.currentWordIndex,
-            'Jeda pelafalan terhenti > 3.5 detik (Syekh mengoreksi)'
+            'Jeda pelafalan terhenti > 3.5 detik (Syekh membimbing)'
           );
         }
       }

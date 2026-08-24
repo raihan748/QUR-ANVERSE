@@ -57,11 +57,16 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const primarySurah = getPrimarySurahForPage(currentPage);
   const juzNumber = getJuzForPage(currentPage);
 
+  const [imageSrc, setImageSrc] = useState<string>(getMadinahPageImageUrl(currentPage));
+  const [triedBackupCdn, setTriedBackupCdn] = useState(false);
+
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_LAST_PAGE, String(currentPage));
       setLastRead(primarySurah.number, 1, `Halaman ${currentPage} (${primarySurah.latinName})`);
     } catch {}
+    setImageSrc(getMadinahPageImageUrl(currentPage));
+    setTriedBackupCdn(false);
     setImageLoaded(false);
     setImageError(false);
     if (isPlayingPageAudio) {
@@ -364,12 +369,22 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
           {/* Scanned Madinah Mushaf Page Image */}
           <img
-            src={getMadinahPageImageUrl(currentPage)}
+            src={imageSrc}
             alt={`Halaman ${currentPage} Mushaf Al-Quran Standar Madinah`}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => {
+            onLoad={() => {
               setImageLoaded(true);
-              setImageError(true);
+              setImageError(false);
+            }}
+            onError={() => {
+              const pStr = String(currentPage).padStart(3, '0');
+              if (!triedBackupCdn) {
+                setTriedBackupCdn(true);
+                // Try secondary GitHub / jsDelivr raw mirror
+                setImageSrc(`https://raw.githubusercontent.com/Govar/quran-images/master/images/page${pStr}.png`);
+              } else {
+                setImageLoaded(true);
+                setImageError(true);
+              }
             }}
             className={`w-full max-h-[85vh] object-contain transition-opacity duration-300 pointer-events-none select-none ${
               imageLoaded ? 'opacity-100' : 'opacity-0'

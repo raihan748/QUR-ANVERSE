@@ -950,7 +950,15 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
             const ayahNum = Number(a.numberInSurah) || idx + 1;
             const indoAyah = indoEd?.ayahs?.[idx]?.text || '';
             const translitAyah = translitEd?.ayahs?.[idx]?.text || '';
-            const arabicText = String(a.text || '');
+            let arabicText = String(a.text || '');
+
+            // Clean leading bismillah prefix injected by AlQuran.cloud on verse 1 (except Al-Fatihah & At-Taubah)
+            if (safeSurahNo !== 1 && safeSurahNo !== 9 && ayahNum === 1) {
+              const stripped = arabicText.replace(/^بِسْمِ\s*[\u0600-\u06FF\s]*ٱلرَّحِيمِ\s*/u, '').trim();
+              if (stripped.length > 3) {
+                arabicText = stripped;
+              }
+            }
 
             return {
               numberInSurah: ayahNum,
@@ -976,6 +984,51 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
     }
   } catch (err) {
     console.warn(`Backup AlQuran.cloud fetch failed for Surah ${safeSurahNo}:`, err);
+  }
+
+  // 5. Tertiary Backup CDN: jsDelivr Global Static Uthmani Quran Mirror
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const [resArab, resIndo] = await Promise.all([
+      fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-quranuthmanihaf/${safeSurahNo}.json`, { signal: controller.signal }),
+      fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ind-indonesianminis/${safeSurahNo}.json`, { signal: controller.signal })
+    ]);
+    clearTimeout(timeoutId);
+
+    if (resArab.ok) {
+      const jsonArab = await resArab.json();
+      const jsonIndo = resIndo.ok ? await resIndo.json() : null;
+
+      const rawAyats = jsonArab.chapter || jsonArab.verses || [];
+      const indoAyats = jsonIndo?.chapter || jsonIndo?.verses || [];
+
+      if (Array.isArray(rawAyats) && rawAyats.length > 0) {
+        const ayats: Ayat[] = rawAyats.map((a: any, idx: number) => {
+          const ayahNum = Number(a.verse) || idx + 1;
+          const indoAyah = indoAyats[idx]?.text || `Terjemahan ayat ke-${ayahNum} Surat ${meta.latinName}.`;
+          return {
+            numberInSurah: ayahNum,
+            numberInQuran: ayahNum,
+            surahNumber: safeSurahNo,
+            surahName: meta.latinName,
+            arabicText: String(a.text || ''),
+            translation: String(indoAyah),
+            transliteration: '',
+            juz: getAyatJuzNumber(safeSurahNo, ayahNum),
+            audioUrl: formatAlafasyAudioUrl(safeSurahNo, ayahNum)
+          };
+        });
+
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(ayats));
+        } catch {}
+        return ayats;
+      }
+    }
+  } catch (err) {
+    console.warn(`Tertiary jsDelivr fetch failed for Surah ${safeSurahNo}:`, err);
   }
 
   // 5. If offline and core DB has some ayahs, use them as partial fallback

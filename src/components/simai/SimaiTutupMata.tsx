@@ -43,7 +43,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
   const [level, setLevel] = useState<SimaiLevel>('hafidz');
   const [juzFilter, setJuzFilter] = useState<29 | 30 | 'all'>('all');
   const [speechLanguage, setSpeechLanguage] = useState<'ar-SA' | 'ar-KW' | 'id-ID'>('ar-SA');
-  const [inputTab, setInputTab] = useState<'voice' | 'chips' | 'demo'>('voice');
+  const [inputTab, setInputTab] = useState<'voice' | 'chips'>('voice');
   
   // Sheikh Companion Selector State
   const [activeReciter, setActiveReciter] = useState<Reciter>(audioPlayer.getActiveReciter());
@@ -183,28 +183,6 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
         audioPlayer.playSheikhIntervention(targetAyat.surahNumber, targetAyat.numberInSurah, activeReciter.id);
       }, 500);
     }
-  };
-
-  // 1-Click Live Presentation Demo Tester
-  const handleRunPresentationDemo = () => {
-    audioPlayer.stop();
-    setIsPlayingPrompt(false);
-    setIsRecording(false);
-    setMicVolume(0);
-
-    const targetAyat = challengeData.next;
-    const demoSim = speechEngine.simulateDemoRecitation(targetAyat);
-    setSpokenTranscript(targetAyat.arabicText);
-    setEvaluation(demoSim);
-
-    audioPlayer.playSuccessChime();
-    confetti({ particleCount: 90, spread: 70 });
-    const updated = addXpAndCheckStreak(200);
-    onProfileUpdated(updated);
-
-    setTimeout(() => {
-      audioPlayer.playAyat(targetAyat.surahNumber, targetAyat.numberInSurah, undefined, activeReciter.id);
-    }, 500);
   };
 
   return (
@@ -401,17 +379,17 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
           </button>
         </div>
 
-        {/* 2. AREA SAMBUNG LISAN & 3 METODE INPUT */}
+        {/* 2. AREA SAMBUNG LISAN & 2 METODE INPUT */}
         <div className="p-6 bg-black/40 border-2 border-emerald-500/40 rounded-2xl space-y-4 max-w-xl mx-auto">
           {/* Method Selection Sub-Tabs */}
-          <div className="grid grid-cols-3 gap-1.5 p-1 bg-black/60 rounded-xl border border-emerald-800">
+          <div className="grid grid-cols-2 gap-1.5 p-1 bg-black/60 rounded-xl border border-emerald-800">
             <button
               onClick={() => setInputTab('voice')}
               className={`py-1.5 text-xs font-black rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
                 inputTab === 'voice' ? 'bg-[#10B981] text-black shadow' : 'text-gray-300 hover:text-white'
               }`}
             >
-              <Mic className="w-3.5 h-3.5" /> Mic Lisan
+              <Mic className="w-3.5 h-3.5" /> Mic Lisan Otentik
             </button>
             <button
               onClick={() => setInputTab('chips')}
@@ -419,15 +397,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                 inputTab === 'chips' ? 'bg-[#F59E0B] text-black shadow' : 'text-gray-300 hover:text-white'
               }`}
             >
-              <Edit3 className="w-3.5 h-3.5" /> Susun Kata
-            </button>
-            <button
-              onClick={() => setInputTab('demo')}
-              className={`py-1.5 text-xs font-black rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer ${
-                inputTab === 'demo' ? 'bg-amber-400 text-black shadow' : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              <Zap className="w-3.5 h-3.5" /> Demo Juri
+              <Edit3 className="w-3.5 h-3.5" /> Susun Kata Hafalan
             </button>
           </div>
 
@@ -568,22 +538,6 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                   ✓ Periksa Susunan Kata
                 </button>
               )}
-            </div>
-          )}
-
-          {/* TAB 3: DEMO JURI (1-CLICK TEST) */}
-          {inputTab === 'demo' && (
-            <div className="p-4 bg-amber-950/40 border border-amber-500/50 rounded-xl space-y-3">
-              <span className="text-xs text-amber-200 block font-medium">
-                Tombol simulasi satu-klik untuk presentasi live di hadapan dewan juri tanpa terkendala noise mic.
-              </span>
-              <button
-                onClick={handleRunPresentationDemo}
-                className="w-full py-3 bg-amber-400 hover:bg-amber-300 text-black font-black text-sm rounded-xl border-2 border-black neo-button flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Zap className="w-4 h-4" />
-                <span>Simulasi Sambungan Hafalan Mutqin (96% Akurasi)</span>
-              </button>
             </div>
           )}
 

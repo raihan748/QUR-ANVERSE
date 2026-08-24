@@ -288,38 +288,6 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
     setIsRecording(false);
     setMicVolume(0);
   };
-
-  // 🎯 1-Click Live Presentation Demo Tester (Simulate Multi-Verse Recitation with Kuwait Judges)
-  const handleRunPresentationDemo = async () => {
-    if (passageAyats.length === 0) return;
-
-    resetSessionState();
-    setIsRecording(true);
-
-    // Simulate multi-verse completion smoothly
-    for (let i = 0; i < passageAyats.length; i++) {
-      setActiveAyahIndex(i);
-      const words = (passageAyats[i].arabicText || '').split(/\s+/).filter(Boolean);
-      const allWordIndices = words.map((_, idx) => idx);
-      
-      setMatchedWordsState((prev) => ({ ...prev, [i]: allWordIndices }));
-      setCompletedAyahsSet((prev) => new Set(prev).add(i));
-      setLiveTranscript(passageAyats[i].arabicText);
-      audioPlayer.playSuccessChime();
-
-      // Brief delay between verses
-      await new Promise((resolve) => setTimeout(resolve, 800));
-    }
-
-    setIsRecording(false);
-    setSessionCompleted(true);
-    setFinalScore(97);
-    confetti({ particleCount: 150, spread: 90 });
-
-    const updatedProfile = addXpAndCheckStreak(250);
-    onProfileUpdated(updatedProfile);
-  };
-
   // Filtered Surahs for Selector Modal
   const filteredSurahs = SURAH_LIST.filter(
     (s) =>
@@ -601,16 +569,25 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
             </button>
           </div>
 
-          {/* 1-Click Demo Juri Button for Kuwait Stage Presentation */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleRunPresentationDemo}
-              className="px-3.5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs rounded-xl border-2 border-black neo-button flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
-              title="Simulasi Muroja'ah Beruntun Mumtaz 97% untuk Presentasi Juri"
-            >
-              <Zap className="w-3.5 h-3.5 fill-black" />
-              <span>⚡ 1-Click Demo Juri</span>
-            </button>
+          {/* Speech Engine Dialect Selector */}
+          <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl border border-black text-xs font-bold">
+            <span className="text-[10px] font-black text-gray-600 px-1">Dialek Mic:</span>
+            {(['ar-SA', 'ar-KW', 'id-ID'] as const).map((langCode) => (
+              <button
+                key={langCode}
+                onClick={() => {
+                  setSpeechLanguage(langCode);
+                  speechEngine.setLanguage(langCode);
+                }}
+                className={`px-2 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                  speechLanguage === langCode
+                    ? 'bg-[#0B4627] text-white shadow-xs'
+                    : 'text-gray-700 hover:text-black'
+                }`}
+              >
+                {langCode === 'ar-SA' ? '🇸🇦 Saudi' : langCode === 'ar-KW' ? '🇰🇼 Kuwait' : '🇮🇩 Latin/ID'}
+              </button>
+            ))}
           </div>
         </div>
 
