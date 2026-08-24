@@ -1293,11 +1293,24 @@ export function getPrimarySurahForPage(page: number): SurahMeta {
   return matchedSurah;
 }
 
-// Formats high-resolution scanned Madinah Mushaf Page Image URL
+// Formats high-resolution Vector SVG / Scanned Madinah Mushaf Page URL
 export function getMadinahPageImageUrl(page: number): string {
   const safePage = Math.max(1, Math.min(604, page));
   const pStr = String(safePage).padStart(3, '0');
-  return `https://android.quran.com/data/width_1260/page${pStr}.png`;
+  // High-Definition Vector SVG (Crystal clear at any zoom, fast, 100% CORS enabled)
+  return `https://www.mp3quran.net/api/quran_pages_svg/${pStr}.svg`;
+}
+
+// Multi-CDN Fallback image sources in order of reliability
+export function getMadinahPageFallbackUrls(page: number): string[] {
+  const safePage = Math.max(1, Math.min(604, page));
+  const pStr = String(safePage).padStart(3, '0');
+  return [
+    `https://www.mp3quran.net/api/quran_pages_svg/${pStr}.svg`,
+    `https://quran.ksu.edu.sa/ayat/safahat1/${safePage}.png`,
+    `https://android.quran.com/data/width_1260/page${pStr}.png`,
+    `https://android.quran.com/data/width_1024/page${pStr}.png`
+  ];
 }
 
 // Fetches an Ayah Range for continuous Muroja'ah

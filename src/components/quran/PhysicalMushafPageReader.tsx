@@ -23,13 +23,22 @@ import {
   SURAH_PAGE_STARTS, 
   getJuzForPage, 
   getPrimarySurahForPage, 
-  getMadinahPageImageUrl 
+  getMadinahPageImageUrl,
+  getMadinahPageFallbackUrls 
 } from '../../data/quranData';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { saveBookmark, setLastRead } from '../../services/offlineStorage';
 import { useLanguage } from '../../context/LanguageContext';
 
 const STORAGE_LAST_PAGE = 'quranverse_physical_mushaf_last_page_v1';
+
+export interface PageVerseItem {
+  number: number;
+  numberInSurah: number;
+  text: string;
+  surahNumber: number;
+  surahName: string;
+}
 
 export const PhysicalMushafPageReader: React.FC = () => {
   const { language } = useLanguage();
@@ -52,21 +61,74 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const [imageError, setImageError] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
+  // Display Mode: 'image' (SVG/Scan) or 'text' (Authentic Vector Typography)
+  const [renderMode, setRenderMode] = useState<'image' | 'text'>('image');
+  const [pageVerses, setPageVerses] = useState<PageVerseItem[]>([]);
+  const [isLoadingVerses, setIsLoadingVerses] = useState(false);
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   const primarySurah = getPrimarySurahForPage(currentPage);
   const juzNumber = getJuzForPage(currentPage);
 
-  const [imageSrc, setImageSrc] = useState<string>(getMadinahPageImageUrl(currentPage));
-  const [triedBackupCdn, setTriedBackupCdn] = useState(false);
+  const fallbackUrls = getMadinahPageFallbackUrls(currentPage);
+  const [fallbackIndex, setFallbackIndex] = useState<number>(0);
+  const [imageSrc, setImageSrc] = useState<string>(fallbackUrls[0]);
+
+  // Fetch page verses for backup rendering & interactive text mode
+  useEffect(() => {
+    let isMounted = true;
+    const cacheKey = `quranverse_page_${currentPage}_uthmani_v1`;
+
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setPageVerses(parsed);
+          return;
+        }
+      }
+    } catch {}
+
+    setIsLoadingVerses(true);
+    fetch(`https://api.alquran.cloud/v1/page/${currentPage}/quran-uthmani`)
+      .then((r) => r.json())
+      .then((res) => {
+        if (!isMounted) return;
+        if (res.code === 200 && res.data && Array.isArray(res.data.ayahs)) {
+          const items: PageVerseItem[] = res.data.ayahs.map((a: any) => ({
+            number: Number(a.number),
+            numberInSurah: Number(a.numberInSurah),
+            text: String(a.text || ''),
+            surahNumber: Number(a.surah?.number || primarySurah.number),
+            surahName: String(a.surah?.englishName || primarySurah.latinName)
+          }));
+          setPageVerses(items);
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(items));
+          } catch {}
+        }
+      })
+      .catch((err) => console.warn('Failed to fetch page verses:', err))
+      .finally(() => {
+        if (isMounted) setIsLoadingVerses(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentPage]);
 
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_LAST_PAGE, String(currentPage));
       setLastRead(primarySurah.number, 1, `Halaman ${currentPage} (${primarySurah.latinName})`);
     } catch {}
-    setImageSrc(getMadinahPageImageUrl(currentPage));
-    setTriedBackupCdn(false);
+    
+    const urls = getMadinahPageFallbackUrls(currentPage);
+    setFallbackIndex(0);
+    setImageSrc(urls[0]);
     setImageLoaded(false);
     setImageError(false);
     if (isPlayingPageAudio) {
@@ -284,10 +346,10 @@ export const PhysicalMushafPageReader: React.FC = () => {
           </div>
         </div>
 
-        {/* Row B: Quick Jump Selectors (Juz, Surah, Slider) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-dashed border-gray-300 text-xs">
+        {/* Row B: Quick Jump Selectors (Juz, Surah, Slider, & Display Mode Toggle) */}
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 pt-2 border-t border-dashed border-gray-300 text-xs">
           {/* Quick Jump Juz */}
-          <div className="flex items-center gap-1.5">
+          <div className="sm:col-span-3 flex items-center gap-1.5">
             <span className="font-bold text-gray-700 shrink-0">Juz:</span>
             <select
               value={juzNumber}
@@ -303,7 +365,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
           </div>
 
           {/* Quick Jump Surah */}
-          <div className="flex items-center gap-1.5">
+          <div className="sm:col-span-4 flex items-center gap-1.5">
             <span className="font-bold text-gray-700 shrink-0">Surat:</span>
             <select
               value={primarySurah.number}
@@ -319,7 +381,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
           </div>
 
           {/* Direct Page Input & Slider */}
-          <div className="flex items-center gap-2">
+          <div className="sm:col-span-5 flex items-center gap-2">
             <span className="font-bold text-gray-700 shrink-0">Halaman:</span>
             <input
               type="range"
@@ -353,16 +415,36 @@ export const PhysicalMushafPageReader: React.FC = () => {
         {/* Ornamental Golden Islamic Top Header */}
         <div className="w-full flex items-center justify-between border-b-2 border-amber-800/40 pb-2 mb-3 px-2 text-xs font-bold text-amber-900 dark:text-amber-300 font-mono">
           <span>{primarySurah.name}</span>
-          <span className="font-sans font-black tracking-widest text-[#0B4627] dark:text-[#34D399]">
-            {language === 'ar' ? 'مصحف المدينة النبوية' : 'MUSHAF MADINAH'}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-sans font-black tracking-widest text-[#0B4627] dark:text-[#34D399]">
+              {language === 'ar' ? 'مصحف المدينة النبوية' : 'MUSHAF MADINAH'}
+            </span>
+            <div className="flex bg-amber-100 dark:bg-amber-950 p-0.5 rounded-lg border border-amber-800/30 text-[10px]">
+              <button
+                onClick={() => setRenderMode('image')}
+                className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer ${
+                  renderMode === 'image' ? 'bg-[#0B4627] text-white' : 'text-amber-900 dark:text-amber-200'
+                }`}
+              >
+                🖼️ Scan/SVG
+              </button>
+              <button
+                onClick={() => setRenderMode('text')}
+                className={`px-2 py-0.5 rounded font-bold transition-all cursor-pointer ${
+                  renderMode === 'text' ? 'bg-[#0B4627] text-white' : 'text-amber-900 dark:text-amber-200'
+                }`}
+              >
+                📜 Teks Rasm
+              </button>
+            </div>
+          </div>
           <span>الجزء {juzNumber}</span>
         </div>
 
-        {/* Realistic Page Frame & Scanned Page Image */}
-        <div className="relative w-full max-w-2xl bg-white border-2 border-amber-900/30 rounded-2xl p-2 sm:p-4 shadow-inner flex flex-col items-center min-h-[540px] sm:min-h-[720px] justify-center">
+        {/* Realistic Page Frame */}
+        <div className="relative w-full max-w-2xl bg-white border-2 border-amber-900/30 rounded-2xl p-3 sm:p-6 shadow-inner flex flex-col items-center min-h-[540px] sm:min-h-[720px] justify-center">
           {/* Loading Spinner */}
-          {!imageLoaded && !imageError && (
+          {!imageLoaded && !imageError && renderMode === 'image' && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/90 z-10 space-y-2">
               <div className="w-10 h-10 border-4 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
               <p className="text-xs font-black text-emerald-900">
@@ -371,43 +453,73 @@ export const PhysicalMushafPageReader: React.FC = () => {
             </div>
           )}
 
-          {/* Scanned Madinah Mushaf Page Image */}
-          <img
-            src={imageSrc}
-            alt={`Halaman ${currentPage} Mushaf Al-Quran Standar Madinah`}
-            onLoad={() => {
-              setImageLoaded(true);
-              setImageError(false);
-            }}
-            onError={() => {
-              const pStr = String(currentPage).padStart(3, '0');
-              if (!triedBackupCdn) {
-                setTriedBackupCdn(true);
-                // Try secondary GitHub / jsDelivr raw mirror
-                setImageSrc(`https://raw.githubusercontent.com/Govar/quran-images/master/images/page${pStr}.png`);
-              } else {
+          {/* MODE A: Scanned / Vector SVG Mushaf Page */}
+          {renderMode === 'image' && !imageError && (
+            <img
+              src={imageSrc}
+              alt={`Halaman ${currentPage} Mushaf Al-Quran Standar Madinah`}
+              onLoad={() => {
                 setImageLoaded(true);
-                setImageError(true);
-              }
-            }}
-            className={`w-full max-h-[85vh] object-contain transition-opacity duration-300 pointer-events-none select-none ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
+                setImageError(false);
+              }}
+              onError={() => {
+                const fallbacks = getMadinahPageFallbackUrls(currentPage);
+                if (fallbackIndex + 1 < fallbacks.length) {
+                  const nextIdx = fallbackIndex + 1;
+                  setFallbackIndex(nextIdx);
+                  setImageSrc(fallbacks[nextIdx]);
+                } else {
+                  setImageLoaded(false);
+                  setImageError(true);
+                  setRenderMode('text'); // Seamlessly switch to beautiful authentic text
+                }
+              }}
+              className={`w-full max-h-[85vh] object-contain transition-opacity duration-300 pointer-events-none select-none ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+          )}
 
-          {/* Fallback Display if Offline or CDN Issue */}
-          {imageError && (
-            <div className="text-center p-8 space-y-3">
-              <div className="w-12 h-12 bg-amber-100 text-amber-800 rounded-2xl border-2 border-black flex items-center justify-center mx-auto">
-                <BookOpen className="w-6 h-6" />
+          {/* MODE B: Authentic 15-Line Uthmani Rasm Typography Canvas */}
+          {(renderMode === 'text' || imageError) && (
+            <div className="w-full flex-1 flex flex-col justify-between py-2 px-1 sm:px-4 space-y-4">
+              {/* Surah Banner if page starts a new Surah */}
+              {SURAH_PAGE_STARTS[primarySurah.number] === currentPage && (
+                <div className="p-3 bg-[#FEF3C7] border-2 border-amber-800/40 rounded-xl text-center shadow-xs">
+                  <span className="font-quran text-2xl font-black text-amber-950 block">
+                    سُورَةُ {primarySurah.name}
+                  </span>
+                  <span className="text-[11px] font-bold text-amber-900">
+                    {primarySurah.revelationPlace} • {primarySurah.ayahCount} Ayat
+                  </span>
+                </div>
+              )}
+
+              {/* Verses Flow Container */}
+              <div 
+                className="font-quran text-2xl sm:text-3xl text-emerald-950 dark:text-emerald-100 font-bold leading-[2.6] sm:leading-[2.8] text-justify text-right selection:bg-amber-300" 
+                dir="rtl"
+              >
+                {pageVerses.length > 0 ? (
+                  pageVerses.map((v) => (
+                    <span key={v.number} className="inline transition-colors hover:text-amber-700">
+                      {v.text}{' '}
+                      <span className="inline-flex items-center justify-center w-7 h-7 mx-1 text-xs font-mono font-black text-amber-900 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/60 border border-amber-700 rounded-full align-middle select-none">
+                        {v.numberInSurah}
+                      </span>{' '}
+                    </span>
+                  ))
+                ) : (
+                  <div className="text-center py-12 space-y-3 font-sans">
+                    <p className="font-quran text-2xl text-emerald-900 font-bold leading-loose">
+                      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                    </p>
+                    <p className="text-sm font-bold text-gray-700">
+                      Halaman {currentPage} (Juz {juzNumber} - Surat {primarySurah.latinName})
+                    </p>
+                  </div>
+                )}
               </div>
-              <h4 className="text-base font-black text-black">Halaman {currentPage} (Juz {juzNumber})</h4>
-              <p className="text-xs text-gray-600 max-w-md">
-                Surat {primarySurah.latinName} ({primarySurah.meaning})
-              </p>
-              <p className="font-quran text-2xl text-emerald-950 font-bold leading-loose p-4 bg-[#F8F5EE] border border-black rounded-xl" dir="rtl">
-                {primarySurah.name}
-              </p>
             </div>
           )}
         </div>
