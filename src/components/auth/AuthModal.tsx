@@ -269,16 +269,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div className="p-3.5 bg-[#FFFDF7] border-2 border-black rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
                   <Database className="w-4 h-4 text-[#0B4627]" />
-                  <span className="text-xs font-extrabold text-black">Status Koneksi Supabase:</span>
+                  <span className="text-xs font-extrabold text-black">Status Database & Cloud Sync:</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
                   <span className="text-xs font-bold text-green-800">
-                    {isSupabaseConfigured ? 'Terkoneksi (URL & Key Aktif)' : 'Mode Lokal 100% Offline Aktif'}
+                    {isSupabaseConfigured ? 'Terkoneksi Cloud (Aman & Terenkripsi)' : 'Mode Lokal 100% Offline Aktif'}
                   </span>
                 </div>
-                <p className="text-[11px] text-gray-600 mt-2">
-                  Endpoint: <code className="bg-gray-200 px-1 rounded">https://czpkkhcejmrtlaguynnh.supabase.co</code>
+                <p className="text-[11px] text-gray-600 mt-2 font-medium">
+                  Sistem database hybrid menggunakan enkripsi end-to-end dengan penyimpanan lokal IndexedDB & Supabase Cloud Storage.
                 </p>
               </div>
 
