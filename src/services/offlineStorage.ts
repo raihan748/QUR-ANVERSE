@@ -68,7 +68,7 @@ export function saveLocalProfile(profile: UserProfile): void {
       avatarUrl: sanitizeInput(profile.avatarUrl, 300),
       hafidzLevel: sanitizeInput(profile.hafidzLevel, 50),
       totalXp: Math.max(0, Number(profile.totalXp) || 0),
-      streakCount: Math.max(0, Number(profile.streakCount) || 1),
+      streakCount: Math.max(0, Number(profile.streakCount) || 0),
       lastMurojaahDate: sanitizeInput(profile.lastMurojaahDate, 20)
     };
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(sanitized));
@@ -117,10 +117,6 @@ export function getStreakCalendar(): Record<string, boolean> {
     const raw = localStorage.getItem(STORAGE_KEYS.STREAK_CALENDAR);
     if (!raw) {
       const initial: Record<string, boolean> = {};
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
-        initial[d] = true;
-      }
       localStorage.setItem(STORAGE_KEYS.STREAK_CALENDAR, JSON.stringify(initial));
       return initial;
     }

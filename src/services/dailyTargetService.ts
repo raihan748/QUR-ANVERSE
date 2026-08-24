@@ -42,8 +42,17 @@ const STORAGE_KEYS = {
   START_DATE: 'quranverse_roadmap_start_date_v2'
 };
 
-// Default Start Date: August 23, 2026 (Today)
-export const DEFAULT_START_DATE = '2026-08-23';
+export function getStartDate(): string {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEYS.START_DATE);
+    if (saved) return saved;
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem(STORAGE_KEYS.START_DATE, today);
+    return today;
+  } catch {
+    return new Date().toISOString().split('T')[0];
+  }
+}
 
 /**
  * Deterministic Pseudo-Random Generator with Seed
@@ -60,8 +69,9 @@ function seededRandom(seed: number): () => number {
 /**
  * Generates the complete 365-Day curriculum spanning 1 full year
  */
-export function generate365DayCurriculum(startDateStr = DEFAULT_START_DATE): RoadmapDayItem[] {
-  const startDate = new Date(startDateStr);
+export function generate365DayCurriculum(startDateStr?: string): RoadmapDayItem[] {
+  const effectiveStart = startDateStr || getStartDate();
+  const startDate = new Date(effectiveStart);
   const rng = seededRandom(20260823); // Consistent reproducible seed
 
   // 1. Build discrete study blocks covering all 114 Surahs
@@ -186,8 +196,9 @@ export function getTodayDateString(): string {
 /**
  * Calculates current Day index (1 to 365) based on start date
  */
-export function getCurrentDayNumber(startDateStr = DEFAULT_START_DATE): number {
-  const start = new Date(startDateStr).getTime();
+export function getCurrentDayNumber(startDateStr?: string): number {
+  const effectiveStart = startDateStr || getStartDate();
+  const start = new Date(effectiveStart).getTime();
   const now = new Date(getTodayDateString()).getTime();
   const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
   return Math.max(1, Math.min(365, diffDays + 1));
@@ -301,6 +312,7 @@ export function getAnnualProgress(): AnnualProgress {
   const completedCount = Object.keys(map).length;
   const currentDay = getCurrentDayNumber();
   const curriculum = generate365DayCurriculum();
+  const start = getStartDate();
   const end = curriculum[curriculum.length - 1]?.date || '2027-08-23';
 
   return {
@@ -308,7 +320,7 @@ export function getAnnualProgress(): AnnualProgress {
     completedDaysCount: completedCount,
     currentDayNumber: currentDay,
     completionPercentage: Math.round((completedCount / 365) * 100),
-    startDate: DEFAULT_START_DATE,
+    startDate: start,
     endDate: end
   };
 }

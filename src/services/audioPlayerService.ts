@@ -163,19 +163,30 @@ class AudioPlayerService {
     try {
       const parsedUrl = new URL(url, window.location.origin);
       if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+        if (onEnded) onEnded();
         return false;
       }
 
-      this.currentAudio = new Audio(parsedUrl.toString());
+      this.currentAudio = new Audio();
+      this.currentAudio.src = parsedUrl.toString();
       this.currentAudio.crossOrigin = 'anonymous';
       this.currentAudio.preload = 'auto';
       this.onEndedCallback = onEnded || null;
       this.onTimeUpdateCallback = onTimeUpdate || null;
 
-      this.currentAudio.addEventListener('ended', () => {
+      let hasEnded = false;
+      const finishPlayback = () => {
+        if (hasEnded) return;
+        hasEnded = true;
         this.isPlaying = false;
-        if (this.onEndedCallback) this.onEndedCallback();
-      });
+        if (this.onEndedCallback) {
+          const cb = this.onEndedCallback;
+          this.onEndedCallback = null;
+          cb();
+        }
+      };
+
+      this.currentAudio.addEventListener('ended', finishPlayback);
 
       this.currentAudio.addEventListener('timeupdate', () => {
         if (this.currentAudio && this.onTimeUpdateCallback) {
@@ -183,17 +194,33 @@ class AudioPlayerService {
         }
       });
 
-      this.currentAudio.addEventListener('error', (e) => {
-        console.warn('Audio playback error, fallback:', e);
-        this.isPlaying = false;
+      this.currentAudio.addEventListener('error', () => {
+        console.warn('Audio playback network error, triggering graceful end.');
+        finishPlayback();
       });
 
-      await this.currentAudio.play();
+      // 12-second safety watchdog in case network audio hangs indefinitely
+      setTimeout(() => {
+        if (this.isPlaying && this.currentAudio && !this.currentAudio.paused && this.currentAudio.currentTime === 0) {
+          console.warn('Audio stall timeout reached, resolving gracefully.');
+          finishPlayback();
+        }
+      }, 12000);
+
+      const playPromise = this.currentAudio.play();
+      if (playPromise !== undefined) {
+        await playPromise.catch((err) => {
+          console.warn('Auto-play blocked or network failure:', err);
+          finishPlayback();
+        });
+      }
+
       this.isPlaying = true;
       return true;
     } catch (err) {
-      console.warn('Auto-play blocked or network error:', err);
+      console.warn('Audio player exception:', err);
       this.isPlaying = false;
+      if (onEnded) onEnded();
       return false;
     }
   }

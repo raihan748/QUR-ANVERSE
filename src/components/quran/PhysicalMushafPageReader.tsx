@@ -131,9 +131,13 @@ export const PhysicalMushafPageReader: React.FC = () => {
     alert(`🔖 Halaman ${currentPage} (Juz ${juzNumber} - Surat ${primarySurah.latinName}) berhasil disimpan ke Bookmark!`);
   };
 
-  // Keyboard Arrow Navigation
+  // Keyboard Arrow Navigation with Input Focus Protection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const activeTag = (document.activeElement?.tagName || '').toLowerCase();
+      if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
+        return;
+      }
       if (e.key === 'ArrowLeft') {
         handleNextPage();
       } else if (e.key === 'ArrowRight') {
