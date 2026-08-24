@@ -243,6 +243,10 @@ export class SpeechEngine {
     }
   }
 
+  public clearTranscript(): void {
+    this.accumulatedTranscript = '';
+  }
+
   public stopListening(): string {
     this.isListening = false;
     if (this.restartTimer) {
@@ -255,6 +259,139 @@ export class SpeechEngine {
       } catch {}
     }
     return this.accumulatedTranscript;
+  }
+
+  // Real-Time Streaming Progress Evaluator for Continuous Multi-Ayah Recitation
+  public evaluateStreamingProgress(spokenText: string, ayat: Ayat): {
+    expectedWords: string[];
+    wordStatuses: {
+      expectedWord: string;
+      spokenWord: string;
+      status: 'correct' | 'warning' | 'error' | 'pending';
+    }[];
+    matchedWordsCount: number;
+    totalWordsCount: number;
+    accuracyScore: number;
+    isAyahCompleted: boolean;
+    hasCriticalMistake: boolean;
+    mistakeReason?: string;
+  } {
+    const rawExpectedArabic = ayat.arabicText || '';
+    const cleanExpectedArabic = normalizeArabic(rawExpectedArabic);
+    const expectedWords = rawExpectedArabic.split(/\s+/).filter(Boolean);
+    const totalWordsCount = expectedWords.length;
+
+    const cleanSpokenRaw = (spokenText || '').trim();
+    if (!cleanSpokenRaw) {
+      return {
+        expectedWords,
+        wordStatuses: expectedWords.map((w) => ({
+          expectedWord: w,
+          spokenWord: '',
+          status: 'pending'
+        })),
+        matchedWordsCount: 0,
+        totalWordsCount,
+        accuracyScore: 0,
+        isAyahCompleted: false,
+        hasCriticalMistake: false
+      };
+    }
+
+    const spokenWords = cleanSpokenRaw.split(/\s+/).filter(Boolean);
+    const cleanSpokenArabic = normalizeArabic(cleanSpokenRaw);
+    const spokenPhonetic = normalizeLatinPhonetics(cleanSpokenRaw);
+    const expectedPhonetic = normalizeLatinPhonetics(ayat.transliteration || '') || arabicToPhoneticLatin(rawExpectedArabic);
+
+    const arabSim = calculateSimilarity(cleanExpectedArabic, cleanSpokenArabic);
+    const latinSim = calculateSimilarity(expectedPhonetic, spokenPhonetic);
+    const arabToLatinSim = calculateSimilarity(arabicToPhoneticLatin(rawExpectedArabic), spokenPhonetic);
+    const bestGlobalSim = Math.max(arabSim, latinSim, arabToLatinSim);
+
+    const wordStatuses: {
+      expectedWord: string;
+      spokenWord: string;
+      status: 'correct' | 'warning' | 'error' | 'pending';
+    }[] = [];
+
+    let matchedWordsCount = 0;
+    let consecutiveErrors = 0;
+    let maxConsecutiveErrors = 0;
+
+    expectedWords.forEach((origWord, idx) => {
+      let bestWScore = 0;
+      let matchedSpokenWord = '';
+
+      const minIdx = Math.max(0, idx - 2);
+      const maxIdx = Math.min(spokenWords.length - 1, idx + 3);
+
+      for (let sIdx = minIdx; sIdx <= maxIdx; sIdx++) {
+        const candidate = spokenWords[sIdx] || '';
+        if (!candidate) continue;
+        const wArab = calculateSimilarity(normalizeArabic(origWord), normalizeArabic(candidate));
+        const wLatin = calculateSimilarity(arabicToPhoneticLatin(origWord), normalizeLatinPhonetics(candidate));
+        const cBest = Math.max(wArab, wLatin);
+        if (cBest > bestWScore) {
+          bestWScore = cBest;
+          matchedSpokenWord = candidate;
+        }
+      }
+
+      if (bestWScore >= 0.50 || (bestGlobalSim >= 0.70 && idx < spokenWords.length)) {
+        matchedWordsCount++;
+        consecutiveErrors = 0;
+        wordStatuses.push({
+          expectedWord: origWord,
+          spokenWord: matchedSpokenWord || origWord,
+          status: 'correct'
+        });
+      } else if (bestWScore >= 0.28 || (bestGlobalSim >= 0.45 && idx < spokenWords.length)) {
+        matchedWordsCount += 0.7;
+        consecutiveErrors = 0;
+        wordStatuses.push({
+          expectedWord: origWord,
+          spokenWord: matchedSpokenWord || '(kurang tepat)',
+          status: 'warning'
+        });
+      } else if (idx < spokenWords.length) {
+        consecutiveErrors++;
+        maxConsecutiveErrors = Math.max(maxConsecutiveErrors, consecutiveErrors);
+        wordStatuses.push({
+          expectedWord: origWord,
+          spokenWord: matchedSpokenWord || '',
+          status: 'error'
+        });
+      } else {
+        wordStatuses.push({
+          expectedWord: origWord,
+          spokenWord: '',
+          status: 'pending'
+        });
+      }
+    });
+
+    const wordRatio = totalWordsCount > 0 ? (matchedWordsCount / totalWordsCount) : 0;
+    let accuracyScore = Math.min(100, Math.max(0, Math.round((wordRatio * 50) + (bestGlobalSim * 50))));
+    if (bestGlobalSim >= 0.65 && accuracyScore < 75) {
+      accuracyScore = Math.min(100, Math.round(accuracyScore * 1.25));
+    }
+
+    // Completion Condition: 70% of words correctly aligned or global similarity high
+    const isAyahCompleted = (matchedWordsCount >= Math.max(1, Math.ceil(totalWordsCount * 0.70)) && accuracyScore >= 60) || (accuracyScore >= 75);
+
+    // Critical Mistake Trigger: Spoke 3+ words that completely deviate, or accuracy < 35% after speaking enough words
+    const hasCriticalMistake = spokenWords.length >= 3 && maxConsecutiveErrors >= 3 && accuracyScore < 40;
+
+    return {
+      expectedWords,
+      wordStatuses,
+      matchedWordsCount: Math.round(matchedWordsCount),
+      totalWordsCount,
+      accuracyScore,
+      isAyahCompleted,
+      hasCriticalMistake,
+      mistakeReason: hasCriticalMistake ? 'Lafal kata terdeteksi berbeda dari teks ayat Utsmani' : undefined
+    };
   }
 
   // Intelligent Multi-Target Recitation Evaluator
