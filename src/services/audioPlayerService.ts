@@ -202,10 +202,32 @@ class AudioPlayerService {
   public async playAyat(
     surahNumber: number, 
     ayahNumber: number, 
+    onEnded?: () => void,
+    customReciterId?: string
+  ): Promise<boolean> {
+    const url = formatAyatAudioUrl(surahNumber, ayahNumber, customReciterId || this.activeReciterId);
+    return this.playUrl(url, onEnded);
+  }
+
+  // Play Sheikh Live Correction Intervention (Teguran Suara Syekh)
+  public async playSheikhIntervention(
+    surahNumber: number,
+    ayahNumber: number,
+    customReciterId?: string,
     onEnded?: () => void
   ): Promise<boolean> {
-    const url = formatAyatAudioUrl(surahNumber, ayahNumber, this.activeReciterId);
-    return this.playUrl(url, onEnded);
+    // 1. Play subtle correction cue tone
+    this.playCorrectionPromptSound();
+
+    // 2. Play authentic Sheikh voice recitation after cue
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        const success = await this.playAyat(surahNumber, ayahNumber, () => {
+          if (onEnded) onEnded();
+        }, customReciterId);
+        resolve(success);
+      }, 350);
+    });
   }
 
   public pause(): void {

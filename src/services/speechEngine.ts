@@ -243,10 +243,6 @@ export class SpeechEngine {
     }
   }
 
-  public clearTranscript(): void {
-    this.accumulatedTranscript = '';
-  }
-
   public stopListening(): string {
     this.isListening = false;
     if (this.restartTimer) {
@@ -259,139 +255,6 @@ export class SpeechEngine {
       } catch {}
     }
     return this.accumulatedTranscript;
-  }
-
-  // Real-Time Streaming Progress Evaluator for Continuous Multi-Ayah Recitation
-  public evaluateStreamingProgress(spokenText: string, ayat: Ayat): {
-    expectedWords: string[];
-    wordStatuses: {
-      expectedWord: string;
-      spokenWord: string;
-      status: 'correct' | 'warning' | 'error' | 'pending';
-    }[];
-    matchedWordsCount: number;
-    totalWordsCount: number;
-    accuracyScore: number;
-    isAyahCompleted: boolean;
-    hasCriticalMistake: boolean;
-    mistakeReason?: string;
-  } {
-    const rawExpectedArabic = ayat.arabicText || '';
-    const cleanExpectedArabic = normalizeArabic(rawExpectedArabic);
-    const expectedWords = rawExpectedArabic.split(/\s+/).filter(Boolean);
-    const totalWordsCount = expectedWords.length;
-
-    const cleanSpokenRaw = (spokenText || '').trim();
-    if (!cleanSpokenRaw) {
-      return {
-        expectedWords,
-        wordStatuses: expectedWords.map((w) => ({
-          expectedWord: w,
-          spokenWord: '',
-          status: 'pending'
-        })),
-        matchedWordsCount: 0,
-        totalWordsCount,
-        accuracyScore: 0,
-        isAyahCompleted: false,
-        hasCriticalMistake: false
-      };
-    }
-
-    const spokenWords = cleanSpokenRaw.split(/\s+/).filter(Boolean);
-    const cleanSpokenArabic = normalizeArabic(cleanSpokenRaw);
-    const spokenPhonetic = normalizeLatinPhonetics(cleanSpokenRaw);
-    const expectedPhonetic = normalizeLatinPhonetics(ayat.transliteration || '') || arabicToPhoneticLatin(rawExpectedArabic);
-
-    const arabSim = calculateSimilarity(cleanExpectedArabic, cleanSpokenArabic);
-    const latinSim = calculateSimilarity(expectedPhonetic, spokenPhonetic);
-    const arabToLatinSim = calculateSimilarity(arabicToPhoneticLatin(rawExpectedArabic), spokenPhonetic);
-    const bestGlobalSim = Math.max(arabSim, latinSim, arabToLatinSim);
-
-    const wordStatuses: {
-      expectedWord: string;
-      spokenWord: string;
-      status: 'correct' | 'warning' | 'error' | 'pending';
-    }[] = [];
-
-    let matchedWordsCount = 0;
-    let consecutiveErrors = 0;
-    let maxConsecutiveErrors = 0;
-
-    expectedWords.forEach((origWord, idx) => {
-      let bestWScore = 0;
-      let matchedSpokenWord = '';
-
-      const minIdx = Math.max(0, idx - 2);
-      const maxIdx = Math.min(spokenWords.length - 1, idx + 3);
-
-      for (let sIdx = minIdx; sIdx <= maxIdx; sIdx++) {
-        const candidate = spokenWords[sIdx] || '';
-        if (!candidate) continue;
-        const wArab = calculateSimilarity(normalizeArabic(origWord), normalizeArabic(candidate));
-        const wLatin = calculateSimilarity(arabicToPhoneticLatin(origWord), normalizeLatinPhonetics(candidate));
-        const cBest = Math.max(wArab, wLatin);
-        if (cBest > bestWScore) {
-          bestWScore = cBest;
-          matchedSpokenWord = candidate;
-        }
-      }
-
-      if (bestWScore >= 0.50 || (bestGlobalSim >= 0.70 && idx < spokenWords.length)) {
-        matchedWordsCount++;
-        consecutiveErrors = 0;
-        wordStatuses.push({
-          expectedWord: origWord,
-          spokenWord: matchedSpokenWord || origWord,
-          status: 'correct'
-        });
-      } else if (bestWScore >= 0.28 || (bestGlobalSim >= 0.45 && idx < spokenWords.length)) {
-        matchedWordsCount += 0.7;
-        consecutiveErrors = 0;
-        wordStatuses.push({
-          expectedWord: origWord,
-          spokenWord: matchedSpokenWord || '(kurang tepat)',
-          status: 'warning'
-        });
-      } else if (idx < spokenWords.length) {
-        consecutiveErrors++;
-        maxConsecutiveErrors = Math.max(maxConsecutiveErrors, consecutiveErrors);
-        wordStatuses.push({
-          expectedWord: origWord,
-          spokenWord: matchedSpokenWord || '',
-          status: 'error'
-        });
-      } else {
-        wordStatuses.push({
-          expectedWord: origWord,
-          spokenWord: '',
-          status: 'pending'
-        });
-      }
-    });
-
-    const wordRatio = totalWordsCount > 0 ? (matchedWordsCount / totalWordsCount) : 0;
-    let accuracyScore = Math.min(100, Math.max(0, Math.round((wordRatio * 50) + (bestGlobalSim * 50))));
-    if (bestGlobalSim >= 0.65 && accuracyScore < 75) {
-      accuracyScore = Math.min(100, Math.round(accuracyScore * 1.25));
-    }
-
-    // Completion Condition: 70% of words correctly aligned or global similarity high
-    const isAyahCompleted = (matchedWordsCount >= Math.max(1, Math.ceil(totalWordsCount * 0.70)) && accuracyScore >= 60) || (accuracyScore >= 75);
-
-    // Critical Mistake Trigger: Spoke 3+ words that completely deviate, or accuracy < 35% after speaking enough words
-    const hasCriticalMistake = spokenWords.length >= 3 && maxConsecutiveErrors >= 3 && accuracyScore < 40;
-
-    return {
-      expectedWords,
-      wordStatuses,
-      matchedWordsCount: Math.round(matchedWordsCount),
-      totalWordsCount,
-      accuracyScore,
-      isAyahCompleted,
-      hasCriticalMistake,
-      mistakeReason: hasCriticalMistake ? 'Lafal kata terdeteksi berbeda dari teks ayat Utsmani' : undefined
-    };
   }
 
   // Intelligent Multi-Target Recitation Evaluator
@@ -556,4 +419,178 @@ export class SpeechEngine {
   }
 }
 
+// ==============================================================================
+// CONTINUOUS MULTI-VERSE MUROJA'AH REAL-TIME ENGINE
+// Melacak pelafalan beruntun beberapa ayat sekaligus tanpa henti
+// ==============================================================================
+
+export interface ContinuousTrackerCallbacks {
+  onWordMatched: (ayahIndex: number, wordIndex: number, word: string) => void;
+  onAyahCompleted: (ayahIndex: number, ayat: Ayat) => void;
+  onErrorDetected: (ayahIndex: number, wordIndex: number, reason: string) => void;
+  onPassageCompleted: (totalScore: number) => void;
+}
+
+export class ContinuousMurojaahTracker {
+  private targetAyats: Ayat[] = [];
+  private currentAyahIndex = 0;
+  private currentWordIndex = 0;
+  private matchedWordsMap: Map<number, Set<number>> = new Map();
+  private callbacks: ContinuousTrackerCallbacks | null = null;
+  private hesitationTimer: any = null;
+  private isActive = false;
+  private lastMatchTime = Date.now();
+  private totalErrors = 0;
+  private totalWordsCount = 0;
+  private matchedWordsCount = 0;
+
+  public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks): void {
+    this.targetAyats = ayats;
+    this.callbacks = callbacks;
+    this.currentAyahIndex = 0;
+    this.currentWordIndex = 0;
+    this.matchedWordsMap.clear();
+    this.totalErrors = 0;
+    this.matchedWordsCount = 0;
+    this.totalWordsCount = ayats.reduce((sum, a) => sum + (a.arabicText ? a.arabicText.split(/\s+/).filter(Boolean).length : 0), 0);
+    this.isActive = true;
+    this.lastMatchTime = Date.now();
+    this.resetHesitationWatchdog();
+  }
+
+  public stop(): void {
+    this.isActive = false;
+    this.clearHesitationWatchdog();
+  }
+
+  public getStatus() {
+    return {
+      currentAyahIndex: this.currentAyahIndex,
+      currentWordIndex: this.currentWordIndex,
+      matchedWordsCount: this.matchedWordsCount,
+      totalWordsCount: this.totalWordsCount,
+      progressPercentage: this.totalWordsCount > 0 ? Math.round((this.matchedWordsCount / this.totalWordsCount) * 100) : 0,
+      totalErrors: this.totalErrors
+    };
+  }
+
+  public isWordMatched(ayahIndex: number, wordIndex: number): boolean {
+    return this.matchedWordsMap.get(ayahIndex)?.has(wordIndex) || false;
+  }
+
+  public isAyahActive(ayahIndex: number): boolean {
+    return this.currentAyahIndex === ayahIndex;
+  }
+
+  public isAyahCompleted(ayahIndex: number): boolean {
+    return ayahIndex < this.currentAyahIndex;
+  }
+
+  public processStream(rawTranscript: string): void {
+    if (!this.isActive || !this.targetAyats[this.currentAyahIndex]) return;
+
+    const currentAyat = this.targetAyats[this.currentAyahIndex];
+    const expectedWords = (currentAyat.arabicText || '').split(/\s+/).filter(Boolean);
+    const spokenWords = rawTranscript.split(/\s+/).filter(Boolean);
+
+    if (spokenWords.length === 0 || expectedWords.length === 0) return;
+
+    // Check words against expected current word
+    const targetWord = expectedWords[this.currentWordIndex];
+    if (!targetWord) return;
+
+    const cleanTargetArab = normalizeArabic(targetWord);
+    const cleanTargetLatin = arabicToPhoneticLatin(targetWord);
+
+    let foundMatch = false;
+
+    // Look through recent spoken words
+    const recentSpoken = spokenWords.slice(-4);
+    for (const spoken of recentSpoken) {
+      const spArab = normalizeArabic(spoken);
+      const spLatin = normalizeLatinPhonetics(spoken);
+
+      const simArab = calculateSimilarity(cleanTargetArab, spArab);
+      const simLatin = calculateSimilarity(cleanTargetLatin, spLatin);
+      const best = Math.max(simArab, simLatin);
+
+      if (best >= 0.45) {
+        foundMatch = true;
+        break;
+      }
+    }
+
+    if (foundMatch) {
+      // Record match
+      if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
+        this.matchedWordsMap.set(this.currentAyahIndex, new Set());
+      }
+      this.matchedWordsMap.get(this.currentAyahIndex)!.add(this.currentWordIndex);
+      this.matchedWordsCount++;
+      this.lastMatchTime = Date.now();
+
+      if (this.callbacks) {
+        this.callbacks.onWordMatched(this.currentAyahIndex, this.currentWordIndex, targetWord);
+      }
+
+      this.currentWordIndex++;
+      this.resetHesitationWatchdog();
+
+      // Check if current Ayah is finished
+      if (this.currentWordIndex >= expectedWords.length) {
+        if (this.callbacks) {
+          this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
+        }
+
+        this.currentAyahIndex++;
+        this.currentWordIndex = 0;
+
+        // Check if all ayahs in passage are finished
+        if (this.currentAyahIndex >= this.targetAyats.length) {
+          this.isActive = false;
+          this.clearHesitationWatchdog();
+          const score = Math.max(70, Math.round(100 - (this.totalErrors * 5)));
+          if (this.callbacks) {
+            this.callbacks.onPassageCompleted(score);
+          }
+        }
+      }
+    }
+  }
+
+  // Force advance to next word/ayah (e.g. after Sheikh correction)
+  public resumeAfterCorrection(): void {
+    if (!this.isActive) return;
+    this.lastMatchTime = Date.now();
+    this.resetHesitationWatchdog();
+  }
+
+  private resetHesitationWatchdog(): void {
+    this.clearHesitationWatchdog();
+    if (!this.isActive) return;
+
+    // 4.5 seconds timeout triggers Sheikh guidance / teguran
+    this.hesitationTimer = setTimeout(() => {
+      if (this.isActive && this.targetAyats[this.currentAyahIndex]) {
+        this.totalErrors++;
+        if (this.callbacks) {
+          this.callbacks.onErrorDetected(
+            this.currentAyahIndex,
+            this.currentWordIndex,
+            'Jeda pelafalan terhenti > 3.5 detik (Syekh mengoreksi)'
+          );
+        }
+      }
+    }, 4500);
+  }
+
+  private clearHesitationWatchdog(): void {
+    if (this.hesitationTimer) {
+      clearTimeout(this.hesitationTimer);
+      this.hesitationTimer = null;
+    }
+  }
+}
+
 export const speechEngine = new SpeechEngine();
+export const continuousTracker = new ContinuousMurojaahTracker();

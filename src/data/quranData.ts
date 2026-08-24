@@ -1197,3 +1197,64 @@ export function getRandomAyatFromAvailable(filterJuz?: number, filterSurah?: num
   const randomIndex = Math.floor(Math.random() * candidates.length);
   return candidates[randomIndex];
 }
+
+// ==============================================================================
+// 604-PAGE PHYSICAL MADINAH MUSHAF HELPERS & PAGE DIRECTORY
+// Standar Mushaf Madinah (Mujamma' Malik Fahd) 15 Baris / Halaman 1 - 604
+// ==============================================================================
+
+// Starting page of each of the 114 Surahs in Madinah Mushaf
+export const SURAH_PAGE_STARTS: Record<number, number> = {
+  1: 1, 2: 2, 3: 50, 4: 77, 5: 106, 6: 128, 7: 151, 8: 177, 9: 187, 10: 208,
+  11: 221, 12: 235, 13: 249, 14: 255, 15: 262, 16: 267, 17: 282, 18: 293, 19: 305, 20: 312,
+  21: 322, 22: 332, 23: 342, 24: 350, 25: 359, 26: 367, 27: 377, 28: 385, 29: 396, 30: 404,
+  31: 411, 32: 415, 33: 418, 34: 428, 35: 434, 36: 440, 37: 446, 38: 453, 39: 458, 40: 467,
+  41: 477, 42: 483, 43: 489, 44: 496, 45: 499, 46: 502, 47: 507, 48: 511, 49: 515, 50: 518,
+  51: 520, 52: 523, 53: 526, 54: 528, 55: 531, 56: 534, 57: 537, 58: 542, 59: 545, 60: 549,
+  61: 551, 62: 553, 63: 554, 64: 556, 65: 558, 66: 560, 67: 562, 68: 564, 69: 566, 70: 568,
+  71: 570, 72: 572, 73: 574, 74: 575, 75: 577, 76: 578, 77: 580, 78: 582, 79: 583, 80: 585,
+  81: 586, 82: 587, 83: 587, 84: 589, 85: 590, 86: 591, 87: 591, 88: 592, 89: 593, 90: 594,
+  91: 595, 92: 595, 93: 596, 94: 596, 95: 597, 96: 597, 97: 598, 98: 598, 99: 599, 100: 599,
+  101: 600, 102: 600, 103: 601, 104: 601, 105: 601, 106: 602, 107: 602, 108: 602, 109: 603, 110: 603,
+  111: 603, 112: 604, 113: 604, 114: 604
+};
+
+// Returns which Juz a specific page belongs to (1 - 604)
+export function getJuzForPage(page: number): number {
+  const safePage = Math.max(1, Math.min(604, page));
+  if (safePage === 1) return 1;
+  const juz = Math.min(30, Math.floor((safePage - 2) / 20) + 1);
+  return Math.max(1, juz);
+}
+
+// Returns primary Surah for a specific page
+export function getPrimarySurahForPage(page: number): SurahMeta {
+  const safePage = Math.max(1, Math.min(604, page));
+  let matchedSurah = SURAH_LIST[0];
+  for (let sNo = 114; sNo >= 1; sNo--) {
+    if (SURAH_PAGE_STARTS[sNo] <= safePage) {
+      matchedSurah = SURAH_LIST.find(s => s.number === sNo) || matchedSurah;
+      break;
+    }
+  }
+  return matchedSurah;
+}
+
+// Formats high-resolution scanned Madinah Mushaf Page Image URL
+export function getMadinahPageImageUrl(page: number): string {
+  const safePage = Math.max(1, Math.min(604, page));
+  const pStr = String(safePage).padStart(3, '0');
+  return `https://android.quran.com/data/width_1260/page${pStr}.png`;
+}
+
+// Fetches an Ayah Range for continuous Muroja'ah
+export async function getSurahAyahsRange(
+  surahNumber: number,
+  startAyah = 1,
+  endAyah?: number
+): Promise<Ayat[]> {
+  const fullAyats = await getSurahAyahs(surahNumber);
+  const safeStart = Math.max(1, startAyah);
+  const safeEnd = endAyah ? Math.min(fullAyats.length, endAyah) : fullAyats.length;
+  return fullAyats.filter(a => a.numberInSurah >= safeStart && a.numberInSurah <= safeEnd);
+}

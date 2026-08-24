@@ -21,7 +21,21 @@ import { NeobrutalCard } from '../common/NeobrutalCard';
 import { audioPlayer } from '../../services/audioPlayerService';
 import { getBookmarks, saveBookmark, setLastRead, getLastRead } from '../../services/offlineStorage';
 
+import { PhysicalMushafPageReader } from './PhysicalMushafPageReader';
+import { useLanguage } from '../../context/LanguageContext';
+
+const STORAGE_MUSHAF_MODE = 'quranverse_mushaf_view_mode_v1';
+
 export const MushafView: React.FC = () => {
+  const { language } = useLanguage();
+  const [mushafViewMode, setMushafViewMode] = useState<'digital' | 'physical'>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_MUSHAF_MODE);
+      if (saved === 'digital' || saved === 'physical') return saved;
+    } catch {}
+    return 'digital';
+  });
+
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(1);
   const [ayats, setAyats] = useState<Ayat[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +55,13 @@ export const MushafView: React.FC = () => {
   const [showTranslation, setShowTranslation] = useState(true);
   const [showTransliteration, setShowTransliteration] = useState(true);
   const [showControls, setShowControls] = useState(false);
+
+  const handleSetViewMode = (mode: 'digital' | 'physical') => {
+    setMushafViewMode(mode);
+    try {
+      localStorage.setItem(STORAGE_MUSHAF_MODE, mode);
+    } catch {}
+  };
 
   // Bookmarks
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
@@ -122,11 +143,42 @@ export const MushafView: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-24 max-w-5xl mx-auto">
-      {/* Top Banner Surah Selector */}
-      <SurahSelector
-        selectedSurahNumber={selectedSurahNumber}
-        onSelectSurah={(no) => setSelectedSurahNumber(no)}
-      />
+      {/* 🌟 DUAL MODE SWITCHER: DIGITAL vs PHYSICAL 604-PAGE MUSHAF */}
+      <div className="flex border-2 border-black rounded-2xl overflow-hidden bg-[#E5E7EB] p-1 gap-1 shadow-[2px_2px_0px_0px_#111827]">
+        <button
+          onClick={() => handleSetViewMode('digital')}
+          className={`flex-1 py-2 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+            mushafViewMode === 'digital'
+              ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
+              : 'text-gray-700 hover:text-black'
+          }`}
+        >
+          <BookOpen className="w-4 h-4 text-[#F59E0B]" />
+          <span>{language === 'ar' ? '📱 مصحف رقمي مفسر' : '📱 Mode Digital (Teks, Terjemah & Per Kata)'}</span>
+        </button>
+
+        <button
+          onClick={() => handleSetViewMode('physical')}
+          className={`flex-1 py-2 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+            mushafViewMode === 'physical'
+              ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
+              : 'text-gray-700 hover:text-black'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-[#F59E0B]" />
+          <span>{language === 'ar' ? '📖 مصحف المدينة ٦٠٤ صفحة (قلب الصفحات)' : '📖 Mode Mushaf Fisik Asli (604 Halaman Geser)'}</span>
+        </button>
+      </div>
+
+      {mushafViewMode === 'physical' ? (
+        <PhysicalMushafPageReader />
+      ) : (
+        <>
+          {/* Top Banner Surah Selector */}
+          <SurahSelector
+            selectedSurahNumber={selectedSurahNumber}
+            onSelectSurah={(no) => setSelectedSurahNumber(no)}
+          />
 
       {/* Surah Header Card */}
       <NeobrutalCard variant="emerald" className="p-4 sm:p-5 relative overflow-hidden shadow-[3px_3px_0px_0px_#111827] border-2 border-black">
@@ -429,6 +481,8 @@ export const MushafView: React.FC = () => {
             if (prev) handlePlayAyat(prev);
           }}
         />
+      )}
+        </>
       )}
     </div>
   );

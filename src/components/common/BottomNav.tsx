@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Sparkles, Mic2, EyeOff, Swords, Compass, LayoutDashboard, ShieldAlert } from 'lucide-react';
+import { BookOpen, Sparkles, Mic2, EyeOff, Swords, Compass, LayoutDashboard } from 'lucide-react';
 import { NavigationTab } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -13,7 +13,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
 
   const tabs = [
     { id: 'mushaf' as NavigationTab, label: language === 'ar' ? 'المصحف' : 'Mushaf', icon: BookOpen },
-    { id: 'tilawah' as NavigationTab, label: language === 'ar' ? 'التجويد' : 'Tajwid AI', icon: ShieldAlert },
+    { id: 'tilawah' as NavigationTab, label: language === 'ar' ? 'التلاوة' : 'Tilawah', icon: Sparkles },
     { id: 'murojaah_ai' as NavigationTab, label: language === 'ar' ? 'المراجعة' : 'Muroja\'ah AI', icon: Mic2, isSpecial: true },
     { id: 'simai' as NavigationTab, label: language === 'ar' ? 'التسميع' : 'Simai', icon: EyeOff },
     { id: 'challenge' as NavigationTab, label: language === 'ar' ? 'التحدي' : 'Game', icon: Swords },

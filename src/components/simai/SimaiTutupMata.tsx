@@ -17,13 +17,14 @@ import {
   Zap,
   Check,
   Headphones,
+  ChevronDown,
   Edit3
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Ayat, SimaiLevel, UserProfile, EvaluationResult } from '../../types';
 import { simaiQueue, ALL_JUZ_29_SURAHS, ALL_JUZ_30_SURAHS } from '../../data/quranData';
 import { NeobrutalCard } from '../common/NeobrutalCard';
-import { audioPlayer } from '../../services/audioPlayerService';
+import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { speechEngine } from '../../services/speechEngine';
 import { audioRecorder } from '../../services/audioRecorderService';
 import { addXpAndCheckStreak } from '../../services/offlineStorage';
@@ -44,6 +45,10 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
   const [speechLanguage, setSpeechLanguage] = useState<'ar-SA' | 'ar-KW' | 'id-ID'>('ar-SA');
   const [inputTab, setInputTab] = useState<'voice' | 'chips' | 'demo'>('voice');
   
+  // Sheikh Companion Selector State
+  const [activeReciter, setActiveReciter] = useState<Reciter>(audioPlayer.getActiveReciter());
+  const [isReciterMenuOpen, setIsReciterMenuOpen] = useState(false);
+
   const [challengeData, setChallengeData] = useState<{ prompt: Ayat; next: Ayat }>(() => 
     simaiQueue.getNextChallenge('all', 'hardcore')
   );
@@ -92,7 +97,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
     setIsPlayingPrompt(true);
     await audioPlayer.playAyat(newChallenge.prompt.surahNumber, newChallenge.prompt.numberInSurah, () => {
       setIsPlayingPrompt(false);
-    });
+    }, activeReciter.id);
   };
 
   // Play prompt audio manually
@@ -100,7 +105,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
     setIsPlayingPrompt(true);
     await audioPlayer.playAyat(challengeData.prompt.surahNumber, challengeData.prompt.numberInSurah, () => {
       setIsPlayingPrompt(false);
-    });
+    }, activeReciter.id);
   };
 
   // Start Mic Listening for continuation with live Decibel meter
@@ -174,10 +179,9 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
       const updated = addXpAndCheckStreak(200);
       onProfileUpdated(updated);
     } else {
-      audioPlayer.playCorrectionPromptSound();
       setTimeout(() => {
-        audioPlayer.playAyat(targetAyat.surahNumber, targetAyat.numberInSurah);
-      }, 800);
+        audioPlayer.playSheikhIntervention(targetAyat.surahNumber, targetAyat.numberInSurah, activeReciter.id);
+      }, 500);
     }
   };
 
@@ -199,7 +203,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
     onProfileUpdated(updated);
 
     setTimeout(() => {
-      audioPlayer.playAyat(targetAyat.surahNumber, targetAyat.numberInSurah);
+      audioPlayer.playAyat(targetAyat.surahNumber, targetAyat.numberInSurah, undefined, activeReciter.id);
     }, 500);
   };
 
@@ -218,28 +222,90 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-extrabold font-display text-white">
-              Simai & Sambung Lisan Syekh Misyari
+              Simai & Sambung Lisan Syekh ({activeReciter.name.split(' ')[1] || activeReciter.name})
             </h2>
             <p className="text-xs text-emerald-200 mt-0.5">
               Uji ketajaman mutqin hafalan 11 Surat Juz 29 & 37 Surat Juz 30 dengan urutan acak dinamis.
             </p>
           </div>
 
-          {/* Level Switcher */}
-          <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-xl border border-white/20">
-            {(['pemula', 'hafidz', 'hafidzah'] as SimaiLevel[]).map((lvl) => (
+          {/* Reciter & Level Switcher Controls */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Reciter Selector Dropdown */}
+            <div className="relative">
               <button
-                key={lvl}
-                onClick={() => setLevel(lvl)}
-                className={`px-3 py-1 text-xs font-black rounded-lg capitalize transition-all cursor-pointer ${
-                  level === lvl
-                    ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]'
-                    : 'text-gray-300 hover:text-white'
-                }`}
+                onClick={() => setIsReciterMenuOpen(!isReciterMenuOpen)}
+                className="px-2.5 py-1.5 bg-[#FEF3C7] hover:bg-[#FDE68A] text-black border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 neo-button cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+                title="Pilih Syekh Pendamping Simai"
               >
-                {lvl === 'pemula' ? '🟢 Pemula' : lvl === 'hafidz' ? '🟡 Hafidz' : '🔥 Hafidzah'}
+                <Headphones className="w-3.5 h-3.5 text-[#0B4627]" />
+                <span className="truncate max-w-[120px]">{activeReciter.name.split(' ')[1] || activeReciter.name}</span>
+                <ChevronDown className="w-3 h-3 text-gray-700" />
               </button>
-            ))}
+
+              {isReciterMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-72 bg-white border-3 border-black rounded-2xl p-2 shadow-[6px_6px_0px_0px_#000] z-50 animate-in fade-in zoom-in-95 space-y-1">
+                  <div className="p-1.5 border-b-2 border-black flex items-center justify-between text-black">
+                    <span className="text-[11px] font-black text-[#0B4627]">
+                      {language === 'ar' ? 'اختر الشيخ المرافق:' : 'Pilih Syekh Pendamping:'}
+                    </span>
+                    <button
+                      onClick={() => setIsReciterMenuOpen(false)}
+                      className="text-xs font-bold text-gray-500 hover:text-black"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  {RECITERS_LIST.map((r) => {
+                    const isSelected = r.id === activeReciter.id;
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => {
+                          setActiveReciter(r);
+                          audioPlayer.setActiveReciter(r.id);
+                          setIsReciterMenuOpen(false);
+                        }}
+                        className={`w-full p-2 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
+                            : 'bg-[#F9FAFB] hover:bg-amber-50 text-gray-900'
+                        }`}
+                      >
+                        <div className="truncate pr-2">
+                          <p className="text-xs font-black truncate">{r.name}</p>
+                          <p className={`text-[10px] font-bold ${isSelected ? 'text-amber-300' : 'text-gray-600'}`}>
+                            {r.style}
+                          </p>
+                        </div>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold shrink-0 border ${
+                          isSelected ? 'bg-[#F59E0B] text-black border-black' : 'bg-gray-200 text-gray-700 border-gray-400'
+                        }`}>
+                          {r.bitrate}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Level Switcher */}
+            <div className="flex items-center gap-1.5 bg-black/40 p-1 rounded-xl border border-white/20">
+              {(['pemula', 'hafidz', 'hafidzah'] as SimaiLevel[]).map((lvl) => (
+                <button
+                  key={lvl}
+                  onClick={() => setLevel(lvl)}
+                  className={`px-2.5 py-1 text-xs font-black rounded-lg capitalize transition-all cursor-pointer ${
+                    level === lvl
+                      ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  {lvl === 'pemula' ? '🟢 Pemula' : lvl === 'hafidz' ? '🟡 Hafidz' : '🔥 Hafidzah'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </NeobrutalCard>
