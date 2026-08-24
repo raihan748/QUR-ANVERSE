@@ -42,12 +42,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-24 max-w-4xl mx-auto">
+    <div className="space-y-4 pb-24 max-w-4xl mx-auto">
       {/* Profile Overview Card */}
-      <NeobrutalCard variant="emerald" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-[#F59E0B] border-3 border-black flex items-center justify-center text-black font-black text-2xl shadow-[3px_3px_0px_0px_#000]">
+      <NeobrutalCard variant="emerald" className="p-4 sm:p-5 border-2 border-black shadow-[3px_3px_0px_0px_#111827]">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3.5">
+            <div className="w-14 h-14 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black font-black text-xl shadow-[2px_2px_0px_0px_#000]">
               {userProfile.fullName.charAt(0).toUpperCase()}
             </div>
             <div>
@@ -56,7 +56,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   {userProfile.hafidzLevel}
                 </span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
+              <h2 className="text-xl sm:text-2xl font-extrabold font-display text-white">
                 {userProfile.fullName}
               </h2>
               <p className="text-xs text-emerald-200">
@@ -66,13 +66,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           <div className="flex gap-2">
-            <div className="px-3.5 py-2 bg-black/40 border-2 border-[#F59E0B] rounded-xl text-center">
+            <div className="px-3 py-1.5 bg-black/40 border border-[#F59E0B] rounded-xl text-center">
               <span className="text-[10px] font-bold text-gray-300 uppercase block">Total Poin</span>
-              <span className="text-lg font-black text-[#F59E0B]">{userProfile.totalXp} XP</span>
+              <span className="text-base font-black text-[#F59E0B]">{userProfile.totalXp} XP</span>
             </div>
-            <div className="px-3.5 py-2 bg-black/40 border-2 border-orange-500 rounded-xl text-center">
+            <div className="px-3 py-1.5 bg-black/40 border border-orange-500 rounded-xl text-center">
               <span className="text-[10px] font-bold text-gray-300 uppercase block">Streak</span>
-              <span className="text-lg font-black text-orange-400">🔥 {userProfile.streakCount} Hari</span>
+              <span className="text-base font-black text-orange-400">🔥 {userProfile.streakCount} Hari</span>
             </div>
           </div>
         </div>
@@ -81,14 +81,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* 🎯 TARGET TILAWAH & MUROJA'AH HARI INI */}
       <DailyTargetWidget onStartTarget={() => onNavigateToMurojaah()} />
 
-      {/* 📊 STATISTIK KELANCARAN & ANALISIS TAJWID (PENGGANTI INSPEKTOR) */}
+      {/* 📊 STATISTIK KELANCARAN & ANALISIS TAJWID */}
       <TahfidzMasteryAnalytics 
         userProfile={userProfile} 
         onNavigateToMurojaah={onNavigateToMurojaah} 
       />
 
       {/* 30-DAY STREAK TRACKER */}
-      <NeobrutalCard variant="white" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
+      <NeobrutalCard variant="white" className="p-4 sm:p-5 border-2 border-black shadow-[3px_3px_0px_0px_#111827]">
         <div className="flex items-center justify-between border-b-2 border-dashed border-gray-300 pb-3 mb-4">
           <div className="flex items-center gap-2">
             <Flame className="w-5 h-5 text-orange-500 fill-orange-500" />
@@ -123,7 +123,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </NeobrutalCard>
 
       {/* WEAK VERSES (AYAT LEMAH) & TIKRAR 1-5-10 METHOD */}
-      <NeobrutalCard variant="sepia" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
+      <NeobrutalCard variant="sepia" className="p-4 sm:p-5 border-2 border-black shadow-[3px_3px_0px_0px_#111827]">
         <div className="flex items-center justify-between border-b-2 border-dashed border-gray-300 pb-3 mb-4">
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-red-600" />

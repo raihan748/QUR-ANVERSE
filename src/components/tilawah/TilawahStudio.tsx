@@ -214,7 +214,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
   });
 
   return (
-    <div className={`space-y-6 pb-28 max-w-4xl mx-auto transition-all ${isFocusMode ? 'bg-[#F8F5EE] py-4' : ''}`}>
+    <div className={`space-y-4 pb-28 max-w-4xl mx-auto transition-all ${isFocusMode ? 'bg-[#F8F5EE] py-4' : ''}`}>
       {/* 🎯 1. DAILY TARGET WIDGET (TARGET TILAWAH HARI INI) */}
       {!isFocusMode && (
         <DailyTargetWidget
@@ -230,7 +230,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
 
       {/* HEADER & SURAH SELECTOR */}
       {!isFocusMode && (
-        <NeobrutalCard variant="emerald" className="p-6 relative shadow-[6px_6px_0px_0px_#111827]">
+        <NeobrutalCard variant="emerald" className="p-4 sm:p-5 relative shadow-[3px_3px_0px_0px_#111827] border-2 border-black">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">

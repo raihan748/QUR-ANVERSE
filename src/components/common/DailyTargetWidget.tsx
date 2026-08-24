@@ -77,7 +77,7 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
 
   return (
     <>
-      <div className="bg-[#FEF3C7] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[5px_5px_0px_0px_#111827] space-y-3">
+      <div className="bg-[#FEF3C7] border-2 border-black rounded-2xl p-4 shadow-[3px_3px_0px_0px_#111827] space-y-3">
         {/* Header Title & Actions */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">

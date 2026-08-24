@@ -283,10 +283,10 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-24 max-w-4xl mx-auto">
+    <div className="space-y-4 pb-24 max-w-4xl mx-auto">
       {/* Header Banner */}
-      <NeobrutalCard variant="dark" className="p-6 relative overflow-hidden shadow-[6px_6px_0px_0px_#F59E0B]">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <NeobrutalCard variant="dark" className="p-4 sm:p-5 relative overflow-hidden shadow-[3px_3px_0px_0px_#F59E0B] border-2 border-black">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
@@ -296,7 +296,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                 {language === 'ar' ? 'الجزء ٢٩ و ٣٠' : 'Juz 29 & 30'}
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
+            <h2 className="text-xl sm:text-2xl font-extrabold font-display text-white">
               {t.challengeArenaTitle}
             </h2>
             <p className="text-xs text-gray-300 font-medium mt-1">

@@ -302,7 +302,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   );
 
   return (
-    <div className="space-y-6 pb-24 max-w-4xl mx-auto">
+    <div className="space-y-4 pb-24 max-w-4xl mx-auto">
       {/* 🎯 1. DAILY TARGET WIDGET (TARGET HARI INI) */}
       <DailyTargetWidget
         onStartTarget={(target) => {
@@ -316,11 +316,11 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       />
 
       {/* 2. MODE SELECTOR TABS */}
-      <div className="p-3 bg-white border-3 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
+      <div className="p-2.5 bg-white border-2 border-black rounded-2xl shadow-[2px_2px_0px_0px_#111827]">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <button
             onClick={() => setStudyMode('daily_target')}
-            className={`p-2.5 rounded-xl border-2 border-black font-black text-xs flex items-center justify-center gap-2 cursor-pointer transition-all ${
+            className={`p-2 rounded-xl border-2 border-black font-black text-xs flex items-center justify-center gap-2 cursor-pointer transition-all ${
               studyMode === 'daily_target'
                 ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
                 : 'bg-gray-100 hover:bg-gray-200 text-black'
@@ -332,7 +332,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
           <button
             onClick={() => setStudyMode('random')}
-            className={`p-2.5 rounded-xl border-2 border-black font-black text-xs flex items-center justify-center gap-2 cursor-pointer transition-all ${
+            className={`p-2 rounded-xl border-2 border-black font-black text-xs flex items-center justify-center gap-2 cursor-pointer transition-all ${
               studyMode === 'random'
                 ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
                 : 'bg-gray-100 hover:bg-gray-200 text-black'
@@ -347,7 +347,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               setStudyMode('custom_surah');
               setIsSurahModalOpen(true);
             }}
-            className={`p-2.5 rounded-xl border-2 border-black font-black text-xs flex items-center justify-center gap-2 cursor-pointer transition-all ${
+            className={`p-2 rounded-xl border-2 border-black font-black text-xs flex items-center justify-center gap-2 cursor-pointer transition-all ${
               studyMode === 'custom_surah'
                 ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
                 : 'bg-gray-100 hover:bg-gray-200 text-black'
@@ -360,9 +360,9 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       </div>
 
       {/* 3. MAIN AYAT RECITATION CARD */}
-      <NeobrutalCard variant="white" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827] space-y-5">
+      <NeobrutalCard variant="white" className="p-4 sm:p-5 border-2 border-black shadow-[3px_3px_0px_0px_#111827] space-y-4">
         {/* Header Verse Banner */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b-2 border-dashed border-gray-300 pb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 border-b border-dashed border-gray-300 pb-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="px-2.5 py-0.5 text-xs font-black bg-[#0B4627] text-white rounded-lg border border-black uppercase">
@@ -377,7 +377,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 </span>
               )}
             </div>
-            <h3 className="text-xl sm:text-2xl font-black text-black">
+            <h3 className="text-lg sm:text-xl font-black text-black">
               Lafalkan Ayat Berikut dengan Tartil
             </h3>
           </div>
@@ -406,9 +406,9 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         </div>
 
         {/* Big Arabic Text (Rasm Utsmani) */}
-        <div className="p-6 bg-[#F8F5EE] border-3 border-black rounded-3xl text-center space-y-3">
+        <div className="p-5 bg-[#F8F5EE] border-2 border-black rounded-2xl text-center space-y-2.5">
           <div
-            className="font-quran text-3xl sm:text-4xl lg:text-5xl leading-loose font-bold text-black select-none"
+            className="font-quran text-2xl sm:text-3xl lg:text-4xl leading-loose font-bold text-black select-none"
             dir="rtl"
           >
             {currentAyat.arabicText}
@@ -426,7 +426,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         </div>
 
         {/* 4. MULTI-MODE INPUT SELECTOR (VOICE / KEYBOARD / DEMO) */}
-        <div className="p-5 bg-white border-3 border-black rounded-3xl space-y-4 shadow-[4px_4px_0px_0px_#111827]">
+        <div className="p-4 bg-white border-2 border-black rounded-2xl space-y-3 shadow-[2px_2px_0px_0px_#111827]">
           {/* Mode Switcher Tabs */}
           <div className="flex items-center justify-between border-b border-gray-200 pb-3 flex-wrap gap-2">
             <span className="text-xs font-black text-gray-700 uppercase flex items-center gap-1.5">

@@ -101,21 +101,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className="w-72 bg-[#FFFDF7] border-r-3 border-black p-4 flex flex-col justify-between hidden lg:flex shrink-0 min-h-[calc(100vh-68px)] animate-slide-left">
-      <div className="space-y-4">
+    <aside className="w-64 bg-[#FFFDF7] border-r-2 border-black p-3.5 flex flex-col justify-between hidden lg:flex shrink-0 min-h-[calc(100vh-62px)]">
+      <div className="space-y-3">
         {/* Section Title */}
         <div className="px-2 py-1 flex items-center justify-between">
-          <span className="text-[11px] font-black tracking-wider text-gray-700 uppercase">
-            {language === 'ar' ? 'قائمة عالم القرآن' : 'QURANVERSE MENU'}
+          <span className="text-[11px] font-black tracking-wider text-gray-600 uppercase">
+            {language === 'ar' ? 'القائمة الرئيسية' : 'MENU UTAMA'}
           </span>
-          <span className="flex items-center gap-1 text-[10px] font-extrabold text-[#0B4627] bg-[#D1FAE5] px-2 py-0.5 border border-[#0B4627] rounded-md shadow-xs">
+          <span className="flex items-center gap-1 text-[10px] font-extrabold text-[#0B4627] bg-[#D1FAE5] px-2 py-0.5 border border-[#0B4627] rounded-md">
             <Sparkles className="w-3 h-3 text-[#D97706]" /> {t.standardBadge}
           </span>
         </div>
 
-        {/* Navigation List with Staggered Transitions */}
-        <nav className="space-y-1.5">
-          {navItems.map((item, index) => {
+        {/* Navigation List with Clean Minimalist Transitions */}
+        <nav className="space-y-1">
+          {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
 
@@ -123,32 +123,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
-                className={`w-full p-3 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
+                className={`w-full px-3 py-2.5 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-[#0B4627] text-white shadow-[4px_4px_0px_0px_#111827] -translate-y-0.5 scale-[1.02]'
-                    : 'bg-white text-gray-900 hover:bg-[#FEF3C7] hover:-translate-y-0.5 shadow-[2px_2px_0px_0px_#111827]'
+                    ? 'bg-[#0B4627] text-white shadow-[3px_3px_0px_0px_#111827] font-bold'
+                    : 'bg-white text-gray-900 hover:bg-[#FEF3C7] shadow-[1px_1px_0px_0px_#111827]'
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   <div
-                    className={`w-9 h-9 rounded-lg border border-black flex items-center justify-center transition-transform ${
-                      isActive ? 'bg-[#F59E0B] text-black scale-110' : 'bg-[#E5E7EB] text-gray-800'
+                    className={`w-8 h-8 rounded-lg border border-black flex items-center justify-center ${
+                      isActive ? 'bg-[#F59E0B] text-black font-bold' : 'bg-[#F3F4F6] text-gray-700'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-4 h-4" />
                   </div>
                   <div>
                     <p className="font-extrabold text-xs leading-tight">{item.label}</p>
-                    <p className={`text-[10px] ${isActive ? 'text-emerald-200' : 'text-gray-500'}`}>
-                      {item.sublabel}
-                    </p>
                   </div>
                 </div>
 
                 {item.badge && (
                   <span
-                    className={`px-1.5 py-0.5 text-[9px] font-black rounded border border-black ${
-                      isActive ? 'bg-[#F59E0B] text-black' : 'bg-yellow-100 text-yellow-900'
+                    className={`px-1.5 py-0.5 text-[9px] font-bold rounded border ${
+                      isActive ? 'bg-[#F59E0B] text-black border-black font-black' : 'bg-gray-100 text-gray-700 border-gray-300'
                     }`}
                   >
                     {item.badge}

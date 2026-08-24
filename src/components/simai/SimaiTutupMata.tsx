@@ -204,10 +204,10 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-24 max-w-4xl mx-auto">
+    <div className="space-y-4 pb-24 max-w-4xl mx-auto">
       {/* Header Level & Scope Selector */}
-      <NeobrutalCard variant="dark" className="p-5 border-3 border-black shadow-[6px_6px_0px_0px_#0B4627]">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <NeobrutalCard variant="dark" className="p-4 sm:p-5 border-2 border-black shadow-[3px_3px_0px_0px_#0B4627]">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
@@ -216,15 +216,12 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
               <span className="px-2 py-0.5 text-xs font-bold bg-[#10B981] text-black rounded border border-black">
                 48 Surat (Semua Juz 29 & 30)
               </span>
-              <span className="px-2 py-0.5 text-xs font-bold bg-amber-400 text-black rounded border border-black">
-                ⚡ Sequence Non-Repeating
-              </span>
             </div>
-            <h2 className="text-2xl font-extrabold font-display text-white">
+            <h2 className="text-xl sm:text-2xl font-extrabold font-display text-white">
               Simai & Sambung Lisan Syekh Misyari
             </h2>
             <p className="text-xs text-emerald-200 mt-0.5">
-              Uji ketajaman mutqin hafalan 11 Surat Juz 29 & 37 Surat Juz 30 dengan urutan acak dinamis tanpa pengulangan.
+              Uji ketajaman mutqin hafalan 11 Surat Juz 29 & 37 Surat Juz 30 dengan urutan acak dinamis.
             </p>
           </div>
 
@@ -240,7 +237,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
-                {lvl === 'pemula' ? '🟢 Pemula' : lvl === 'hafidz' ? '🟡 Hafidz' : '🔥 Hafidzah (Sulit)'}
+                {lvl === 'pemula' ? '🟢 Pemula' : lvl === 'hafidz' ? '🟡 Hafidz' : '🔥 Hafidzah'}
               </button>
             ))}
           </div>
@@ -248,7 +245,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
       </NeobrutalCard>
 
       {/* FILTER JUZ BUTTONS */}
-      <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
+      <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[2px_2px_0px_0px_#111827]">
         <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
           <BookOpen className="w-3.5 h-3.5 text-[#0B4627]" /> PILIH CAKUPAN JUZ UNTUK SIMAI (TOTAL 48 SURAT):
         </span>

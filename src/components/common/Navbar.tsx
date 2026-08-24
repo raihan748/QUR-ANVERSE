@@ -51,42 +51,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Quick Tabs in Desktop Header */}
-        <div className="hidden md:flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-emerald-500/40">
-          <button
-            onClick={() => onSelectTab('mushaf')}
-            className={`px-3 py-1 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
-              activeTab === 'mushaf' ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]' : 'text-emerald-100 hover:text-white'
-            }`}
-          >
-            {t.nav_mushaf}
-          </button>
-          <button
-            onClick={() => onSelectTab('tilawah')}
-            className={`px-3 py-1 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
-              activeTab === 'tilawah' ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]' : 'text-emerald-100 hover:text-white'
-            }`}
-          >
-            {t.nav_tilawah}
-          </button>
-          <button
-            onClick={() => onSelectTab('murojaah_ai')}
-            className={`px-3 py-1 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
-              activeTab === 'murojaah_ai' ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]' : 'text-emerald-100 hover:text-white'
-            }`}
-          >
-            {t.nav_murojaah_ai}
-          </button>
-          <button
-            onClick={() => onSelectTab('prayer')}
-            className={`px-3 py-1 text-xs font-extrabold rounded-lg transition-all cursor-pointer ${
-              activeTab === 'prayer' ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]' : 'text-emerald-100 hover:text-white'
-            }`}
-          >
-            {t.nav_prayer}
-          </button>
-        </div>
-
         {/* Stats & Quick Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* BILINGUAL LANGUAGE SWITCHER (ID <-> AR - KUWAIT) */}

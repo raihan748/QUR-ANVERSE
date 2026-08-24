@@ -121,7 +121,7 @@ export const MushafView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="space-y-4 pb-24 max-w-5xl mx-auto">
       {/* Top Banner Surah Selector */}
       <SurahSelector
         selectedSurahNumber={selectedSurahNumber}
@@ -129,11 +129,11 @@ export const MushafView: React.FC = () => {
       />
 
       {/* Surah Header Card */}
-      <NeobrutalCard variant="emerald" className="p-6 relative overflow-hidden shadow-[6px_6px_0px_0px_#111827]">
+      <NeobrutalCard variant="emerald" className="p-4 sm:p-5 relative overflow-hidden shadow-[3px_3px_0px_0px_#111827] border-2 border-black">
         {/* Background Islamic Star Pattern */}
         <div className="absolute -right-8 -top-8 w-40 h-40 bg-[#F59E0B]/10 rounded-full blur-xl pointer-events-none" />
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative z-10">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase">
@@ -146,7 +146,7 @@ export const MushafView: React.FC = () => {
                 Juz {currentSurahMeta.juzList ? currentSurahMeta.juzList.join(', ') : currentSurahMeta.juzStart}
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
+            <h2 className="text-xl sm:text-2xl font-extrabold font-display text-white">
               Surat {currentSurahMeta.latinName}
             </h2>
             <p className="text-xs text-emerald-200 font-medium">"{currentSurahMeta.meaning}"</p>
@@ -262,10 +262,10 @@ export const MushafView: React.FC = () => {
             return (
               <div
                 key={ayat.numberInSurah}
-                className={`rounded-2xl p-5 sm:p-6 border-3 border-black transition-all ${getContainerTheme()} ${
+                className={`rounded-2xl p-4 sm:p-5 border-2 border-black transition-all ${getContainerTheme()} ${
                   isPlayingThis
-                    ? 'shadow-[6px_6px_0px_0px_#F59E0B] ring-2 ring-[#F59E0B]'
-                    : 'shadow-[4px_4px_0px_0px_#111827]'
+                    ? 'shadow-[3px_3px_0px_0px_#F59E0B] ring-2 ring-[#F59E0B]'
+                    : 'shadow-[2px_2px_0px_0px_#111827]'
                 }`}
               >
                 {/* Header Ayat Bar */}

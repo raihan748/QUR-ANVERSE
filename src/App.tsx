@@ -72,14 +72,7 @@ export function App() {
         />
 
         {/* Main Content Area with Rich Entrance Animations */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0">
-          {/* Landing Hero Showcase Banner with Scroll-to-Action */}
-          <LandingHeroShowcase
-            onSelectTab={handleSelectTabWithScroll}
-            onOpenInstallModal={() => setIsInstallModalOpen(true)}
-            onOpenAuthModal={() => setIsAuthModalOpen(true)}
-          />
-
+        <main className="flex-1 p-4 sm:p-6 lg:p-7 min-w-0">
           {/* Dynamic Tab View Container with Smooth Transitions */}
           <div key={activeTab} className="animate-fade-up">
             {activeTab === 'mushaf' && <MushafView />}
