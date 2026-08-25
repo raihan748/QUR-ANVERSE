@@ -81,8 +81,10 @@ export class TajwidRuleEngine {
       const nextChar = safeArabic[i + 1] || '';
       const thirdChar = safeArabic[i + 2] || '';
 
-      // 1. Ghunnah Musyaddadah: Nun (ن) or Mim (م) with Shaddah (ّ)
-      if ((currentChar === 'ن' || currentChar === 'م') && (nextChar === SHADDAH_CHAR || thirdChar === SHADDAH_CHAR)) {
+      // 1. Ghunnah Musyaddadah: Nun (ن) or Mim (م) with Shaddah (ّ) directly on itself
+      const isNunOrMim = currentChar === 'ن' || currentChar === 'م';
+      const hasDirectShaddah = nextChar === SHADDAH_CHAR;
+      if (isNunOrMim && hasDirectShaddah) {
         tokens.push({
           index: i,
           char: currentChar,
@@ -92,7 +94,7 @@ export class TajwidRuleEngine {
           colorHex: '#10B981', // Emerald Green
           harakatDuration: 3,
           startOffset: i,
-          endOffset: i + 2,
+          endOffset: i + 1,
           matchedPhoneme: currentChar + 'ّ'
         });
         ruleSummary.ghunnah_musyaddadah++;
@@ -102,10 +104,10 @@ export class TajwidRuleEngine {
 
       // 2. Qalqalah: Baju Di Toko (ب, ج, د, ط, ق) with sukun or at end of verse
       if (QALQALAH_LETTERS.includes(currentChar)) {
-        const isSukun = nextChar === SUKUN_CHAR;
+        const isSukun = nextChar === SUKUN_CHAR || nextChar === '\u06DF';
         const isEndOfAyah = i >= len - 3 || !getNextNonSpaceChar(i);
 
-        if (isEndOfAyah) {
+        if (isEndOfAyah && nextChar !== SHADDAH_CHAR && !['\u064E', '\u064F', '\u0650'].includes(nextChar)) {
           tokens.push({
             index: i,
             char: currentChar,
@@ -141,7 +143,7 @@ export class TajwidRuleEngine {
       }
 
       // 3. Nun Sukun (نْ / ن) & Tanwin (ً, ٍ, ٌ) Rules
-      const isNunSukun = currentChar === 'ن' && (nextChar === SUKUN_CHAR || nextChar === ' ' || !['\u064E', '\u064F', '\u0650'].includes(nextChar));
+      const isNunSukun = currentChar === 'ن' && (nextChar === SUKUN_CHAR || nextChar === '\u06DF' || (nextChar !== SHADDAH_CHAR && !['\u064E', '\u064F', '\u0650', '\u064B', '\u064C', '\u064D', '\u0651'].includes(nextChar) && [' ', '\n', '\t'].includes(nextChar)));
       const isTanwin = TANWIN_CHARS.includes(currentChar);
 
       if (isNunSukun || isTanwin) {

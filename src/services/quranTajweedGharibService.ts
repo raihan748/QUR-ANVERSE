@@ -1265,19 +1265,61 @@ export function analyzePageTajweedRules(lines: MushafLine[]): {
 
 /**
  * Colorizes Tajweed words within a line for interactive rendering.
+ * High-accuracy AST regex matching to prevent false positives.
  */
 export function getTajweedColorForWord(word: string): { color: string; bg: string; ruleName?: string } {
-  if (word.includes('ّ') && (word.includes('ن') || word.includes('م'))) {
-    return { color: '#047857', bg: '#D1FAE5', ruleName: 'Ghunnah Musyaddadah' };
+  if (!word || word.length === 0) {
+    return { color: '#064E3B', bg: 'transparent' };
   }
-  if (word.includes('ْ') && (word.includes('ق') || word.includes('ط') || word.includes('ب') || word.includes('ج') || word.includes('د'))) {
-    return { color: '#C2410C', bg: '#FFEDD5', ruleName: 'Qalqalah Sughra' };
-  }
-  if (word.includes('ٓ') || word.includes('~') || word.includes('آ')) {
+
+  // 1. Mad Panjang (Mad Wajib Muttashil / Mad Jaiz / Mad Lazim: wave ٓ / ~ / Alif Maddah آ)
+  if (/[\u0653~آ]/.test(word)) {
     return { color: '#B91C1C', bg: '#FEE2E2', ruleName: 'Mad Wajib / Jaiz' };
   }
-  if (word.includes('ۢ') || word.includes('ۭ') || word.includes('۫')) {
-    return { color: '#6D28D9', bg: '#EDE9FE', ruleName: 'Iqlab / Gharib' };
+
+  // 2. Iqlab (Tanda mim kecil ۢ / ۭ U+06E2 / U+06ED, atau Tanwin/Nun sukun bertemu Ba)
+  if (/[\u06E2\u06ED]/.test(word) || /(?:[ًٌٍ]|ن[\u0652\u06DF]?)\s*ب/.test(word)) {
+    return { color: '#6D28D9', bg: '#EDE9FE', ruleName: 'Iqlab' };
   }
+
+  // 3. Bacaan Gharib / Khusus (Tanda Sin kecil ۜ, bulatan sukun khusus ۫, imalah ۪)
+  if (/[\u06DC\u06EB\u06DF\u06EA]/.test(word) || word.includes('مَجْرٰ۪ىهَا') || word.includes('تَأْمَ۫نَّا') || word.includes('ءَ۬اعْجَمِىٌّ') || word.includes('بِئْسَ ٱلِٱسْمُ')) {
+    return { color: '#D97706', bg: '#FEF3C7', ruleName: 'Bacaan Khusus (Gharib)' };
+  }
+
+  // 4. Ghunnah Musyaddadah: STRICTLY Nun (ن) or Mim (م) directly followed by Shaddah (ّ / \u0651)
+  // Contoh: إِنَّ, النَّاس, عَمَّ, ثُمَّ
+  if (/(?:ن\u0651|م\u0651|ن[\u064E\u064F\u0650]\u0651|م[\u064E\u064F\u0650]\u0651)/.test(word)) {
+    return { color: '#047857', bg: '#D1FAE5', ruleName: 'Ghunnah Musyaddadah' };
+  }
+
+  // 5. Qalqalah Sughra: Huruf ق, ط, ب, ج, د yang LANGSUNG bersukun ْ (\u0652)
+  if (/[قطبجد][\u0652\u06DF]/.test(word)) {
+    return { color: '#C2410C', bg: '#FFEDD5', ruleName: 'Qalqalah Sughra' };
+  }
+
+  // 6. Ikhfa' Haqiqi: Nun sukun atau tanwin bertemu 15 huruf ikhfa
+  if (/(?:[ًٌٍ]|ن[\u0652\u06DF]?)[تثجدذزسشصضطظفقك]/.test(word)) {
+    return { color: '#DB2777', bg: '#FCE7F3', ruleName: "Ikhfa' Haqiqi" };
+  }
+
+  // 7. Idgham Bighunnah: Nun sukun atau tanwin bertemu ي, ن, م, و
+  if (/(?:[ًٌٍ]|ن[\u0652\u06DF]?)[ينمو]/.test(word)) {
+    return { color: '#2563EB', bg: '#DBEAFE', ruleName: 'Idgham Bighunnah' };
+  }
+
+  // 8. Idgham Bilaghunnah: Nun sukun atau tanwin bertemu ل, ر
+  if (/(?:[ًٌٍ]|ن[\u0652\u06DF]?)[لر]/.test(word)) {
+    return { color: '#4F46E5', bg: '#E0E7FF', ruleName: 'Idgham Bilaghunnah' };
+  }
+
+  // 9. Mim Sukun Rules (Ikhfa Syafawi on مْ ب or Idgham Mimi on مْ م)
+  if (/م[\u0652\u06DF]?ب/.test(word)) {
+    return { color: '#C026D3', bg: '#FAE8FF', ruleName: "Ikhfa' Syafawi" };
+  }
+  if (/م[\u0652\u06DF]?م/.test(word)) {
+    return { color: '#0D9488', bg: '#CCFBF1', ruleName: 'Idgham Mimi' };
+  }
+
   return { color: '#064E3B', bg: 'transparent' };
 }
