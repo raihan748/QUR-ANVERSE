@@ -1209,8 +1209,38 @@ export const MASTER_TAJWEED_ENCYCLOPEDIA: TajweedEncyclopediaEntry[] = [
   },
 
   // ==========================================
-  // HUKUM LAM & RA
+  // HUKUM LAM TA'RIF (ALIF LAM) & RA
   // ==========================================
+  {
+    id: 'enc-lam-idzhar-qamariyah',
+    title: 'Idzhar Qamariyah (Alif Lam Qamariyah)',
+    arabicName: 'إِظْهَار قَمَرِيَّة',
+    category: 'Lam & Ra',
+    letters: '14 Huruf Qamariyah: ا, ب, غ, ح, ج, ك, و, خ, ف, ع, ق, ي, م, هـ (اَبْغِ حَجَّكَ وَخَفْ عَقِيمَهُ)',
+    harakat: '1 Harakat (Lam Dibaca Jelas)',
+    colorHex: '#059669',
+    pengertianBahasa: 'Idzhar berarti jelas/terang, Qamariyah berasal dari kata Qamar (bulan) di mana bintang (Lam) tetap tampak jelas disinari bulan.',
+    pengertianIstilah: 'Membaca huruf Lam Sukun pada Alif Lam Ta\'rif (ٱلْـ) secara jelas, tegas, dan terang tanpa dengung saat bertemu salah satu dari 14 huruf Qamariyah.',
+    sebabHukum: 'Jauhnya makhraj huruf Lam dengan makhraj huruf-huruf Qamariyah (Tabā\'ud al-Makhārij).',
+    summary: 'Alif Lam dibaca jelas pada 14 huruf Qamariyah (ada tanda sukun ْ di atas Lam).',
+    caraBaca: 'Bunyikan huruf Lam secara jelas dan tidak melebur ke huruf berikutnya.',
+    contohLafadz: 'ٱلْحَمْدُ لِلَّهِ • ٱلْعَالَمِينَ • ٱلْقَمَرُ • ٱلْكِتَٰبُ • ٱلْفَلَقِ • ٱلْغَفُورُ'
+  },
+  {
+    id: 'enc-lam-idgham-syamsiyah',
+    title: 'Idgham Syamsiyah (Alif Lam Syamsiyah)',
+    arabicName: 'إِدْغَام شَمْسِيَّة',
+    category: 'Lam & Ra',
+    letters: '14 Huruf Syamsiyah: ت, ث, د, ذ, ر, ز, س, ش, ص, ض, ط, ظ, ل, ن',
+    harakat: '1 Harakat (Melebur Bertasydid)',
+    colorHex: '#EA580C',
+    pengertianBahasa: 'Idgham berarti memasukkan/melebur, Syamsiyah berasal dari kata Syams (matahari) di mana bintang (Lam) lebur dan tidak tampak oleh terik matahari.',
+    pengertianIstilah: 'Meleburkan bunyi huruf Lam pada Alif Lam Ta\'rif (ٱلـ) ke dalam huruf berikutnya yang termasuk 14 huruf Syamsiyah, sehingga huruf berikutnya dibaca bertasydid (ّ).',
+    sebabHukum: 'Kedekatan makhraj dan kesamaan sifat antara huruf Lam dengan huruf-huruf Syamsiyah (Taqārub al-Makhārij).',
+    summary: 'Alif Lam melebur langsung ke huruf berikutnya (ditandai tasydid ّ pada huruf setelah Lam).',
+    caraBaca: 'Jangan membunyikan huruf Lam, langsung leburkan ke huruf setelahnya yang bertasydid.',
+    contohLafadz: 'ٱلشَّمْسُ • ٱلرَّحْمَٰنُ • ٱلنَّاسِ • ٱلصِّرَٰطَ • ٱلذِّكْرُ • ٱلتَّوَّابُ'
+  },
   {
     id: 'enc-lam-tafkhim',
     title: 'Lam Jalalah Tafkhim (Tebal / Mufakhkhamah)',
