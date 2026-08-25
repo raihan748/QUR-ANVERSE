@@ -19,7 +19,8 @@ import {
   Palette,
   CheckCircle2,
   AlertCircle,
-  X
+  X,
+  Search
 } from 'lucide-react';
 import { 
   SURAH_LIST, 
@@ -39,7 +40,9 @@ import {
   getPageGharibRules, 
   getTajweedColorForWord,
   TajwidRuleItem,
-  GharibItem 
+  GharibItem,
+  MASTER_TAJWEED_ENCYCLOPEDIA,
+  TajweedEncyclopediaEntry 
 } from '../../services/quranTajweedGharibService';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { saveBookmark, setLastRead } from '../../services/offlineStorage';
@@ -75,8 +78,10 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const [reloadKey, setReloadKey] = useState<number>(0);
 
   // Tajweed & Gharib State
-  const [activeTajweedTab, setActiveTajweedTab] = useState<'tajweed' | 'gharib' | 'legend'>('tajweed');
+  const [activeTajweedTab, setActiveTajweedTab] = useState<'tajweed' | 'gharib' | 'legend' | 'encyclopedia'>('tajweed');
   const [selectedTajweedWord, setSelectedTajweedWord] = useState<{ word: string; ruleName: string } | null>(null);
+  const [encyclopediaSearch, setEncyclopediaSearch] = useState<string>('');
+  const [encyclopediaCategory, setEncyclopediaCategory] = useState<string>('Semua');
 
   // Scan Image State
   const [scanLoaded, setScanLoaded] = useState<boolean>(false);
@@ -99,6 +104,18 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
   const pageTajweedData = analyzePageTajweedRules(mushafLines);
   const pageGharibData = getPageGharibRules(currentPage);
+
+  const filteredEncyclopedia = MASTER_TAJWEED_ENCYCLOPEDIA.filter((item) => {
+    const matchesCat = encyclopediaCategory === 'Semua' || item.category === encyclopediaCategory;
+    const q = encyclopediaSearch.trim().toLowerCase();
+    const matchesSearch = !q || 
+      item.title.toLowerCase().includes(q) ||
+      item.arabicName.includes(q) ||
+      item.summary.toLowerCase().includes(q) ||
+      item.contohLafadz.toLowerCase().includes(q) ||
+      (item.letters && item.letters.toLowerCase().includes(q));
+    return matchesCat && matchesSearch;
+  });
 
   // Preload adjacent scanned pages for instant flipping
   useEffect(() => {
@@ -679,6 +696,17 @@ export const PhysicalMushafPageReader: React.FC = () => {
               <Palette className="w-3.5 h-3.5 text-[#F59E0B]" />
               <span>Panduan Warna</span>
             </button>
+            <button
+              onClick={() => setActiveTajweedTab('encyclopedia')}
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition-all ${
+                activeTajweedTab === 'encyclopedia'
+                  ? 'bg-[#0B4627] text-white shadow-xs'
+                  : 'text-gray-700 dark:text-gray-300 hover:text-black'
+              }`}
+            >
+              <Search className="w-3.5 h-3.5 text-[#F59E0B]" />
+              <span>Kamus Tajwid & Gharib ({MASTER_TAJWEED_ENCYCLOPEDIA.length})</span>
+            </button>
           </div>
         </div>
 
@@ -848,6 +876,112 @@ export const PhysicalMushafPageReader: React.FC = () => {
                 <p className="text-[10px] text-gray-600 dark:text-gray-400">Panjang 4-6 Harakat (~ / ٓ)</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB 4: ENSIKLOPEDIA & KAMUS TAJWID 30 JUZ */}
+        {activeTajweedTab === 'encyclopedia' && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <div className="relative flex-1 w-full">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={encyclopediaSearch}
+                  onChange={(e) => setEncyclopediaSearch(e.target.value)}
+                  placeholder="Cari kaidah tajwid, huruf, atau lafadz..."
+                  className="w-full pl-9 pr-8 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-xl text-xs font-bold text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
+                />
+                {encyclopediaSearch && (
+                  <button
+                    onClick={() => setEncyclopediaSearch('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black dark:hover:text-white"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
+                {['Semua', 'Nun & Tanwin', 'Mim Sukun', 'Ghunnah & Qalqalah', 'Mad Lengkap', 'Bacaan Gharib', 'Tanda Waqaf'].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setEncyclopediaCategory(cat)}
+                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-black whitespace-nowrap border cursor-pointer transition-all ${
+                      encyclopediaCategory === cat
+                        ? 'bg-[#0B4627] text-white border-black shadow-xs'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 hover:border-black'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {filteredEncyclopedia.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[480px] overflow-y-auto pr-1">
+                {filteredEncyclopedia.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3.5 bg-white dark:bg-gray-800 border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_#000] space-y-2 hover:bg-amber-50/40 dark:hover:bg-gray-700/60 transition-all"
+                  >
+                    <div className="flex items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-2">
+                      <div>
+                        <h5 className="text-xs sm:text-sm font-black text-black dark:text-white flex items-center gap-1.5">
+                          <span 
+                            className="w-2.5 h-2.5 rounded-full inline-block shrink-0" 
+                            style={{ backgroundColor: item.colorHex }}
+                          />
+                          <span>{item.title}</span>
+                        </h5>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold">
+                          {item.category}
+                        </span>
+                      </div>
+                      <span className="font-quran text-lg font-bold text-emerald-950 dark:text-emerald-300" dir="rtl">
+                        {item.arabicName}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1 text-xs">
+                      {item.letters && (
+                        <div className="flex items-center gap-1.5 text-[11px]">
+                          <span className="font-bold text-gray-600 dark:text-gray-400">Huruf:</span>
+                          <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-amber-900 dark:text-amber-300 font-black">
+                            {item.letters}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1.5 text-[11px]">
+                        <span className="font-bold text-gray-600 dark:text-gray-400">Ketukan:</span>
+                        <span className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold px-1.5 py-0.5 rounded">
+                          {item.harakat}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">
+                        <b>Kaidah:</b> {item.summary}
+                      </p>
+                      <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">
+                        <b>Cara Baca:</b> {item.caraBaca}
+                      </p>
+                      <div className="bg-amber-50/80 dark:bg-gray-700/80 p-2 rounded-xl border border-amber-800/20 text-center mt-1">
+                        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 block mb-0.5">Contoh Lafadz:</span>
+                        <span className="font-quran text-base font-bold text-emerald-950 dark:text-emerald-200 block" dir="rtl">
+                          {item.contohLafadz}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300">
+                <p className="text-xs font-bold text-gray-500">
+                  Tidak ditemukan kaidah tajwid/gharib yang cocok dengan "{encyclopediaSearch}".
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
