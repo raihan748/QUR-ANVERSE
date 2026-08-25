@@ -116,6 +116,18 @@ export interface AchievementBadge {
   xpReward: number;
 }
 
+export interface MurojaahSessionLog {
+  id: string;
+  surahNumber: number;
+  ayahNumber: number;
+  surahName: string;
+  mode: 'realtime' | 'simai' | 'challenge' | 'mushaf';
+  accuracyScore: number;
+  passed: boolean;
+  timestamp: string;
+  feedbackNotes?: string;
+}
+
 // ==============================================================================
 // ENTERPRISE ARCHITECTURE & DEEP BACKEND TYPES (APSI STANDARDS)
 // ==============================================================================

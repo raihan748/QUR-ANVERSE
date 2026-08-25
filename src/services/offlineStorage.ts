@@ -183,6 +183,18 @@ export function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'createdAt'>): Book
   }
 }
 
+export function removeBookmark(bookmarkId: string): Bookmark[] {
+  try {
+    let bookmarks = getBookmarks();
+    bookmarks = bookmarks.filter(b => b.id !== bookmarkId);
+    localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(bookmarks));
+    return bookmarks;
+  } catch (e) {
+    console.warn('Error removing bookmark:', e);
+    return [];
+  }
+}
+
 // Weak Verses (Max 150 items)
 export function getWeakVerses(): WeakVerse[] {
   try {
@@ -263,5 +275,30 @@ export function setLastRead(surahNumber: number, ayahNumber: number, surahName: 
     );
   } catch (e) {
     console.warn(e);
+  }
+}
+
+// Murojaah History Storage
+const MUROJAAH_HISTORY_KEY = 'quranverse_murojaah_history_v2';
+
+export function getMurojaahHistory(): import('../types').MurojaahSessionLog[] {
+  try {
+    const raw = localStorage.getItem(MUROJAAH_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveMurojaahHistory(log: import('../types').MurojaahSessionLog): void {
+  try {
+    const history = getMurojaahHistory();
+    history.unshift(log);
+    if (history.length > 100) {
+      history.pop();
+    }
+    localStorage.setItem(MUROJAAH_HISTORY_KEY, JSON.stringify(history));
+  } catch (e) {
+    console.warn('Error saving murojaah history:', e);
   }
 }
