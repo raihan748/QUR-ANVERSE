@@ -13,7 +13,13 @@ import {
   Info,
   Layers,
   Image as ImageIcon,
-  RotateCcw
+  RotateCcw,
+  Sparkles,
+  HelpCircle,
+  Palette,
+  CheckCircle2,
+  AlertCircle,
+  X
 } from 'lucide-react';
 import { 
   SURAH_LIST, 
@@ -28,6 +34,13 @@ import {
   getMadinahPageSurahs, 
   MushafLine 
 } from '../../services/madinahPageService';
+import { 
+  analyzePageTajweedRules, 
+  getPageGharibRules, 
+  getTajweedColorForWord,
+  TajwidRuleItem,
+  GharibItem 
+} from '../../services/quranTajweedGharibService';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { saveBookmark, setLastRead } from '../../services/offlineStorage';
 import { useLanguage } from '../../context/LanguageContext';
@@ -61,6 +74,10 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const [isLoadingPage, setIsLoadingPage] = useState<boolean>(false);
   const [reloadKey, setReloadKey] = useState<number>(0);
 
+  // Tajweed & Gharib State
+  const [activeTajweedTab, setActiveTajweedTab] = useState<'tajweed' | 'gharib' | 'legend'>('tajweed');
+  const [selectedTajweedWord, setSelectedTajweedWord] = useState<{ word: string; ruleName: string } | null>(null);
+
   // Scan Image State
   const [scanLoaded, setScanLoaded] = useState<boolean>(false);
   const [scanError, setScanError] = useState<boolean>(false);
@@ -79,6 +96,9 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const pageSurahsArabicLabel = pageSurahs
     .map((s) => s.surahArabic)
     .join(' • ');
+
+  const pageTajweedData = analyzePageTajweedRules(mushafLines);
+  const pageGharibData = getPageGharibRules(currentPage);
 
   // Preload adjacent scanned pages for instant flipping
   useEffect(() => {
@@ -492,7 +512,33 @@ export const PhysicalMushafPageReader: React.FC = () => {
                       key={idx}
                       className="w-full font-quran text-lg sm:text-2xl md:text-[25px] text-emerald-950 dark:text-emerald-950 font-bold leading-[2.2] sm:leading-[2.5] text-center tracking-normal py-0.5"
                     >
-                      <span className="inline font-quran select-text">{line.text}</span>
+                      {line.text ? (
+                        line.text.split(' ').map((w, wIdx) => {
+                          const style = getTajweedColorForWord(w);
+                          return (
+                            <span
+                              key={wIdx}
+                              onClick={() => {
+                                if (style.ruleName) {
+                                  setSelectedTajweedWord({ word: w, ruleName: style.ruleName });
+                                }
+                              }}
+                              className={`inline-block mx-0.5 px-0.5 py-0.2 rounded transition-all cursor-pointer select-text hover:scale-105 ${
+                                selectedTajweedWord?.word === w ? 'ring-2 ring-amber-500 bg-amber-100 font-black' : ''
+                              }`}
+                              style={{
+                                color: style.color,
+                                backgroundColor: style.bg !== 'transparent' && selectedTajweedWord?.word !== w ? style.bg : undefined
+                              }}
+                              title={style.ruleName ? `${w} (${style.ruleName})` : w}
+                            >
+                              {w}
+                            </span>
+                          );
+                        })
+                      ) : (
+                        <span className="inline font-quran select-text">{line.text}</span>
+                      )}
                     </div>
                   );
                 })
@@ -549,6 +595,261 @@ export const PhysicalMushafPageReader: React.FC = () => {
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
+      </div>
+
+      {/* SELECTED TAJWEED WORD FLOATING INFO */}
+      {selectedTajweedWord && (
+        <div className="bg-amber-50 dark:bg-amber-950/60 border-2 border-amber-800 rounded-2xl p-3 shadow-[3px_3px_0px_0px_#000] flex items-center justify-between gap-3 animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-amber-400 border-2 border-black rounded-xl flex items-center justify-center text-black font-bold">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-amber-950 dark:text-amber-200 flex items-center gap-2">
+                <span className="font-quran text-lg text-emerald-900 dark:text-emerald-300 font-bold">{selectedTajweedWord.word}</span>
+                <span className="bg-[#0B4627] text-[#F59E0B] px-2 py-0.5 rounded-md text-[10px]">
+                  {selectedTajweedWord.ruleName}
+                </span>
+              </p>
+              <p className="text-[11px] text-gray-700 dark:text-gray-300 font-medium">
+                Klik tab Hukum Tajwid di bawah untuk penjelasan lengkap kaidah & durasi harakat.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setSelectedTajweedWord(null)}
+            className="p-1 hover:bg-amber-200 dark:hover:bg-amber-800 rounded-lg text-black dark:text-white cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* TAJWEED & GHARIB KNOWLEDGE PANEL (ALL 604 PAGES) */}
+      <div className="bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-3xl p-4 sm:p-5 shadow-[6px_6px_0px_0px_#111827] space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-dashed border-gray-300 dark:border-gray-700 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-[#0B4627] text-[#F59E0B] border-2 border-black rounded-xl flex items-center justify-center font-black shadow-[2px_2px_0px_0px_#000]">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm sm:text-base font-black text-black dark:text-white flex items-center gap-2">
+                <span>Panduan Tajwid & Kaidah Gharib</span>
+                <span className="text-[10px] bg-[#FEF3C7] text-amber-900 border border-amber-800 px-1.5 py-0.5 rounded-md font-bold">
+                  Halaman {currentPage}
+                </span>
+              </h4>
+              <p className="text-[11px] font-bold text-gray-600 dark:text-gray-400">
+                Analisis otomatis hukum tajwid per kata & kaidah bacaan khusus halaman {currentPage}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_#000] flex-wrap gap-1">
+            <button
+              onClick={() => setActiveTajweedTab('tajweed')}
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition-all ${
+                activeTajweedTab === 'tajweed'
+                  ? 'bg-[#0B4627] text-white shadow-xs'
+                  : 'text-gray-700 dark:text-gray-300 hover:text-black'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-[#F59E0B]" />
+              <span>Hukum Tajwid ({pageTajweedData.rulesList.length})</span>
+            </button>
+            <button
+              onClick={() => setActiveTajweedTab('gharib')}
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition-all ${
+                activeTajweedTab === 'gharib'
+                  ? 'bg-[#0B4627] text-white shadow-xs'
+                  : 'text-gray-700 dark:text-gray-300 hover:text-black'
+              }`}
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-[#F59E0B]" />
+              <span>Bacaan Gharib ({pageGharibData.length})</span>
+            </button>
+            <button
+              onClick={() => setActiveTajweedTab('legend')}
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer transition-all ${
+                activeTajweedTab === 'legend'
+                  ? 'bg-[#0B4627] text-white shadow-xs'
+                  : 'text-gray-700 dark:text-gray-300 hover:text-black'
+              }`}
+            >
+              <Palette className="w-3.5 h-3.5 text-[#F59E0B]" />
+              <span>Panduan Warna</span>
+            </button>
+          </div>
+        </div>
+
+        {/* TAB 1: HUKUM TAJWID */}
+        {activeTajweedTab === 'tajweed' && (
+          <div className="space-y-3">
+            {pageTajweedData.rulesList.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                {pageTajweedData.rulesList.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] space-y-1.5 hover:bg-amber-50/60 dark:hover:bg-gray-700 transition-all"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span 
+                        className="px-2 py-0.5 rounded-lg text-white font-black text-xs border border-black shadow-xs"
+                        style={{ backgroundColor: item.colorHex }}
+                      >
+                        {item.ruleName}
+                      </span>
+                      <span className="text-[10px] bg-gray-100 dark:bg-gray-700 border border-black px-1.5 py-0.5 rounded-md font-bold text-gray-800 dark:text-gray-200">
+                        {item.harakatDuration} Harakat
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-gray-700">
+                      <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Contoh Lafadz:</span>
+                      <span className="font-quran text-lg font-bold text-emerald-950 dark:text-emerald-300" dir="rtl">
+                        {item.matchedWord}
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">
+                      <b>Cara Baca:</b> {item.caraBaca}
+                    </p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                      {item.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-xs text-gray-500 font-bold">
+                Memuat kaidah tajwid halaman {currentPage}...
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: BACAAN GHARIB */}
+        {activeTajweedTab === 'gharib' && (
+          <div className="space-y-3">
+            {pageGharibData.length > 0 ? (
+              <div className="space-y-3">
+                <div className="p-3 bg-amber-100 dark:bg-amber-950/60 border-2 border-amber-800 rounded-xl text-xs font-bold text-amber-950 dark:text-amber-200 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-amber-900 shrink-0" />
+                  <span>Ditemukan <b>{pageGharibData.length} Bacaan Khusus (Gharib)</b> pada Halaman {currentPage}!</span>
+                </div>
+
+                {pageGharibData.map((g) => (
+                  <div
+                    key={g.id}
+                    className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 border-3 border-amber-900 rounded-2xl shadow-[4px_4px_0px_0px_#000] space-y-2"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-800/30 pb-2">
+                      <div>
+                        <h5 className="text-sm font-black text-amber-950 dark:text-amber-300 flex items-center gap-2">
+                          <span>{g.title}</span>
+                          <span className="text-xs bg-[#0B4627] text-[#F59E0B] px-2 py-0.5 rounded-md font-mono">
+                            QS. {g.surahName} : {g.ayahNumber}
+                          </span>
+                        </h5>
+                      </div>
+                      <span className="font-quran text-2xl font-black text-emerald-950 dark:text-emerald-300" dir="rtl">
+                        {g.arabicTerm}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1 text-xs">
+                      <p className="text-gray-800 dark:text-gray-200">
+                        <b>Cara Membaca:</b> {g.caraBaca}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-400 text-[11px]">
+                        <b>Kaidah & Penjelasan:</b> {g.description}
+                      </p>
+                      <p className="text-emerald-900 dark:text-emerald-400 font-bold text-[11px] bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-xl border border-emerald-800/30">
+                        💡 <b>Tips Pengucapan:</b> {g.tips}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 bg-[#F8FAFC] dark:bg-gray-800 border-2 border-black rounded-2xl text-xs space-y-2 shadow-[2px_2px_0px_0px_#000]">
+                <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 font-black">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Kaidah Bacaan Standar (Tanpa Saktah/Imalah Khusus)</span>
+                </div>
+                <p className="text-gray-700 dark:text-gray-300 text-[11px] leading-relaxed">
+                  Halaman {currentPage} dibaca menggunakan kaidah tilawah standar Rasm Utsmani Imam Hafs. Perhatikan tanda waqaf:
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                  <div className="p-2 bg-white dark:bg-gray-700 border border-black rounded-xl text-center">
+                    <span className="font-bold text-red-600 text-sm block font-quran">مـ</span>
+                    <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300">Waqaf Lazim (Wajib Berhenti)</span>
+                  </div>
+                  <div className="p-2 bg-white dark:bg-gray-700 border border-black rounded-xl text-center">
+                    <span className="font-bold text-emerald-600 text-sm block font-quran">ج</span>
+                    <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300">Waqaf Jaiz (Boleh Berhenti/Lanjut)</span>
+                  </div>
+                  <div className="p-2 bg-white dark:bg-gray-700 border border-black rounded-xl text-center">
+                    <span className="font-bold text-blue-600 text-sm block font-quran">قلى</span>
+                    <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300">Waqaf Aula (Lebih Utama Berhenti)</span>
+                  </div>
+                  <div className="p-2 bg-white dark:bg-gray-700 border border-black rounded-xl text-center">
+                    <span className="font-bold text-amber-600 text-sm block font-quran">صلى</span>
+                    <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300">Washal Aula (Lebih Utama Lanjut)</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: PANDUAN WARNA TAJWID */}
+        {activeTajweedTab === 'legend' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-800 rounded-xl flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#10B981] border border-black shrink-0"></div>
+              <div>
+                <p className="font-black text-emerald-950 dark:text-emerald-300 text-[11px]">Ghunnah / Dengung</p>
+                <p className="text-[10px] text-gray-600 dark:text-gray-400">Nun/Mim Tasydid (2-3 Harakat)</p>
+              </div>
+            </div>
+            <div className="p-2.5 bg-orange-50 dark:bg-orange-950/40 border-2 border-orange-800 rounded-xl flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#F97316] border border-black shrink-0"></div>
+              <div>
+                <p className="font-black text-orange-950 dark:text-orange-300 text-[11px]">Qalqalah</p>
+                <p className="text-[10px] text-gray-600 dark:text-gray-400">Pantulan Huruf (ب ج د ط ق)</p>
+              </div>
+            </div>
+            <div className="p-2.5 bg-pink-50 dark:bg-pink-950/40 border-2 border-pink-800 rounded-xl flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#EC4899] border border-black shrink-0"></div>
+              <div>
+                <p className="font-black text-pink-950 dark:text-pink-300 text-[11px]">Ikhfa' Haqiqi</p>
+                <p className="text-[10px] text-gray-600 dark:text-gray-400">Samar-samar (2 Harakat)</p>
+              </div>
+            </div>
+            <div className="p-2.5 bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-800 rounded-xl flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#3B82F6] border border-black shrink-0"></div>
+              <div>
+                <p className="font-black text-blue-950 dark:text-blue-300 text-[11px]">Idgham Bighunnah</p>
+                <p className="text-[10px] text-gray-600 dark:text-gray-400">Melebur Dengung (ي ن م و)</p>
+              </div>
+            </div>
+            <div className="p-2.5 bg-purple-50 dark:bg-purple-950/40 border-2 border-purple-800 rounded-xl flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#8B5CF6] border border-black shrink-0"></div>
+              <div>
+                <p className="font-black text-purple-950 dark:text-purple-300 text-[11px]">Iqlab</p>
+                <p className="text-[10px] text-gray-600 dark:text-gray-400">Nun/Tanwin jadi Mim (ب)</p>
+              </div>
+            </div>
+            <div className="p-2.5 bg-red-50 dark:bg-red-950/40 border-2 border-red-800 rounded-xl flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#DC2626] border border-black shrink-0"></div>
+              <div>
+                <p className="font-black text-red-950 dark:text-red-300 text-[11px]">Mad Wajib / Jaiz</p>
+                <p className="text-[10px] text-gray-600 dark:text-gray-400">Panjang 4-6 Harakat (~ / ٓ)</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-[#F0FDF4] border-2 border-black rounded-xl text-xs text-gray-700">
