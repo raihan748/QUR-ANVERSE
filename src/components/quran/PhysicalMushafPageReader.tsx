@@ -21,79 +21,20 @@ import {
   SURAH_PAGE_STARTS, 
   getJuzForPage, 
   getPrimarySurahForPage, 
-  getMadinahPageFallbackUrls,
-  getSurahAyahs 
+  getMadinahPageFallbackUrls 
 } from '../../data/quranData';
+import { 
+  getMadinahPageLines, 
+  getMadinahPageSurahs, 
+  MushafLine 
+} from '../../services/madinahPageService';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { saveBookmark, setLastRead } from '../../services/offlineStorage';
 import { useLanguage } from '../../context/LanguageContext';
 
 const STORAGE_LAST_PAGE = 'quranverse_physical_mushaf_last_page_v1';
 
-export interface MushafPageLine {
-  line: number;
-  type: 'text' | 'surah-header' | 'basmala';
-  text?: string;
-  surahName?: string;
-  verseRange?: string;
-}
-
-export interface PageVerseInfo {
-  surahNumber: number;
-  surahLatin: string;
-  surahArabic: string;
-  startAyah: number;
-  endAyah: number;
-}
-
-// Computes all surahs and their ayah ranges present on this page
-function getPageSurahsInfo(lines: MushafPageLine[], fallbackSurah: any): PageVerseInfo[] {
-  const map = new Map<number, { startAyah: number; endAyah: number }>();
-
-  lines.forEach((l) => {
-    if (l.verseRange) {
-      const parts = l.verseRange.split('-');
-      parts.forEach((p) => {
-        const [sStr, aStr] = p.trim().split(':');
-        const sNo = parseInt(sStr, 10);
-        const aNo = parseInt(aStr, 10);
-        if (!isNaN(sNo) && !isNaN(aNo)) {
-          if (!map.has(sNo)) {
-            map.set(sNo, { startAyah: aNo, endAyah: aNo });
-          } else {
-            const e = map.get(sNo)!;
-            e.startAyah = Math.min(e.startAyah, aNo);
-            e.endAyah = Math.max(e.endAyah, aNo);
-          }
-        }
-      });
-    }
-  });
-
-  if (map.size === 0) {
-    return [{
-      surahNumber: fallbackSurah.number,
-      surahLatin: fallbackSurah.latinName,
-      surahArabic: fallbackSurah.name,
-      startAyah: 1,
-      endAyah: fallbackSurah.ayahCount
-    }];
-  }
-
-  const result: PageVerseInfo[] = [];
-  map.forEach((range, sNo) => {
-    const meta = SURAH_LIST.find((s) => s.number === sNo) || fallbackSurah;
-    result.push({
-      surahNumber: sNo,
-      surahLatin: meta.latinName,
-      surahArabic: meta.name,
-      startAyah: range.startAyah,
-      endAyah: range.endAyah
-    });
-  });
-
-  return result.sort((a, b) => a.surahNumber - b.surahNumber);
-}
+export type MushafPageLine = MushafLine;
 
 export const PhysicalMushafPageReader: React.FC = () => {
   const { language } = useLanguage();
@@ -117,7 +58,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
   // Display Mode: 'scan' (Scanned Page Image - Physical Mushaf) | 'layout' (15-line Typography)
   const [viewMode, setViewMode] = useState<'scan' | 'layout'>('scan');
   const [mushafLines, setMushafLines] = useState<MushafPageLine[]>([]);
-  const [isLoadingPage, setIsLoadingPage] = useState<boolean>(true);
+  const [isLoadingPage, setIsLoadingPage] = useState<boolean>(false);
   const [reloadKey, setReloadKey] = useState<number>(0);
 
   // Scan Image State
@@ -131,7 +72,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const juzNumber = getJuzForPage(currentPage);
   const fallbackUrls = getMadinahPageFallbackUrls(currentPage);
 
-  const pageSurahs = getPageSurahsInfo(mushafLines, primarySurah);
+  const pageSurahs = getMadinahPageSurahs(currentPage, primarySurah);
   const pageSurahsLatinLabel = pageSurahs
     .map((s) => `${s.surahLatin} (${s.startAyah === s.endAyah ? `Ayat ${s.startAyah}` : `Ayat ${s.startAyah}–${s.endAyah}`})`)
     .join(' • ');
@@ -155,111 +96,32 @@ export const PhysicalMushafPageReader: React.FC = () => {
     }
   }, [currentPage]);
 
-  // Fetch 15-Line Mushaf Layout for the current page
+  // Load authentic 15-Line Madinah Mushaf dataset (100% offline & instantaneous)
   useEffect(() => {
-    let isMounted = true;
     setIsLoadingPage(true);
-    const pStr = String(currentPage).padStart(3, '0');
-    const cacheKey = `quranverse_mushaf_layout_p${pStr}_v2`;
-
-    // 1. Try LocalStorage Cache first
+    // Clear old corrupted cache entries
     try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMushafLines(parsed);
-          setIsLoadingPage(false);
-          return;
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('quranverse_mushaf_layout_')) {
+          keysToRemove.push(k);
         }
       }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
     } catch {}
 
-    // 2. Fetch from jsDelivr Global CDN with raw GitHub fallback
-    const fetchLayout = async () => {
-      try {
-        const url1 = `https://cdn.jsdelivr.net/gh/zonetecde/mushaf-layout@main/mushaf/page-${pStr}.json`;
-        let res = await fetch(url1);
-        if (!res.ok) {
-          const url2 = `https://raw.githubusercontent.com/zonetecde/mushaf-layout/main/mushaf/page-${pStr}.json`;
-          res = await fetch(url2);
-        }
-        if (res.ok) {
-          const data = await res.json();
-          if (data && Array.isArray(data.lines) && isMounted) {
-            const formattedLines: MushafPageLine[] = data.lines.map((l: any, idx: number) => ({
-              line: l.line || idx + 1,
-              type: l.type || 'text',
-              text: l.text || '',
-              surahName: l.surahName || (l.type === 'surah-header' ? (l.text || primarySurah.name) : undefined),
-              verseRange: l.verseRange || ''
-            }));
-            setMushafLines(formattedLines);
-            try {
-              localStorage.setItem(cacheKey, JSON.stringify(formattedLines));
-            } catch {}
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to load mushaf layout JSON, attempting fallback API:', err);
-      }
-
-      // 3. Fallback to AlQuran.cloud API
-      try {
-        const apiRes = await fetch(`https://api.alquran.cloud/v1/page/${currentPage}/quran-uthmani`);
-        if (apiRes.ok) {
-          const apiData = await apiRes.json();
-          if (apiData.code === 200 && Array.isArray(apiData.data?.ayahs) && isMounted) {
-            const lines: MushafPageLine[] = apiData.data.ayahs.map((a: any, idx: number) => ({
-              line: idx + 1,
-              type: 'text',
-              text: `${a.text} ۝${a.numberInSurah}`,
-              verseRange: `${a.surah.number}:${a.numberInSurah}`
-            }));
-            setMushafLines(lines);
-            try {
-              localStorage.setItem(cacheKey, JSON.stringify(lines));
-            } catch {}
-            return;
-          }
-        }
-      } catch (apiErr) {
-        console.warn('API fallback also failed, attempting core surah ayahs fallback:', apiErr);
-      }
-
-      // 4. Ultimate Fallback: Load from Core In-Memory / Equran Database
-      try {
-        const coreAyats = await getSurahAyahs(primarySurah.number);
-        if (coreAyats && coreAyats.length > 0 && isMounted) {
-          const lines: MushafPageLine[] = coreAyats.map((a, idx) => ({
-            line: idx + 1,
-            type: 'text',
-            text: `${a.arabicText} ۝${a.numberInSurah}`,
-            verseRange: `${a.surahNumber}:${a.numberInSurah}`
-          }));
-          setMushafLines(lines);
-          return;
-        }
-      } catch (coreErr) {
-        console.warn('Core ayahs fallback failed:', coreErr);
-      }
-    };
-
-    fetchLayout().finally(() => {
-      if (isMounted) setIsLoadingPage(false);
-    });
-
-    return () => {
-      isMounted = false;
-    };
+    const lines = getMadinahPageLines(currentPage);
+    setMushafLines(lines as MushafPageLine[]);
+    setIsLoadingPage(false);
   }, [currentPage, reloadKey]);
 
   // Reset scan state on page change
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_LAST_PAGE, String(currentPage));
-      setLastRead(primarySurah.number, 1, `Halaman ${currentPage} (${primarySurah.latinName})`);
+      const firstSurah = pageSurahs[0] || { surahNumber: primarySurah.number, startAyah: 1 };
+      setLastRead(firstSurah.surahNumber, firstSurah.startAyah, `Halaman ${currentPage} (${pageSurahsLatinLabel})`);
     } catch {}
 
     setScanLoaded(false);
