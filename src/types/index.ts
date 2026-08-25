@@ -137,7 +137,13 @@ export type TajwidRuleType =
   | 'ghunnah_musyaddadah'
   | 'ikhfa_syafawi'
   | 'idgham_mimi'
-  | 'izhar_syafawi';
+  | 'izhar_syafawi'
+  | 'idzhar_qamariyah'
+  | 'idgham_syamsiyah'
+  | 'lam_jalalah_tafkhim'
+  | 'lam_jalalah_tarqiq'
+  | 'ra_tafkhim'
+  | 'ra_tarqiq';
 
 export interface TajwidToken {
   index: number;

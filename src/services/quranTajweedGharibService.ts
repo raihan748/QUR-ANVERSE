@@ -1664,6 +1664,7 @@ export function analyzePageTajweedRules(lines: MushafLine[]): {
           else if (t.rule.includes('qalqalah')) cat = 'qalqalah';
           else if (t.rule.includes('syafawi') || t.rule.includes('mimi')) cat = 'mim_mati';
           else if (t.rule.includes('izhar') || t.rule.includes('idgham') || t.rule.includes('ikhfa') || t.rule.includes('iqlab')) cat = 'nun_mati_tanwin';
+          else if (t.rule.includes('lam_jalalah') || t.rule.includes('qamariyah') || t.rule.includes('syamsiyah') || t.rule.includes('ra_')) cat = 'mim_mati'; // Grouped cleanly
 
           // Find encyclopedia entry for formal definitions
           const enc = MASTER_TAJWEED_ENCYCLOPEDIA.find((e) => 
@@ -1683,6 +1684,10 @@ export function analyzePageTajweedRules(lines: MushafLine[]): {
           else if (t.rule === 'idgham_bilaghunnah') caraBaca = 'Melebur masuk tanpa dengung.';
           else if (t.rule === 'iqlab') caraBaca = 'Mengubah bunyi nun/tanwin menjadi mim tersembunyi dengan dengung.';
           else if (t.rule === 'izhar_halqi') caraBaca = 'Jelas, terang, tanpa dengung.';
+          else if (t.rule === 'idzhar_qamariyah') caraBaca = 'Huruf Lam dibaca jelas dan terang.';
+          else if (t.rule === 'idgham_syamsiyah') caraBaca = 'Huruf Lam dilebur langsung ke huruf berikutnya bertasydid.';
+          else if (t.rule === 'lam_jalalah_tafkhim') caraBaca = 'Lafadz Allah dibaca tebal bergema (Alloh).';
+          else if (t.rule === 'lam_jalalah_tarqiq') caraBaca = 'Lafadz Allah dibaca tipis jernih (Lillah).';
           else if (t.rule === 'mad_lazim') caraBaca = 'Wajib dipanjangkan 6 harakat penuh.';
           else if (t.rule.includes('mad')) caraBaca = `Dipanjangkan ${t.harakatDuration || 2} harakat.`;
 
@@ -1780,6 +1785,14 @@ export function getTajweedColorForWord(word: string): { color: string; bg: strin
   }
   if (/م[\u0652\u06DF]?م/.test(word)) {
     return { color: '#0D9488', bg: '#CCFBF1', ruleName: 'Idgham Mimi' };
+  }
+
+  // 10. Lam Jalalah (Lafadz Allah)
+  if (/(?:ٱللَّ|اللَّ|لِلَّ)/.test(word)) {
+    if (/لِلَّ/.test(word) || /[\u0650]/.test(word.slice(0, 3))) {
+      return { color: '#0284C7', bg: '#E0F2FE', ruleName: 'Lam Jalalah Tarqiq' };
+    }
+    return { color: '#0D9488', bg: '#CCFBF1', ruleName: 'Lam Jalalah Tafkhim' };
   }
 
   return { color: '#064E3B', bg: 'transparent' };

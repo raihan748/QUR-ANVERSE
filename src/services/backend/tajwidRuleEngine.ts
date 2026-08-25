@@ -19,7 +19,8 @@ const IDGHAM_BILAGHUNNAH_LETTERS = ['ل', 'ر'];
 const IQLAB_LETTERS = ['ب'];
 const IKHFA_HAQIQI_LETTERS = ['ت', 'ث', 'ج', 'د', 'ذ', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ف', 'ق', 'ك'];
 const QALQALAH_LETTERS = ['ق', 'ط', 'ب', 'ج', 'د'];
-const MAD_LETTERS = ['ا', 'و', 'ي', 'ى', 'ٱ'];
+const QAMARIYAH_LETTERS = ['ا', 'ب', 'غ', 'ح', 'ج', 'ك', 'و', 'خ', 'ف', 'ع', 'ق', 'ي', 'م', 'ه', 'أ', 'إ', 'ء'];
+const SYAMSIYAH_LETTERS = ['ت', 'ث', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ل', 'ن'];
 
 export class TajwidRuleEngine {
   /**
@@ -45,7 +46,13 @@ export class TajwidRuleEngine {
       ghunnah_musyaddadah: 0,
       ikhfa_syafawi: 0,
       idgham_mimi: 0,
-      izhar_syafawi: 0
+      izhar_syafawi: 0,
+      idzhar_qamariyah: 0,
+      idgham_syamsiyah: 0,
+      lam_jalalah_tafkhim: 0,
+      lam_jalalah_tarqiq: 0,
+      ra_tafkhim: 0,
+      ra_tarqiq: 0
     };
 
     let totalBeats = 0;
@@ -356,6 +363,104 @@ export class TajwidRuleEngine {
         });
         totalBeats += mBeats;
         continue;
+      }
+
+      // 6. Iqlab Small Superscript Mim (ۢ / ۭ)
+      if (currentChar === '\u06E2' || currentChar === '\u06ED') {
+        const lookahead = getNextNonSpaceChar(i);
+        tokens.push({
+          index: i,
+          char: currentChar,
+          rule: 'iqlab',
+          ruleLabel: 'Iqlab',
+          description: `Terdapat tanda mim iqlab, bunyi 'N' ditukar menjadi 'M' mendengung rapat selama 2 harakat.`,
+          colorHex: '#8B5CF6',
+          harakatDuration: 2,
+          startOffset: Math.max(0, i - 1),
+          endOffset: (lookahead ? lookahead.index : i + 1),
+          matchedPhoneme: 'ـۢ'
+        });
+        ruleSummary.iqlab++;
+        totalBeats += 2;
+        continue;
+      }
+
+      // 7. Lam Jalalah (Lafadz Allah Tafkhim & Tarqiq)
+      if ((currentChar === 'ٱ' || currentChar === 'ا' || currentChar === 'ل') && safeArabic.slice(i, i + 8).includes('للَّ')) {
+        const sub = safeArabic.slice(i, i + 10);
+        if (sub.includes('ٱللَّه') || sub.includes('اللَّه') || sub.includes('لِلَّه')) {
+          const prevCharSlice = safeArabic.slice(Math.max(0, i - 4), i);
+          const isKasrah = prevCharSlice.includes('\u0650') || currentChar === 'ل';
+          
+          const lRule: TajwidRuleType = isKasrah ? 'lam_jalalah_tarqiq' : 'lam_jalalah_tafkhim';
+          const lLabel = isKasrah ? 'Lam Jalalah Tarqiq' : 'Lam Jalalah Tafkhim';
+          const lDesc = isKasrah 
+            ? 'Lafadz Allah didahului kasrah, dibaca tipis mengalir jernih (Lillah).' 
+            : 'Lafadz Allah didahului fathah/dhommah, dibaca tebal bergema (Alloh).';
+          const lColor = isKasrah ? '#0284C7' : '#0D9488';
+
+          tokens.push({
+            index: i,
+            char: currentChar,
+            rule: lRule,
+            ruleLabel: lLabel,
+            description: lDesc,
+            colorHex: lColor,
+            harakatDuration: 2,
+            startOffset: i,
+            endOffset: i + 6,
+            matchedPhoneme: isKasrah ? 'بِسْمِ ٱللَّهِ' : 'ٱللَّهُ'
+          });
+          ruleSummary[lRule]++;
+          totalBeats += 2;
+          i += 4;
+          continue;
+        }
+      }
+
+      // 8. Lam Ta'rif (Idzhar Qamariyah & Idgham Syamsiyah)
+      if ((currentChar === 'ٱ' || currentChar === 'ا') && nextChar === 'ل') {
+        const afterLam = safeArabic[i + 2] || '';
+        const afterLamNext = safeArabic[i + 3] || '';
+
+        if (afterLam === SUKUN_CHAR || afterLam === '\u06DF') {
+          const qamLetter = afterLamNext;
+          if (QAMARIYAH_LETTERS.includes(qamLetter)) {
+            tokens.push({
+              index: i,
+              char: 'ٱلْ',
+              rule: 'idzhar_qamariyah',
+              ruleLabel: 'Idzhar Qamariyah',
+              description: `Alif Lam bertemu huruf Qamariyah (${qamLetter}), huruf Lam dibaca jelas dan terang.`,
+              colorHex: '#059669',
+              harakatDuration: 1,
+              startOffset: i,
+              endOffset: i + 3,
+              matchedPhoneme: 'ٱلْـ + ' + qamLetter
+            });
+            ruleSummary.idzhar_qamariyah++;
+            totalBeats += 1;
+            i += 2;
+            continue;
+          }
+        } else if (SYAMSIYAH_LETTERS.includes(afterLam) && afterLamNext === SHADDAH_CHAR) {
+          tokens.push({
+            index: i,
+            char: 'ٱل',
+            rule: 'idgham_syamsiyah',
+            ruleLabel: 'Idgham Syamsiyah',
+            description: `Alif Lam melebur ke huruf Syamsiyah (${afterLam}) yang bertasydid.`,
+            colorHex: '#EA580C',
+            harakatDuration: 1,
+            startOffset: i,
+            endOffset: i + 3,
+            matchedPhoneme: 'ٱلـ + ' + afterLam + 'ّ'
+          });
+          ruleSummary.idgham_syamsiyah++;
+          totalBeats += 1;
+          i += 2;
+          continue;
+        }
       }
     }
 
