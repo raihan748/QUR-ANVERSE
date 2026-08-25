@@ -263,13 +263,13 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
     speechEngine.setLanguage(speechLanguage);
     const started = speechEngine.startListening({
       language: speechLanguage,
-      onInterimResult: (text) => {
+      onInterimResult: (text, alts) => {
         setLiveTranscript(text);
-        continuousTracker.processStream(text);
+        continuousTracker.processStream(text, alts);
       },
-      onFinalResult: (text) => {
+      onFinalResult: (text, alts) => {
         setLiveTranscript(text);
-        continuousTracker.processStream(text);
+        continuousTracker.processStream(text, alts);
       },
       onError: (err) => console.warn('Mic status:', err)
     });

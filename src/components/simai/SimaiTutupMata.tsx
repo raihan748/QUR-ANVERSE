@@ -154,8 +154,9 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
 
     const targetAyat = challengeData.next;
     const cleanSpoken = (spokenTranscript || finalAccumulated || '').trim();
+    const alternatives = speechEngine.getAlternativeHypotheses();
 
-    const result = speechEngine.evaluateRecitation(cleanSpoken, targetAyat);
+    const result = speechEngine.evaluateRecitation(cleanSpoken, targetAyat, alternatives);
     setEvaluation(result);
 
     if (result.isPassed) {

@@ -203,6 +203,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
 
     const target = challengeData.next;
     const cleanSpoken = (spokenTranscript || finalSpeech || '').trim();
+    const alternatives = speechEngine.getAlternativeHypotheses();
 
     // Check if voice was captured either via speech text OR decibel volume
     if (!cleanSpoken && !recordedUrl) {
@@ -217,7 +218,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
     }
 
     // Evaluate speech or offer self-validation
-    const evalResult = speechEngine.evaluateRecitation(cleanSpoken || target.transliteration, target);
+    const evalResult = speechEngine.evaluateRecitation(cleanSpoken || target.transliteration, target, alternatives);
 
     if (evalResult.isPassed || cleanSpoken.length >= 4) {
       audioPlayer.playSuccessChime();
