@@ -194,6 +194,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         setCompletedAyahsSet((prev) => new Set(prev).add(ayahIdx));
         setActiveAyahIndex(ayahIdx + 1);
         setLiveTranscript('');
+        speechEngine.clearTranscript();
         audioPlayer.playSuccessChime();
 
         // Track progress in Daily Target if applicable
@@ -232,6 +233,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           () => {
             setIsSheikhSpeaking(false);
             setLiveTranscript('');
+            speechEngine.clearTranscript();
             continuousTracker.resumeAfterCorrection();
           }
         );
@@ -322,21 +324,22 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
                 <BookOpen className="w-3.5 h-3.5" /> Studio Muroja'ah Beruntun 114 Surat
               </span>
-              <span className="px-2 py-0.5 text-xs font-bold bg-[#10B981] text-black rounded border border-black">
-                Juz {currentSurahMeta.juzList ? currentSurahMeta.juzList.join(', ') : currentSurahMeta.juzStart}
-              </span>
-              <span className="px-2 py-0.5 text-xs font-bold bg-white/20 text-white rounded border border-white/30">
-                Ayat {startAyah} – {endAyah} ({passageAyats.length} Ayat)
+              <span className="px-2 py-0.5 text-xs font-bold bg-white/20 text-white rounded border border-white/30 font-mono">
+                {currentSurahMeta.revelationPlace === 'Makkah' ? 'Makkiyyah' : 'Madaniyyah'} • {currentSurahMeta.ayahCount} Ayat
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold font-display text-white">
-              Surat {currentSurahMeta.latinName} ({currentSurahMeta.name})
+            <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2 font-display">
+              <span>{currentSurahMeta.latinName}</span>
+              <span className="font-quran text-amber-300 text-lg">({currentSurahMeta.name})</span>
             </h2>
+            <p className="text-xs text-emerald-100 font-medium">
+              Arti: "{currentSurahMeta.meaning}" • Menampilkan Ayat {startAyah} s/d {endAyah}
+            </p>
           </div>
 
-          {/* Sheikh Companion Dropdown & Surah Picker Button */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Reciter Dropdown */}
+          {/* Quick Sheikh Reciter & Surah Switchers */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Reciter Selector Dropdown */}
             <div className="relative">
               <button
                 onClick={() => setIsReciterMenuOpen(!isReciterMenuOpen)}
@@ -441,7 +444,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 isActive
                   ? 'ring-3 ring-[#0B4627] shadow-[4px_4px_0px_0px_#0B4627] bg-[#F0FDF4]'
                   : isCompleted
-                  ? 'opacity-80 bg-emerald-50/50 shadow-[2px_2px_0px_0px_#111827]'
+                  ? 'opacity-85 bg-emerald-50/60 shadow-[2px_2px_0px_0px_#111827]'
                   : 'shadow-[2px_2px_0px_0px_#111827]'
               }`}
             >
@@ -449,12 +452,12 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               <div className="flex items-center justify-between border-b border-dashed border-gray-300 pb-2 mb-3">
                 <div className="flex items-center gap-2">
                   <span className={`w-7 h-7 rounded-lg border-2 border-black flex items-center justify-center font-bold text-xs ${
-                    isCompleted ? 'bg-[#10B981] text-white' : isActive ? 'bg-[#F59E0B] text-black font-black' : 'bg-gray-200 text-gray-700'
+                    isCompleted ? 'bg-[#10B981] text-white font-black' : isActive ? 'bg-[#F59E0B] text-black font-black' : 'bg-gray-200 text-gray-700'
                   }`}>
                     {ayat.numberInSurah}
                   </span>
-                  <span className="text-xs font-bold text-gray-600">
-                    Ayat ke-{ayat.numberInSurah} {isCompleted && <span className="text-emerald-700 font-black">✓ Selesai</span>}
+                  <span className="text-xs font-bold text-gray-700 flex items-center gap-1">
+                    Ayat ke-{ayat.numberInSurah} {isCompleted ? <span className="text-emerald-700 font-black">✓ Lulus Mutqin</span> : isActive ? <span className="text-amber-700 font-black animate-pulse">● Sedang Dilantunkan</span> : null}
                   </span>
                 </div>
 
@@ -472,21 +475,24 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
               {/* Word-by-Word Arabic Text with Live Highlighting */}
               <div className="my-2 text-right" dir="rtl">
-                <div className="flex flex-wrap gap-x-2 gap-y-2.5 items-center">
+                <div className="flex flex-wrap gap-x-2 gap-y-3 items-center justify-start">
                   {words.map((word, wIdx) => {
                     const isMatched = matchedIndices.includes(wIdx) || isCompleted;
+                    const isCurrentlyTargeted = isActive && matchedIndices.length === wIdx;
+
                     return (
                       <span
                         key={wIdx}
-                        className={`font-quran text-2xl sm:text-3xl leading-relaxed px-2 py-0.5 rounded-lg border transition-all ${
+                        className={`font-quran text-2xl sm:text-3xl leading-relaxed px-2.5 py-1 rounded-xl border-2 transition-all flex items-center gap-1 ${
                           isMatched
-                            ? 'bg-[#D1FAE5] text-[#064E3B] border-[#0B4627] font-bold shadow-xs'
-                            : isActive && matchedIndices.length === wIdx
-                            ? 'bg-[#FEF3C7] text-amber-950 border-[#D97706] font-bold animate-pulse'
-                            : 'text-emerald-950 border-transparent'
+                            ? 'bg-[#10B981] text-white border-black font-bold shadow-[2px_2px_0px_0px_#000] scale-100'
+                            : isCurrentlyTargeted
+                            ? 'bg-[#F59E0B] text-black border-black font-black shadow-[3px_3px_0px_0px_#000] scale-105 animate-pulse ring-2 ring-amber-400'
+                            : 'text-emerald-950 bg-white/70 border-gray-300 opacity-80'
                         }`}
                       >
                         {word}
+                        {isMatched && <span className="text-[10px] font-sans font-black text-amber-200">✓</span>}
                       </span>
                     );
                   })}

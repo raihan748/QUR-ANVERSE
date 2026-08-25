@@ -146,40 +146,40 @@ export function calculateSimilarity(s1: string, s2: string): number {
   return Math.max(0, 1 - distance / maxLen);
 }
 
-// 6. Ultra-Sharp Word-level Matcher with Multi-Variant & Compound Word Tolerance
+// 6. Ultra-Sharp Word-level Matcher with Strict Full-Word Validation
 export function isWordMatch(targetArabic: string, candidateSpoken: string): boolean {
   if (!targetArabic || !candidateSpoken) return false;
 
   const tArab = normalizeArabic(targetArabic);
   const sArab = normalizeArabic(candidateSpoken);
 
-  if (tArab === sArab) return true;
   if (!tArab || !sArab) return false;
+  if (tArab === sArab) return true;
 
-  // 1. Substring containment for connected Quranic particles (e.g. "بِالْـ", "وَالْـ", "فَـ")
-  if (tArab.length >= 3 && (sArab.includes(tArab) || tArab.includes(sArab))) return true;
+  // Length safety check: cannot match if length difference is too large (prevents 2-letter sounds matching 8-letter words)
+  const lenDiff = Math.abs(tArab.length - sArab.length);
+  if (lenDiff > 3 && tArab.length > 3 && sArab.length > 3) return false;
 
-  // 2. Arabic Normalized Similarity
-  const arabSim = calculateSimilarity(tArab, sArab);
-  if (arabSim >= 0.55) return true;
-
-  // 3. Stemmed Prefix Matching (Stripping Alif-Lam / Waw / Ba)
+  // 1. Exact Stem Match (Stripping Alif-Lam / Waw / Ba / Fa / Lam / Kaf)
   const tStem = stripArabicPrefixes(tArab);
   const sStem = stripArabicPrefixes(sArab);
   if (tStem && sStem && tStem === sStem) return true;
-  if (tStem.length >= 3 && sStem.length >= 3 && calculateSimilarity(tStem, sStem) >= 0.60) return true;
 
-  // 4. Latin Phonetic Comparison
+  // 2. High-precision Arabic Levenshtein Similarity (Must be >= 0.70 full word similarity)
+  const arabSim = calculateSimilarity(tArab, sArab);
+  if (arabSim >= 0.70 && lenDiff <= 2) return true;
+
+  // 3. Latin Phonetic Soundex Comparison
   const tLatin = arabicToPhoneticLatin(targetArabic);
   const sLatin = normalizeLatinPhonetics(candidateSpoken);
 
   if (tLatin === sLatin) return true;
-  if (tLatin.length >= 3 && (sLatin.includes(tLatin) || tLatin.includes(sLatin))) return true;
 
+  const latinLenDiff = Math.abs(tLatin.length - sLatin.length);
   const latinSim = calculateSimilarity(tLatin, sLatin);
-  if (latinSim >= 0.45) return true;
+  if (latinSim >= 0.65 && latinLenDiff <= 2) return true;
 
-  return Math.max(arabSim, latinSim) >= 0.48;
+  return false;
 }
 
 // 7. Compound Multi-Word Matcher (Handles compound recitations like "bismillah", "iyyakanabudu")
@@ -193,7 +193,7 @@ export function isCompoundMatch(targetWords: string[], candidateSpoken: string):
   if (targetWords.length >= 3) {
     const t3Arab = normalizeArabic(targetWords.slice(0, 3).join(''));
     const t3Latin = normalizeLatinPhonetics(targetWords.slice(0, 3).map(w => arabicToPhoneticLatin(w)).join(''));
-    if (calculateSimilarity(t3Arab, sArab) >= 0.60 || calculateSimilarity(t3Latin, sLatin) >= 0.55) {
+    if (calculateSimilarity(t3Arab, sArab) >= 0.75 || calculateSimilarity(t3Latin, sLatin) >= 0.70) {
       return { matchedCount: 3, matchedSpoken: candidateSpoken };
     }
   }
@@ -202,7 +202,7 @@ export function isCompoundMatch(targetWords: string[], candidateSpoken: string):
   if (targetWords.length >= 2) {
     const t2Arab = normalizeArabic(targetWords.slice(0, 2).join(''));
     const t2Latin = normalizeLatinPhonetics(targetWords.slice(0, 2).map(w => arabicToPhoneticLatin(w)).join(''));
-    if (calculateSimilarity(t2Arab, sArab) >= 0.60 || calculateSimilarity(t2Latin, sLatin) >= 0.55) {
+    if (calculateSimilarity(t2Arab, sArab) >= 0.75 || calculateSimilarity(t2Latin, sLatin) >= 0.70) {
       return { matchedCount: 2, matchedSpoken: candidateSpoken };
     }
   }
@@ -372,6 +372,11 @@ export class SpeechEngine {
       } catch {}
     }
     return this.accumulatedTranscript;
+  }
+
+  public clearTranscript(): void {
+    this.accumulatedTranscript = '';
+    this.alternativeHypotheses = [];
   }
 
   public getAlternativeHypotheses(): string[] {
@@ -603,7 +608,8 @@ export class ContinuousMurojaahTracker {
   }
 
   /**
-   * Processes live audio stream with strict monotonic token consumption to prevent false skips.
+   * Processes live audio stream with strict sequential word-by-word matching.
+   * Every single word in the Ayah must be pronounced in order. Skips are strictly prevented!
    */
   public processStream(rawTranscript: string, alternatives?: string[]): void {
     if (!this.isActive || this.isPaused || !this.targetAyats[this.currentAyahIndex]) return;
@@ -623,36 +629,38 @@ export class ContinuousMurojaahTracker {
 
     if (allSpokenTokens.length === 0) return;
 
-    // Only inspect UNCONSUMED spoken tokens (monotonic cursor)
-    const activeSpokenSlice = allSpokenTokens.slice(Math.max(0, this.processedWordCursor - 2));
+    // Only inspect recent spoken words starting from last cursor
+    const activeSpokenSlice = allSpokenTokens.slice(Math.max(0, this.processedWordCursor));
     if (activeSpokenSlice.length === 0) return;
 
     let matchedInThisCycle = false;
 
     while (this.currentWordIndex < expectedWords.length) {
-      const remainingTargetWords = expectedWords.slice(this.currentWordIndex);
+      const targetWord = expectedWords[this.currentWordIndex];
       let advanceCount = 0;
-      let consumedSpokenOffset = -1;
+      let consumedOffset = -1;
 
-      // 1. Check Compound / Multi-word match first
-      for (let sIdx = 0; sIdx < activeSpokenSlice.length; sIdx++) {
-        const spoken = activeSpokenSlice[sIdx];
-        const compoundRes = isCompoundMatch(remainingTargetWords, spoken);
-        if (compoundRes.matchedCount > 0) {
-          advanceCount = compoundRes.matchedCount;
-          consumedSpokenOffset = sIdx;
-          break;
+      // 1. Check Compound / Multi-word match first (e.g. "bismillahi" -> "bismi" + "allahi")
+      if (this.currentWordIndex + 1 < expectedWords.length) {
+        const nextWord = expectedWords[this.currentWordIndex + 1];
+        const compoundTarget = targetWord + nextWord;
+        for (let sIdx = 0; sIdx < activeSpokenSlice.length; sIdx++) {
+          const spoken = activeSpokenSlice[sIdx];
+          if (isWordMatch(compoundTarget, spoken) || isWordMatch(targetWord + ' ' + nextWord, spoken)) {
+            advanceCount = 2;
+            consumedOffset = sIdx;
+            break;
+          }
         }
       }
 
-      // 2. Single word sequential match
+      // 2. Single word strict sequential match
       if (advanceCount === 0) {
-        const targetWord = expectedWords[this.currentWordIndex];
         for (let sIdx = 0; sIdx < activeSpokenSlice.length; sIdx++) {
           const spoken = activeSpokenSlice[sIdx];
           if (isWordMatch(targetWord, spoken)) {
             advanceCount = 1;
-            consumedSpokenOffset = sIdx;
+            consumedOffset = sIdx;
             break;
           }
         }
@@ -677,11 +685,12 @@ export class ContinuousMurojaahTracker {
         }
 
         this.currentWordIndex += advanceCount;
-        if (consumedSpokenOffset >= 0) {
-          this.processedWordCursor += (consumedSpokenOffset + 1);
+        if (consumedOffset >= 0) {
+          this.processedWordCursor += (consumedOffset + 1);
         }
       } else {
-        break; // Await next spoken word from user
+        // STRICT: Do NOT skip! Wait for reader to pronounce this exact word!
+        break;
       }
     }
 
@@ -689,17 +698,16 @@ export class ContinuousMurojaahTracker {
       this.lastMatchTime = Date.now();
       this.resetHesitationWatchdog();
 
-      // STRICT COMPLETION: Current Ayah is only completed when reached the end of expected words
+      // STRICT COMPLETION: Current Ayah is ONLY completed when 100% of words in that Ayah have been matched
       if (this.currentWordIndex >= expectedWords.length) {
         const matchedInThisAyah = this.matchedWordsMap.get(this.currentAyahIndex)?.size || 0;
-        const requiredMinimum = Math.max(1, Math.floor(expectedWords.length * 0.70));
 
-        if (matchedInThisAyah >= requiredMinimum) {
+        if (matchedInThisAyah >= expectedWords.length) {
           if (this.callbacks) {
             this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
           }
 
-          // Advance to exactly next Ayah and reset word cursor for clean separation
+          // Advance to exactly next Ayah and reset word cursor for fresh speech input
           this.currentAyahIndex++;
           this.currentWordIndex = 0;
           this.processedWordCursor = allSpokenTokens.length; // Consume all current tokens so next Ayah needs new speech
@@ -708,7 +716,7 @@ export class ContinuousMurojaahTracker {
           if (this.currentAyahIndex >= this.targetAyats.length) {
             this.isActive = false;
             this.clearHesitationWatchdog();
-            const score = Math.max(75, Math.round(100 - (this.totalErrors * 3)));
+            const score = Math.max(80, Math.round(100 - (this.totalErrors * 2)));
             if (this.callbacks) {
               this.callbacks.onPassageCompleted(score);
             }
