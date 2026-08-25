@@ -12,23 +12,40 @@ export * from './core/QuranicChecksumIntegrity';
 export * from './ast/ArabicUnicodeLexer';
 export * from './ast/TajwidASTGrammarParser';
 
-// 3. Rule Pipeline & Special Handlers
+// 3. Compiler & Quran Virtual Machine (QVM)
+export * from './compiler/QVMBytecodeEngine';
+export * from './compiler/EarleyQuranParser';
+
+// 4. Rule Pipeline & Special Handlers
 export * from './rules/TajwidPipelineEngine';
 export * from './rules/GharibSpecialRecitationHandler';
 
-// 4. Comparative Qira'at Engine
-export * from './qiraat/QiraatComparativeEngine';
-
-// 5. Acoustic DSP & Dynamic Time Warping (DTW)
+// 5. Acoustic DSP, MFCC & HMM/Viterbi Trellis
 export * from './dsp/AcousticPhoneticAlignmentEngine';
+export * from './dsp/MFCCFeatureExtractor';
+export * from './dsp/ViterbiTrellisDecoder';
 
-// 6. Cognitive Spaced Repetition (SuperMemo SM-2)
+// 6. Semantic Vector Tensor & Graph Centrality
+export * from './semantic/QuranicVectorTensorEngine';
+export * from './semantic/GraphTopologyCentrality';
+
+// 7. Zero-Knowledge Cryptography & BFT Consensus
+export * from './crypto/ZeroKnowledgeProofEngine';
+export * from './crypto/BFTStateSynchronizer';
+
+// 8. Comparative Qira'at & Sanad Transmission DAG
+export * from './qiraat/QiraatComparativeEngine';
+export * from './qiraat/MultiQiraatASTDiffEngine';
+export * from './qiraat/SanadTransmissionDAG';
+
+// 9. Cognitive & Neuro-Spaced Repetition
 export * from './memory/SuperMemoQuranicEngine';
+export * from './memory/NeuroSpacedRepetitionEngine';
 
-// 7. Gateway Facade
+// 10. Gateway Facade
 export * from './gateway/EnterpriseBackendFacade';
 
-// 8. Legacy & Compatible Engines
+// 11. Compatibility Services
 export * from './tajwidRuleEngine';
 export * from './quranKnowledgeGraph';
 export * from './cryptographicAuditLedger';
