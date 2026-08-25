@@ -38,6 +38,63 @@ export interface MushafPageLine {
   verseRange?: string;
 }
 
+export interface PageVerseInfo {
+  surahNumber: number;
+  surahLatin: string;
+  surahArabic: string;
+  startAyah: number;
+  endAyah: number;
+}
+
+// Computes all surahs and their ayah ranges present on this page
+function getPageSurahsInfo(lines: MushafPageLine[], fallbackSurah: any): PageVerseInfo[] {
+  const map = new Map<number, { startAyah: number; endAyah: number }>();
+
+  lines.forEach((l) => {
+    if (l.verseRange) {
+      const parts = l.verseRange.split('-');
+      parts.forEach((p) => {
+        const [sStr, aStr] = p.trim().split(':');
+        const sNo = parseInt(sStr, 10);
+        const aNo = parseInt(aStr, 10);
+        if (!isNaN(sNo) && !isNaN(aNo)) {
+          if (!map.has(sNo)) {
+            map.set(sNo, { startAyah: aNo, endAyah: aNo });
+          } else {
+            const e = map.get(sNo)!;
+            e.startAyah = Math.min(e.startAyah, aNo);
+            e.endAyah = Math.max(e.endAyah, aNo);
+          }
+        }
+      });
+    }
+  });
+
+  if (map.size === 0) {
+    return [{
+      surahNumber: fallbackSurah.number,
+      surahLatin: fallbackSurah.latinName,
+      surahArabic: fallbackSurah.name,
+      startAyah: 1,
+      endAyah: fallbackSurah.ayahCount
+    }];
+  }
+
+  const result: PageVerseInfo[] = [];
+  map.forEach((range, sNo) => {
+    const meta = SURAH_LIST.find((s) => s.number === sNo) || fallbackSurah;
+    result.push({
+      surahNumber: sNo,
+      surahLatin: meta.latinName,
+      surahArabic: meta.name,
+      startAyah: range.startAyah,
+      endAyah: range.endAyah
+    });
+  });
+
+  return result.sort((a, b) => a.surahNumber - b.surahNumber);
+}
+
 export const PhysicalMushafPageReader: React.FC = () => {
   const { language } = useLanguage();
   const [currentPage, setCurrentPage] = useState<number>(() => {
@@ -73,6 +130,14 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const primarySurah = getPrimarySurahForPage(currentPage);
   const juzNumber = getJuzForPage(currentPage);
   const fallbackUrls = getMadinahPageFallbackUrls(currentPage);
+
+  const pageSurahs = getPageSurahsInfo(mushafLines, primarySurah);
+  const pageSurahsLatinLabel = pageSurahs
+    .map((s) => `${s.surahLatin} (${s.startAyah === s.endAyah ? `Ayat ${s.startAyah}` : `Ayat ${s.startAyah}–${s.endAyah}`})`)
+    .join(' • ');
+  const pageSurahsArabicLabel = pageSurahs
+    .map((s) => s.surahArabic)
+    .join(' • ');
 
   // Preload adjacent scanned pages for instant flipping
   useEffect(() => {
@@ -233,21 +298,23 @@ export const PhysicalMushafPageReader: React.FC = () => {
       return;
     }
     setIsPlayingPageAudio(true);
-    await audioPlayer.playAyat(primarySurah.number, 1, () => {
+    const startSurah = pageSurahs[0] || { surahNumber: primarySurah.number, startAyah: 1 };
+    await audioPlayer.playAyat(startSurah.surahNumber, startSurah.startAyah, () => {
       setIsPlayingPageAudio(false);
     }, activeReciter.id);
   };
 
   const handleBookmarkPage = () => {
+    const startSurah = pageSurahs[0] || { surahNumber: primarySurah.number, startAyah: 1 };
     saveBookmark({
-      surahNumber: primarySurah.number,
-      ayahNumber: 1,
-      surahName: `Halaman ${currentPage} - Surat ${primarySurah.latinName}`,
+      surahNumber: startSurah.surahNumber,
+      ayahNumber: startSurah.startAyah,
+      surahName: `Halaman ${currentPage} - ${pageSurahsLatinLabel}`,
       arabicText: `مصحف المدينة المنورة - الصفحة ${currentPage}`,
-      translation: `Tanda Baca Halaman ${currentPage} (Juz ${juzNumber})`,
+      translation: `Tanda Baca Halaman ${currentPage} (Juz ${juzNumber} • ${pageSurahsLatinLabel})`,
       note: `Ditandai dari Mode Mushaf Fisik Asli (Halaman ${currentPage})`
     });
-    alert(`🔖 Halaman ${currentPage} berhasil disimpan ke Bookmark!`);
+    alert(`🔖 Halaman ${currentPage} (${pageSurahsLatinLabel}) berhasil disimpan ke Bookmark!`);
   };
 
   useEffect(() => {
@@ -301,13 +368,13 @@ export const PhysicalMushafPageReader: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-black text-black dark:text-white flex items-center gap-1.5">
-                <span>{language === 'ar' ? 'مصحف المدينة النبوية (١٥ سطر)' : 'Mushaf Madinah 15 Baris'}</span>
+                <span>{language === 'ar' ? `مصحف المدينة (صفحة ${currentPage})` : `Mushaf Madinah (Hal. ${currentPage})`}</span>
                 <span className="text-[10px] bg-[#0B4627] text-[#F59E0B] px-1.5 py-0.5 rounded-md font-mono font-bold border border-black">
-                  Hal. {currentPage} / 604
+                  {currentPage} / 604
                 </span>
               </h3>
-              <p className="text-[11px] font-bold text-gray-600 dark:text-gray-400">
-                Juz {juzNumber} • {primarySurah.latinName} ({primarySurah.name})
+              <p className="text-[11px] font-bold text-gray-700 dark:text-gray-300">
+                Juz {juzNumber} • {pageSurahsLatinLabel}
               </p>
             </div>
           </div>
@@ -467,11 +534,15 @@ export const PhysicalMushafPageReader: React.FC = () => {
         onTouchEnd={handleTouchEnd}
       >
         <div className="w-full flex items-center justify-between border-b-2 border-amber-800/40 pb-2 mb-3 px-2 text-xs font-bold text-amber-900 dark:text-amber-300 font-mono">
-          <span>{primarySurah.name}</span>
-          <span className="font-sans font-black tracking-widest text-[#0B4627] dark:text-[#34D399]">
+          <span className="truncate max-w-[200px] sm:max-w-none text-right font-quran text-sm sm:text-base font-black">
+            {pageSurahsArabicLabel}
+          </span>
+          <span className="font-sans font-black tracking-wider text-[#0B4627] dark:text-[#34D399] px-2 text-center text-[10px] sm:text-xs">
             {language === 'ar' ? 'مصحف المدينة النبوية الشريفة' : 'MUSHAF MADINAH ASLI (604 HALAMAN)'}
           </span>
-          <span>الجزء {juzNumber}</span>
+          <span className="font-quran text-sm sm:text-base font-black">
+            الجزء {juzNumber}
+          </span>
         </div>
 
         <div className="relative w-full max-w-2xl bg-[#FFFDF7] border-3 border-amber-900/40 rounded-2xl p-2 sm:p-5 shadow-[inset_0_0_20px_rgba(180,83,9,0.1)] flex flex-col min-h-[580px] sm:min-h-[780px] justify-between">
@@ -574,7 +645,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
                         بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                       </p>
                       <h4 className="text-base font-black text-black">
-                        Halaman {currentPage} (Juz {juzNumber} - Surat {primarySurah.latinName})
+                        Halaman {currentPage} (Juz {juzNumber} - {pageSurahsLatinLabel})
                       </h4>
                       <p className="text-xs text-gray-600 max-w-sm mx-auto">
                         Sedang menghubungkan ke server mushaf. Klik tombol di bawah untuk memuat baris ayat halaman {currentPage}.
