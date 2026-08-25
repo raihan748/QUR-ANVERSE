@@ -1188,6 +1188,7 @@ export function getPageGharibRules(page: number): GharibItem[] {
 
 /**
  * Analyzes Tajweed rules across all lines of a given page.
+ * Uses high-precision character offset word extraction and AST validation.
  */
 export function analyzePageTajweedRules(lines: MushafLine[]): {
   rulesList: TajwidRuleItem[];
@@ -1196,8 +1197,19 @@ export function analyzePageTajweedRules(lines: MushafLine[]): {
 } {
   const rulesList: TajwidRuleItem[] = [];
   const ruleSummary: Record<string, number> = {};
-
   const seenRules = new Set<string>();
+
+  const getWordAtOffset = (fullText: string, start: number, end: number): string => {
+    let wStart = Math.max(0, start);
+    while (wStart > 0 && fullText[wStart - 1] !== ' ') {
+      wStart--;
+    }
+    let wEnd = Math.min(fullText.length, Math.max(start + 1, end));
+    while (wEnd < fullText.length && fullText[wEnd] !== ' ') {
+      wEnd++;
+    }
+    return fullText.slice(wStart, wEnd).trim();
+  };
 
   lines.forEach((line) => {
     if (line.type === 'text' && line.text) {
@@ -1205,8 +1217,10 @@ export function analyzePageTajweedRules(lines: MushafLine[]): {
       const res = tajwidEngine.analyzeAyat(1, 1, text);
 
       res.tokens.forEach((t) => {
-        const uniqueKey = `${t.rule}-${t.matchedPhoneme || t.char}`;
-        if (!seenRules.has(uniqueKey) && rulesList.length < 28) {
+        const exactWord = getWordAtOffset(text, t.startOffset, t.endOffset);
+        const uniqueKey = `${t.rule}-${exactWord || t.matchedPhoneme || t.char}`;
+
+        if (!seenRules.has(uniqueKey) && rulesList.length < 35) {
           seenRules.add(uniqueKey);
 
           let cat: TajwidRuleItem['ruleCategory'] = 'mad';
@@ -1215,11 +1229,11 @@ export function analyzePageTajweedRules(lines: MushafLine[]): {
           else if (t.rule.includes('syafawi') || t.rule.includes('mimi')) cat = 'mim_mati';
           else if (t.rule.includes('izhar') || t.rule.includes('idgham') || t.rule.includes('ikhfa') || t.rule.includes('iqlab')) cat = 'nun_mati_tanwin';
 
-          const words = text.split(' ');
-          const matchingWord = words.find((w) => w.includes(t.char)) || t.matchedPhoneme || t.char;
-
           // Find encyclopedia entry for formal definitions
-          const enc = MASTER_TAJWEED_ENCYCLOPEDIA.find((e) => e.title.toLowerCase().includes(t.ruleLabel.toLowerCase()) || t.ruleLabel.toLowerCase().includes(e.title.toLowerCase()));
+          const enc = MASTER_TAJWEED_ENCYCLOPEDIA.find((e) => 
+            e.title.toLowerCase().includes(t.ruleLabel.toLowerCase()) || 
+            t.ruleLabel.toLowerCase().includes(e.title.toLowerCase())
+          );
 
           const pengertianBahasa = enc ? enc.pengertianBahasa : 'Kaidah fonetik bahasa Arab.';
           const pengertianIstilah = enc ? enc.pengertianIstilah : t.description;
@@ -1233,13 +1247,14 @@ export function analyzePageTajweedRules(lines: MushafLine[]): {
           else if (t.rule === 'idgham_bilaghunnah') caraBaca = 'Melebur masuk tanpa dengung.';
           else if (t.rule === 'iqlab') caraBaca = 'Mengubah bunyi nun/tanwin menjadi mim tersembunyi dengan dengung.';
           else if (t.rule === 'izhar_halqi') caraBaca = 'Jelas, terang, tanpa dengung.';
+          else if (t.rule === 'mad_lazim') caraBaca = 'Wajib dipanjangkan 6 harakat penuh.';
           else if (t.rule.includes('mad')) caraBaca = `Dipanjangkan ${t.harakatDuration || 2} harakat.`;
 
           rulesList.push({
             id: `taj-${rulesList.length + 1}`,
             ruleName: t.ruleLabel,
             ruleCategory: cat,
-            matchedWord: matchingWord,
+            matchedWord: exactWord || t.matchedPhoneme || t.char,
             colorHex: t.colorHex,
             harakatDuration: t.harakatDuration || 2,
             pengertianBahasa,

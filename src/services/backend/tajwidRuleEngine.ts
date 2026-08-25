@@ -249,9 +249,10 @@ export class TajwidRuleEngine {
         }
       }
 
-      // 4. Mim Sukun (مْ) Rules
-      if (currentChar === 'م' && (nextChar === SUKUN_CHAR || nextChar === ' ')) {
-        const lookahead = getNextNonSpaceChar(nextChar === SUKUN_CHAR ? i + 1 : i);
+      // 4. Mim Sukun (مْ) Rules (Strictly Mim with Sukun ْ)
+      const isMimSukun = currentChar === 'م' && (nextChar === SUKUN_CHAR || nextChar === '\u06DF');
+      if (isMimSukun) {
+        const lookahead = getNextNonSpaceChar(i + 1);
         if (lookahead) {
           if (lookahead.char === 'ب') {
             tokens.push({
@@ -285,42 +286,53 @@ export class TajwidRuleEngine {
             ruleSummary.idgham_mimi++;
             totalBeats += 2;
             continue;
-          } else if (!['\u064E', '\u064F', '\u0650'].includes(lookahead.char)) {
-            tokens.push({
-              index: i,
-              char: 'م',
-              rule: 'izhar_syafawi',
-              ruleLabel: 'Izhar Syafawi',
-              description: `Mim mati dibaca jelas di bibir tanpa dengung.`,
-              colorHex: '#64748B',
-              harakatDuration: 1,
-              startOffset: i,
-              endOffset: lookahead.index,
-              matchedPhoneme: 'مْ + ' + lookahead.char
-            });
-            ruleSummary.izhar_syafawi++;
-            totalBeats += 1;
-            continue;
           }
         }
       }
 
-      // 5. Mad Rules (Panjang Bacaan)
+      // 5. Mad Rules (Panjang Bacaan: Mad Wajib, Mad Jaiz, Mad Lazim)
       if (currentChar === MADDAH_CHAR || nextChar === MADDAH_CHAR) {
+        const lookahead = getNextNonSpaceChar(currentChar === MADDAH_CHAR ? i : i + 1);
+        const hasShaddahAhead = safeArabic.slice(i, i + 6).includes(SHADDAH_CHAR);
+        
+        let mRule: TajwidRuleType = 'mad_wajib_muttashil';
+        let mLabel = 'Mad Wajib Muttashil';
+        let mBeats = 5;
+        let mDesc = 'Terdapat tanda bendera mad bertemu hamzah dalam satu kata, dipanjangkan 4-5 harakat.';
+
+        if (hasShaddahAhead) {
+          mRule = 'mad_lazim';
+          mLabel = 'Mad Lazim Kilmi Mutsaqqal';
+          mBeats = 6;
+          mDesc = 'Mad bertemu huruf bertasydid dalam satu kata, wajib dipanjangkan 6 harakat sempurna.';
+          ruleSummary.mad_lazim++;
+        } else if (lookahead && ['ء', 'أ', 'إ', 'ؤ', 'ئ'].includes(lookahead.char)) {
+          mRule = 'mad_wajib_muttashil';
+          mLabel = 'Mad Wajib Muttashil';
+          mBeats = 5;
+          mDesc = 'Mad bertemu hamzah dalam satu kata, dipanjangkan 4-5 harakat.';
+          ruleSummary.mad_wajib_muttashil++;
+        } else {
+          mRule = 'mad_jaiz_munfashil';
+          mLabel = 'Mad Jaiz Munfashil';
+          mBeats = 5;
+          mDesc = 'Mad bertemu hamzah di kata berikutnya, boleh dipanjangkan 4-5 harakat.';
+          ruleSummary.mad_jaiz_munfashil++;
+        }
+
         tokens.push({
           index: i,
           char: currentChar,
-          rule: 'mad_wajib_muttashil',
-          ruleLabel: 'Mad Wajib Muttashil / Jaiz Munfashil',
-          description: 'Terdapat tanda bendera mad panjang, wajib dibaca 4 sampai 5 harakat (ketukan).',
+          rule: mRule,
+          ruleLabel: mLabel,
+          description: mDesc,
           colorHex: '#DC2626',
-          harakatDuration: 5,
+          harakatDuration: mBeats,
           startOffset: i,
-          endOffset: i + 2,
+          endOffset: (lookahead ? lookahead.index : i + 2),
           matchedPhoneme: 'ـٓ'
         });
-        ruleSummary.mad_wajib_muttashil++;
-        totalBeats += 5;
+        totalBeats += mBeats;
         continue;
       }
     }
