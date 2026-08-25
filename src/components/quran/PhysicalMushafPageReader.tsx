@@ -57,8 +57,8 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  // Display Mode: 'layout' (Exact 15-line Madinah Mushaf) | 'scan' (Scanned Page Image)
-  const [viewMode, setViewMode] = useState<'layout' | 'scan'>('layout');
+  // Display Mode: 'scan' (Scanned Page Image - Physical Mushaf) | 'layout' (15-line Typography)
+  const [viewMode, setViewMode] = useState<'scan' | 'layout'>('scan');
   const [mushafLines, setMushafLines] = useState<MushafPageLine[]>([]);
   const [isLoadingPage, setIsLoadingPage] = useState<boolean>(true);
   const [reloadKey, setReloadKey] = useState<number>(0);
@@ -73,6 +73,22 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const primarySurah = getPrimarySurahForPage(currentPage);
   const juzNumber = getJuzForPage(currentPage);
   const fallbackUrls = getMadinahPageFallbackUrls(currentPage);
+
+  // Preload adjacent scanned pages for instant flipping
+  useEffect(() => {
+    const nextP = currentPage < 604 ? currentPage + 1 : 1;
+    const prevP = currentPage > 1 ? currentPage - 1 : 604;
+    const urlsNext = getMadinahPageFallbackUrls(nextP);
+    const urlsPrev = getMadinahPageFallbackUrls(prevP);
+    if (urlsNext[0]) {
+      const img1 = new Image();
+      img1.src = urlsNext[0];
+    }
+    if (urlsPrev[0]) {
+      const img2 = new Image();
+      img2.src = urlsPrev[0];
+    }
+  }, [currentPage]);
 
   // Fetch 15-Line Mushaf Layout for the current page
   useEffect(() => {
@@ -299,17 +315,6 @@ export const PhysicalMushafPageReader: React.FC = () => {
           <div className="flex items-center gap-1.5 flex-wrap">
             <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_#000]">
               <button
-                onClick={() => setViewMode('layout')}
-                className={`px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition-all ${
-                  viewMode === 'layout' 
-                    ? 'bg-[#0B4627] text-white shadow-xs' 
-                    : 'text-gray-700 dark:text-gray-300 hover:text-black'
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5 text-[#F59E0B]" />
-                <span>15 Baris</span>
-              </button>
-              <button
                 onClick={() => setViewMode('scan')}
                 className={`px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition-all ${
                   viewMode === 'scan' 
@@ -318,7 +323,18 @@ export const PhysicalMushafPageReader: React.FC = () => {
                 }`}
               >
                 <ImageIcon className="w-3.5 h-3.5 text-[#F59E0B]" />
-                <span>Scan Asli</span>
+                <span>Scan Asli Fisik</span>
+              </button>
+              <button
+                onClick={() => setViewMode('layout')}
+                className={`px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition-all ${
+                  viewMode === 'layout' 
+                    ? 'bg-[#0B4627] text-white shadow-xs' 
+                    : 'text-gray-700 dark:text-gray-300 hover:text-black'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5 text-[#F59E0B]" />
+                <span>15 Baris Teks</span>
               </button>
             </div>
 
@@ -453,26 +469,68 @@ export const PhysicalMushafPageReader: React.FC = () => {
         <div className="w-full flex items-center justify-between border-b-2 border-amber-800/40 pb-2 mb-3 px-2 text-xs font-bold text-amber-900 dark:text-amber-300 font-mono">
           <span>{primarySurah.name}</span>
           <span className="font-sans font-black tracking-widest text-[#0B4627] dark:text-[#34D399]">
-            {language === 'ar' ? 'مصحف المدينة النبوية (١٥ سطر)' : 'MUSHAF MADINAH (15 BARIS)'}
+            {language === 'ar' ? 'مصحف المدينة النبوية الشريفة' : 'MUSHAF MADINAH ASLI (604 HALAMAN)'}
           </span>
           <span>الجزء {juzNumber}</span>
         </div>
 
-        <div className="relative w-full max-w-2xl bg-[#FFFDF7] border-3 border-amber-900/40 rounded-2xl p-4 sm:p-7 shadow-[inset_0_0_20px_rgba(180,83,9,0.1)] flex flex-col min-h-[580px] sm:min-h-[750px] justify-between">
+        <div className="relative w-full max-w-2xl bg-[#FFFDF7] border-3 border-amber-900/40 rounded-2xl p-2 sm:p-5 shadow-[inset_0_0_20px_rgba(180,83,9,0.1)] flex flex-col min-h-[580px] sm:min-h-[780px] justify-between">
           
-          <div className="absolute inset-2 sm:inset-3 border-2 border-dashed border-amber-700/30 rounded-xl pointer-events-none"></div>
+          <div className="absolute inset-2 border-2 border-dashed border-amber-700/30 rounded-xl pointer-events-none"></div>
 
-          {isLoadingPage && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/90 z-20 space-y-2 rounded-2xl">
-              <div className="w-10 h-10 border-4 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-xs font-black text-emerald-900">
-                Membuka Lembaran Halaman {currentPage}...
-              </p>
+          {/* VIEW MODE 1: PHYSICAL SCANNED MADINAH MUSHAF (DEFAULT & 100% AUTHENTIC) */}
+          {viewMode === 'scan' && (
+            <div className="w-full flex-1 flex items-center justify-center relative min-h-[540px] sm:min-h-[740px] bg-white rounded-xl shadow-inner p-1 sm:p-3 overflow-hidden">
+              {!scanLoaded && !scanError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/90 z-10 space-y-2">
+                  <div className="w-9 h-9 border-3 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-xs font-bold text-emerald-950">Membuka Lembaran Halaman {currentPage}...</p>
+                </div>
+              )}
+
+              {!scanError ? (
+                <img
+                  src={fallbackUrls[scanUrlIndex] || fallbackUrls[0]}
+                  alt={`Halaman ${currentPage} Mushaf Al-Quran Standar Madinah`}
+                  onLoad={() => {
+                    setScanLoaded(true);
+                    setScanError(false);
+                  }}
+                  onError={() => {
+                    if (scanUrlIndex + 1 < fallbackUrls.length) {
+                      setScanUrlIndex((prev) => prev + 1);
+                    } else {
+                      setScanLoaded(false);
+                      setScanError(true);
+                      setViewMode('layout');
+                    }
+                  }}
+                  className={`w-full max-h-[85vh] object-contain transition-opacity duration-300 pointer-events-none select-none rounded-lg drop-shadow-md ${
+                    scanLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                />
+              ) : (
+                <div className="text-center p-6 space-y-2">
+                  <p className="text-xs font-bold text-amber-900">
+                    Gambar scan dialihkan otomatis ke mode 15 Baris Teks.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
+          {/* VIEW MODE 2: NATURAL 15-LINE TYPOGRAPHY (CORRECTED WORD SPACING) */}
           {viewMode === 'layout' && (
-            <div className="w-full flex-1 flex flex-col justify-between space-y-2.5 z-10 select-text" dir="rtl">
+            <div className="w-full flex-1 flex flex-col justify-between space-y-2 z-10 select-text px-2 py-3" dir="rtl">
+              {isLoadingPage && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/90 z-20 space-y-2 rounded-2xl">
+                  <div className="w-10 h-10 border-4 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-xs font-black text-emerald-900">
+                    Membuka Baris Halaman {currentPage}...
+                  </p>
+                </div>
+              )}
+
               {mushafLines.length > 0 ? (
                 mushafLines.map((line, idx) => {
                   if (line.type === 'surah-header') {
@@ -499,10 +557,9 @@ export const PhysicalMushafPageReader: React.FC = () => {
                   return (
                     <div 
                       key={idx}
-                      className="w-full font-quran text-xl sm:text-2xl md:text-[26px] text-emerald-950 dark:text-emerald-950 font-bold leading-[2.2] sm:leading-[2.4] text-justify flex items-center justify-between"
-                      style={{ textAlignLast: 'justify' }}
+                      className="w-full font-quran text-lg sm:text-2xl md:text-[25px] text-emerald-950 dark:text-emerald-950 font-bold leading-[2.2] sm:leading-[2.5] text-center tracking-normal py-0.5"
                     >
-                      <span className="w-full text-justify">{line.text}</span>
+                      <span className="inline font-quran select-text">{line.text}</span>
                     </div>
                   );
                 })
@@ -532,46 +589,6 @@ export const PhysicalMushafPageReader: React.FC = () => {
                     </button>
                   </div>
                 )
-              )}
-            </div>
-          )}
-
-          {viewMode === 'scan' && (
-            <div className="w-full flex-1 flex items-center justify-center relative min-h-[500px]">
-              {!scanLoaded && !scanError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/80 z-10 space-y-2">
-                  <div className="w-8 h-8 border-3 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-xs font-bold text-gray-700">Memuat Scan Gambar...</p>
-                </div>
-              )}
-
-              {!scanError ? (
-                <img
-                  src={fallbackUrls[scanUrlIndex] || fallbackUrls[0]}
-                  alt={`Halaman ${currentPage} Mushaf Madinah`}
-                  onLoad={() => {
-                    setScanLoaded(true);
-                    setScanError(false);
-                  }}
-                  onError={() => {
-                    if (scanUrlIndex + 1 < fallbackUrls.length) {
-                      setScanUrlIndex((prev) => prev + 1);
-                    } else {
-                      setScanLoaded(false);
-                      setScanError(true);
-                      setViewMode('layout');
-                    }
-                  }}
-                  className={`w-full max-h-[80vh] object-contain transition-opacity duration-300 pointer-events-none select-none ${
-                    scanLoaded ? 'opacity-100' : 'opacity-0'
-                  }`}
-                />
-              ) : (
-                <div className="text-center p-6 space-y-2">
-                  <p className="text-xs font-bold text-amber-900">
-                    Gambar scan dialihkan otomatis ke mode 15 Baris Vektor.
-                  </p>
-                </div>
               )}
             </div>
           )}
