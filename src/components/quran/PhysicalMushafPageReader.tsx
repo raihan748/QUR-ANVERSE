@@ -714,37 +714,50 @@ export const PhysicalMushafPageReader: React.FC = () => {
         {activeTajweedTab === 'tajweed' && (
           <div className="space-y-3">
             {pageTajweedData.rulesList.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {pageTajweedData.rulesList.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#000] space-y-1.5 hover:bg-amber-50/60 dark:hover:bg-gray-700 transition-all"
+                    className="p-3.5 bg-white dark:bg-gray-800 border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_#000] space-y-2 hover:bg-amber-50/60 dark:hover:bg-gray-700 transition-all"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span 
-                        className="px-2 py-0.5 rounded-lg text-white font-black text-xs border border-black shadow-xs"
+                        className="px-2.5 py-1 rounded-lg text-white font-black text-xs border border-black shadow-xs"
                         style={{ backgroundColor: item.colorHex }}
                       >
                         {item.ruleName}
                       </span>
-                      <span className="text-[10px] bg-gray-100 dark:bg-gray-700 border border-black px-1.5 py-0.5 rounded-md font-bold text-gray-800 dark:text-gray-200">
+                      <span className="text-[10px] bg-gray-100 dark:bg-gray-700 border border-black px-2 py-0.5 rounded-md font-bold text-gray-800 dark:text-gray-200">
                         {item.harakatDuration} Harakat
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-gray-700">
-                      <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Contoh Lafadz:</span>
-                      <span className="font-quran text-lg font-bold text-emerald-950 dark:text-emerald-300" dir="rtl">
+                      <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Contoh Lafadz Halaman Ini:</span>
+                      <span className="font-quran text-xl font-bold text-emerald-950 dark:text-emerald-300" dir="rtl">
                         {item.matchedWord}
                       </span>
                     </div>
 
-                    <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">
-                      <b>Cara Baca:</b> {item.caraBaca}
-                    </p>
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                      {item.description}
-                    </p>
+                    <div className="space-y-1.5 text-xs">
+                      {item.pengertianBahasa && (
+                        <div className="bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-700">
+                          <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">
+                            <span className="font-bold text-emerald-900 dark:text-emerald-400">📖 Pengertian Bahasa:</span> {item.pengertianBahasa}
+                          </p>
+                        </div>
+                      )}
+                      {item.pengertianIstilah && (
+                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 p-2 rounded-xl border border-emerald-800/20">
+                          <p className="text-[11px] text-emerald-950 dark:text-emerald-200 leading-snug">
+                            <span className="font-bold text-emerald-900 dark:text-emerald-400">🎯 Pengertian Istilah:</span> {item.pengertianIstilah}
+                          </p>
+                        </div>
+                      )}
+                      <p className="text-[11px] text-gray-800 dark:text-gray-200 leading-snug">
+                        <b>🗣️ Cara Membaca:</b> {item.caraBaca}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -769,7 +782,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
                 {pageGharibData.map((g) => (
                   <div
                     key={g.id}
-                    className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 border-3 border-amber-900 rounded-2xl shadow-[4px_4px_0px_0px_#000] space-y-2"
+                    className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 border-3 border-amber-900 rounded-2xl shadow-[4px_4px_0px_0px_#000] space-y-2.5"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-800/30 pb-2">
                       <div>
@@ -785,15 +798,26 @@ export const PhysicalMushafPageReader: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="space-y-1 text-xs">
+                    <div className="space-y-1.5 text-xs">
+                      {g.pengertianBahasa && (
+                        <div className="bg-white/80 dark:bg-gray-900/60 p-2 rounded-xl border border-amber-800/20">
+                          <p className="text-[11px] text-gray-800 dark:text-gray-200 leading-snug">
+                            <span className="font-bold text-amber-950 dark:text-amber-400">📖 Pengertian Bahasa:</span> {g.pengertianBahasa}
+                          </p>
+                        </div>
+                      )}
+                      {g.pengertianIstilah && (
+                        <div className="bg-amber-100/70 dark:bg-amber-950/40 p-2 rounded-xl border border-amber-800/30">
+                          <p className="text-[11px] text-amber-950 dark:text-amber-200 leading-snug">
+                            <span className="font-bold text-amber-950 dark:text-amber-400">🎯 Pengertian Istilah:</span> {g.pengertianIstilah}
+                          </p>
+                        </div>
+                      )}
                       <p className="text-gray-800 dark:text-gray-200">
-                        <b>Cara Membaca:</b> {g.caraBaca}
+                        <b>🗣️ Cara Membaca:</b> {g.caraBaca}
                       </p>
-                      <p className="text-gray-600 dark:text-gray-400 text-[11px]">
-                        <b>Kaidah & Penjelasan:</b> {g.description}
-                      </p>
-                      <p className="text-emerald-900 dark:text-emerald-400 font-bold text-[11px] bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-xl border border-emerald-800/30">
-                        💡 <b>Tips Pengucapan:</b> {g.tips}
+                      <p className="text-emerald-900 dark:text-emerald-400 font-bold text-[11px] bg-emerald-50 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-800/30">
+                        💡 <b>Tips Praktis & Kaidah:</b> {g.tips}
                       </p>
                     </div>
                   </div>
@@ -920,11 +944,11 @@ export const PhysicalMushafPageReader: React.FC = () => {
             </div>
 
             {filteredEncyclopedia.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[480px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1">
                 {filteredEncyclopedia.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3.5 bg-white dark:bg-gray-800 border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_#000] space-y-2 hover:bg-amber-50/40 dark:hover:bg-gray-700/60 transition-all"
+                    className="p-4 bg-white dark:bg-gray-800 border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_#000] space-y-2.5 hover:bg-amber-50/40 dark:hover:bg-gray-700/60 transition-all"
                   >
                     <div className="flex items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-2">
                       <div>
@@ -939,12 +963,12 @@ export const PhysicalMushafPageReader: React.FC = () => {
                           {item.category}
                         </span>
                       </div>
-                      <span className="font-quran text-lg font-bold text-emerald-950 dark:text-emerald-300" dir="rtl">
+                      <span className="font-quran text-xl font-bold text-emerald-950 dark:text-emerald-300" dir="rtl">
                         {item.arabicName}
                       </span>
                     </div>
 
-                    <div className="space-y-1 text-xs">
+                    <div className="space-y-1.5 text-xs">
                       {item.letters && (
                         <div className="flex items-center gap-1.5 text-[11px]">
                           <span className="font-bold text-gray-600 dark:text-gray-400">Huruf:</span>
@@ -954,20 +978,41 @@ export const PhysicalMushafPageReader: React.FC = () => {
                         </div>
                       )}
                       <div className="flex items-center gap-1.5 text-[11px]">
-                        <span className="font-bold text-gray-600 dark:text-gray-400">Ketukan:</span>
+                        <span className="font-bold text-gray-600 dark:text-gray-400">Ketukan Harakat:</span>
                         <span className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold px-1.5 py-0.5 rounded">
                           {item.harakat}
                         </span>
                       </div>
-                      <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">
-                        <b>Kaidah:</b> {item.summary}
+
+                      {item.pengertianBahasa && (
+                        <div className="bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-700">
+                          <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">
+                            <span className="font-bold text-emerald-900 dark:text-emerald-400">📖 Pengertian Bahasa:</span> {item.pengertianBahasa}
+                          </p>
+                        </div>
+                      )}
+
+                      {item.pengertianIstilah && (
+                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 p-2 rounded-xl border border-emerald-800/20">
+                          <p className="text-[11px] text-emerald-950 dark:text-emerald-200 leading-snug">
+                            <span className="font-bold text-emerald-900 dark:text-emerald-400">🎯 Pengertian Istilah:</span> {item.pengertianIstilah}
+                          </p>
+                        </div>
+                      )}
+
+                      {item.sebabHukum && (
+                        <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-snug">
+                          <b>🔍 Sebab Hukum:</b> {item.sebabHukum}
+                        </p>
+                      )}
+
+                      <p className="text-[11px] text-gray-800 dark:text-gray-200 leading-snug">
+                        <b>🗣️ Cara Membaca:</b> {item.caraBaca}
                       </p>
-                      <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">
-                        <b>Cara Baca:</b> {item.caraBaca}
-                      </p>
+
                       <div className="bg-amber-50/80 dark:bg-gray-700/80 p-2 rounded-xl border border-amber-800/20 text-center mt-1">
-                        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 block mb-0.5">Contoh Lafadz:</span>
-                        <span className="font-quran text-base font-bold text-emerald-950 dark:text-emerald-200 block" dir="rtl">
+                        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 block mb-0.5">Contoh Potongan Lafadz:</span>
+                        <span className="font-quran text-lg font-bold text-emerald-950 dark:text-emerald-200 block" dir="rtl">
                           {item.contohLafadz}
                         </span>
                       </div>
