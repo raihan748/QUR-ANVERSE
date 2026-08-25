@@ -539,28 +539,44 @@ export class ContinuousMurojaahTracker {
   private callbacks: ContinuousTrackerCallbacks | null = null;
   private hesitationTimer: any = null;
   private isActive = false;
+  private isPaused = false;
   private lastMatchTime = Date.now();
   private totalErrors = 0;
   private totalWordsCount = 0;
   private matchedWordsCount = 0;
+  private processedWordCursor = 0; // Tracks consumed spoken words to prevent recycling
 
   public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks): void {
     this.targetAyats = ayats;
     this.callbacks = callbacks;
     this.currentAyahIndex = 0;
     this.currentWordIndex = 0;
+    this.processedWordCursor = 0;
     this.matchedWordsMap.clear();
     this.totalErrors = 0;
     this.matchedWordsCount = 0;
     this.totalWordsCount = ayats.reduce((sum, a) => sum + (a.arabicText ? a.arabicText.split(/\s+/).filter(Boolean).length : 0), 0);
     this.isActive = true;
+    this.isPaused = false;
     this.lastMatchTime = Date.now();
     this.resetHesitationWatchdog();
   }
 
   public stop(): void {
     this.isActive = false;
+    this.isPaused = false;
     this.clearHesitationWatchdog();
+  }
+
+  public pause(): void {
+    this.isPaused = true;
+    this.clearHesitationWatchdog();
+  }
+
+  public resume(): void {
+    this.isPaused = false;
+    this.lastMatchTime = Date.now();
+    this.resetHesitationWatchdog();
   }
 
   public getStatus() {
@@ -587,60 +603,56 @@ export class ContinuousMurojaahTracker {
   }
 
   /**
-   * Processes live audio stream transcript across all N-Best hypothesis alternatives.
+   * Processes live audio stream with strict monotonic token consumption to prevent false skips.
    */
   public processStream(rawTranscript: string, alternatives?: string[]): void {
-    if (!this.isActive || !this.targetAyats[this.currentAyahIndex]) return;
+    if (!this.isActive || this.isPaused || !this.targetAyats[this.currentAyahIndex]) return;
 
     const currentAyat = this.targetAyats[this.currentAyahIndex];
     const expectedWords = (currentAyat.arabicText || '').split(/\s+/).filter(Boolean);
+    if (expectedWords.length === 0) return;
 
-    // Pool all candidates (main transcript + alternatives)
+    // Collect all candidate spoken words
     const candidates = [rawTranscript, ...(alternatives || [])].filter(Boolean);
-    const spokenTokensPool: string[] = [];
+    const allSpokenTokens: string[] = [];
 
     for (const c of candidates) {
       const words = c.split(/\s+/).filter(Boolean);
-      spokenTokensPool.push(...words);
+      allSpokenTokens.push(...words);
     }
 
-    if (spokenTokensPool.length === 0 || expectedWords.length === 0) return;
+    if (allSpokenTokens.length === 0) return;
 
-    // Scan recent spoken tokens (sliding window of up to 16 recent words)
-    const spokenWindow = spokenTokensPool.slice(-16);
-    let matchedAny = false;
+    // Only inspect UNCONSUMED spoken tokens (monotonic cursor)
+    const activeSpokenSlice = allSpokenTokens.slice(Math.max(0, this.processedWordCursor - 2));
+    if (activeSpokenSlice.length === 0) return;
+
+    let matchedInThisCycle = false;
 
     while (this.currentWordIndex < expectedWords.length) {
       const remainingTargetWords = expectedWords.slice(this.currentWordIndex);
       let advanceCount = 0;
+      let consumedSpokenOffset = -1;
 
-      // 1. Try Compound / Multi-word matching first
-      for (const spoken of spokenWindow) {
+      // 1. Check Compound / Multi-word match first
+      for (let sIdx = 0; sIdx < activeSpokenSlice.length; sIdx++) {
+        const spoken = activeSpokenSlice[sIdx];
         const compoundRes = isCompoundMatch(remainingTargetWords, spoken);
         if (compoundRes.matchedCount > 0) {
           advanceCount = compoundRes.matchedCount;
+          consumedSpokenOffset = sIdx;
           break;
         }
       }
 
-      // 2. Single word matching fallback
+      // 2. Single word sequential match
       if (advanceCount === 0) {
         const targetWord = expectedWords[this.currentWordIndex];
-        for (const spoken of spokenWindow) {
+        for (let sIdx = 0; sIdx < activeSpokenSlice.length; sIdx++) {
+          const spoken = activeSpokenSlice[sIdx];
           if (isWordMatch(targetWord, spoken)) {
             advanceCount = 1;
-            break;
-          }
-        }
-      }
-
-      // 3. Lookahead tolerance (if user slightly omitted a small particle like "wa" or "fa", match next word)
-      if (advanceCount === 0 && this.currentWordIndex + 1 < expectedWords.length) {
-        const nextWord = expectedWords[this.currentWordIndex + 1];
-        for (const spoken of spokenWindow) {
-          if (isWordMatch(nextWord, spoken)) {
-            // Soft match current word and advance 2 words
-            advanceCount = 2;
+            consumedSpokenOffset = sIdx;
             break;
           }
         }
@@ -656,7 +668,7 @@ export class ContinuousMurojaahTracker {
           if (wIdx < expectedWords.length) {
             this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
             this.matchedWordsCount++;
-            matchedAny = true;
+            matchedInThisCycle = true;
 
             if (this.callbacks) {
               this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, expectedWords[wIdx]);
@@ -665,31 +677,41 @@ export class ContinuousMurojaahTracker {
         }
 
         this.currentWordIndex += advanceCount;
+        if (consumedSpokenOffset >= 0) {
+          this.processedWordCursor += (consumedSpokenOffset + 1);
+        }
       } else {
-        break; // Stop continuous progression until user speaks next token
+        break; // Await next spoken word from user
       }
     }
 
-    if (matchedAny) {
+    if (matchedInThisCycle) {
       this.lastMatchTime = Date.now();
       this.resetHesitationWatchdog();
 
-      // Check if current Ayah is finished
+      // STRICT COMPLETION: Current Ayah is only completed when reached the end of expected words
       if (this.currentWordIndex >= expectedWords.length) {
-        if (this.callbacks) {
-          this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
-        }
+        const matchedInThisAyah = this.matchedWordsMap.get(this.currentAyahIndex)?.size || 0;
+        const requiredMinimum = Math.max(1, Math.floor(expectedWords.length * 0.70));
 
-        this.currentAyahIndex++;
-        this.currentWordIndex = 0;
-
-        // Check if all ayahs in passage are finished
-        if (this.currentAyahIndex >= this.targetAyats.length) {
-          this.isActive = false;
-          this.clearHesitationWatchdog();
-          const score = Math.max(75, Math.round(100 - (this.totalErrors * 3)));
+        if (matchedInThisAyah >= requiredMinimum) {
           if (this.callbacks) {
-            this.callbacks.onPassageCompleted(score);
+            this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
+          }
+
+          // Advance to exactly next Ayah and reset word cursor for clean separation
+          this.currentAyahIndex++;
+          this.currentWordIndex = 0;
+          this.processedWordCursor = allSpokenTokens.length; // Consume all current tokens so next Ayah needs new speech
+
+          // Check if entire passage is completed
+          if (this.currentAyahIndex >= this.targetAyats.length) {
+            this.isActive = false;
+            this.clearHesitationWatchdog();
+            const score = Math.max(75, Math.round(100 - (this.totalErrors * 3)));
+            if (this.callbacks) {
+              this.callbacks.onPassageCompleted(score);
+            }
           }
         }
       }
@@ -699,27 +721,28 @@ export class ContinuousMurojaahTracker {
   // Force advance to next word/ayah (e.g. after Sheikh correction)
   public resumeAfterCorrection(): void {
     if (!this.isActive) return;
+    this.isPaused = false;
     this.lastMatchTime = Date.now();
     this.resetHesitationWatchdog();
   }
 
   private resetHesitationWatchdog(): void {
     this.clearHesitationWatchdog();
-    if (!this.isActive) return;
+    if (!this.isActive || this.isPaused) return;
 
-    // 5.5 seconds timeout allows reciter to take breath & recite proper madd before Sheikh guidance
+    // 7.0 seconds timeout gives ample time to breathe and recite without false alarm
     this.hesitationTimer = setTimeout(() => {
-      if (this.isActive && this.targetAyats[this.currentAyahIndex]) {
+      if (this.isActive && !this.isPaused && this.targetAyats[this.currentAyahIndex]) {
         this.totalErrors++;
         if (this.callbacks) {
           this.callbacks.onErrorDetected(
             this.currentAyahIndex,
             this.currentWordIndex,
-            'Jeda pelafalan terhenti > 5 detik (Syekh membimbing)'
+            'Jeda pelafalan terhenti (Syekh membimbing)'
           );
         }
       }
-    }, 5500);
+    }, 7000);
   }
 
   private clearHesitationWatchdog(): void {

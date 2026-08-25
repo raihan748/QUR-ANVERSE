@@ -193,6 +193,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       onAyahCompleted: (ayahIdx, ayat) => {
         setCompletedAyahsSet((prev) => new Set(prev).add(ayahIdx));
         setActiveAyahIndex(ayahIdx + 1);
+        setLiveTranscript('');
         audioPlayer.playSuccessChime();
 
         // Track progress in Daily Target if applicable
@@ -207,6 +208,8 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         const targetAyat = passageAyats[ayahIdx];
         if (!targetAyat) return;
 
+        // Pause tracker so Sheikh recitation audio is never mistaken for user speech
+        continuousTracker.pause();
         setSheikhTeguranMessage(`Teguran Syekh: ${reason}`);
         setIsSheikhSpeaking(true);
 
@@ -228,6 +231,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           activeReciter.id,
           () => {
             setIsSheikhSpeaking(false);
+            setLiveTranscript('');
             continuousTracker.resumeAfterCorrection();
           }
         );
