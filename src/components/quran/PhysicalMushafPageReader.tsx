@@ -957,7 +957,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
-                {['Semua', 'Nun & Tanwin', 'Mim Sukun', 'Ghunnah & Qalqalah', 'Mad Lengkap', 'Bacaan Gharib', 'Tanda Waqaf'].map((cat) => (
+                {['Semua', 'Nun & Tanwin', 'Mim Sukun', 'Ghunnah & Qalqalah', 'Mad Lengkap', 'Lam & Ra', 'Idgham Makhraj', 'Bacaan Gharib', 'Tanda Waqaf'].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setEncyclopediaCategory(cat)}
