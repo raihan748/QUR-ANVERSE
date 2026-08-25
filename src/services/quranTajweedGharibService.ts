@@ -1287,7 +1287,17 @@ export function getTajweedColorForWord(word: string): { color: string; bg: strin
     return { color: '#064E3B', bg: 'transparent' };
   }
 
-  // 1. Mad Panjang (Mad Wajib Muttashil / Mad Jaiz / Mad Lazim: wave ٓ / ~ / Alif Maddah آ)
+  // 0. Izhar Muthlaq (4 kata khusus: Dunya, Bunyan, Qinwan, Sinwan)
+  if (/(?:دُنْيَا|بُنْيَان|قِنْوَان|صِنْوَان)/.test(word)) {
+    return { color: '#059669', bg: '#D1FAE5', ruleName: 'Izhar Muthlaq (Wajib Jelas)' };
+  }
+
+  // 1. Mad Lazim (Mad bertemu tasydid atau huruf Muqatta'at: 6 harakat penuh)
+  if (/[\u0653~].*[\u0651]/.test(word) || /^(?:الٓمٓ|الٓمٓصٓ|الٓرٰ|الٓمٓرٰ|كٓهٰيٰعٓصٓ|طٰهٰ|طٰسٓمٓ|طٰسٓ|يٰسٓ|صٓ|حٰمٓ|عٓسٓقٓ|قٓ|نٓ)/.test(word)) {
+    return { color: '#991B1B', bg: '#FEE2E2', ruleName: 'Mad Lazim (6 Harakat)' };
+  }
+
+  // 1b. Mad Wajib / Jaiz (Wave ٓ / ~ / Alif Maddah آ: 4-5 harakat)
   if (/[\u0653~آ]/.test(word)) {
     return { color: '#B91C1C', bg: '#FEE2E2', ruleName: 'Mad Wajib / Jaiz' };
   }

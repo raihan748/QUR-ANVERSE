@@ -152,6 +152,28 @@ export class TajwidRuleEngine {
         if (lookahead) {
           const targetLetter = lookahead.char;
 
+          // Check for Izhar Muthlaq in single word (دُنْيَا, بُنْيَان, قِنْوَان, صِنْوَان)
+          const surroundingSlice = safeArabic.slice(Math.max(0, i - 2), Math.min(len, i + 8));
+          const isIzharMuthlaqWord = /دُنْيَا|بُنْيَان|قِنْوَان|صِنْوَان/.test(surroundingSlice);
+
+          if (isIzharMuthlaqWord && isNunSukun && (targetLetter === 'ي' || targetLetter === 'و')) {
+            tokens.push({
+              index: i,
+              char: 'ن',
+              rule: 'izhar_halqi',
+              ruleLabel: 'Izhar Muthlaq',
+              description: `Nun mati bertemu huruf ${targetLetter} dalam SATU kata, wajib dibaca jelas dan tegas tanpa dengung.`,
+              colorHex: '#059669', // Deep Emerald
+              harakatDuration: 1,
+              startOffset: i,
+              endOffset: lookahead.index,
+              matchedPhoneme: 'نْ + ' + targetLetter + ' (Satu Kata)'
+            });
+            ruleSummary.izhar_halqi++;
+            totalBeats += 1;
+            continue;
+          }
+
           // A. Iqlab (Nun sukun / tanwin bertemu Ba ب)
           if (IQLAB_LETTERS.includes(targetLetter)) {
             tokens.push({
@@ -171,7 +193,7 @@ export class TajwidRuleEngine {
             continue;
           }
 
-          // B. Idgham Bighunnah (bertemu ي, ن, م, و)
+          // B. Idgham Bighunnah (bertemu ي, ن, م, و di dua kata terpisah)
           if (IDGHAM_BIGHUNNAH_LETTERS.includes(targetLetter)) {
             tokens.push({
               index: i,
