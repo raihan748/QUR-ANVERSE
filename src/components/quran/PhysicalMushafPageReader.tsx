@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -20,7 +20,8 @@ import {
   CheckCircle2,
   AlertCircle,
   X,
-  Search
+  Search,
+  Check
 } from 'lucide-react';
 import { 
   SURAH_LIST, 
@@ -70,6 +71,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const [isPlayingPageAudio, setIsPlayingPageAudio] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Display Mode: 'scan' (Scanned Page Image - Physical Mushaf) | 'layout' (15-line Typography)
   const [viewMode, setViewMode] = useState<'scan' | 'layout'>('scan');
@@ -90,22 +92,22 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const primarySurah = getPrimarySurahForPage(currentPage);
-  const juzNumber = getJuzForPage(currentPage);
-  const fallbackUrls = getMadinahPageFallbackUrls(currentPage);
+  const primarySurah = useMemo(() => getPrimarySurahForPage(currentPage), [currentPage]);
+  const juzNumber = useMemo(() => getJuzForPage(currentPage), [currentPage]);
+  const fallbackUrls = useMemo(() => getMadinahPageFallbackUrls(currentPage), [currentPage]);
 
-  const pageSurahs = getMadinahPageSurahs(currentPage, primarySurah);
-  const pageSurahsLatinLabel = pageSurahs
+  const pageSurahs = useMemo(() => getMadinahPageSurahs(currentPage, primarySurah), [currentPage, primarySurah]);
+  const pageSurahsLatinLabel = useMemo(() => pageSurahs
     .map((s) => `${s.surahLatin} (${s.startAyah === s.endAyah ? `Ayat ${s.startAyah}` : `Ayat ${s.startAyah}–${s.endAyah}`})`)
-    .join(' • ');
-  const pageSurahsArabicLabel = pageSurahs
+    .join(' • '), [pageSurahs]);
+  const pageSurahsArabicLabel = useMemo(() => pageSurahs
     .map((s) => s.surahArabic)
-    .join(' • ');
+    .join(' • '), [pageSurahs]);
 
-  const pageTajweedData = analyzePageTajweedRules(mushafLines);
-  const pageGharibData = getPageGharibRules(currentPage);
+  const pageTajweedData = useMemo(() => analyzePageTajweedRules(mushafLines), [mushafLines]);
+  const pageGharibData = useMemo(() => getPageGharibRules(currentPage), [currentPage]);
 
-  const filteredEncyclopedia = MASTER_TAJWEED_ENCYCLOPEDIA.filter((item) => {
+  const filteredEncyclopedia = useMemo(() => MASTER_TAJWEED_ENCYCLOPEDIA.filter((item) => {
     const matchesCat = encyclopediaCategory === 'Semua' || item.category === encyclopediaCategory;
     const q = encyclopediaSearch.trim().toLowerCase();
     const matchesSearch = !q || 
@@ -115,7 +117,22 @@ export const PhysicalMushafPageReader: React.FC = () => {
       item.contohLafadz.toLowerCase().includes(q) ||
       (item.letters && item.letters.toLowerCase().includes(q));
     return matchesCat && matchesSearch;
-  });
+  }), [encyclopediaCategory, encyclopediaSearch]);
+
+  // Toast Auto-dismiss
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      audioPlayer.stop();
+    };
+  }, []);
 
   // Preload adjacent scanned pages for instant flipping
   useEffect(() => {
@@ -171,8 +188,13 @@ export const PhysicalMushafPageReader: React.FC = () => {
     }
   }, [currentPage]);
 
-  const handleNextPage = () => { if (currentPage < 604) setCurrentPage((prev) => prev + 1); };
-  const handlePrevPage = () => { if (currentPage > 1) setCurrentPage((prev) => prev - 1); };
+  const handleNextPage = useCallback(() => { 
+    if (currentPage < 604) setCurrentPage((prev) => prev + 1); 
+  }, [currentPage]);
+
+  const handlePrevPage = useCallback(() => { 
+    if (currentPage > 1) setCurrentPage((prev) => prev - 1); 
+  }, [currentPage]);
 
   const handleJumpToJuz = (juz: number) => {
     const targetPage = juz === 1 ? 1 : Math.min(604, (juz - 1) * 20 + 2);
@@ -213,7 +235,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
       translation: `Tanda Baca Halaman ${currentPage} (Juz ${juzNumber} • ${pageSurahsLatinLabel})`,
       note: `Ditandai dari Mode Mushaf Fisik Asli (Halaman ${currentPage})`
     });
-    alert(`🔖 Halaman ${currentPage} (${pageSurahsLatinLabel}) berhasil disimpan ke Bookmark!`);
+    setToastMessage(`🔖 Halaman ${currentPage} (${pageSurahsLatinLabel}) berhasil disimpan ke Bookmark!`);
   };
 
   useEffect(() => {
@@ -231,7 +253,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage]);
+  }, [handleNextPage, handlePrevPage]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.touches[0].clientX);
@@ -259,6 +281,14 @@ export const PhysicalMushafPageReader: React.FC = () => {
         isFullscreen ? 'fixed inset-0 z-50 bg-[#F8F5EE] p-4 overflow-y-auto max-w-none' : ''
       }`}
     >
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-emerald-900 text-white px-4 py-2.5 rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_#000] text-xs font-bold flex items-center gap-2 animate-bounce">
+          <Check className="w-4 h-4 text-emerald-300" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       <div className="bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-2xl p-3 sm:p-4 shadow-[4px_4px_0px_0px_#111827] space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
