@@ -43,23 +43,54 @@ export function normalizeArabic(text: string): string {
     .trim();
 }
 
-// 2. Arabic Proclitic / Prefix Stemmer (Helps match connected Quranic particles)
+// 2. Quranic Arabic Speech-to-Text Phonetic Canonicalizer
+// Resolves acoustic confusions in browser Web Speech dictation (ar-SA, ar-EG, Nusantara)
+export function canonicalizeArabicPhonemes(text: string): string {
+  if (!text || typeof text !== 'string') return '';
+  let clean = normalizeArabic(text);
+
+  return clean
+    // 1. Unify all Alif / Hamzah / Wasl variants
+    .replace(/[أإآٱٲٳٵءئؤ]/g, 'ا')
+    // 2. Acoustic sibilant merger (ص, ث, ش -> س)
+    .replace(/[صثش]/g, 'س')
+    // 3. Acoustic coronal / emphatic merger (ض, ظ, ذ, ز -> د)
+    .replace(/[ضظذز]/g, 'د')
+    // 4. Acoustic dental stop merger (ط -> ت)
+    .replace(/[ط]/g, 'ت')
+    // 5. Ta Marbutah & Ha merger (ة -> ه)
+    .replace(/[ة]/g, 'ه')
+    // 6. Acoustic velar / uvular stop merger (ق, غ, خ -> ك)
+    .replace(/[قغخ]/g, 'ك')
+    // 7. Pharyngeal & Glottal fricative merger (ح -> ه)
+    .replace(/[ح]/g, 'ه')
+    // 8. 'Ain to Alif merger (ع -> ا)
+    .replace(/[ع]/g, 'ا')
+    // 9. Ya / Alif Maqsurah merger (ى -> ي)
+    .replace(/[ى]/g, 'ي')
+    // 10. Strip repeated adjacent letters (e.g. ll -> l, dd -> d)
+    .replace(/(.)\1+/g, '$1')
+    .replace(/\s+/g, '')
+    .trim();
+}
+
+// 3. Arabic Proclitic / Prefix Stemmer (Helps match connected Quranic particles)
 export function stripArabicPrefixes(word: string): string {
   let clean = normalizeArabic(word);
-  if (clean.length <= 3) return clean;
+  if (clean.length <= 2) return clean;
 
   // Strip Alif-Lam (ال)
-  if (clean.startsWith('ال') && clean.length > 3) {
+  if (clean.startsWith('ال') && clean.length > 2) {
     clean = clean.substring(2);
   }
-  // Strip Waw / Fa / Ba / Lam conjunctions (و, ف, ب, ل, ك)
-  if ((clean.startsWith('و') || clean.startsWith('ف') || clean.startsWith('ب') || clean.startsWith('ل') || clean.startsWith('ك')) && clean.length > 3) {
+  // Strip Waw / Fa / Ba / Lam / Kaf conjunctions (و, ف, ب, ل, ك)
+  if ((clean.startsWith('و') || clean.startsWith('ف') || clean.startsWith('ب') || clean.startsWith('ل') || clean.startsWith('ك')) && clean.length > 2) {
     clean = clean.substring(1);
   }
   return clean;
 }
 
-// 3. Arabic to Universal Phonetic Latin Converter
+// 4. Arabic to Universal Phonetic Latin Converter
 export function arabicToPhoneticLatin(text: string): string {
   if (!text) return '';
   const cleanArab = normalizeArabic(text);
@@ -81,7 +112,7 @@ export function arabicToPhoneticLatin(text: string): string {
   return normalizeLatinPhonetics(result);
 }
 
-// 4. Universal Latin Phonetic Normalizer (Tailored for Nusantara & Asian Recitation Habits)
+// 5. Universal Latin Phonetic Normalizer (Tailored for Nusantara & Asian Recitation Habits)
 export function normalizeLatinPhonetics(text: string): string {
   if (!text || typeof text !== 'string') return '';
   return text
@@ -112,7 +143,7 @@ export function normalizeLatinPhonetics(text: string): string {
     .trim();
 }
 
-// 5. Levenshtein Distance & Similarity Metric (0.0 to 1.0)
+// 6. Levenshtein Distance & Similarity Metric (0.0 to 1.0)
 export function calculateSimilarity(s1: string, s2: string): number {
   if (!s1 && !s2) return 1.0;
   if (!s1 || !s2) return 0.0;
@@ -146,7 +177,7 @@ export function calculateSimilarity(s1: string, s2: string): number {
   return Math.max(0, 1 - distance / maxLen);
 }
 
-// 6. Ultra-Sharp Word-level Matcher with Strict Full-Word Validation
+// 7. Ultra-Adaptive Quranic Word-level Matcher (Acoustic Phonetics + Stemming + Soundex)
 export function isWordMatch(targetArabic: string, candidateSpoken: string): boolean {
   if (!targetArabic || !candidateSpoken) return false;
 
@@ -156,33 +187,41 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string): bool
   if (!tArab || !sArab) return false;
   if (tArab === sArab) return true;
 
-  // Length safety check: cannot match if length difference is too large (prevents 2-letter sounds matching 8-letter words)
-  const lenDiff = Math.abs(tArab.length - sArab.length);
-  if (lenDiff > 3 && tArab.length > 3 && sArab.length > 3) return false;
+  // 1. Phonetic Root Canonicalization (Converts speech dictation phonetic variants)
+  // e.g. صراط vs سراط, الضالين vs الظالين, المستقيم vs المستكيم
+  const tCanon = canonicalizeArabicPhonemes(targetArabic);
+  const sCanon = canonicalizeArabicPhonemes(candidateSpoken);
+  if (tCanon && sCanon && (tCanon === sCanon || tCanon.includes(sCanon) || sCanon.includes(tCanon))) {
+    if (Math.abs(tCanon.length - sCanon.length) <= 2) return true;
+  }
 
-  // 1. Exact Stem Match (Stripping Alif-Lam / Waw / Ba / Fa / Lam / Kaf)
+  // 2. Exact Stem Match (Stripping Alif-Lam / Waw / Ba / Fa / Lam / Kaf prefixes)
   const tStem = stripArabicPrefixes(tArab);
   const sStem = stripArabicPrefixes(sArab);
   if (tStem && sStem && tStem === sStem) return true;
 
-  // 2. High-precision Arabic Levenshtein Similarity (Must be >= 0.70 full word similarity)
-  const arabSim = calculateSimilarity(tArab, sArab);
-  if (arabSim >= 0.70 && lenDiff <= 2) return true;
+  const tStemCanon = canonicalizeArabicPhonemes(tStem);
+  const sStemCanon = canonicalizeArabicPhonemes(sStem);
+  if (tStemCanon && sStemCanon && (tStemCanon === sStemCanon || calculateSimilarity(tStemCanon, sStemCanon) >= 0.55)) {
+    return true;
+  }
 
-  // 3. Latin Phonetic Soundex Comparison
+  // 3. High-precision Arabic Levenshtein Similarity (Threshold 0.58)
+  const arabSim = calculateSimilarity(tArab, sArab);
+  if (arabSim >= 0.58) return true;
+
+  // 4. Latin Phonetic Soundex Comparison (Nusantara Tajwid Phonics)
   const tLatin = arabicToPhoneticLatin(targetArabic);
   const sLatin = normalizeLatinPhonetics(candidateSpoken);
-
   if (tLatin === sLatin) return true;
 
-  const latinLenDiff = Math.abs(tLatin.length - sLatin.length);
   const latinSim = calculateSimilarity(tLatin, sLatin);
-  if (latinSim >= 0.65 && latinLenDiff <= 2) return true;
+  if (latinSim >= 0.55) return true;
 
   return false;
 }
 
-// 7. Compound Multi-Word Matcher (Handles compound recitations like "bismillah", "iyyakanabudu")
+// 8. Compound Multi-Word Matcher (Handles compound recitations like "bismillah", "iyyakanabudu")
 export function isCompoundMatch(targetWords: string[], candidateSpoken: string): { matchedCount: number; matchedSpoken: string } {
   if (targetWords.length === 0 || !candidateSpoken) return { matchedCount: 0, matchedSpoken: '' };
 
@@ -193,7 +232,7 @@ export function isCompoundMatch(targetWords: string[], candidateSpoken: string):
   if (targetWords.length >= 3) {
     const t3Arab = normalizeArabic(targetWords.slice(0, 3).join(''));
     const t3Latin = normalizeLatinPhonetics(targetWords.slice(0, 3).map(w => arabicToPhoneticLatin(w)).join(''));
-    if (calculateSimilarity(t3Arab, sArab) >= 0.75 || calculateSimilarity(t3Latin, sLatin) >= 0.70) {
+    if (calculateSimilarity(t3Arab, sArab) >= 0.65 || calculateSimilarity(t3Latin, sLatin) >= 0.60) {
       return { matchedCount: 3, matchedSpoken: candidateSpoken };
     }
   }
@@ -202,7 +241,7 @@ export function isCompoundMatch(targetWords: string[], candidateSpoken: string):
   if (targetWords.length >= 2) {
     const t2Arab = normalizeArabic(targetWords.slice(0, 2).join(''));
     const t2Latin = normalizeLatinPhonetics(targetWords.slice(0, 2).map(w => arabicToPhoneticLatin(w)).join(''));
-    if (calculateSimilarity(t2Arab, sArab) >= 0.75 || calculateSimilarity(t2Latin, sLatin) >= 0.70) {
+    if (calculateSimilarity(t2Arab, sArab) >= 0.65 || calculateSimilarity(t2Latin, sLatin) >= 0.60) {
       return { matchedCount: 2, matchedSpoken: candidateSpoken };
     }
   }
@@ -654,12 +693,26 @@ export class ContinuousMurojaahTracker {
         }
       }
 
-      // 2. Single word strict sequential match
+      // 2. Single word sequential match
       if (advanceCount === 0) {
         for (let sIdx = 0; sIdx < activeSpokenSlice.length; sIdx++) {
           const spoken = activeSpokenSlice[sIdx];
           if (isWordMatch(targetWord, spoken)) {
             advanceCount = 1;
+            consumedOffset = sIdx;
+            break;
+          }
+        }
+      }
+
+      // 3. Smart Lookahead Assist (If dictation dropped current word but reader clearly said next word)
+      if (advanceCount === 0 && this.currentWordIndex + 1 < expectedWords.length) {
+        const nextWord = expectedWords[this.currentWordIndex + 1];
+        for (let sIdx = 0; sIdx < activeSpokenSlice.length; sIdx++) {
+          const spoken = activeSpokenSlice[sIdx];
+          if (isWordMatch(nextWord, spoken)) {
+            // Auto-advance current word as soft match and latch onto next word
+            advanceCount = 2;
             consumedOffset = sIdx;
             break;
           }
@@ -689,7 +742,7 @@ export class ContinuousMurojaahTracker {
           this.processedWordCursor += (consumedOffset + 1);
         }
       } else {
-        // STRICT: Do NOT skip! Wait for reader to pronounce this exact word!
+        // Break out and wait for incoming speech tokens
         break;
       }
     }
@@ -698,7 +751,7 @@ export class ContinuousMurojaahTracker {
       this.lastMatchTime = Date.now();
       this.resetHesitationWatchdog();
 
-      // STRICT COMPLETION: Current Ayah is ONLY completed when 100% of words in that Ayah have been matched
+      // Current Ayah completion check
       if (this.currentWordIndex >= expectedWords.length) {
         const matchedInThisAyah = this.matchedWordsMap.get(this.currentAyahIndex)?.size || 0;
 
@@ -707,16 +760,14 @@ export class ContinuousMurojaahTracker {
             this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
           }
 
-          // Advance to exactly next Ayah and reset word cursor for fresh speech input
           this.currentAyahIndex++;
           this.currentWordIndex = 0;
-          this.processedWordCursor = allSpokenTokens.length; // Consume all current tokens so next Ayah needs new speech
+          this.processedWordCursor = allSpokenTokens.length;
 
-          // Check if entire passage is completed
           if (this.currentAyahIndex >= this.targetAyats.length) {
             this.isActive = false;
             this.clearHesitationWatchdog();
-            const score = Math.max(80, Math.round(100 - (this.totalErrors * 2)));
+            const score = Math.max(85, Math.round(100 - (this.totalErrors * 2)));
             if (this.callbacks) {
               this.callbacks.onPassageCompleted(score);
             }
@@ -724,6 +775,56 @@ export class ContinuousMurojaahTracker {
         }
       }
     }
+  }
+
+  /**
+   * Manual Tap / Assist to Advance Active Word instantly.
+   * Eliminates getting stuck due to microphone dictation anomalies!
+   */
+  public advanceCurrentWord(manual = true): boolean {
+    if (!this.isActive || !this.targetAyats[this.currentAyahIndex]) return false;
+
+    const currentAyat = this.targetAyats[this.currentAyahIndex];
+    const expectedWords = (currentAyat.arabicText || '').split(/\s+/).filter(Boolean);
+    if (this.currentWordIndex >= expectedWords.length) return false;
+
+    if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
+      this.matchedWordsMap.set(this.currentAyahIndex, new Set());
+    }
+
+    this.matchedWordsMap.get(this.currentAyahIndex)!.add(this.currentWordIndex);
+    this.matchedWordsCount++;
+
+    if (this.callbacks) {
+      this.callbacks.onWordMatched(
+        this.currentAyahIndex,
+        this.currentWordIndex,
+        expectedWords[this.currentWordIndex]
+      );
+    }
+
+    this.currentWordIndex++;
+    this.lastMatchTime = Date.now();
+    this.resetHesitationWatchdog();
+
+    // Check if Ayah is completed
+    if (this.currentWordIndex >= expectedWords.length) {
+      if (this.callbacks) {
+        this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
+      }
+      this.currentAyahIndex++;
+      this.currentWordIndex = 0;
+
+      if (this.currentAyahIndex >= this.targetAyats.length) {
+        this.isActive = false;
+        this.clearHesitationWatchdog();
+        const score = Math.max(85, Math.round(100 - (this.totalErrors * 2)));
+        if (this.callbacks) {
+          this.callbacks.onPassageCompleted(score);
+        }
+      }
+    }
+    return true;
   }
 
   // Force advance to next word/ayah (e.g. after Sheikh correction)

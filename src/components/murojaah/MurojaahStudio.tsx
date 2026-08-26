@@ -473,7 +473,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 </div>
               </div>
 
-              {/* Word-by-Word Arabic Text with Live Highlighting */}
+              {/* Word-by-Word Arabic Text with Live Highlighting & Tap-to-Pass */}
               <div className="my-2 text-right" dir="rtl">
                 <div className="flex flex-wrap gap-x-2 gap-y-3 items-center justify-start">
                   {words.map((word, wIdx) => {
@@ -483,16 +483,23 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     return (
                       <span
                         key={wIdx}
-                        className={`font-quran text-2xl sm:text-3xl leading-relaxed px-2.5 py-1 rounded-xl border-2 transition-all flex items-center gap-1 ${
+                        onClick={() => {
+                          if (isActive && isCurrentlyTargeted) {
+                            continuousTracker.advanceCurrentWord(true);
+                          }
+                        }}
+                        title={isCurrentlyTargeted ? 'Klik jika lisan antum benar tapi mic salah mendikte!' : undefined}
+                        className={`font-quran text-2xl sm:text-3xl leading-relaxed px-2.5 py-1 rounded-xl border-2 transition-all flex items-center gap-1 select-none ${
                           isMatched
                             ? 'bg-[#10B981] text-white border-black font-bold shadow-[2px_2px_0px_0px_#000] scale-100'
                             : isCurrentlyTargeted
-                            ? 'bg-[#F59E0B] text-black border-black font-black shadow-[3px_3px_0px_0px_#000] scale-105 animate-pulse ring-2 ring-amber-400'
+                            ? 'bg-[#F59E0B] text-black border-black font-black shadow-[3px_3px_0px_0px_#000] scale-105 animate-pulse ring-2 ring-amber-400 cursor-pointer hover:bg-amber-400'
                             : 'text-emerald-950 bg-white/70 border-gray-300 opacity-80'
                         }`}
                       >
                         {word}
                         {isMatched && <span className="text-[10px] font-sans font-black text-amber-200">✓</span>}
+                        {isCurrentlyTargeted && <span className="text-[9px] font-sans font-bold bg-black text-amber-300 px-1 rounded ml-1">Klik Bantu</span>}
                       </span>
                     );
                   })}
@@ -535,23 +542,30 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
         {/* Live Audio Transcript & Decibel Meter */}
         {isRecording && (
-          <div className="flex items-center justify-between bg-[#F0FDF4] p-2.5 rounded-xl border border-emerald-300 text-xs">
-            <div className="flex items-center gap-2 truncate pr-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
-              <p className="font-mono text-emerald-900 font-bold truncate">
-                Lafal terdeteksi: {liveTranscript || 'Mendengarkan lantunan ayat...'}
-              </p>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between bg-[#F0FDF4] p-2.5 rounded-xl border border-emerald-300 text-xs">
+              <div className="flex items-center gap-2 truncate pr-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+                <p className="font-mono text-emerald-900 font-bold truncate">
+                  Lafal terdeteksi: {liveTranscript || 'Mendengarkan lantunan ayat...'}
+                </p>
+              </div>
+              <div className="flex items-center gap-1 shrink-0 font-mono text-[11px] font-bold text-emerald-800">
+                <Activity className="w-3.5 h-3.5 text-[#0B4627]" />
+                <span>VU: {micVolume} dB</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1 shrink-0 font-mono text-[11px] font-bold text-emerald-800">
-              <Activity className="w-3.5 h-3.5 text-[#0B4627]" />
-              <span>VU: {micVolume} dB</span>
+
+            {/* Smart Assist Info Badge */}
+            <div className="flex items-center justify-between bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-300 text-[11px] text-amber-900 font-bold">
+              <span>💡 Jika lisan antum sudah benar tapi dikte mic macet, klik langsung tombol <b>"⚡ Bantu Kata"</b> atau klik kata kuning di atas!</span>
             </div>
           </div>
         )}
 
         {/* Action Buttons */}
         <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {!isRecording ? (
               <button
                 onClick={handleStartContinuousMurojaah}
@@ -561,13 +575,25 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 <span>Mulai Muroja'ah Beruntun</span>
               </button>
             ) : (
-              <button
-                onClick={handleStopSession}
-                className="px-5 py-3 bg-[#EF4444] hover:bg-[#DC2626] text-white font-black text-sm rounded-xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[3px_3px_0px_0px_#000]"
-              >
-                <MicOff className="w-4 h-4" />
-                <span>Selesai / Hentikan Sesi</span>
-              </button>
+              <>
+                <button
+                  onClick={handleStopSession}
+                  className="px-5 py-3 bg-[#EF4444] hover:bg-[#DC2626] text-white font-black text-sm rounded-xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[3px_3px_0px_0px_#000]"
+                >
+                  <MicOff className="w-4 h-4" />
+                  <span>Selesai / Hentikan Sesi</span>
+                </button>
+
+                {/* Instant Skip / Assist Active Word Button */}
+                <button
+                  onClick={() => continuousTracker.advanceCurrentWord(true)}
+                  className="px-3.5 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs rounded-xl border-2 border-black neo-button flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+                  title="Lewati kata aktif jika pelafalan benar tapi dikte mic gagal mengenali"
+                >
+                  <Zap className="w-4 h-4 fill-black" />
+                  <span>⚡ Bantu / Lewati Kata Ini</span>
+                </button>
+              </>
             )}
 
             <button
