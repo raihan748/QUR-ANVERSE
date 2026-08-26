@@ -1,4 +1,5 @@
 import { UserProfile, Bookmark, WeakVerse } from '../types';
+import { safeJsonParse, safeJsonStringify, generateSecureId } from './securityHardening';
 
 const STORAGE_KEYS = {
   PROFILE: 'quranverse_profile_v2',
@@ -19,7 +20,7 @@ export function sanitizeInput(input: string, maxLength: number = 200): string {
 
 // Default Initial Profile (Strictly 0 for fresh user progression)
 export const defaultProfile: UserProfile = {
-  id: 'guest_hafidz_' + Math.random().toString(36).substring(2, 9),
+  id: generateSecureId('hafidz'),
   fullName: 'Hafidz QURANVERSE',
   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   hafidzLevel: 'Santri Pemula',
@@ -36,7 +37,7 @@ export function getLocalProfile(): UserProfile {
       saveLocalProfile(defaultProfile);
       return defaultProfile;
     }
-    const parsed = JSON.parse(raw);
+    const parsed = safeJsonParse<any>(raw, defaultProfile);
 
     // Auto-migrate if user had old mock 1250 XP
     let xp = Math.max(0, Number(parsed.totalXp) || 0);
@@ -71,7 +72,7 @@ export function saveLocalProfile(profile: UserProfile): void {
       streakCount: Math.max(0, Number(profile.streakCount) || 0),
       lastMurojaahDate: sanitizeInput(profile.lastMurojaahDate, 20)
     };
-    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(sanitized));
+    localStorage.setItem(STORAGE_KEYS.PROFILE, safeJsonStringify(sanitized));
   } catch (e) {
     console.warn('Storage quota or error saving profile:', e);
   }
@@ -117,10 +118,10 @@ export function getStreakCalendar(): Record<string, boolean> {
     const raw = localStorage.getItem(STORAGE_KEYS.STREAK_CALENDAR);
     if (!raw) {
       const initial: Record<string, boolean> = {};
-      localStorage.setItem(STORAGE_KEYS.STREAK_CALENDAR, JSON.stringify(initial));
+      localStorage.setItem(STORAGE_KEYS.STREAK_CALENDAR, safeJsonStringify(initial));
       return initial;
     }
-    return JSON.parse(raw);
+    return safeJsonParse<Record<string, boolean>>(raw, {});
   } catch {
     return {};
   }
@@ -131,7 +132,7 @@ export function recordStreakDay(dateStr: string): void {
     const cal = getStreakCalendar();
     const cleanDate = sanitizeInput(dateStr, 20);
     cal[cleanDate] = true;
-    localStorage.setItem(STORAGE_KEYS.STREAK_CALENDAR, JSON.stringify(cal));
+    localStorage.setItem(STORAGE_KEYS.STREAK_CALENDAR, safeJsonStringify(cal));
   } catch (e) {
     console.warn(e);
   }
@@ -141,7 +142,7 @@ export function recordStreakDay(dateStr: string): void {
 export function getBookmarks(): Bookmark[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.BOOKMARKS);
-    return raw ? JSON.parse(raw) : [];
+    return safeJsonParse<Bookmark[]>(raw, []);
   } catch {
     return [];
   }
@@ -175,7 +176,7 @@ export function saveBookmark(bookmark: Omit<Bookmark, 'id' | 'createdAt'>): Book
       });
     }
 
-    localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(bookmarks));
+    localStorage.setItem(STORAGE_KEYS.BOOKMARKS, safeJsonStringify(bookmarks));
     return bookmarks;
   } catch (e) {
     console.warn('Error saving bookmark:', e);
@@ -187,7 +188,7 @@ export function removeBookmark(bookmarkId: string): Bookmark[] {
   try {
     let bookmarks = getBookmarks();
     bookmarks = bookmarks.filter(b => b.id !== bookmarkId);
-    localStorage.setItem(STORAGE_KEYS.BOOKMARKS, JSON.stringify(bookmarks));
+    localStorage.setItem(STORAGE_KEYS.BOOKMARKS, safeJsonStringify(bookmarks));
     return bookmarks;
   } catch (e) {
     console.warn('Error removing bookmark:', e);
@@ -199,7 +200,7 @@ export function removeBookmark(bookmarkId: string): Bookmark[] {
 export function getWeakVerses(): WeakVerse[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.WEAK_VERSES);
-    return raw ? JSON.parse(raw) : [];
+    return safeJsonParse<WeakVerse[]>(raw, []);
   } catch {
     return [];
   }
@@ -234,7 +235,7 @@ export function recordWeakVerse(verse: Omit<WeakVerse, 'id' | 'lastTestedDate'>)
       });
     }
 
-    localStorage.setItem(STORAGE_KEYS.WEAK_VERSES, JSON.stringify(list));
+    localStorage.setItem(STORAGE_KEYS.WEAK_VERSES, safeJsonStringify(list));
   } catch (e) {
     console.warn('Error recording weak verse:', e);
   }
@@ -246,7 +247,7 @@ export function resolveWeakVerse(surahNumber: number, ayahNumber: number): void 
     const target = list.find(v => v.surahNumber === surahNumber && v.ayahNumber === ayahNumber);
     if (target) {
       target.resolved = true;
-      localStorage.setItem(STORAGE_KEYS.WEAK_VERSES, JSON.stringify(list));
+      localStorage.setItem(STORAGE_KEYS.WEAK_VERSES, safeJsonStringify(list));
     }
   } catch (e) {
     console.warn(e);
@@ -257,7 +258,10 @@ export function resolveWeakVerse(surahNumber: number, ayahNumber: number): void 
 export function getLastRead(): { surahNumber: number; ayahNumber: number; surahName: string } | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.LAST_READ);
-    return raw ? JSON.parse(raw) : { surahNumber: 1, ayahNumber: 1, surahName: 'Al-Fatihah' };
+    return safeJsonParse<{ surahNumber: number; ayahNumber: number; surahName: string } | null>(
+      raw, 
+      { surahNumber: 1, ayahNumber: 1, surahName: 'Al-Fatihah' }
+    );
   } catch {
     return null;
   }
@@ -267,7 +271,7 @@ export function setLastRead(surahNumber: number, ayahNumber: number, surahName: 
   try {
     localStorage.setItem(
       STORAGE_KEYS.LAST_READ, 
-      JSON.stringify({ 
+      safeJsonStringify({ 
         surahNumber: Math.max(1, Math.min(114, surahNumber)), 
         ayahNumber: Math.max(1, ayahNumber), 
         surahName: sanitizeInput(surahName, 100) 
@@ -284,7 +288,7 @@ const MUROJAAH_HISTORY_KEY = 'quranverse_murojaah_history_v2';
 export function getMurojaahHistory(): import('../types').MurojaahSessionLog[] {
   try {
     const raw = localStorage.getItem(MUROJAAH_HISTORY_KEY);
-    return raw ? JSON.parse(raw) : [];
+    return safeJsonParse<import('../types').MurojaahSessionLog[]>(raw, []);
   } catch {
     return [];
   }
@@ -297,7 +301,7 @@ export function saveMurojaahHistory(log: import('../types').MurojaahSessionLog):
     if (history.length > 100) {
       history.pop();
     }
-    localStorage.setItem(MUROJAAH_HISTORY_KEY, JSON.stringify(history));
+    localStorage.setItem(MUROJAAH_HISTORY_KEY, safeJsonStringify(history));
   } catch (e) {
     console.warn('Error saving murojaah history:', e);
   }
