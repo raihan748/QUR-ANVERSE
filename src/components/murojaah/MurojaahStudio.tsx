@@ -182,12 +182,14 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
     // 1. Initialize Continuous Tracker with Passage Ayats
     continuousTracker.initialize(passageAyats, {
       onWordMatched: (ayahIdx, wordIdx) => {
-        setMatchedWordsState((prev) => {
-          const list = prev[ayahIdx] || [];
-          if (!list.includes(wordIdx)) {
-            return { ...prev, [ayahIdx]: [...list, wordIdx] };
-          }
-          return prev;
+        requestAnimationFrame(() => {
+          setMatchedWordsState((prev) => {
+            const list = prev[ayahIdx] || [];
+            if (!list.includes(wordIdx)) {
+              return { ...prev, [ayahIdx]: [...list, wordIdx] };
+            }
+            return prev;
+          });
         });
       },
       onAyahCompleted: (ayahIdx, ayat) => {
