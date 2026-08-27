@@ -22,6 +22,60 @@ export const RECITERS_LIST: Reciter[] = [
     folder: 'Alafasy_128kbps'
   },
   {
+    id: 'alijaber',
+    name: 'Syekh Ali Jaber (Rahimahullah)',
+    arabicName: 'علي عبد الله جابر',
+    style: 'Legenda Imam Masjidil Haram',
+    bitrate: '64 kbps',
+    country: 'Arab Saudi',
+    folder: 'Ali_Jaber_64kbps'
+  },
+  {
+    id: 'qatami',
+    name: 'Syekh Nasser Al-Qatami',
+    arabicName: 'ناصر القطامي',
+    style: 'Murattal Syahdu & Khusyuk',
+    bitrate: '128 kbps',
+    country: 'Arab Saudi',
+    folder: 'Nasser_Alqatami_128kbps'
+  },
+  {
+    id: 'muaiqly',
+    name: 'Syekh Mahir Al-Mu\'aiqly',
+    arabicName: 'ماهر المعيقلي',
+    style: 'Imam Masjidil Haram Makkah',
+    bitrate: '128 kbps',
+    country: 'Arab Saudi',
+    folder: 'MaherAlMuaiqly128kbps'
+  },
+  {
+    id: 'dossari',
+    name: 'Syekh Yasser Ad-Dossari',
+    arabicName: 'ياسر الدوسري',
+    style: 'Imam Masjidil Haram Makkah',
+    bitrate: '128 kbps',
+    country: 'Arab Saudi',
+    folder: 'Yasser_Ad-Dussary_128kbps'
+  },
+  {
+    id: 'shuraim',
+    name: 'Syekh Saud Asy-Syuraim',
+    arabicName: 'سعود الشريم',
+    style: 'Imam Masjidil Haram Makkah',
+    bitrate: '128 kbps',
+    country: 'Arab Saudi',
+    folder: 'Saood_ash-Shuraym_128kbps'
+  },
+  {
+    id: 'minshawi',
+    name: 'Syekh Muhammad Siddiq Al-Minshawi',
+    arabicName: 'محمد صديق المنشاوي',
+    style: 'Suara Menangis (Al-Shaut Al-Baki)',
+    bitrate: '128 kbps',
+    country: 'Mesir',
+    folder: 'Minshawy_Murattal_128kbps'
+  },
+  {
     id: 'husary',
     name: 'Syekh Mahmoud Khalil Al-Husary',
     arabicName: 'محمود خليل الحصري',
