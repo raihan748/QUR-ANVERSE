@@ -861,7 +861,7 @@ export class ContinuousMurojaahTracker {
         }
       }
     } else if (isFinal && analyzedTokens.length > 0) {
-      // Evaluate Mismatch ONLY on finalized spoken word (with 2-attempt buffer to prevent false triggers)
+      // Evaluate Mismatch ONLY on finalized spoken word (with patient 4-attempt buffer to prevent rushed interruptions)
       const targetWord = expectedWords[this.currentWordIndex];
       const lastSpoken = analyzedTokens[analyzedTokens.length - 1];
       if (targetWord && lastSpoken && (lastSpoken.canonical.length >= 2 || lastSpoken.latin.length >= 3)) {
@@ -872,8 +872,8 @@ export class ContinuousMurojaahTracker {
         if (canonSim < 0.40 && latinSim < 0.40) {
           this.failedAttemptsOnWord++;
 
-          // Require 2 consecutive failed finalized utterances before interrupting
-          if (this.failedAttemptsOnWord >= 2) {
+          // Patient buffer: Require 4 consecutive failed finalized utterances before interrupting
+          if (this.failedAttemptsOnWord >= 4) {
             this.failedAttemptsOnWord = 0;
 
             let reason = `Lafal belum sesuai. Target: «${targetWord.raw}», terdengar: «${lastSpoken.raw}».`;
@@ -963,7 +963,7 @@ export class ContinuousMurojaahTracker {
     this.clearHesitationWatchdog();
     if (!this.isActive || this.isPaused) return;
 
-    // 5.5s comfortable recitation watchdog timer (allows natural breathing & waqaf)
+    // Patient 10.0s comfortable recitation watchdog timer (allows slow tartil recitation & pauses)
     this.hesitationTimer = setTimeout(() => {
       if (this.isActive && !this.isPaused && this.targetAyats[this.currentAyahIndex]) {
         const target = this.getCurrentTargetWord();
@@ -986,7 +986,7 @@ export class ContinuousMurojaahTracker {
           );
         }
       }
-    }, 5500);
+    }, 10000);
   }
 
   private clearHesitationWatchdog(): void {
