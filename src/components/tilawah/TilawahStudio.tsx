@@ -358,10 +358,10 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
         </NeobrutalCard>
       )}
 
-      {/* SEARCHABLE SURAH PICKER MODAL (NON-CLIPPING / FULL RESPONSIVE) */}
+      {/* SEARCHABLE SURAH PICKER MODAL (FLOATING AT THE TOP) */}
       {isSurahModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border-3 border-black rounded-3xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-[8px_8px_0px_0px_#000] overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-start justify-center p-3 sm:p-4 pt-3 sm:pt-6 overflow-y-auto">
+          <div className="bg-white border-3 border-black rounded-3xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-[8px_8px_0px_0px_#000] overflow-hidden animate-in fade-in slide-in-from-top-4 duration-200">
             {/* Modal Header */}
             <div className="p-4 bg-[#0B4627] text-white border-b-3 border-black flex items-center justify-between">
               <div>

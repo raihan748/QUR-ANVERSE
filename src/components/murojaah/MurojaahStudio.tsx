@@ -932,20 +932,20 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         )}
       </div>
 
-      {/* 5. SURAH SELECTOR MODAL (114 SURAT) */}
+      {/* 5. SURAH SELECTOR MODAL (114 SURAT) - FLOATING AT THE VERY TOP */}
       {isSurahPickerOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-xl max-h-[80vh] flex flex-col bg-[#FFFDF7] border-3 border-black rounded-3xl p-5 shadow-[8px_8px_0px_0px_#111827] animate-in zoom-in-95 space-y-3">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-start justify-center p-3 sm:p-4 pt-3 sm:pt-6 overflow-y-auto">
+          <div className="w-full max-w-xl max-h-[85vh] flex flex-col bg-[#FFFDF7] border-3 border-black rounded-3xl p-4 sm:p-5 shadow-[8px_8px_0px_0px_#111827] animate-in fade-in slide-in-from-top-4 duration-200 space-y-3 mt-0">
             <div className="flex items-center justify-between border-b-2 border-black pb-3">
-              <h3 className="text-base font-black text-black flex items-center gap-2">
+              <h3 className="text-sm sm:text-base font-black text-black flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-[#0B4627]" />
                 <span>Pilih Surat untuk Muroja'ah (1–114 Surat)</span>
               </h3>
               <button
                 onClick={() => setIsSurahPickerOpen(false)}
-                className="p-1 bg-[#FEE2E2] hover:bg-[#FCA5A5] border border-black rounded-lg font-bold text-xs"
+                className="p-1.5 px-2 bg-[#FEE2E2] hover:bg-[#FCA5A5] border-2 border-black rounded-xl font-bold text-xs cursor-pointer shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5"
               >
-                ✕
+                ✕ Tutup
               </button>
             </div>
 
@@ -970,6 +970,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     setSelectedSurahNumber(s.number);
                     setRangePreset('1-10');
                     setIsSurahPickerOpen(false);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   className={`w-full p-2.5 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
                     selectedSurahNumber === s.number
