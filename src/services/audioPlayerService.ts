@@ -236,25 +236,20 @@ class AudioPlayerService {
     return this.playUrl(url, onEnded);
   }
 
-  // Play Sheikh Live Correction Intervention (Teguran Suara Syekh)
+  // Play Sheikh Live Correction Intervention (Teguran Suara Syekh Seketika)
   public async playSheikhIntervention(
     surahNumber: number,
     ayahNumber: number,
     customReciterId?: string,
     onEnded?: () => void
   ): Promise<boolean> {
-    // 1. Play subtle correction cue tone
-    this.playCorrectionPromptSound();
+    // 1. Play distinct warning chime
+    this.playAlarmTeguranSound();
 
-    // 2. Play authentic Sheikh voice recitation after cue
-    return new Promise((resolve) => {
-      setTimeout(async () => {
-        const success = await this.playAyat(surahNumber, ayahNumber, () => {
-          if (onEnded) onEnded();
-        }, customReciterId);
-        resolve(success);
-      }, 350);
-    });
+    // 2. Play authentic Sheikh voice recitation immediately with zero delay
+    return this.playAyat(surahNumber, ayahNumber, () => {
+      if (onEnded) onEnded();
+    }, customReciterId);
   }
 
   public pause(): void {

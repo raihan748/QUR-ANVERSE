@@ -853,17 +853,20 @@ export class ContinuousMurojaahTracker {
           }
         }
       }
-    } else if (isFinal && analyzedTokens.length > 0) {
-      // ONLY on final transcript event when user uttered an unmatchable word
+    } else if (analyzedTokens.length > 0) {
+      // Rapid Real-time Mismatch Evaluator (Instant correction without waiting for browser finalization silence)
       const targetWord = expectedWords[this.currentWordIndex];
       const lastSpoken = analyzedTokens[analyzedTokens.length - 1];
-      if (targetWord && lastSpoken && (lastSpoken.canonical.length >= 3 || lastSpoken.latin.length >= 4)) {
+      if (targetWord && lastSpoken && (lastSpoken.canonical.length >= 2 || lastSpoken.latin.length >= 3)) {
         const canonSim = fastLevenshteinSimilarity(targetWord.canonical, lastSpoken.canonical);
         const latinSim = fastLevenshteinSimilarity(targetWord.latinPhonetic, lastSpoken.latin);
 
-        if (canonSim < 0.28 && latinSim < 0.28) {
-          const reason = `Kata tertukar atau lafal tidak sesuai. Target: «${targetWord.raw}», terdengar: «${lastSpoken.raw}».`;
+        // If user uttered an incompatible/wrong word (mismatch < 0.38)
+        if (canonSim < 0.38 && latinSim < 0.38) {
+          const reason = `Lafal tidak cocok atau kata keliru. Target: «${targetWord.raw}», terdengar: «${lastSpoken.raw}».`;
           this.totalErrors++;
+          this.isPaused = true;
+          this.clearHesitationWatchdog();
           if (this.callbacks) {
             this.callbacks.onErrorDetected(
               this.currentAyahIndex,
@@ -947,13 +950,13 @@ export class ContinuousMurojaahTracker {
           this.callbacks.onErrorDetected(
             this.currentAyahIndex,
             this.currentWordIndex,
-            `Jeda pelafalan terhenti pada kata «${target?.raw || ''}». Syekh memberikan bimbingan bacaan yang benar.`,
+            `Jeda terhenti pada kata «${target?.raw || ''}». Syekh mencontohkan bacaan yang benar.`,
             target?.raw || '',
             ''
           );
         }
       }
-    }, 8000);
+    }, 2500);
   }
 
   private clearHesitationWatchdog(): void {
