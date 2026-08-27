@@ -315,6 +315,39 @@ class AudioPlayerService {
     }
   }
 
+  // Distinct Alarm Sound for Tajweed / Makhraj Correction (Teguran Syekh)
+  public playAlarmTeguranSound(): void {
+    try {
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      const now = ctx.currentTime;
+      
+      // Dual-tone staccato warning chime: 587.33Hz (D5) -> 440Hz (A4) -> 329.63Hz (E4)
+      const warningFrequencies = [587.33, 440.00, 329.63];
+
+      warningFrequencies.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle'; // Richer, distinct alarm tone
+        osc.frequency.setValueAtTime(freq, now + i * 0.12);
+
+        gain.gain.setValueAtTime(0, now + i * 0.12);
+        gain.gain.linearRampToValueAtTime(0.18, now + i * 0.12 + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.12 + 0.35);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + i * 0.12);
+        osc.stop(now + i * 0.12 + 0.35);
+      });
+    } catch {
+      // ignore
+    }
+  }
+
   // Gentle Soft Tone for Correction
   public playCorrectionPromptSound(): void {
     try {

@@ -98,6 +98,13 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   const [liveTranscript, setLiveTranscript] = useState('');
   const [sheikhTeguranMessage, setSheikhTeguranMessage] = useState<string | null>(null);
   const [isSheikhSpeaking, setIsSheikhSpeaking] = useState(false);
+  const [errorWordState, setErrorWordState] = useState<{
+    ayahIdx: number;
+    wordIdx: number;
+    reason: string;
+    targetWord: string;
+    spokenWord: string;
+  } | null>(null);
   const [sessionCompleted, setSessionCompleted] = useState(false);
   const [finalScore, setFinalScore] = useState<number | null>(null);
 
@@ -170,8 +177,48 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
     setLiveTranscript('');
     setSheikhTeguranMessage(null);
     setIsSheikhSpeaking(false);
+    setErrorWordState(null);
     setSessionCompleted(false);
     setFinalScore(null);
+  };
+
+  // Re-start listening after error / retry
+  const handleRetryCurrentWord = () => {
+    audioPlayer.stop();
+    setIsSheikhSpeaking(false);
+    setErrorWordState(null);
+    setSheikhTeguranMessage(null);
+    setLiveTranscript('');
+    speechEngine.clearTranscript();
+    continuousTracker.resumeAfterCorrection();
+
+    speechEngine.setLanguage(speechLanguage);
+    speechEngine.setSensitivity(micSensitivity);
+    const started = speechEngine.startListening({
+      language: speechLanguage,
+      sensitivity: micSensitivity,
+      onInterimResult: (text, alts) => {
+        setLiveTranscript(text);
+        setMicVolume(Math.min(95, 45 + Math.round(Math.random() * 40)));
+        continuousTracker.processStream(text, alts);
+      },
+      onFinalResult: (text, alts) => {
+        setLiveTranscript(text);
+        setMicVolume(Math.min(95, 55 + Math.round(Math.random() * 35)));
+        continuousTracker.processStream(text, alts);
+      },
+      onError: (err) => {
+        console.warn('Mic status warning:', err);
+        if (typeof err === 'string') {
+          setSheikhTeguranMessage(err);
+        }
+      }
+    });
+
+    if (started) {
+      setIsRecording(true);
+      setMicVolume(25);
+    }
   };
 
   // Start Real-Time Continuous Muroja'ah Session
@@ -183,6 +230,14 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
     // 1. Initialize Continuous Tracker with Passage Ayats & Sensitivity Boost
     continuousTracker.initialize(passageAyats, {
       onWordMatched: (ayahIdx, wordIdx) => {
+        setErrorWordState((curr) => {
+          if (curr && curr.ayahIdx === ayahIdx && curr.wordIdx === wordIdx) {
+            return null;
+          }
+          return curr;
+        });
+        setSheikhTeguranMessage(null);
+
         requestAnimationFrame(() => {
           setMatchedWordsState((prev) => {
             const list = prev[ayahIdx] || [];
@@ -197,6 +252,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         setCompletedAyahsSet((prev) => new Set(prev).add(ayahIdx));
         setActiveAyahIndex(ayahIdx + 1);
         setLiveTranscript('');
+        setErrorWordState(null);
         speechEngine.clearTranscript();
         audioPlayer.playSuccessChime();
 
@@ -208,13 +264,24 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         );
         setDailyTarget(updatedTarget);
       },
-      onErrorDetected: async (ayahIdx, wordIdx, reason) => {
+      onErrorDetected: async (ayahIdx, wordIdx, reason, targetWord, spokenWord) => {
         const targetAyat = passageAyats[ayahIdx];
         if (!targetAyat) return;
 
-        // Pause tracker so Sheikh recitation audio is never mistaken for user speech
-        continuousTracker.pause();
-        setSheikhTeguranMessage(`Teguran Syekh: ${reason}`);
+        // 🚨 1. Stop mic & play Alarm Teguran immediately
+        speechEngine.stopListening();
+        setIsRecording(false);
+        audioPlayer.playAlarmTeguranSound();
+
+        // 🚨 2. Highlight word in RED & set error state
+        setErrorWordState({
+          ayahIdx,
+          wordIdx,
+          reason,
+          targetWord: targetWord || '',
+          spokenWord: spokenWord || ''
+        });
+        setSheikhTeguranMessage(`🚨 Teguran Syekh: ${reason}`);
         setIsSheikhSpeaking(true);
 
         // Record weak verse for spaced repetition
@@ -228,22 +295,20 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           resolved: false
         });
 
-        // Sheikh Voice Correction Intervention
+        // 🚨 3. Sheikh Voice Correction Intervention
         await audioPlayer.playSheikhIntervention(
           targetAyat.surahNumber,
           targetAyat.numberInSurah,
           activeReciter.id,
           () => {
             setIsSheikhSpeaking(false);
-            setLiveTranscript('');
-            speechEngine.clearTranscript();
-            continuousTracker.resumeAfterCorrection();
           }
         );
       },
       onPassageCompleted: (score) => {
         setIsRecording(false);
         setSessionCompleted(true);
+        setErrorWordState(null);
         setFinalScore(score);
         audioPlayer.playSuccessChime();
         confetti({ particleCount: 120, spread: 80 });
@@ -509,22 +574,33 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 <div className="flex flex-wrap gap-2 justify-start items-center" dir="rtl">
                   {words.map((w, wIdx) => {
                     const isWordDone = matchedWords.includes(wIdx);
-                    const isCurrentWordTarget = isActive && matchedWords.length === wIdx;
+                    const isWordError = errorWordState?.ayahIdx === aIdx && errorWordState?.wordIdx === wIdx;
+                    const isCurrentWordTarget = (isActive || isWordError) && matchedWords.length === wIdx;
 
                     return (
                       <span
                         key={wIdx}
                         onClick={() => {
-                          if (isActive && isCurrentWordTarget) {
+                          if (isWordError) {
+                            handleRetryCurrentWord();
+                          } else if (isActive && isCurrentWordTarget) {
                             continuousTracker.advanceCurrentWord(true);
                           }
                         }}
-                        title={isCurrentWordTarget ? "Klik untuk lewati kata ini jika dikte macet" : undefined}
-                        className={`font-arabic text-2xl sm:text-3xl px-2 py-1 rounded-xl transition-all inline-block select-none ${
+                        title={
+                          isWordError
+                            ? `Salah lafal: ${errorWordState.reason}. Klik untuk coba ulang!`
+                            : isCurrentWordTarget
+                            ? 'Kata yang wajib dibaca sekarang'
+                            : undefined
+                        }
+                        className={`font-arabic text-2xl sm:text-3xl px-2.5 py-1 rounded-xl transition-all inline-block select-none ${
                           isWordDone
                             ? 'bg-[#10B981] text-white shadow-xs font-bold scale-105'
+                            : isWordError
+                            ? 'bg-[#EF4444] text-white border-3 border-black shadow-[4px_4px_0px_0px_#000] scale-115 font-black ring-4 ring-red-300 animate-pulse cursor-pointer'
                             : isCurrentWordTarget
-                            ? 'bg-[#FBBF24] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000] scale-110 font-bold animate-pulse cursor-pointer hover:bg-amber-300'
+                            ? 'bg-[#FBBF24] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000] scale-110 font-bold animate-pulse cursor-pointer hover:bg-amber-300 ring-4 ring-amber-300'
                             : 'text-gray-800'
                         }`}
                       >
@@ -538,8 +614,73 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 </div>
               </div>
 
+              {/* 🚨 AUTO-TEGUR SYEKH ALERT CARD (When Mistake is Detected) */}
+              {errorWordState && errorWordState.ayahIdx === aIdx && (
+                <div className="my-3 p-4 bg-gradient-to-r from-red-950 via-red-900 to-red-950 text-white rounded-2xl border-3 border-red-500 shadow-[5px_5px_0px_0px_#000] space-y-3 animate-shake">
+                  <div className="flex items-center justify-between border-b border-red-700/80 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-red-400 animate-ping"></span>
+                      <span className="font-black text-sm text-red-200 uppercase tracking-wide flex items-center gap-1.5">
+                        <AlertCircle className="w-4 h-4 text-red-400" />
+                        🚨 TEGURAN OTOMATIS SYEKH (BACAAN SALAH)
+                      </span>
+                    </div>
+                    {isSheikhSpeaking && (
+                      <span className="px-2.5 py-1 bg-red-600 text-white font-black text-xs rounded-full border border-white animate-pulse flex items-center gap-1">
+                        <Volume2 className="w-3.5 h-3.5" /> Syekh Membimbing...
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-2.5 bg-black/40 rounded-xl border border-red-700">
+                      <span className="text-red-300 font-bold block mb-1">🎯 Lafadz Target yang Benar:</span>
+                      <span className="font-arabic text-xl font-black text-emerald-300" dir="rtl">
+                        « {errorWordState.targetWord} »
+                      </span>
+                    </div>
+                    <div className="p-2.5 bg-black/40 rounded-xl border border-red-700">
+                      <span className="text-red-300 font-bold block mb-1">❌ Terdengar Keliru / Tertukar:</span>
+                      <span className="font-arabic text-xl font-bold text-red-400 line-through" dir="rtl">
+                        « {errorWordState.spokenWord || '(Belum terdengar)'} »
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 bg-red-900/60 rounded-xl border border-red-600 text-red-100 font-medium text-xs">
+                    <span className="font-bold text-yellow-300">💡 Analisis Tajwid/Makhraj: </span>
+                    {errorWordState.reason}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <button
+                      onClick={handleRetryCurrentWord}
+                      className="flex-1 min-w-[200px] flex items-center justify-center gap-2 py-2 px-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5 transition-all"
+                    >
+                      <Mic className="w-4 h-4 text-black animate-pulse" />
+                      🎙️ Wajib Baca Ulang Kata Ini Sekarang
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsSheikhSpeaking(true);
+                        audioPlayer.playSheikhIntervention(
+                          ayat.surahNumber,
+                          ayat.numberInSurah,
+                          activeReciter.id,
+                          () => setIsSheikhSpeaking(false)
+                        );
+                      }}
+                      className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl border border-white/40 transition-all"
+                    >
+                      <Volume2 className="w-4 h-4" />
+                      Putar Ulang Audio Syekh
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* 🎙️ SUPER PROMINENT LIVE DICTATION HUD INSIDE ACTIVE AYAH CARD */}
-              {isActive && isRecording && (
+              {isActive && isRecording && !errorWordState && (
                 <div className="my-3 p-3.5 bg-gradient-to-r from-[#022C22] via-[#064E3B] to-[#022C22] text-white rounded-2xl border-3 border-[#F59E0B] shadow-[4px_4px_0px_0px_#000] space-y-2">
                   <div className="flex items-center justify-between text-[11px] font-black border-b border-emerald-700/60 pb-1.5">
                     <span className="flex items-center gap-2 text-amber-300">
