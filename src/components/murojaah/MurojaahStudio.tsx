@@ -94,6 +94,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [micVolume, setMicVolume] = useState<number>(0);
   const [speechLanguage, setSpeechLanguage] = useState<'ar-SA' | 'ar-KW' | 'id-ID'>('ar-SA');
+  const [micSensitivity, setMicSensitivity] = useState<'normal' | 'high' | 'ultra'>('ultra');
   const [liveTranscript, setLiveTranscript] = useState('');
   const [sheikhTeguranMessage, setSheikhTeguranMessage] = useState<string | null>(null);
   const [isSheikhSpeaking, setIsSheikhSpeaking] = useState(false);
@@ -179,7 +180,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
     resetSessionState();
 
-    // 1. Initialize Continuous Tracker with Passage Ayats
+    // 1. Initialize Continuous Tracker with Passage Ayats & Sensitivity Boost
     continuousTracker.initialize(passageAyats, {
       onWordMatched: (ayahIdx, wordIdx) => {
         requestAnimationFrame(() => {
@@ -263,14 +264,20 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           'Muroja\'ah Beruntun Multi-Ayat Berhasil!'
         );
       }
+    }, micSensitivity);
+
+    // 2. Start Live Microphone Analyser (Non-blocking for Mobile WebSpeech)
+    await audioRecorder.startRecording({
+      onVolumeUpdate: (vol) => setMicVolume(vol),
+      boostGain: micSensitivity !== 'normal',
+      enableMediaRecorder: false
     });
 
-    // 2. Start Live Microphone Recording & Decibel Meter
-    await audioRecorder.startRecording((vol) => setMicVolume(vol));
-
     speechEngine.setLanguage(speechLanguage);
+    speechEngine.setSensitivity(micSensitivity);
     const started = speechEngine.startListening({
       language: speechLanguage,
+      sensitivity: micSensitivity,
       onInterimResult: (text, alts) => {
         setLiveTranscript(text);
         continuousTracker.processStream(text, alts);
@@ -306,7 +313,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   );
 
   return (
-    <div className="space-y-4 pb-24 max-w-4xl mx-auto">
+    <div className="space-y-4 pb-28 max-w-4xl mx-auto">
       {/* 🎯 1. DAILY TARGET WIDGET (TARGET HARI INI) */}
       <DailyTargetWidget
         onStartTarget={(target) => {
@@ -318,205 +325,220 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       />
 
       {/* 2. SURAH, RANGE & SHEIKH COMPANION HEADER */}
-      <NeobrutalCard variant="emerald" className="p-4 sm:p-5 relative shadow-[3px_3px_0px_0px_#111827] border-2 border-black space-y-3">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          {/* Surah Title & Range Info */}
-          <div>
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
-                <BookOpen className="w-3.5 h-3.5" /> Studio Muroja'ah Beruntun 114 Surat
-              </span>
-              <span className="px-2 py-0.5 text-xs font-bold bg-white/20 text-white rounded border border-white/30 font-mono">
-                {currentSurahMeta.revelationPlace === 'Makkah' ? 'Makkiyyah' : 'Madaniyyah'} • {currentSurahMeta.ayahCount} Ayat
-              </span>
+      <div className="bg-[#FFFDF7] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black pb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-[#0B4627] text-white flex items-center justify-center font-black border-2 border-black shadow-[2px_2px_0px_0px_#000]">
+              {currentSurahMeta.number}
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2 font-display">
-              <span>{currentSurahMeta.latinName}</span>
-              <span className="font-quran text-amber-300 text-lg">({currentSurahMeta.name})</span>
-            </h2>
-            <p className="text-xs text-emerald-100 font-medium">
-              Arti: "{currentSurahMeta.meaning}" • Menampilkan Ayat {startAyah} s/d {endAyah}
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-black text-black">{currentSurahMeta.latinName}</h2>
+                <span className="font-arabic text-sm text-[#0B4627] font-bold">({currentSurahMeta.name})</span>
+              </div>
+              <p className="text-xs text-gray-600 font-semibold">
+                {currentSurahMeta.meaning} • {currentSurahMeta.ayahCount} Ayat ({currentSurahMeta.revelationPlace === 'Makkah' ? 'Makkiyyah' : 'Madaniyyah'})
+              </p>
+            </div>
           </div>
 
-          {/* Quick Sheikh Reciter & Surah Switchers */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Reciter Selector Dropdown */}
+          {/* Action Header Buttons: Ganti Surat & Pilih Syekh */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsSurahPickerOpen(true)}
+              className="px-3.5 py-2 bg-[#FBBF24] hover:bg-[#F59E0B] text-black font-black text-xs rounded-xl border-2 border-black neo-button flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Ganti Surat (114)</span>
+            </button>
+
             <div className="relative">
               <button
                 onClick={() => setIsReciterMenuOpen(!isReciterMenuOpen)}
-                className="px-2.5 py-1.5 bg-[#FEF3C7] hover:bg-[#FDE68A] text-black border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 neo-button cursor-pointer shadow-[2px_2px_0px_0px_#000]"
-                title="Pilih Syekh Pendamping & Penegur Hafalan"
+                className="px-3.5 py-2 bg-[#E0E7FF] hover:bg-[#C7D2FE] text-indigo-950 font-black text-xs rounded-xl border-2 border-black neo-button flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
               >
-                <Headphones className="w-3.5 h-3.5 text-[#0B4627]" />
-                <span className="truncate max-w-[120px]">{activeReciter.name.split(' ')[1] || activeReciter.name}</span>
-                <ChevronDown className="w-3 h-3 text-gray-700" />
+                <Volume2 className="w-3.5 h-3.5 text-indigo-700" />
+                <span className="truncate max-w-[110px]">{activeReciter.name.split(' ')[0]}</span>
+                <ChevronDown className="w-3 h-3" />
               </button>
 
+              {/* Reciter Dropdown */}
               {isReciterMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 bg-white border-3 border-black rounded-2xl p-2 shadow-[6px_6px_0px_0px_#000] z-50 animate-in fade-in zoom-in-95 space-y-1">
-                  <div className="p-1.5 border-b-2 border-black flex items-center justify-between text-black">
-                    <span className="text-[11px] font-black text-[#0B4627]">
-                      {language === 'ar' ? 'اختر الشيخ Penegur:' : 'Pilih Syekh Penegur Suara:'}
-                    </span>
+                <div className="absolute right-0 mt-2 w-64 bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] p-2 z-50 space-y-1">
+                  <p className="text-[10px] font-black uppercase text-gray-500 px-2 py-1">Syekh Pembimbing Muroja'ah:</p>
+                  {RECITERS_LIST.map((r: Reciter) => (
                     <button
-                      onClick={() => setIsReciterMenuOpen(false)}
-                      className="text-xs font-bold text-gray-500 hover:text-black"
+                      key={r.id}
+                      onClick={() => {
+                        audioPlayer.setActiveReciter(r.id);
+                        setActiveReciter(r);
+                        setIsReciterMenuOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-all ${
+                        activeReciter.id === r.id ? 'bg-[#0B4627] text-white' : 'hover:bg-gray-100 text-black'
+                      }`}
                     >
-                      ✕
+                      <div>
+                        <p className="font-bold">{r.name}</p>
+                        <p className="text-[10px] opacity-75">{r.arabicName} • {r.style}</p>
+                      </div>
+                      {activeReciter.id === r.id && <CheckCircle2 className="w-4 h-4 text-[#F59E0B]" />}
                     </button>
-                  </div>
-                  {RECITERS_LIST.map((r) => {
-                    const isSelected = r.id === activeReciter.id;
-                    return (
-                      <button
-                        key={r.id}
-                        onClick={() => {
-                          setActiveReciter(r);
-                          audioPlayer.setActiveReciter(r.id);
-                          setIsReciterMenuOpen(false);
-                        }}
-                        className={`w-full p-2 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-                            : 'bg-[#F9FAFB] hover:bg-amber-50 text-gray-900'
-                        }`}
-                      >
-                        <div className="truncate pr-2">
-                          <p className="text-xs font-black truncate">{r.name}</p>
-                          <p className={`text-[10px] font-bold ${isSelected ? 'text-amber-300' : 'text-gray-600'}`}>
-                            {r.style}
-                          </p>
-                        </div>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold shrink-0 border ${
-                          isSelected ? 'bg-[#F59E0B] text-black border-black' : 'bg-gray-200 text-gray-700 border-gray-400'
-                        }`}>
-                          {r.bitrate}
-                        </span>
-                      </button>
-                    );
-                  })}
+                  ))}
                 </div>
               )}
             </div>
-
-            {/* Choose Surah Button */}
-            <button
-              onClick={() => setIsSurahPickerOpen(true)}
-              className="px-3 py-1.5 bg-white hover:bg-[#FEF3C7] text-black border-2 border-black rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer neo-button shadow-[2px_2px_0px_0px_#000]"
-            >
-              <Search className="w-3.5 h-3.5" />
-              <span>Ganti Surat (1–114)</span>
-            </button>
           </div>
         </div>
 
-        {/* Preset Range Selector Bar */}
-        <div className="flex items-center gap-1.5 pt-2 border-t border-white/20 flex-wrap text-xs">
-          <span className="font-bold text-emerald-100 text-[11px]">Rentang Ayat:</span>
-          {(['1-5', '1-10', '1-20', 'all'] as const).map((preset) => (
-            <button
-              key={preset}
-              onClick={() => setRangePreset(preset)}
-              className={`px-2.5 py-1 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
-                rangePreset === preset
-                  ? 'bg-[#F59E0B] text-black border-black font-black shadow-[2px_2px_0px_0px_#000]'
-                  : 'bg-black/30 text-white border-white/30 hover:bg-black/50'
-              }`}
-            >
-              {preset === '1-5' ? '1 – 5 Ayat' : preset === '1-10' ? '1 – 10 Ayat' : preset === '1-20' ? '1 – 20 Ayat' : `Seluruh Surat (${currentSurahMeta.ayahCount} Ayat)`}
-            </button>
-          ))}
-        </div>
-      </NeobrutalCard>
+        {/* Range Selector & Preset Pills */}
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-xs font-bold text-gray-700">Rentang Ayat:</span>
+            {(['1-5', '1-10', '1-20', 'all', 'custom'] as const).map((preset) => (
+              <button
+                key={preset}
+                onClick={() => {
+                  setRangePreset(preset);
+                  if (preset === '1-5') {
+                    setStartAyah(1);
+                    setEndAyah(Math.min(5, currentSurahMeta.ayahCount));
+                  } else if (preset === '1-10') {
+                    setStartAyah(1);
+                    setEndAyah(Math.min(10, currentSurahMeta.ayahCount));
+                  } else if (preset === '1-20') {
+                    setStartAyah(1);
+                    setEndAyah(Math.min(20, currentSurahMeta.ayahCount));
+                  } else if (preset === 'all') {
+                    setStartAyah(1);
+                    setEndAyah(currentSurahMeta.ayahCount);
+                  }
+                }}
+                className={`px-2.5 py-1 rounded-lg text-xs font-black border-2 border-black neo-button cursor-pointer ${
+                  rangePreset === preset
+                    ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
+                    : 'bg-white text-black hover:bg-gray-100'
+                }`}
+              >
+                {preset === 'all' ? 'Semua Ayat' : preset === 'custom' ? 'Kustom' : `Ayat ${preset}`}
+              </button>
+            ))}
+          </div>
 
-      {/* 3. MULTI-AYAT RECITATION CANVAS (CONTINUOUS PASSAGE VIEW) */}
+          {/* Custom Input Spinners */}
+          {rangePreset === 'custom' && (
+            <div className="flex items-center gap-1.5 bg-gray-50 border-2 border-black rounded-lg px-2 py-1 text-xs font-bold">
+              <span>Dari:</span>
+              <input
+                type="number"
+                min={1}
+                max={currentSurahMeta.ayahCount}
+                value={startAyah}
+                onChange={(e) => setStartAyah(Math.max(1, Math.min(Number(e.target.value), endAyah)))}
+                className="w-12 text-center bg-white border border-black rounded px-1 py-0.5 font-bold"
+              />
+              <span>Sampai:</span>
+              <input
+                type="number"
+                min={startAyah}
+                max={currentSurahMeta.ayahCount}
+                value={endAyah}
+                onChange={(e) => setEndAyah(Math.min(currentSurahMeta.ayahCount, Math.max(Number(e.target.value), startAyah)))}
+                className="w-12 text-center bg-white border border-black rounded px-1 py-0.5 font-bold"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 3. MULTI-AYAH PASSAGE CONTAINER (INTERACTIVE ARABIC WORDS) */}
       <div className="space-y-3">
         {passageAyats.map((ayat, aIdx) => {
-          const isActive = activeAyahIndex === aIdx && isRecording;
-          const isCompleted = completedAyahsSet.has(aIdx);
+          const isActive = aIdx === activeAyahIndex && isRecording;
+          const isDone = completedAyahsSet.has(aIdx);
+          const matchedWords = matchedWordsState[aIdx] || [];
           const words = (ayat.arabicText || '').split(/\s+/).filter(Boolean);
-          const matchedIndices = matchedWordsState[aIdx] || [];
 
           return (
             <div
               key={ayat.numberInSurah}
-              ref={isActive ? activeAyahRef : null}
-              className={`rounded-2xl p-4 sm:p-5 border-2 border-black transition-all bg-[#FFFDF7] ${
+              ref={isActive ? activeAyahRef : undefined}
+              className={`p-4 rounded-2xl border-3 border-black transition-all space-y-3 ${
                 isActive
-                  ? 'ring-3 ring-[#0B4627] shadow-[4px_4px_0px_0px_#0B4627] bg-[#F0FDF4]'
-                  : isCompleted
-                  ? 'opacity-85 bg-emerald-50/60 shadow-[2px_2px_0px_0px_#111827]'
-                  : 'shadow-[2px_2px_0px_0px_#111827]'
+                  ? 'bg-[#FEFCE8] shadow-[6px_6px_0px_0px_#CA8A04] ring-2 ring-amber-400 scale-[1.01]'
+                  : isDone
+                  ? 'bg-[#ECFDF5] shadow-[3px_3px_0px_0px_#059669] opacity-90'
+                  : 'bg-white shadow-[3px_3px_0px_0px_#111827]'
               }`}
             >
-              {/* Ayah Header Bar */}
-              <div className="flex items-center justify-between border-b border-dashed border-gray-300 pb-2 mb-3">
+              {/* Ayah Header Badge */}
+              <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                 <div className="flex items-center gap-2">
-                  <span className={`w-7 h-7 rounded-lg border-2 border-black flex items-center justify-center font-bold text-xs ${
-                    isCompleted ? 'bg-[#10B981] text-white font-black' : isActive ? 'bg-[#F59E0B] text-black font-black' : 'bg-gray-200 text-gray-700'
-                  }`}>
+                  <span
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black border-2 border-black ${
+                      isDone
+                        ? 'bg-[#10B981] text-white'
+                        : isActive
+                        ? 'bg-[#F59E0B] text-black animate-pulse'
+                        : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
                     {ayat.numberInSurah}
                   </span>
-                  <span className="text-xs font-bold text-gray-700 flex items-center gap-1">
-                    Ayat ke-{ayat.numberInSurah} {isCompleted ? <span className="text-emerald-700 font-black">✓ Lulus Mutqin</span> : isActive ? <span className="text-amber-700 font-black animate-pulse">● Sedang Dilantunkan</span> : null}
-                  </span>
+                  <span className="text-xs font-black text-gray-600">Ayat ke-{ayat.numberInSurah}</span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => audioPlayer.playAyat(ayat.surahNumber, ayat.numberInSurah, undefined, activeReciter.id)}
-                    className="p-1.5 bg-white hover:bg-[#FEF3C7] text-[#0B4627] border border-black rounded-lg text-xs font-bold neo-button cursor-pointer flex items-center gap-1"
-                    title="Dengarkan Suara Syekh"
-                  >
-                    <Volume2 className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Dengar Syekh</span>
-                  </button>
-                </div>
+                {isDone ? (
+                  <span className="flex items-center gap-1 text-[11px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-400">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Lulus Mutqin
+                  </span>
+                ) : isActive ? (
+                  <span className="flex items-center gap-1 text-[11px] font-black text-amber-900 bg-amber-200 px-2.5 py-0.5 rounded-full border border-amber-500 animate-bounce">
+                    <span className="w-2 h-2 rounded-full bg-amber-600 animate-ping"></span> Sedang Dibaca...
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-bold text-gray-400">Menunggu antrean</span>
+                )}
               </div>
 
-              {/* Word-by-Word Arabic Text with Live Highlighting & Tap-to-Pass */}
-              <div className="my-2 text-right" dir="rtl">
-                <div className="flex flex-wrap gap-x-2 gap-y-3 items-center justify-start">
-                  {words.map((word, wIdx) => {
-                    const isMatched = matchedIndices.includes(wIdx) || isCompleted;
-                    const isCurrentlyTargeted = isActive && matchedIndices.length === wIdx;
+              {/* Arabic Text with Word-by-Word Active Highlighting */}
+              <div className="text-right py-2 leading-loose" dir="rtl">
+                <div className="flex flex-wrap gap-2 justify-start flex-row-reverse items-center">
+                  {words.map((w, wIdx) => {
+                    const isWordDone = matchedWords.includes(wIdx);
+                    const isCurrentWordTarget = isActive && matchedWords.length === wIdx;
 
                     return (
                       <span
                         key={wIdx}
                         onClick={() => {
-                          if (isActive && isCurrentlyTargeted) {
+                          if (isActive && isCurrentWordTarget) {
                             continuousTracker.advanceCurrentWord(true);
                           }
                         }}
-                        title={isCurrentlyTargeted ? 'Klik jika lisan antum benar tapi mic salah mendikte!' : undefined}
-                        className={`font-quran text-2xl sm:text-3xl leading-relaxed px-2.5 py-1 rounded-xl border-2 transition-all flex items-center gap-1 select-none ${
-                          isMatched
-                            ? 'bg-[#10B981] text-white border-black font-bold shadow-[2px_2px_0px_0px_#000] scale-100'
-                            : isCurrentlyTargeted
-                            ? 'bg-[#F59E0B] text-black border-black font-black shadow-[3px_3px_0px_0px_#000] scale-105 animate-pulse ring-2 ring-amber-400 cursor-pointer hover:bg-amber-400'
-                            : 'text-emerald-950 bg-white/70 border-gray-300 opacity-80'
+                        title={isCurrentWordTarget ? "Klik untuk lewati kata ini jika dikte macet" : undefined}
+                        className={`font-arabic text-2xl sm:text-3xl px-2 py-1 rounded-xl transition-all inline-block select-none ${
+                          isWordDone
+                            ? 'bg-[#10B981] text-white shadow-xs font-bold scale-105'
+                            : isCurrentWordTarget
+                            ? 'bg-[#FBBF24] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000] scale-110 font-bold animate-pulse cursor-pointer hover:bg-amber-300'
+                            : 'text-gray-800'
                         }`}
                       >
-                        {word}
-                        {isMatched && <span className="text-[10px] font-sans font-black text-amber-200">✓</span>}
-                        {isCurrentlyTargeted && <span className="text-[9px] font-sans font-bold bg-black text-amber-300 px-1 rounded ml-1">Klik Bantu</span>}
+                        {w}
                       </span>
                     );
                   })}
-                  <span className="w-7 h-7 rounded-full border border-black bg-[#F59E0B] text-black font-quran text-xs flex items-center justify-center font-bold mr-1">
+                  <span className="text-sm font-arabic font-bold text-[#0B4627] px-2 py-0.5 bg-emerald-50 rounded-full border border-emerald-300">
                     ۝{ayat.numberInSurah}
                   </span>
                 </div>
               </div>
 
-              {/* Transliteration & Meaning */}
-              {ayat.transliteration && (
-                <p className="text-xs font-semibold text-[#0B4627] mt-2 italic">
-                  "{ayat.transliteration}"
-                </p>
-              )}
+              {/* Transliteration & Indonesian Translation */}
+              <p className="text-xs text-emerald-900 font-bold border-t border-gray-200 pt-2 font-mono">
+                {ayat.transliteration}
+              </p>
               <p className="text-xs text-gray-700 italic border-t border-gray-200 pt-1.5 mt-1 font-medium">
                 "{ayat.translation}"
               </p>
@@ -525,8 +547,8 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         })}
       </div>
 
-      {/* 4. REAL-TIME LIVE CONTROL BAR */}
-      <div className="sticky bottom-4 z-30 bg-[#FFFDF7] border-3 border-black rounded-2xl p-4 shadow-[6px_6px_0px_0px_#111827] space-y-3">
+      {/* 4. REAL-TIME LIVE CONTROL BAR & HIGH-VISIBILITY MOBILE SUBTITLE HUD */}
+      <div className="sticky bottom-3 z-30 bg-[#FFFDF7] border-3 border-black rounded-2xl p-4 shadow-[6px_6px_0px_0px_#111827] space-y-3">
         {/* Live Sheikh Correction Alert */}
         {sheikhTeguranMessage && (
           <div className="p-3 bg-[#FEE2E2] border-2 border-red-500 rounded-xl flex items-center justify-between gap-2 animate-bounce text-xs font-bold text-red-900">
@@ -542,25 +564,64 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           </div>
         )}
 
-        {/* Live Audio Transcript & Decibel Meter */}
+        {/* 📱 HIGH-VISIBILITY LIVE DICTATION SUBTITLE HUD (Mobile Optimized) */}
         {isRecording && (
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between bg-[#F0FDF4] p-2.5 rounded-xl border border-emerald-300 text-xs">
-              <div className="flex items-center gap-2 truncate pr-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
-                <p className="font-mono text-emerald-900 font-bold truncate">
-                  Lafal terdeteksi: {liveTranscript || 'Mendengarkan lantunan ayat...'}
-                </p>
+          <div className="space-y-2 bg-[#064E3B] text-white p-3.5 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000]">
+            {/* Header: VU Sound Level Meter & Connection Badge */}
+            <div className="flex items-center justify-between text-xs font-black border-b border-emerald-700 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+                <span className="text-emerald-200 font-bold uppercase tracking-wider text-[11px]">
+                  🎙️ Mesin Pendengar Aktif
+                </span>
               </div>
-              <div className="flex items-center gap-1 shrink-0 font-mono text-[11px] font-bold text-emerald-800">
-                <Activity className="w-3.5 h-3.5 text-[#0B4627]" />
-                <span>VU: {micVolume} dB</span>
+              <div className="flex items-center gap-1.5 font-mono text-[11px] bg-[#0B4627] px-2.5 py-1 rounded-lg border border-emerald-600">
+                <Activity className="w-3.5 h-3.5 text-[#F59E0B] animate-pulse" />
+                <span>VU: <b>{micVolume} dB</b></span>
+                <span className={`w-2 h-2 rounded-full ml-1 ${micVolume > 15 ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
               </div>
             </div>
 
-            {/* Smart Assist Info Badge */}
-            <div className="flex items-center justify-between bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-300 text-[11px] text-amber-900 font-bold">
-              <span>💡 Jika lisan antum sudah benar tapi dikte mic macet, klik langsung tombol <b>"⚡ Bantu Kata"</b> atau klik kata kuning di atas!</span>
+            {/* Live Dictation Display (Large, Multi-line, Wrap-friendly) */}
+            <div className="bg-[#022C22] p-3 rounded-lg border border-emerald-600 min-h-[56px] flex flex-col justify-center">
+              <p className="text-[10px] font-black uppercase text-emerald-400 tracking-wider">Lafal Yang Tertangkap Mic:</p>
+              <p className="text-sm sm:text-base font-bold text-amber-300 font-arabic leading-relaxed break-words mt-0.5">
+                {liveTranscript ? (
+                  `"${liveTranscript}"`
+                ) : (
+                  <span className="text-emerald-300 text-xs italic font-sans font-normal">
+                    ⏳ Silakan lantunkan ayat... (Dekatkan HP ~10-15cm ke bibir)
+                  </span>
+                )}
+              </p>
+            </div>
+
+            {/* Sensitivitas & Touch Assist Helper */}
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-emerald-300 font-bold">Sensitivitas Mic:</span>
+                {(['normal', 'high', 'ultra'] as const).map((lvl) => (
+                  <button
+                    key={lvl}
+                    onClick={() => {
+                      setMicSensitivity(lvl);
+                      speechEngine.setSensitivity(lvl);
+                      continuousTracker.setSensitivity(lvl);
+                    }}
+                    className={`px-2 py-0.5 rounded text-[10px] font-black border transition-all cursor-pointer ${
+                      micSensitivity === lvl
+                        ? 'bg-[#F59E0B] text-black border-black shadow-xs'
+                        : 'bg-emerald-900 text-emerald-300 border-emerald-700 hover:bg-emerald-800'
+                    }`}
+                  >
+                    {lvl === 'normal' ? '🟢 Normal' : lvl === 'high' ? '🟡 Sensitif HP' : '🔥 Super Boost (Ramai)'}
+                  </button>
+                ))}
+              </div>
+
+              <span className="text-amber-200 text-[10px] font-semibold">
+                💡 Tap kata kuning atau tombol <b>⚡ Bantu Kata</b> bila dikte macet.
+              </span>
             </div>
           </div>
         )}
@@ -583,13 +644,13 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                   className="px-5 py-3 bg-[#EF4444] hover:bg-[#DC2626] text-white font-black text-sm rounded-xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[3px_3px_0px_0px_#000]"
                 >
                   <MicOff className="w-4 h-4" />
-                  <span>Selesai / Hentikan Sesi</span>
+                  <span>Selesai Sesi</span>
                 </button>
 
                 {/* Instant Skip / Assist Active Word Button */}
                 <button
                   onClick={() => continuousTracker.advanceCurrentWord(true)}
-                  className="px-3.5 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs rounded-xl border-2 border-black neo-button flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+                  className="px-4 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs sm:text-sm rounded-xl border-2 border-black neo-button flex items-center gap-1.5 cursor-pointer shadow-[3px_3px_0px_0px_#000] animate-pulse"
                   title="Lewati kata aktif jika pelafalan benar tapi dikte mic gagal mengenali"
                 >
                   <Zap className="w-4 h-4 fill-black" />
@@ -608,8 +669,8 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           </div>
 
           {/* Speech Engine Dialect Selector */}
-          <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl border border-black text-xs font-bold">
-            <span className="text-[10px] font-black text-gray-600 px-1">Dialek Mic:</span>
+          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl border border-black text-xs font-bold">
+            <span className="text-[10px] font-black text-gray-600 px-1">Dialek:</span>
             {(['ar-SA', 'ar-KW', 'id-ID'] as const).map((langCode) => (
               <button
                 key={langCode}

@@ -11,7 +11,23 @@ export class AudioRecorderService {
   private recordedBlobUrl: string | null = null;
   private animFrameId: number | null = null;
 
-  public async startRecording(onVolumeUpdate?: (volume: number) => void): Promise<boolean> {
+  public async startRecording(
+    onVolumeUpdateOrOptions?: ((volume: number) => void) | {
+      onVolumeUpdate?: (volume: number) => void;
+      enableMediaRecorder?: boolean;
+      boostGain?: boolean;
+    }
+  ): Promise<boolean> {
+    const onVolumeUpdate = typeof onVolumeUpdateOrOptions === 'function'
+      ? onVolumeUpdateOrOptions
+      : onVolumeUpdateOrOptions?.onVolumeUpdate;
+    const enableMediaRecorder = typeof onVolumeUpdateOrOptions === 'object' && onVolumeUpdateOrOptions !== null
+      ? (onVolumeUpdateOrOptions.enableMediaRecorder ?? false)
+      : false;
+    const boostGain = typeof onVolumeUpdateOrOptions === 'object' && onVolumeUpdateOrOptions !== null
+      ? (onVolumeUpdateOrOptions.boostGain ?? true)
+      : true;
+
     try {
       this.stopRecording();
       if (this.recordedBlobUrl) {
@@ -20,11 +36,11 @@ export class AudioRecorderService {
       }
       this.audioChunks = [];
 
-      // Request microphone access explicitly
+      // Request microphone access with tuned sensitivity constraints for mobile devices
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
-          noiseSuppression: true,
+          noiseSuppression: !boostGain, // Disable harsh hardware noise suppression when boost is active
           autoGainControl: true
         }
       });
@@ -34,9 +50,19 @@ export class AudioRecorderService {
       if (AudioCtx) {
         this.audioContext = new AudioCtx();
         const source = this.audioContext.createMediaStreamSource(this.mediaStream);
+        
+        let targetNode: AudioNode = source;
+        if (boostGain) {
+          const gainNode = this.audioContext.createGain();
+          gainNode.gain.value = 1.8; // Boost sensitivity for mobile / ambient noise
+          source.connect(gainNode);
+          targetNode = gainNode;
+        }
+
         this.analyser = this.audioContext.createAnalyser();
         this.analyser.fftSize = 256;
-        source.connect(this.analyser);
+        this.analyser.smoothingTimeConstant = 0.3;
+        targetNode.connect(this.analyser);
 
         const bufferLength = this.analyser.frequencyBinCount;
         this.dataArray = new Uint8Array(bufferLength);
@@ -50,8 +76,8 @@ export class AudioRecorderService {
             sum += this.dataArray[i];
           }
           const average = sum / this.dataArray.length;
-          // Scale from 0 to 100
-          const normalizedVol = Math.min(100, Math.round((average / 128) * 100));
+          // Scale from 0 to 100 with boosted dynamic range
+          const normalizedVol = Math.min(100, Math.round((average / 110) * 100));
 
           if (onVolumeUpdate) {
             onVolumeUpdate(normalizedVol);
@@ -63,8 +89,8 @@ export class AudioRecorderService {
         checkVolume();
       }
 
-      // MediaRecorder for playback & storage
-      if (typeof MediaRecorder !== 'undefined') {
+      // MediaRecorder only when explicitly requested (to prevent audio starvation on mobile)
+      if (enableMediaRecorder && typeof MediaRecorder !== 'undefined') {
         const mimeType = MediaRecorder.isTypeSupported('audio/webm')
           ? 'audio/webm'
           : MediaRecorder.isTypeSupported('audio/mp4')

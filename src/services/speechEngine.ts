@@ -263,43 +263,52 @@ export function analyzeSpokenToken(raw: string): SpokenTokenAnalysis {
   return { raw, normalized: norm, canonical: canon, stemCanon, latin };
 }
 
-// Ultra-Fast Word-Level Matcher using Precompiled Structures ($< 0.1ms$)
-export function isPrecompiledWordMatch(target: PrecompiledWord, candidate: SpokenTokenAnalysis): boolean {
+// Ultra-Fast Word-Level Matcher using Precompiled Structures ($< 0.1ms$) with Dynamic Sensitivity Boost
+export type SensitivityLevel = 'normal' | 'high' | 'ultra';
+
+export function isPrecompiledWordMatch(
+  target: PrecompiledWord,
+  candidate: SpokenTokenAnalysis,
+  sensitivity: SensitivityLevel = 'high'
+): boolean {
   // 1. Direct Equality Fast-Path (0.01ms)
   if (target.normalized === candidate.normalized || target.canonical === candidate.canonical) {
     return true;
   }
 
   // 2. Canonical Substring & Emphatic Phonetic Inclusion
+  const maxDiff = sensitivity === 'ultra' ? 4 : sensitivity === 'high' ? 3 : 2;
   if (target.canonical && candidate.canonical) {
     if (target.canonical === candidate.canonical ||
         target.stemCanon === candidate.stemCanon ||
         target.canonical.includes(candidate.canonical) ||
         candidate.canonical.includes(target.canonical)) {
-      if (Math.abs(target.charLength - candidate.canonical.length) <= 2) {
+      if (Math.abs(target.charLength - candidate.canonical.length) <= maxDiff) {
         return true;
       }
     }
   }
 
-  // 3. Fast Levenshtein on Canonical Roots (Threshold: 0.55)
-  if (fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= 0.55) {
+  // 3. Fast Levenshtein on Canonical Roots (Dynamic Threshold)
+  const canonThresh = sensitivity === 'ultra' ? 0.38 : sensitivity === 'high' ? 0.46 : 0.55;
+  if (fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= canonThresh) {
     return true;
   }
-  if (target.stemCanon && candidate.stemCanon && fastLevenshteinSimilarity(target.stemCanon, candidate.stemCanon) >= 0.55) {
+  if (target.stemCanon && candidate.stemCanon && fastLevenshteinSimilarity(target.stemCanon, candidate.stemCanon) >= canonThresh) {
     return true;
   }
 
   // 4. Latin Phonetics Soundex (Nusantara Tajwid Phonics)
+  const latinThresh = sensitivity === 'ultra' ? 0.36 : sensitivity === 'high' ? 0.44 : 0.52;
   if (target.latinPhonetic === candidate.latin) return true;
-  if (fastLevenshteinSimilarity(target.latinPhonetic, candidate.latin) >= 0.52) {
+  if (fastLevenshteinSimilarity(target.latinPhonetic, candidate.latin) >= latinThresh) {
     return true;
   }
 
   return false;
 }
 
-export function isWordMatch(targetArabic: string, candidateSpoken: string): boolean {
+export function isWordMatch(targetArabic: string, candidateSpoken: string, sensitivity: SensitivityLevel = 'high'): boolean {
   if (!targetArabic || !candidateSpoken) return false;
   const tNorm = normalizeArabic(targetArabic);
   const sNorm = normalizeArabic(candidateSpoken);
@@ -313,7 +322,10 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string): bool
   const sLatin = normalizeLatinPhonetics(candidateSpoken);
   if (tLatin === sLatin) return true;
 
-  return fastLevenshteinSimilarity(tCanon, sCanon) >= 0.55 || fastLevenshteinSimilarity(tLatin, sLatin) >= 0.52;
+  const canonThresh = sensitivity === 'ultra' ? 0.38 : sensitivity === 'high' ? 0.46 : 0.55;
+  const latinThresh = sensitivity === 'ultra' ? 0.36 : sensitivity === 'high' ? 0.44 : 0.52;
+
+  return fastLevenshteinSimilarity(tCanon, sCanon) >= canonThresh || fastLevenshteinSimilarity(tLatin, sLatin) >= latinThresh;
 }
 
 // ==============================================================================
@@ -326,12 +338,14 @@ export interface SpeechListenerOptions {
   onError?: (err: any) => void;
   onEnd?: () => void;
   language?: 'ar-SA' | 'id-ID' | 'ar-KW' | 'ar-EG';
+  sensitivity?: SensitivityLevel;
 }
 
 export class SpeechEngine {
   private recognition: any = null;
   private isListening = false;
   private currentLanguage: 'ar-SA' | 'id-ID' | 'ar-KW' | 'ar-EG' = 'ar-SA';
+  private sensitivity: SensitivityLevel = 'high';
   private accumulatedTranscript = '';
   private alternativeHypotheses: string[] = [];
   private restartTimeout: any = null;
@@ -370,6 +384,14 @@ export class SpeechEngine {
     return this.currentLanguage;
   }
 
+  public setSensitivity(level: SensitivityLevel): void {
+    this.sensitivity = level;
+  }
+
+  public getSensitivity(): SensitivityLevel {
+    return this.sensitivity;
+  }
+
   public startListening(options: SpeechListenerOptions): boolean {
     const SpeechClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechClass) {
@@ -389,6 +411,9 @@ export class SpeechEngine {
       this.recognition.interimResults = true;
       this.recognition.maxAlternatives = 5;
       this.recognition.lang = options.language || this.currentLanguage;
+      if (options.sensitivity) {
+        this.sensitivity = options.sensitivity;
+      }
 
       this.accumulatedTranscript = '';
       this.alternativeHypotheses = [];
@@ -403,7 +428,7 @@ export class SpeechEngine {
           if (res.isFinal) {
             finalText += res[0].transcript + ' ';
           } else {
-            interimText += res[0].transcript;
+            interimText += res[0].transcript + ' ';
           }
 
           for (let alt = 0; alt < res.length; alt++) {
@@ -414,23 +439,32 @@ export class SpeechEngine {
         }
 
         const consolidated = (finalText + ' ' + interimText).trim();
-        this.accumulatedTranscript = consolidated;
-        this.alternativeHypotheses = currentAlternatives;
+        if (consolidated) {
+          this.accumulatedTranscript = consolidated;
+          this.alternativeHypotheses = currentAlternatives;
 
-        if (interimText && options.onInterimResult) {
-          options.onInterimResult(consolidated, currentAlternatives);
-        }
-        if (options.onFinalResult) {
-          options.onFinalResult(consolidated, currentAlternatives);
+          if (options.onInterimResult) {
+            options.onInterimResult(consolidated, currentAlternatives);
+          }
+          if (options.onFinalResult) {
+            options.onFinalResult(consolidated, currentAlternatives);
+          }
         }
       };
 
       this.recognition.onerror = (e: any) => {
-        if (e.error !== 'no-speech' && e.error !== 'audio-capture') {
-          console.warn('Speech recognition warning:', e.error);
-        }
-        if (options.onError) {
-          options.onError(e);
+        if (e.error === 'no-speech' || e.error === 'audio-capture') {
+          // Immediately recover on mobile background silence/noise without killing session
+          if (this.isListening) {
+            try {
+              this.recognition.stop();
+            } catch {}
+          }
+        } else {
+          console.warn('Speech recognition status:', e.error);
+          if (options.onError) {
+            options.onError(e);
+          }
         }
       };
 
@@ -442,11 +476,15 @@ export class SpeechEngine {
               try {
                 this.recognition.start();
               } catch {
-                this.isListening = false;
-                if (options.onEnd) options.onEnd();
+                // Secondary auto-retry
+                setTimeout(() => {
+                  if (this.isListening && this.recognition) {
+                    try { this.recognition.start(); } catch {}
+                  }
+                }, 100);
               }
             }
-          }, 150);
+          }, 50);
         } else {
           if (options.onEnd) options.onEnd();
         }
@@ -649,8 +687,9 @@ export class ContinuousMurojaahTracker {
   private totalWordsCount = 0;
   private matchedWordsCount = 0;
   private processedWordCursor = 0;
+  private sensitivity: SensitivityLevel = 'high';
 
-  public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks): void {
+  public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'high'): void {
     this.targetAyats = ayats;
     this.precompiledAyats = ayats.map(a => precompileAyat(a));
     this.callbacks = callbacks;
@@ -661,10 +700,19 @@ export class ContinuousMurojaahTracker {
     this.totalErrors = 0;
     this.matchedWordsCount = 0;
     this.totalWordsCount = this.precompiledAyats.reduce((sum, a) => sum + a.words.length, 0);
+    this.sensitivity = sensitivity;
     this.isActive = true;
     this.isPaused = false;
     this.lastMatchTime = Date.now();
     this.resetHesitationWatchdog();
+  }
+
+  public setSensitivity(s: SensitivityLevel): void {
+    this.sensitivity = s;
+  }
+
+  public getSensitivity(): SensitivityLevel {
+    return this.sensitivity;
   }
 
   public stop(): void {
@@ -736,6 +784,9 @@ export class ContinuousMurojaahTracker {
     const analyzedSlice: SpokenTokenAnalysis[] = activeRawSlice.map(w => analyzeSpokenToken(w));
     let matchedInThisCycle = false;
 
+    const compCanonThresh = this.sensitivity === 'ultra' ? 0.45 : this.sensitivity === 'high' ? 0.52 : 0.60;
+    const compLatinThresh = this.sensitivity === 'ultra' ? 0.42 : this.sensitivity === 'high' ? 0.48 : 0.55;
+
     while (this.currentWordIndex < expectedWords.length) {
       const targetWord = expectedWords[this.currentWordIndex];
       let advanceCount = 0;
@@ -748,8 +799,8 @@ export class ContinuousMurojaahTracker {
           for (let sIdx = 0; sIdx < analyzedSlice.length; sIdx++) {
             const spoken = analyzedSlice[sIdx];
             if (spoken.canonical === comp2.canonical ||
-                fastLevenshteinSimilarity(comp2.canonical, spoken.canonical) >= 0.60 ||
-                fastLevenshteinSimilarity(comp2.latin, spoken.latin) >= 0.55) {
+                fastLevenshteinSimilarity(comp2.canonical, spoken.canonical) >= compCanonThresh ||
+                fastLevenshteinSimilarity(comp2.latin, spoken.latin) >= compLatinThresh) {
               advanceCount = 2;
               consumedOffset = sIdx;
               break;
@@ -762,7 +813,7 @@ export class ContinuousMurojaahTracker {
       if (advanceCount === 0) {
         for (let sIdx = 0; sIdx < analyzedSlice.length; sIdx++) {
           const spoken = analyzedSlice[sIdx];
-          if (isPrecompiledWordMatch(targetWord, spoken)) {
+          if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
             advanceCount = 1;
             consumedOffset = sIdx;
             break;
@@ -776,7 +827,7 @@ export class ContinuousMurojaahTracker {
         const nextTargetWord = expectedWords[this.currentWordIndex + 1];
         for (let sIdx = 0; sIdx < analyzedSlice.length; sIdx++) {
           const spoken = analyzedSlice[sIdx];
-          if (isPrecompiledWordMatch(nextTargetWord, spoken)) {
+          if (isPrecompiledWordMatch(nextTargetWord, spoken, this.sensitivity)) {
             advanceCount = 2;
             consumedOffset = sIdx;
             break;
