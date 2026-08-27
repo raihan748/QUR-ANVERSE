@@ -7,7 +7,6 @@
 
 import { Ayat, EvaluationResult } from '../types';
 import { formatAlafasyAudioUrl } from './audioPlayerService';
-import { getTajweedColorForWord } from './quranTajweedGharibService';
 
 // ==============================================================================
 // 1. REUSABLE ZERO-ALLOCATION 1D TYPED BUFFER LEVENSHTEIN (15x Faster, 0 Bytes GC)
@@ -196,7 +195,6 @@ export interface PrecompiledWord {
   stemCanon: string;
   latinPhonetic: string;
   charLength: number;
-  tajweedRule?: string;
 }
 
 export interface PrecompiledAyah {
@@ -217,15 +215,13 @@ export function precompileAyat(ayat: Ayat): PrecompiledAyah {
     const stem = stripArabicPrefixes(norm);
     const stemCanon = canonicalizeArabicPhonemes(stem);
     const latin = arabicToPhoneticLatin(raw);
-    const tajweed = getTajweedColorForWord(raw);
     return {
       raw,
       normalized: norm,
       canonical: canon,
       stemCanon,
       latinPhonetic: latin,
-      charLength: canon.length,
-      tajweedRule: tajweed.ruleName
+      charLength: canon.length
     };
   });
 
@@ -703,7 +699,6 @@ export class ContinuousMurojaahTracker {
   private totalWordsCount = 0;
   private matchedWordsCount = 0;
   private sensitivity: SensitivityLevel = 'ultra';
-  private failedAttemptsOnWord = 0;
 
   public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'ultra'): void {
     this.targetAyats = ayats;
@@ -714,7 +709,6 @@ export class ContinuousMurojaahTracker {
     this.matchedWordsMap.clear();
     this.totalErrors = 0;
     this.matchedWordsCount = 0;
-    this.failedAttemptsOnWord = 0;
     this.totalWordsCount = this.precompiledAyats.reduce((sum, a) => sum + a.words.length, 0);
     this.sensitivity = sensitivity;
     this.isActive = true;
@@ -764,19 +758,19 @@ export class ContinuousMurojaahTracker {
   }
 
   public isAyahActive(ayahIndex: number): boolean {
-    return this.isActive && this.currentAyahIndex === ayahIndex;
+    return this.currentAyahIndex === ayahIndex;
   }
 
   public isAyahCompleted(ayahIndex: number): boolean {
     return ayahIndex < this.currentAyahIndex;
   }
 
-  public getCurrentTargetWord(): PrecompiledWord | null {
-    return this.precompiledAyats[this.currentAyahIndex]?.words[this.currentWordIndex] || null;
-  }
-
-  public getActivePointer() {
+  public getCurrentTargetWord(): { raw: string; ayahIndex: number; wordIndex: number } | null {
+    if (!this.precompiledAyats[this.currentAyahIndex]) return null;
+    const words = this.precompiledAyats[this.currentAyahIndex].words;
+    if (!words[this.currentWordIndex]) return null;
     return {
+      raw: words[this.currentWordIndex].raw,
       ayahIndex: this.currentAyahIndex,
       wordIndex: this.currentWordIndex
     };
@@ -801,7 +795,9 @@ export class ContinuousMurojaahTracker {
     if (rawTokens.length === 0) return;
 
     const analyzedTokens: SpokenTokenAnalysis[] = rawTokens.map(w => analyzeSpokenToken(w));
-    
+    const consumedTokenIndices = new Set<number>();
+    let anyMatched = false;
+
     // Strictly 1-by-1 chronological progression: Match AT MOST ONE WORD per delta event
     const targetWord = expectedWords[this.currentWordIndex];
     if (!targetWord) return;
@@ -818,8 +814,6 @@ export class ContinuousMurojaahTracker {
     }
 
     if (matchedTokenIndex >= 0) {
-      this.failedAttemptsOnWord = 0;
-
       if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
         this.matchedWordsMap.set(this.currentAyahIndex, new Set());
       }
@@ -849,7 +843,6 @@ export class ContinuousMurojaahTracker {
 
         this.currentAyahIndex++;
         this.currentWordIndex = 0;
-        this.failedAttemptsOnWord = 0;
 
         if (this.currentAyahIndex >= this.targetAyats.length) {
           this.isActive = false;
@@ -861,38 +854,24 @@ export class ContinuousMurojaahTracker {
         }
       }
     } else if (isFinal && analyzedTokens.length > 0) {
-      // Evaluate Mismatch ONLY on finalized spoken word (with patient 4-attempt buffer to prevent rushed interruptions)
+      // ONLY on final transcript event when user uttered an unmatchable word
       const targetWord = expectedWords[this.currentWordIndex];
       const lastSpoken = analyzedTokens[analyzedTokens.length - 1];
-      if (targetWord && lastSpoken && (lastSpoken.canonical.length >= 2 || lastSpoken.latin.length >= 3)) {
+      if (targetWord && lastSpoken && (lastSpoken.canonical.length >= 3 || lastSpoken.latin.length >= 4)) {
         const canonSim = fastLevenshteinSimilarity(targetWord.canonical, lastSpoken.canonical);
         const latinSim = fastLevenshteinSimilarity(targetWord.latinPhonetic, lastSpoken.latin);
 
-        // If completed word is definitely wrong (mismatch < 0.40)
-        if (canonSim < 0.40 && latinSim < 0.40) {
-          this.failedAttemptsOnWord++;
-
-          // Patient buffer: Require 4 consecutive failed finalized utterances before interrupting
-          if (this.failedAttemptsOnWord >= 4) {
-            this.failedAttemptsOnWord = 0;
-
-            let reason = `Lafal belum sesuai. Target: «${targetWord.raw}», terdengar: «${lastSpoken.raw}».`;
-            if (targetWord.tajweedRule) {
-              reason = `Koreksi Tajwid [${targetWord.tajweedRule}]: Lafal pada kata «${targetWord.raw}» belum tepat (terdengar: «${lastSpoken.raw}»). Dengarkan bimbingan Syekh berikut.`;
-            }
-
-            this.totalErrors++;
-            this.isPaused = true;
-            this.clearHesitationWatchdog();
-            if (this.callbacks) {
-              this.callbacks.onErrorDetected(
-                this.currentAyahIndex,
-                this.currentWordIndex,
-                reason,
-                targetWord.raw,
-                lastSpoken.raw
-              );
-            }
+        if (canonSim < 0.28 && latinSim < 0.28) {
+          const reason = `Kata tertukar atau lafal tidak sesuai. Target: «${targetWord.raw}», terdengar: «${lastSpoken.raw}».`;
+          this.totalErrors++;
+          if (this.callbacks) {
+            this.callbacks.onErrorDetected(
+              this.currentAyahIndex,
+              this.currentWordIndex,
+              reason,
+              targetWord.raw,
+              lastSpoken.raw
+            );
           }
         }
       }
@@ -908,8 +887,6 @@ export class ContinuousMurojaahTracker {
     const currentPrecompiled = this.precompiledAyats[this.currentAyahIndex];
     const expectedWords = currentPrecompiled.words;
     if (this.currentWordIndex >= expectedWords.length) return false;
-
-    this.failedAttemptsOnWord = 0;
 
     if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
       this.matchedWordsMap.set(this.currentAyahIndex, new Set());
@@ -937,7 +914,6 @@ export class ContinuousMurojaahTracker {
       }
       this.currentAyahIndex++;
       this.currentWordIndex = 0;
-      this.failedAttemptsOnWord = 0;
 
       if (this.currentAyahIndex >= this.targetAyats.length) {
         this.isActive = false;
@@ -954,7 +930,6 @@ export class ContinuousMurojaahTracker {
   public resumeAfterCorrection(): void {
     if (!this.isActive) return;
     this.isPaused = false;
-    this.failedAttemptsOnWord = 0;
     this.lastMatchTime = Date.now();
     this.resetHesitationWatchdog();
   }
@@ -963,30 +938,22 @@ export class ContinuousMurojaahTracker {
     this.clearHesitationWatchdog();
     if (!this.isActive || this.isPaused) return;
 
-    // Patient 10.0s comfortable recitation watchdog timer (allows slow tartil recitation & pauses)
     this.hesitationTimer = setTimeout(() => {
       if (this.isActive && !this.isPaused && this.targetAyats[this.currentAyahIndex]) {
         const target = this.getCurrentTargetWord();
         this.totalErrors++;
         this.isPaused = true;
-        this.failedAttemptsOnWord = 0;
-
-        let reason = `Jeda terhenti pada kata «${target?.raw || ''}». Syekh mencontohkan bacaan yang benar.`;
-        if (target?.tajweedRule) {
-          reason = `Perhatikan hukum Tajwid [${target.tajweedRule}] pada kata «${target.raw}». Simak bimbingan Syekh berikut.`;
-        }
-
         if (this.callbacks) {
           this.callbacks.onErrorDetected(
             this.currentAyahIndex,
             this.currentWordIndex,
-            reason,
+            `Jeda pelafalan terhenti pada kata «${target?.raw || ''}». Syekh memberikan bimbingan bacaan yang benar.`,
             target?.raw || '',
             ''
           );
         }
       }
-    }, 10000);
+    }, 8000);
   }
 
   private clearHesitationWatchdog(): void {

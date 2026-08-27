@@ -138,7 +138,7 @@ export function App() {
         onClose={() => setIsInstallModalOpen(false)}
       />
 
-      {/* Supabase Auth & Profile Modal */}
+      {/* Profile & Hafidz Card Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
