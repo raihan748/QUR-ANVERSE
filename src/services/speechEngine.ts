@@ -853,16 +853,16 @@ export class ContinuousMurojaahTracker {
           }
         }
       }
-    } else if (analyzedTokens.length > 0) {
-      // Rapid Real-time Mismatch Evaluator (Instant correction without waiting for browser finalization silence)
+    } else if (isFinal && analyzedTokens.length > 0) {
+      // Evaluate Mismatch ONLY on finalized spoken word (never interrupt the user mid-sentence)
       const targetWord = expectedWords[this.currentWordIndex];
       const lastSpoken = analyzedTokens[analyzedTokens.length - 1];
       if (targetWord && lastSpoken && (lastSpoken.canonical.length >= 2 || lastSpoken.latin.length >= 3)) {
         const canonSim = fastLevenshteinSimilarity(targetWord.canonical, lastSpoken.canonical);
         const latinSim = fastLevenshteinSimilarity(targetWord.latinPhonetic, lastSpoken.latin);
 
-        // If user uttered an incompatible/wrong word (mismatch < 0.38)
-        if (canonSim < 0.38 && latinSim < 0.38) {
+        // If completed word is definitely wrong (mismatch < 0.40)
+        if (canonSim < 0.40 && latinSim < 0.40) {
           const reason = `Lafal tidak cocok atau kata keliru. Target: «${targetWord.raw}», terdengar: «${lastSpoken.raw}».`;
           this.totalErrors++;
           this.isPaused = true;
