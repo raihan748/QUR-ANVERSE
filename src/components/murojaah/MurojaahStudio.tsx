@@ -200,12 +200,12 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       onInterimResult: (text, alts) => {
         setLiveTranscript(text);
         setMicVolume(Math.min(95, 45 + Math.round(Math.random() * 40)));
-        continuousTracker.processStream(text, alts);
+        continuousTracker.processStream(text, alts, false);
       },
       onFinalResult: (text, alts) => {
         setLiveTranscript(text);
         setMicVolume(Math.min(95, 55 + Math.round(Math.random() * 35)));
-        continuousTracker.processStream(text, alts);
+        continuousTracker.processStream(text, alts, true);
       },
       onError: (err) => {
         console.warn('Mic status warning:', err);
@@ -268,12 +268,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         const targetAyat = passageAyats[ayahIdx];
         if (!targetAyat) return;
 
-        // 🚨 1. Stop mic & play Alarm Teguran immediately
-        speechEngine.stopListening();
-        setIsRecording(false);
-        audioPlayer.playAlarmTeguranSound();
-
-        // 🚨 2. Highlight word in RED & set error state
+        // 🚨 1. Highlight word in RED & set error state
         setErrorWordState({
           ayahIdx,
           wordIdx,
@@ -282,7 +277,9 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           spokenWord: spokenWord || ''
         });
         setSheikhTeguranMessage(`🚨 Teguran Syekh: ${reason}`);
-        setIsSheikhSpeaking(true);
+
+        // Soft alarm warning chime without forcefully disconnecting microphone
+        audioPlayer.playAlarmTeguranSound();
 
         // Record weak verse for spaced repetition
         recordWeakVerse({
@@ -294,16 +291,6 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           errorCount: 1,
           resolved: false
         });
-
-        // 🚨 3. Sheikh Voice Correction Intervention
-        await audioPlayer.playSheikhIntervention(
-          targetAyat.surahNumber,
-          targetAyat.numberInSurah,
-          activeReciter.id,
-          () => {
-            setIsSheikhSpeaking(false);
-          }
-        );
       },
       onPassageCompleted: (score) => {
         setIsRecording(false);
@@ -340,12 +327,12 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       onInterimResult: (text, alts) => {
         setLiveTranscript(text);
         setMicVolume(Math.min(95, 45 + Math.round(Math.random() * 40)));
-        continuousTracker.processStream(text, alts);
+        continuousTracker.processStream(text, alts, false);
       },
       onFinalResult: (text, alts) => {
         setLiveTranscript(text);
         setMicVolume(Math.min(95, 55 + Math.round(Math.random() * 35)));
-        continuousTracker.processStream(text, alts);
+        continuousTracker.processStream(text, alts, true);
       },
       onError: (err) => {
         console.warn('Mic status warning:', err);

@@ -293,7 +293,7 @@ export function isPrecompiledWordMatch(
     const diff = Math.abs(target.charLength - candidate.canonical.length);
     if (diff > 2) return false;
 
-    const shortThresh = sensitivity === 'ultra' ? 0.45 : sensitivity === 'high' ? 0.55 : 0.65;
+    const shortThresh = sensitivity === 'ultra' ? 0.35 : sensitivity === 'high' ? 0.45 : 0.55;
     return (
       fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= shortThresh ||
       (target.stemCanon && candidate.stemCanon && fastLevenshteinSimilarity(target.stemCanon, candidate.stemCanon) >= shortThresh) ||
@@ -301,20 +301,18 @@ export function isPrecompiledWordMatch(
     );
   }
 
-  // 4. Medium / Long Words (length > 3): Substring inclusion if ratio is significant
-  if (target.canonical.length >= 4 && candidate.canonical.length >= 4) {
+  // 4. Medium / Long Words (length > 3): Substring inclusion
+  if (target.canonical.length >= 3 && candidate.canonical.length >= 3) {
     if (target.canonical.includes(candidate.canonical) || candidate.canonical.includes(target.canonical)) {
-      const minLen = Math.min(target.canonical.length, candidate.canonical.length);
-      const maxLen = Math.max(target.canonical.length, candidate.canonical.length);
-      const minRatio = sensitivity === 'ultra' ? 0.45 : sensitivity === 'high' ? 0.55 : 0.65;
-      if (minLen / maxLen >= minRatio) {
-        return true;
-      }
+      return true;
+    }
+    if (target.latinPhonetic.includes(candidate.latin) || candidate.latin.includes(target.latinPhonetic)) {
+      return true;
     }
   }
 
-  // 5. Levenshtein Phonetic Similarity (Calibrated Thresholds for high sensitivity)
-  const canonThresh = sensitivity === 'ultra' ? 0.38 : sensitivity === 'high' ? 0.46 : 0.55;
+  // 5. Levenshtein Phonetic Similarity (Calibrated for Ultra-High Responsiveness)
+  const canonThresh = sensitivity === 'ultra' ? 0.32 : sensitivity === 'high' ? 0.40 : 0.50;
   if (fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= canonThresh) {
     return true;
   }
@@ -324,7 +322,7 @@ export function isPrecompiledWordMatch(
   }
 
   // 6. Latin Phonetics Soundex
-  const latinThresh = sensitivity === 'ultra' ? 0.36 : sensitivity === 'high' ? 0.44 : 0.52;
+  const latinThresh = sensitivity === 'ultra' ? 0.30 : sensitivity === 'high' ? 0.38 : 0.48;
   if (fastLevenshteinSimilarity(target.latinPhonetic, candidate.latin) >= latinThresh) {
     return true;
   }
@@ -346,8 +344,8 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string, sensi
   const sLatin = normalizeLatinPhonetics(candidateSpoken);
   if (tLatin === sLatin) return true;
 
-  const canonThresh = sensitivity === 'ultra' ? 0.38 : sensitivity === 'high' ? 0.46 : 0.55;
-  const latinThresh = sensitivity === 'ultra' ? 0.36 : sensitivity === 'high' ? 0.44 : 0.52;
+  const canonThresh = sensitivity === 'ultra' ? 0.32 : sensitivity === 'high' ? 0.40 : 0.50;
+  const latinThresh = sensitivity === 'ultra' ? 0.30 : sensitivity === 'high' ? 0.38 : 0.48;
 
   return fastLevenshteinSimilarity(tCanon, sCanon) >= canonThresh || fastLevenshteinSimilarity(tLatin, sLatin) >= latinThresh;
 }
@@ -801,8 +799,8 @@ export class ContinuousMurojaahTracker {
     };
   }
 
-  public processStream(rawTranscript: string, alternatives?: string[]): void {
-    if (!this.isActive || this.isPaused || !this.precompiledAyats[this.currentAyahIndex]) return;
+  public processStream(rawTranscript: string, alternatives?: string[], isFinal = false): void {
+    if (!this.isActive || !this.precompiledAyats[this.currentAyahIndex]) return;
 
     const currentPrecompiled = this.precompiledAyats[this.currentAyahIndex];
     const expectedWords = currentPrecompiled.words;
@@ -820,85 +818,95 @@ export class ContinuousMurojaahTracker {
     if (rawTokens.length === 0) return;
 
     const analyzedTokens: SpokenTokenAnalysis[] = rawTokens.map(w => analyzeSpokenToken(w));
-    const targetWord = expectedWords[this.currentWordIndex];
-    if (!targetWord) return;
+    const consumedTokenIndices = new Set<number>();
+    let anyMatched = false;
 
-    // Strictly check targetWord against spoken tokens
-    let matchedTokenIndex = -1;
-    for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
-      const spoken = analyzedTokens[sIdx];
-      if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
-        matchedTokenIndex = sIdx;
+    // Strictly 1-by-1 chronological progression without skipping
+    while (this.currentWordIndex < expectedWords.length) {
+      const targetWord = expectedWords[this.currentWordIndex];
+      let matchedTokenIndex = -1;
+
+      // Sequential Match: Find the first unconsumed spoken token that matches targetWord
+      for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
+        if (consumedTokenIndices.has(sIdx)) continue;
+        const spoken = analyzedTokens[sIdx];
+        if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
+          matchedTokenIndex = sIdx;
+          break;
+        }
+      }
+
+      if (matchedTokenIndex >= 0) {
+        consumedTokenIndices.add(matchedTokenIndex);
+        anyMatched = true;
+
+        if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
+          this.matchedWordsMap.set(this.currentAyahIndex, new Set());
+        }
+
+        const wIdx = this.currentWordIndex;
+        this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
+        this.matchedWordsCount++;
+
+        if (this.callbacks) {
+          this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, targetWord.raw);
+        }
+
+        this.currentWordIndex++;
+
+        // Check Ayah completion
+        if (this.currentWordIndex >= expectedWords.length) {
+          for (let i = 0; i < expectedWords.length; i++) {
+            this.matchedWordsMap.get(this.currentAyahIndex)!.add(i);
+          }
+
+          const currentAyat = this.targetAyats[this.currentAyahIndex];
+          if (this.callbacks) {
+            this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
+          }
+
+          this.currentAyahIndex++;
+          this.currentWordIndex = 0;
+
+          if (this.currentAyahIndex >= this.targetAyats.length) {
+            this.isActive = false;
+            this.clearHesitationWatchdog();
+            const score = Math.max(85, Math.round(100 - (this.totalErrors * 2)));
+            if (this.callbacks) {
+              this.callbacks.onPassageCompleted(score);
+            }
+          }
+
+          // Exit loop when an Ayah finishes to isolate verses
+          break;
+        }
+      } else {
+        // No match for this active word; wait for user to pronounce it
         break;
       }
     }
 
-    if (matchedTokenIndex >= 0) {
-      // 🟢 SUCCESS: Word matched correctly!
-      if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
-        this.matchedWordsMap.set(this.currentAyahIndex, new Set());
-      }
-
-      const wIdx = this.currentWordIndex;
-      this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
-      this.matchedWordsCount++;
-
-      if (this.callbacks) {
-        this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, targetWord.raw);
-      }
-
-      this.currentWordIndex++;
+    if (anyMatched) {
       this.lastMatchTime = Date.now();
       this.resetHesitationWatchdog();
+    } else if (isFinal && analyzedTokens.length > 0) {
+      // ONLY on final transcript event when user uttered an unmatchable word
+      const targetWord = expectedWords[this.currentWordIndex];
+      const lastSpoken = analyzedTokens[analyzedTokens.length - 1];
+      if (targetWord && lastSpoken && (lastSpoken.canonical.length >= 3 || lastSpoken.latin.length >= 4)) {
+        const canonSim = fastLevenshteinSimilarity(targetWord.canonical, lastSpoken.canonical);
+        const latinSim = fastLevenshteinSimilarity(targetWord.latinPhonetic, lastSpoken.latin);
 
-      // Check Ayah completion
-      if (this.currentWordIndex >= expectedWords.length) {
-        for (let i = 0; i < expectedWords.length; i++) {
-          this.matchedWordsMap.get(this.currentAyahIndex)!.add(i);
-        }
-
-        const currentAyat = this.targetAyats[this.currentAyahIndex];
-        if (this.callbacks) {
-          this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
-        }
-
-        this.currentAyahIndex++;
-        this.currentWordIndex = 0;
-
-        if (this.currentAyahIndex >= this.targetAyats.length) {
-          this.isActive = false;
-          this.clearHesitationWatchdog();
-          const score = Math.max(85, Math.round(100 - (this.totalErrors * 2)));
-          if (this.callbacks) {
-            this.callbacks.onPassageCompleted(score);
-          }
-        }
-      }
-    } else {
-      // 🔴 ERROR CHECK: If the user pronounced an incorrect word with substantial length
-      const firstSpoken = analyzedTokens[analyzedTokens.length - 1]; // Latest spoken token
-      if (firstSpoken && (firstSpoken.canonical.length >= 2 || firstSpoken.latin.length >= 3)) {
-        const canonSim = fastLevenshteinSimilarity(targetWord.canonical, firstSpoken.canonical);
-        const latinSim = fastLevenshteinSimilarity(targetWord.latinPhonetic, firstSpoken.latin);
-
-        // Only trigger auto-tegur if it is a definite mismatch
-        if (canonSim < 0.38 && latinSim < 0.36) {
-          let reason = `Kata tertukar atau lafal tidak sesuai. Target: «${targetWord.raw}», terdengar: «${firstSpoken.raw}».`;
-          if (canonSim > 0.25) {
-            reason = `Makhraj huruf kurang tepat pada kata «${targetWord.raw}». Perhatikan makhraj dan sifat huruf.`;
-          }
-
+        if (canonSim < 0.28 && latinSim < 0.28) {
+          const reason = `Kata tertukar atau lafal tidak sesuai. Target: «${targetWord.raw}», terdengar: «${lastSpoken.raw}».`;
           this.totalErrors++;
-          this.isPaused = true;
-          this.clearHesitationWatchdog();
-
           if (this.callbacks) {
             this.callbacks.onErrorDetected(
               this.currentAyahIndex,
               this.currentWordIndex,
               reason,
               targetWord.raw,
-              firstSpoken.raw
+              lastSpoken.raw
             );
           }
         }
