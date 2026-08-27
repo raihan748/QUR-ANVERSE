@@ -74,11 +74,49 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   const [inputMode, setInputMode] = useState<InputMode>('voice');
   const [dailyTarget, setDailyTarget] = useState<DailyQuranTarget>(getDailyTarget());
 
-  // Surah & Range Selection
-  const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(67); // Default QS. Al-Mulk
-  const [rangePreset, setRangePreset] = useState<'all' | '1-5' | '1-10' | '1-20' | 'custom'>('1-10');
-  const [startAyah, setStartAyah] = useState<number>(1);
-  const [endAyah, setEndAyah] = useState<number>(10);
+  // Surah & Range Selection (Persisted in LocalStorage)
+  const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('quranverse_murojaah_surah_num_v1');
+      if (saved) {
+        const num = parseInt(saved, 10);
+        if (num >= 1 && num <= 114) return num;
+      }
+    } catch {}
+    return 67; // Default Al-Mulk only on very first visit
+  });
+
+  const [rangePreset, setRangePreset] = useState<'all' | '1-5' | '1-10' | '1-20' | 'custom'>(() => {
+    try {
+      const saved = localStorage.getItem('quranverse_murojaah_preset_v1');
+      if (saved && ['all', '1-5', '1-10', '1-20', 'custom'].includes(saved)) {
+        return saved as any;
+      }
+    } catch {}
+    return '1-10';
+  });
+
+  const [startAyah, setStartAyah] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('quranverse_murojaah_start_ayah_v1');
+      if (saved) {
+        const s = parseInt(saved, 10);
+        if (s >= 1) return s;
+      }
+    } catch {}
+    return 1;
+  });
+
+  const [endAyah, setEndAyah] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('quranverse_murojaah_end_ayah_v1');
+      if (saved) {
+        const e = parseInt(saved, 10);
+        if (e >= 1) return e;
+      }
+    } catch {}
+    return 10;
+  });
 
   // Multi-Ayah Passage State
   const [passageAyats, setPassageAyats] = useState<Ayat[]>([]);
@@ -118,6 +156,16 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   // Auto-scroll ref for active verse
   const activeAyahRef = useRef<HTMLDivElement | null>(null);
 
+  // Save selected Surah & Range to LocalStorage whenever user changes it
+  useEffect(() => {
+    try {
+      localStorage.setItem('quranverse_murojaah_surah_num_v1', String(selectedSurahNumber));
+      localStorage.setItem('quranverse_murojaah_preset_v1', rangePreset);
+      localStorage.setItem('quranverse_murojaah_start_ayah_v1', String(startAyah));
+      localStorage.setItem('quranverse_murojaah_end_ayah_v1', String(endAyah));
+    } catch {}
+  }, [selectedSurahNumber, rangePreset, startAyah, endAyah]);
+
   // Load Passage Ayahs when Surah or Range changes
   useEffect(() => {
     let isMounted = true;
@@ -155,7 +203,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       audioRecorder.stopRecording();
       audioPlayer.stop();
     };
-  }, [selectedSurahNumber, rangePreset, startAyah, endAyah]);
+  }, [selectedSurahNumber, rangePreset, rangePreset === 'custom' ? startAyah : null, rangePreset === 'custom' ? endAyah : null]);
 
   // Scroll active verse into view
   useEffect(() => {
