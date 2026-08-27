@@ -422,51 +422,50 @@ export class SpeechEngine {
 
       this.recognition.onresult = (event: any) => {
         let interimText = '';
-        let finalText = '';
+        let finalChunk = '';
         const currentAlternatives: string[] = [];
 
-        for (let i = 0; i < event.results.length; i++) {
+        const startIndex = typeof event.resultIndex === 'number' ? event.resultIndex : 0;
+        for (let i = startIndex; i < event.results.length; i++) {
           const res = event.results[i];
+          if (!res || !res[0]) continue;
+
           if (res.isFinal) {
-            finalText += res[0].transcript + ' ';
+            finalChunk += res[0].transcript + ' ';
           } else {
             interimText += res[0].transcript + ' ';
           }
 
           for (let alt = 0; alt < res.length; alt++) {
-            if (res[alt] && res[alt].transcript) {
+            if (res[alt]?.transcript) {
               currentAlternatives.push(res[alt].transcript);
             }
           }
         }
 
-        const consolidated = (finalText + ' ' + interimText).trim();
+        let consolidated = (finalChunk + ' ' + interimText).trim();
+        if (!consolidated && event.results.length > 0) {
+          const last = event.results[event.results.length - 1];
+          if (last?.[0]?.transcript) {
+            consolidated = last[0].transcript.trim();
+          }
+        }
+
         if (consolidated) {
           this.accumulatedTranscript = consolidated;
           this.alternativeHypotheses = currentAlternatives;
 
-          if (options.onInterimResult) {
-            options.onInterimResult(consolidated, currentAlternatives);
-          }
-          if (options.onFinalResult) {
-            options.onFinalResult(consolidated, currentAlternatives);
-          }
+          options.onInterimResult?.(consolidated, currentAlternatives);
+          options.onFinalResult?.(consolidated, currentAlternatives);
         }
       };
 
       this.recognition.onerror = (e: any) => {
-        if (e.error === 'no-speech' || e.error === 'audio-capture') {
-          // Immediately recover on mobile background silence/noise without killing session
-          if (this.isListening) {
-            try {
-              this.recognition.stop();
-            } catch {}
-          }
-        } else {
-          console.warn('Speech recognition status:', e.error);
-          if (options.onError) {
-            options.onError(e);
-          }
+        console.warn('Speech recognition event error:', e.error);
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          this.isListening = false;
+          options.onError?.('Akses mikrofon ditolak oleh browser. Silakan izinkan akses mic di pengaturan.');
+          return;
         }
       };
 
@@ -474,21 +473,27 @@ export class SpeechEngine {
         if (this.isListening) {
           if (this.restartTimeout) clearTimeout(this.restartTimeout);
           this.restartTimeout = setTimeout(() => {
-            if (this.isListening && this.recognition) {
+            if (this.isListening) {
               try {
                 this.recognition.start();
-              } catch {
-                // Secondary auto-retry
-                setTimeout(() => {
-                  if (this.isListening && this.recognition) {
-                    try { this.recognition.start(); } catch {}
-                  }
-                }, 100);
+              } catch (err) {
+                console.warn('Auto-restart catch:', err);
+                try {
+                  this.recognition = new SpeechClass();
+                  this.recognition.continuous = true;
+                  this.recognition.interimResults = true;
+                  this.recognition.maxAlternatives = 5;
+                  this.recognition.lang = options.language || this.currentLanguage;
+                  this.recognition.onresult = (this.recognition as any).onresult;
+                  this.recognition.onerror = (this.recognition as any).onerror;
+                  this.recognition.onend = (this.recognition as any).onend;
+                  this.recognition.start();
+                } catch {}
               }
             }
-          }, 50);
+          }, 100);
         } else {
-          if (options.onEnd) options.onEnd();
+          options.onEnd?.();
         }
       };
 

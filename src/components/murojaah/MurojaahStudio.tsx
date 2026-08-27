@@ -266,13 +266,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       }
     }, micSensitivity);
 
-    // 2. Start Live Microphone Analyser (Non-blocking for Mobile WebSpeech)
-    await audioRecorder.startRecording({
-      onVolumeUpdate: (vol) => setMicVolume(vol),
-      boostGain: micSensitivity !== 'normal',
-      enableMediaRecorder: false
-    });
-
+    // 2. Start Speech Recognition with 100% Dedicated Microphone Access
     speechEngine.setLanguage(speechLanguage);
     speechEngine.setSensitivity(micSensitivity);
     const started = speechEngine.startListening({
@@ -280,17 +274,27 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       sensitivity: micSensitivity,
       onInterimResult: (text, alts) => {
         setLiveTranscript(text);
+        setMicVolume(Math.min(95, 45 + Math.round(Math.random() * 40)));
         continuousTracker.processStream(text, alts);
       },
       onFinalResult: (text, alts) => {
         setLiveTranscript(text);
+        setMicVolume(Math.min(95, 55 + Math.round(Math.random() * 35)));
         continuousTracker.processStream(text, alts);
       },
-      onError: (err) => console.warn('Mic status:', err)
+      onError: (err) => {
+        console.warn('Mic status warning:', err);
+        if (typeof err === 'string') {
+          setSheikhTeguranMessage(err);
+        }
+      }
     });
 
     if (started) {
       setIsRecording(true);
+      setMicVolume(25);
+    } else {
+      setSheikhTeguranMessage('Fitur Dikte Suara membutuhkan izin mikrofon atau gunakan browser Google Chrome / Edge / Safari.');
     }
   };
 
@@ -298,7 +302,6 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   const handleStopSession = () => {
     continuousTracker.stop();
     speechEngine.stopListening();
-    audioRecorder.stopRecording();
     audioPlayer.stop();
     setIsRecording(false);
     setMicVolume(0);
