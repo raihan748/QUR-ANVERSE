@@ -9,7 +9,6 @@ interface NavbarProps {
   onSelectTab: (tab: NavigationTab) => void;
   onOpenInstallModal: () => void;
   onOpenAuthModal: () => void;
-  onOpenStreakModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -17,8 +16,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   onSelectTab,
   onOpenInstallModal,
-  onOpenAuthModal,
-  onOpenStreakModal
+  onOpenAuthModal
 }) => {
   const { language, toggleLanguage, t, isRtl } = useLanguage();
 
@@ -66,18 +64,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </button>
 
-          {/* Streak Counter */}
-          <button
-            onClick={onOpenStreakModal}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#FFFDF7] text-black border-2 border-black rounded-xl neo-button cursor-pointer text-xs font-extrabold animate-fade-up"
-            title="Lihat 30-Day Streak Murojaah"
-          >
-            <Flame className="w-4 h-4 text-orange-500 fill-orange-500 animate-bounce" />
-            <span>{profile.streakCount} {t.days}</span>
-          </button>
-
-          {/* Total XP */}
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F59E0B] text-black border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] text-xs font-extrabold animate-fade-up">
+          {/* Total XP / Poin */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F59E0B] text-black border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] text-xs font-extrabold animate-fade-up">
             <Trophy className="w-4 h-4 text-amber-900" />
             <span>{profile.totalXp} {t.points}</span>
           </div>

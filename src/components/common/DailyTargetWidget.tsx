@@ -158,8 +158,8 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
           <span className="flex items-center gap-1 text-amber-900">
             <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
             {language === 'ar'
-              ? `مكافأة الإنجاز اليومي: +${target.xpReward} نقطة والمحافظة على المواظبة 🔥`
-              : `Bonus Target Harian: +${target.xpReward} XP & Pertahankan Streak 🔥`}
+              ? `مكافأة الإنجاز اليومي: +${target.xpReward} نقطة`
+              : `Bonus Target Harian: +${target.xpReward} XP`}
           </span>
           <span className="text-gray-600 text-[10px] font-mono font-bold">
             {language === 'ar' ? 'خطة سنوية متكاملة (١٤٤٨ هـ)' : 'Plan: 23 Agu 2026 – 23 Agu 2027 (1 Tahun)'}

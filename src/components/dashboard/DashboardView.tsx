@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Flame, 
   Sparkles, 
   ShieldAlert, 
   CheckCircle2, 
@@ -11,7 +10,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { UserProfile, WeakVerse, AchievementBadge } from '../../types';
-import { getWeakVerses, resolveWeakVerse, getStreakCalendar } from '../../services/offlineStorage';
+import { getWeakVerses, resolveWeakVerse } from '../../services/offlineStorage';
 import { INITIAL_BADGES } from '../../data/achievementsData';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { audioPlayer } from '../../services/audioPlayerService';
@@ -28,12 +27,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigateToMurojaah
 }) => {
   const [weakVerses, setWeakVerses] = useState<WeakVerse[]>([]);
-  const [streakCalendar, setStreakCalendar] = useState<Record<string, boolean>>({});
   const [badges, setBadges] = useState<AchievementBadge[]>(INITIAL_BADGES);
 
   useEffect(() => {
     setWeakVerses(getWeakVerses());
-    setStreakCalendar(getStreakCalendar());
   }, []);
 
   const handleResolveWeak = (v: WeakVerse) => {
@@ -66,13 +63,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           <div className="flex gap-2">
-            <div className="px-3 py-1.5 bg-black/40 border border-[#F59E0B] rounded-xl text-center">
+            <div className="px-4 py-2 bg-black/40 border border-[#F59E0B] rounded-xl text-center shadow-[2px_2px_0px_0px_#000]">
               <span className="text-[10px] font-bold text-gray-300 uppercase block">Total Poin</span>
-              <span className="text-base font-black text-[#F59E0B]">{userProfile.totalXp} XP</span>
-            </div>
-            <div className="px-3 py-1.5 bg-black/40 border border-orange-500 rounded-xl text-center">
-              <span className="text-[10px] font-bold text-gray-300 uppercase block">Streak</span>
-              <span className="text-base font-black text-orange-400">🔥 {userProfile.streakCount} Hari</span>
+              <span className="text-lg font-black text-[#F59E0B]">{userProfile.totalXp} XP</span>
             </div>
           </div>
         </div>
@@ -86,41 +79,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         userProfile={userProfile} 
         onNavigateToMurojaah={onNavigateToMurojaah} 
       />
-
-      {/* 30-DAY STREAK TRACKER */}
-      <NeobrutalCard variant="white" className="p-4 sm:p-5 border-2 border-black shadow-[3px_3px_0px_0px_#111827]">
-        <div className="flex items-center justify-between border-b-2 border-dashed border-gray-300 pb-3 mb-4">
-          <div className="flex items-center gap-2">
-            <Flame className="w-5 h-5 text-orange-500 fill-orange-500" />
-            <h3 className="text-base font-extrabold text-black">Kalender 30-Day Muroja'ah Streak</h3>
-          </div>
-          <span className="text-xs font-black text-orange-600 bg-orange-100 px-2 py-0.5 rounded border border-orange-300">
-            {userProfile.streakCount} Hari Berturut-turut
-          </span>
-        </div>
-
-        {/* 30 Day Grid */}
-        <div className="grid grid-cols-6 sm:grid-cols-10 gap-2 text-center">
-          {Array.from({ length: 30 }, (_, i) => {
-            const dayNum = i + 1;
-            const isCompleted = dayNum <= userProfile.streakCount;
-
-            return (
-              <div
-                key={dayNum}
-                className={`p-2 rounded-xl border-2 border-black flex flex-col items-center justify-center transition-all ${
-                  isCompleted
-                    ? 'bg-[#F59E0B] text-black font-black shadow-[2px_2px_0px_0px_#000]'
-                    : 'bg-gray-100 text-gray-400 opacity-60'
-                }`}
-              >
-                <span className="text-[9px] uppercase font-bold">H-{dayNum}</span>
-                <span className="text-xs">{isCompleted ? '🔥' : '⚪'}</span>
-              </div>
-            );
-          })}
-        </div>
-      </NeobrutalCard>
 
       {/* WEAK VERSES (AYAT LEMAH) & TIKRAR 1-5-10 METHOD */}
       <NeobrutalCard variant="sepia" className="p-4 sm:p-5 border-2 border-black shadow-[3px_3px_0px_0px_#111827]">

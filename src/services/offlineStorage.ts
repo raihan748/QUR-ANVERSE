@@ -38,9 +38,15 @@ export function getLocalProfile(): UserProfile {
       return defaultProfile;
     }
     const parsed = safeJsonParse<any>(raw, defaultProfile);
-    // Auto-calculate exact streak mathematically
+
+    // Explicit user command: Set all XP to 0 and remove streak
+    const resetKey = 'quranverse_xp_reset_zero_v1';
     let xp = Math.max(0, Number(parsed.totalXp) || 0);
-    let streak = calculateConsecutiveStreak();
+    if (!localStorage.getItem(resetKey)) {
+      xp = 0;
+      localStorage.setItem(resetKey, 'true');
+      try { localStorage.removeItem(STORAGE_KEYS.STREAK_CALENDAR); } catch {}
+    }
 
     return {
       id: sanitizeInput(parsed.id || defaultProfile.id, 50),
@@ -48,7 +54,7 @@ export function getLocalProfile(): UserProfile {
       avatarUrl: sanitizeInput(parsed.avatarUrl || defaultProfile.avatarUrl, 300),
       hafidzLevel: sanitizeInput(parsed.hafidzLevel || defaultProfile.hafidzLevel, 50),
       totalXp: xp,
-      streakCount: streak,
+      streakCount: 0,
       lastMurojaahDate: sanitizeInput(parsed.lastMurojaahDate || defaultProfile.lastMurojaahDate, 20)
     };
   } catch {
@@ -64,7 +70,7 @@ export function saveLocalProfile(profile: UserProfile): void {
       avatarUrl: sanitizeInput(profile.avatarUrl, 300),
       hafidzLevel: sanitizeInput(profile.hafidzLevel, 50),
       totalXp: Math.max(0, Number(profile.totalXp) || 0),
-      streakCount: Math.max(0, Number(profile.streakCount) || 0),
+      streakCount: 0,
       lastMurojaahDate: sanitizeInput(profile.lastMurojaahDate, 20)
     };
     localStorage.setItem(STORAGE_KEYS.PROFILE, safeJsonStringify(sanitized));
@@ -73,78 +79,9 @@ export function saveLocalProfile(profile: UserProfile): void {
   }
 }
 
-// Streak Calendar
-export function getStreakCalendar(): Record<string, boolean> {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.STREAK_CALENDAR);
-    if (!raw) {
-      const initial: Record<string, boolean> = {};
-      localStorage.setItem(STORAGE_KEYS.STREAK_CALENDAR, safeJsonStringify(initial));
-      return initial;
-    }
-    return safeJsonParse<Record<string, boolean>>(raw, {});
-  } catch {
-    return {};
-  }
-}
-
-export function recordStreakDay(dateStr: string): void {
-  try {
-    const cal = getStreakCalendar();
-    const cleanDate = sanitizeInput(dateStr, 20);
-    cal[cleanDate] = true;
-    localStorage.setItem(STORAGE_KEYS.STREAK_CALENDAR, safeJsonStringify(cal));
-  } catch (e) {
-    console.warn(e);
-  }
-}
-
-export function calculateConsecutiveStreak(cal?: Record<string, boolean>): number {
-  const calendar = cal || getStreakCalendar();
-  const now = new Date();
-  
-  const formatDate = (d: Date) => d.toISOString().split('T')[0];
-  
-  const todayStr = formatDate(now);
-  const yesterday = new Date(now.getTime() - 86400000);
-  const yesterdayStr = formatDate(yesterday);
-
-  let currentCheckDate: Date;
-  let streak = 0;
-
-  if (calendar[todayStr]) {
-    streak = 1;
-    currentCheckDate = yesterday;
-  } else if (calendar[yesterdayStr]) {
-    streak = 1;
-    currentCheckDate = new Date(yesterday.getTime() - 86400000);
-  } else {
-    return 0;
-  }
-
-  // Count backwards day by day
-  for (let i = 0; i < 365; i++) {
-    const dStr = formatDate(currentCheckDate);
-    if (calendar[dStr]) {
-      streak++;
-      currentCheckDate = new Date(currentCheckDate.getTime() - 86400000);
-    } else {
-      break;
-    }
-  }
-
-  return streak;
-}
-
 export function addXpAndCheckStreak(xpGain: number): UserProfile {
   const profile = getLocalProfile();
   const today = new Date().toISOString().split('T')[0];
-  
-  // 1. Record today's activity in calendar
-  recordStreakDay(today);
-
-  // 2. Compute exact consecutive streak mathematically
-  const trueStreak = calculateConsecutiveStreak();
 
   let newLevel = profile.hafidzLevel;
   const newXp = profile.totalXp + Math.max(0, Math.min(1000, xpGain)); // capped gain per session
@@ -156,7 +93,7 @@ export function addXpAndCheckStreak(xpGain: number): UserProfile {
   const updatedProfile: UserProfile = {
     ...profile,
     totalXp: newXp,
-    streakCount: trueStreak,
+    streakCount: 0,
     hafidzLevel: newLevel,
     lastMurojaahDate: today
   };

@@ -60,7 +60,6 @@ export function App() {
         onSelectTab={handleSelectTabWithScroll}
         onOpenInstallModal={() => setIsInstallModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
-        onOpenStreakModal={() => handleSelectTabWithScroll('dashboard')}
       />
 
       {/* Main Layout (Dual Panel Desktop + Responsive Mobile) */}

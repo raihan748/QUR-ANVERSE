@@ -30,7 +30,7 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
 
   // Calculate stats dynamically from user actual progress (strictly 0 initially)
   const totalSessions = userProfile.totalXp > 0 ? Math.floor(userProfile.totalXp / 80) : 0;
-  const totalMinutes = userProfile.streakCount > 0 ? userProfile.streakCount * 15 : (userProfile.totalXp > 0 ? Math.floor(userProfile.totalXp / 20) : 0);
+  const totalMinutes = userProfile.totalXp > 0 ? Math.floor(userProfile.totalXp / 20) : 0;
   const surahsMastered = userProfile.totalXp > 0 ? Math.min(114, Math.floor(userProfile.totalXp / 300)) : 0;
   
   // Real or 0% Tajwid Metrics
