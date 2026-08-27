@@ -664,14 +664,14 @@ export class SpeechEngine {
 }
 
 // ==============================================================================
-// 5. CONTINUOUS MUROJA'AH REAL-TIME ENGINE (ULTRA-FAST IN-MEMORY TRACKER)
+// 5. CONTINUOUS MULTI-AYAH MUROJA'AH TRACKER
 // ==============================================================================
 
 export interface ContinuousTrackerCallbacks {
-  onWordMatched: (ayahIndex: number, wordIndex: number, word: string) => void;
+  onWordMatched: (ayahIndex: number, wordIndex: number, wordText: string) => void;
   onAyahCompleted: (ayahIndex: number, ayat: Ayat) => void;
   onErrorDetected: (ayahIndex: number, wordIndex: number, reason: string) => void;
-  onPassageCompleted: (totalScore: number) => void;
+  onPassageCompleted: (overallScore: number) => void;
 }
 
 export class ContinuousMurojaahTracker {
@@ -688,7 +688,6 @@ export class ContinuousMurojaahTracker {
   private totalErrors = 0;
   private totalWordsCount = 0;
   private matchedWordsCount = 0;
-  private processedWordCursor = 0;
   private sensitivity: SensitivityLevel = 'high';
 
   public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'high'): void {
@@ -697,7 +696,6 @@ export class ContinuousMurojaahTracker {
     this.callbacks = callbacks;
     this.currentAyahIndex = 0;
     this.currentWordIndex = 0;
-    this.processedWordCursor = 0;
     this.matchedWordsMap.clear();
     this.totalErrors = 0;
     this.matchedWordsCount = 0;
@@ -757,9 +755,6 @@ export class ContinuousMurojaahTracker {
     return ayahIndex < this.currentAyahIndex;
   }
 
-  /**
-   * Ultra-Fast Delta-Stream Recitation Ingestion ($< 1ms$)
-   */
   public processStream(rawTranscript: string, alternatives?: string[]): void {
     if (!this.isActive || this.isPaused || !this.precompiledAyats[this.currentAyahIndex]) return;
 
@@ -767,7 +762,7 @@ export class ContinuousMurojaahTracker {
     const expectedWords = currentPrecompiled.words;
     if (expectedWords.length === 0) return;
 
-    // Collect candidate tokens
+    // Collect candidate tokens from current utterance
     const candidates = [rawTranscript, ...(alternatives || [])].filter(Boolean);
     const rawTokens: string[] = [];
 
@@ -778,21 +773,16 @@ export class ContinuousMurojaahTracker {
 
     if (rawTokens.length === 0) return;
 
-    // Inspect recent tokens slice
-    const activeRawSlice = rawTokens.slice(Math.max(0, this.processedWordCursor));
-    if (activeRawSlice.length === 0) return;
-
-    // Fast token analysis
-    const analyzedSlice: SpokenTokenAnalysis[] = activeRawSlice.map(w => analyzeSpokenToken(w));
+    // Fast token analysis of all tokens in current speech
+    const analyzedSlice: SpokenTokenAnalysis[] = rawTokens.map(w => analyzeSpokenToken(w));
     let matchedInThisCycle = false;
 
-    const compCanonThresh = this.sensitivity === 'ultra' ? 0.45 : this.sensitivity === 'high' ? 0.52 : 0.60;
-    const compLatinThresh = this.sensitivity === 'ultra' ? 0.42 : this.sensitivity === 'high' ? 0.48 : 0.55;
+    const compCanonThresh = this.sensitivity === 'ultra' ? 0.38 : this.sensitivity === 'high' ? 0.46 : 0.55;
+    const compLatinThresh = this.sensitivity === 'ultra' ? 0.36 : this.sensitivity === 'high' ? 0.44 : 0.52;
 
     while (this.currentWordIndex < expectedWords.length) {
       const targetWord = expectedWords[this.currentWordIndex];
       let advanceCount = 0;
-      let consumedOffset = -1;
 
       // 1. Compound 2-Word Fast Match (e.g. "bismillahi" -> "bismi" + "allahi")
       if (this.currentWordIndex + 1 < expectedWords.length) {
@@ -804,34 +794,31 @@ export class ContinuousMurojaahTracker {
                 fastLevenshteinSimilarity(comp2.canonical, spoken.canonical) >= compCanonThresh ||
                 fastLevenshteinSimilarity(comp2.latin, spoken.latin) >= compLatinThresh) {
               advanceCount = 2;
-              consumedOffset = sIdx;
               break;
             }
           }
         }
       }
 
-      // 2. Single Word Sequential Match ($O(1)$ Lookup)
+      // 2. Single Word Match against any token in current utterance
       if (advanceCount === 0) {
         for (let sIdx = 0; sIdx < analyzedSlice.length; sIdx++) {
           const spoken = analyzedSlice[sIdx];
           if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
             advanceCount = 1;
-            consumedOffset = sIdx;
             break;
           }
         }
       }
 
       // 3. Smart Soft Lookahead Recovery (Never Freeze / Stuck)
-      // If speaker pronounced next word N+1 with high confidence, auto-pass word N and lock N+1!
+      // If speaker pronounced next word N+1, auto-pass word N and lock N+1!
       if (advanceCount === 0 && this.currentWordIndex + 1 < expectedWords.length) {
         const nextTargetWord = expectedWords[this.currentWordIndex + 1];
         for (let sIdx = 0; sIdx < analyzedSlice.length; sIdx++) {
           const spoken = analyzedSlice[sIdx];
           if (isPrecompiledWordMatch(nextTargetWord, spoken, this.sensitivity)) {
             advanceCount = 2;
-            consumedOffset = sIdx;
             break;
           }
         }
@@ -856,23 +843,13 @@ export class ContinuousMurojaahTracker {
         }
 
         this.currentWordIndex += advanceCount;
-        if (consumedOffset >= 0) {
-          this.processedWordCursor += (consumedOffset + 1);
-        }
-      } else {
-        break;
-      }
-    }
 
-    if (matchedInThisCycle) {
-      this.lastMatchTime = Date.now();
-      this.resetHesitationWatchdog();
+        // Check Ayah completion immediately
+        if (this.currentWordIndex >= expectedWords.length) {
+          for (let i = 0; i < expectedWords.length; i++) {
+            this.matchedWordsMap.get(this.currentAyahIndex)!.add(i);
+          }
 
-      // Check Ayah completion
-      if (this.currentWordIndex >= expectedWords.length) {
-        const matchedInThisAyah = this.matchedWordsMap.get(this.currentAyahIndex)?.size || 0;
-
-        if (matchedInThisAyah >= expectedWords.length) {
           const currentAyat = this.targetAyats[this.currentAyahIndex];
           if (this.callbacks) {
             this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
@@ -880,7 +857,6 @@ export class ContinuousMurojaahTracker {
 
           this.currentAyahIndex++;
           this.currentWordIndex = 0;
-          this.processedWordCursor = rawTokens.length;
 
           if (this.currentAyahIndex >= this.targetAyats.length) {
             this.isActive = false;
@@ -890,8 +866,16 @@ export class ContinuousMurojaahTracker {
               this.callbacks.onPassageCompleted(score);
             }
           }
+          break;
         }
+      } else {
+        break;
       }
+    }
+
+    if (matchedInThisCycle) {
+      this.lastMatchTime = Date.now();
+      this.resetHesitationWatchdog();
     }
   }
 
