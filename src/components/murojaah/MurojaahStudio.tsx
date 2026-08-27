@@ -535,6 +535,45 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 </div>
               </div>
 
+              {/* 🎙️ SUPER PROMINENT LIVE DICTATION HUD INSIDE ACTIVE AYAH CARD */}
+              {isActive && isRecording && (
+                <div className="my-3 p-3.5 bg-gradient-to-r from-[#022C22] via-[#064E3B] to-[#022C22] text-white rounded-2xl border-3 border-[#F59E0B] shadow-[4px_4px_0px_0px_#000] space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-black border-b border-emerald-700/60 pb-1.5">
+                    <span className="flex items-center gap-2 text-amber-300">
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+                      🎙️ HASIL DIKTE SUARA (LIVE TRANSCRIPT ARAB):
+                    </span>
+                    <div className="flex items-center gap-1.5 font-mono text-[10px] bg-black/40 px-2 py-0.5 rounded-md border border-emerald-500">
+                      <Activity className="w-3 h-3 text-[#F59E0B] animate-pulse" />
+                      <span>VU: {micVolume} dB</span>
+                    </div>
+                  </div>
+
+                  {/* Big Arabic Calligraphy Spoken Text Display */}
+                  <div className="text-right py-1" dir="rtl">
+                    {liveTranscript ? (
+                      <div className="space-y-1">
+                        <p className="font-arabic text-2xl sm:text-3xl font-bold text-amber-300 leading-loose tracking-wide break-words drop-shadow-md">
+                          « {liveTranscript} »
+                        </p>
+                        <p className="text-[11px] text-emerald-200 font-sans font-bold text-left" dir="ltr">
+                          ✓ Mesin sedang mencocokkan kata demi kata secara real-time
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-2 space-y-1" dir="ltr">
+                        <p className="font-arabic text-lg text-emerald-200 font-bold">
+                          بانتظار صوتك الكريم...
+                        </p>
+                        <p className="text-xs text-emerald-300/80 italic font-sans">
+                          🎙️ Silakan mulai melantunkan ayat ini ke mikrofon...
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Transliteration & Indonesian Translation */}
               <p className="text-xs text-emerald-900 font-bold border-t border-gray-200 pt-2 font-mono">
                 {ayat.transliteration}

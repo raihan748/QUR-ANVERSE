@@ -632,11 +632,17 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
 
               {/* Spoken Text Display & Playback User Audio */}
               {spokenTranscript && (
-                <div className="p-3 bg-emerald-50 border-2 border-black rounded-xl text-left">
-                  <span className="text-[10px] font-black text-emerald-800 block uppercase">
-                    Transkrip Suara Terdeteksi:
-                  </span>
-                  <p className="text-sm font-bold text-black mt-0.5">{spokenTranscript}</p>
+                <div className="p-4 bg-[#064E3B] text-white border-3 border-black rounded-2xl text-right shadow-[3px_3px_0px_0px_#000] space-y-1">
+                  <div className="flex items-center justify-between text-[11px] font-black text-emerald-300 border-b border-emerald-700/60 pb-1" dir="ltr">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                      🎙️ HASIL DIKTE SUARA (LIVE TRANSCRIPT):
+                    </span>
+                    <span className="font-mono text-amber-300">Terdeteksi</span>
+                  </div>
+                  <p className="font-arabic text-xl sm:text-2xl font-bold text-amber-300 leading-loose break-words pt-1" dir="rtl">
+                    « {spokenTranscript} »
+                  </p>
                 </div>
               )}
 

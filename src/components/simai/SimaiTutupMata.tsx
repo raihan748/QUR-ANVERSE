@@ -473,6 +473,20 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                     <span>Selesai Melafalkan & Nilai Akurasi</span>
                   </button>
 
+                  {/* Live Arabic Dictation Display */}
+                  <div className="p-4 bg-[#022C22] text-white border-2 border-[#F59E0B] rounded-2xl text-right shadow-[3px_3px_0px_0px_#000] space-y-1">
+                    <div className="flex items-center justify-between text-[11px] font-black text-emerald-300 border-b border-emerald-700/60 pb-1" dir="ltr">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                        🎙️ HASIL DIKTE SUARA (LIVE TRANSCRIPT ARAB):
+                      </span>
+                      <span className="font-mono text-amber-300">Aktif</span>
+                    </div>
+                    <p className="font-arabic text-xl sm:text-2xl font-bold text-amber-300 leading-loose break-words pt-1" dir="rtl">
+                      {spokenTranscript ? `« ${spokenTranscript} »` : '⏳ Sedang mendengarkan lantunan ayat Anda...'}
+                    </p>
+                  </div>
+
                   {/* VU Decibel Meter */}
                   <div className="p-3 bg-black/80 border border-emerald-600 rounded-xl space-y-1.5">
                     <div className="flex justify-between items-center text-[10px] font-mono text-emerald-400">
