@@ -504,9 +504,9 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 )}
               </div>
 
-              {/* Arabic Text with Word-by-Word Active Highlighting */}
+              {/* Arabic Text with Word-by-Word Active Highlighting (Authentic RTL Quranic Flow) */}
               <div className="text-right py-2 leading-loose" dir="rtl">
-                <div className="flex flex-wrap gap-2 justify-start flex-row-reverse items-center">
+                <div className="flex flex-wrap gap-2 justify-start items-center" dir="rtl">
                   {words.map((w, wIdx) => {
                     const isWordDone = matchedWords.includes(wIdx);
                     const isCurrentWordTarget = isActive && matchedWords.length === wIdx;

@@ -156,7 +156,7 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
                 </div>
 
                 {/* Word by Word Highlighting Example */}
-                <div className="flex flex-wrap flex-row-reverse gap-1.5 justify-center" dir="rtl">
+                <div className="flex flex-wrap gap-1.5 justify-center" dir="rtl">
                   <span className="px-2 py-1 bg-[#D1FAE5] text-[#064E3B] border border-[#0B4627] rounded-lg font-quran text-sm font-bold">
                     بِسْمِ <span className="text-[9px] font-sans font-extrabold text-green-700">✓</span>
                   </span>
