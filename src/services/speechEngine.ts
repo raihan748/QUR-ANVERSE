@@ -329,22 +329,24 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string, sensi
 }
 
 // ==============================================================================
-// 4. MULTI-HYPOTHESIS RESILIENT SPEECH ENGINE
+// 4. MULTI-HYPOTHESIS RESILIENT SPEECH ENGINE (ARABIC DICTATION ENGINE)
 // ==============================================================================
+
+export type ArabicDialect = 'ar-SA' | 'ar-EG' | 'ar-AE' | 'ar-KW' | 'id-ID';
 
 export interface SpeechListenerOptions {
   onInterimResult?: (text: string, alternatives?: string[]) => void;
   onFinalResult?: (text: string, alternatives?: string[]) => void;
   onError?: (err: any) => void;
   onEnd?: () => void;
-  language?: 'ar-SA' | 'id-ID' | 'ar-KW' | 'ar-EG';
+  language?: ArabicDialect;
   sensitivity?: SensitivityLevel;
 }
 
 export class SpeechEngine {
   private recognition: any = null;
   private isListening = false;
-  private currentLanguage: 'ar-SA' | 'id-ID' | 'ar-KW' | 'ar-EG' = 'ar-SA';
+  private currentLanguage: ArabicDialect = 'ar-SA';
   private sensitivity: SensitivityLevel = 'high';
   private accumulatedTranscript = '';
   private alternativeHypotheses: string[] = [];
@@ -373,14 +375,14 @@ export class SpeechEngine {
     return Boolean(this.recognition || (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
   }
 
-  public setLanguage(lang: 'ar-SA' | 'id-ID' | 'ar-KW' | 'ar-EG'): void {
+  public setLanguage(lang: ArabicDialect): void {
     this.currentLanguage = lang;
     if (this.recognition) {
       this.recognition.lang = lang;
     }
   }
 
-  public getLanguage(): string {
+  public getLanguage(): ArabicDialect {
     return this.currentLanguage;
   }
 

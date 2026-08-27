@@ -41,7 +41,7 @@ import {
   getRandomAyatFromAvailable 
 } from '../../data/quranData';
 import { NeobrutalCard } from '../common/NeobrutalCard';
-import { speechEngine, continuousTracker } from '../../services/speechEngine';
+import { speechEngine, continuousTracker, ArabicDialect } from '../../services/speechEngine';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { audioRecorder } from '../../services/audioRecorderService';
 import { recordWeakVerse, resolveWeakVerse, addXpAndCheckStreak } from '../../services/offlineStorage';
@@ -90,10 +90,10 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   const [activeReciter, setActiveReciter] = useState<Reciter>(audioPlayer.getActiveReciter());
   const [isReciterMenuOpen, setIsReciterMenuOpen] = useState(false);
 
-  // Recording & Live Evaluation State
+  // Recording & Live Evaluation State (Default: ar-SA Authentic Arabic Dictation)
   const [isRecording, setIsRecording] = useState(false);
   const [micVolume, setMicVolume] = useState<number>(0);
-  const [speechLanguage, setSpeechLanguage] = useState<'ar-SA' | 'ar-KW' | 'id-ID'>('ar-SA');
+  const [speechLanguage, setSpeechLanguage] = useState<ArabicDialect>('ar-SA');
   const [micSensitivity, setMicSensitivity] = useState<'normal' | 'high' | 'ultra'>('ultra');
   const [liveTranscript, setLiveTranscript] = useState('');
   const [sheikhTeguranMessage, setSheikhTeguranMessage] = useState<string | null>(null);
@@ -572,7 +572,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
                 <span className="text-emerald-200 font-bold uppercase tracking-wider text-[11px]">
-                  🎙️ Mesin Pendengar Aktif
+                  🎙️ الاستماع المباشر للتلاوة (Dikte Bahasa Arab)
                 </span>
               </div>
               <div className="flex items-center gap-1.5 font-mono text-[11px] bg-[#0B4627] px-2.5 py-1 rounded-lg border border-emerald-600">
@@ -582,15 +582,17 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               </div>
             </div>
 
-            {/* Live Dictation Display (Large, Multi-line, Wrap-friendly) */}
-            <div className="bg-[#022C22] p-3 rounded-lg border border-emerald-600 min-h-[56px] flex flex-col justify-center">
-              <p className="text-[10px] font-black uppercase text-emerald-400 tracking-wider">Lafal Yang Tertangkap Mic:</p>
-              <p className="text-sm sm:text-base font-bold text-amber-300 font-arabic leading-relaxed break-words mt-0.5">
+            {/* Live Dictation Display (Large, Multi-line, Authentic Arabic Font) */}
+            <div className="bg-[#022C22] p-3.5 rounded-xl border-2 border-emerald-600 min-h-[64px] flex flex-col justify-center text-right" dir="rtl">
+              <p className="text-[10px] font-black uppercase text-emerald-400 tracking-wider font-sans">
+                النص القرآني المستمع (Lafal Bahasa Arab Terdeteksi):
+              </p>
+              <p className="text-base sm:text-xl font-bold text-amber-300 font-arabic leading-loose break-words mt-1">
                 {liveTranscript ? (
-                  `"${liveTranscript}"`
+                  `« ${liveTranscript} »`
                 ) : (
-                  <span className="text-emerald-300 text-xs italic font-sans font-normal">
-                    ⏳ Silakan lantunkan ayat... (Dekatkan HP ~10-15cm ke bibir)
+                  <span className="text-emerald-300 text-xs italic font-sans font-normal" dir="ltr">
+                    ⏳ بانتظار تلاوة الآية الكريمة... (Silakan melantunkan ayat dalam bahasa Arab)
                   </span>
                 )}
               </p>
@@ -668,23 +670,29 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
             </button>
           </div>
 
-          {/* Speech Engine Dialect Selector */}
-          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl border border-black text-xs font-bold">
-            <span className="text-[10px] font-black text-gray-600 px-1">Dialek:</span>
-            {(['ar-SA', 'ar-KW', 'id-ID'] as const).map((langCode) => (
+          {/* Speech Engine Dialect Selector (Full Arabic Dialects) */}
+          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl border border-black text-xs font-bold flex-wrap">
+            <span className="text-[10px] font-black text-gray-600 px-1">Dialek Arab:</span>
+            {([
+              { code: 'ar-SA', label: '🇸🇦 السعودية' },
+              { code: 'ar-EG', label: '🇪🇬 مصر' },
+              { code: 'ar-AE', label: '🇦🇪 الإمارات' },
+              { code: 'ar-KW', label: '🇰🇼 الكويت' },
+              { code: 'id-ID', label: '🇮🇩 Latin/ID' }
+            ] as const).map(({ code, label }) => (
               <button
-                key={langCode}
+                key={code}
                 onClick={() => {
-                  setSpeechLanguage(langCode);
-                  speechEngine.setLanguage(langCode);
+                  setSpeechLanguage(code as ArabicDialect);
+                  speechEngine.setLanguage(code as ArabicDialect);
                 }}
                 className={`px-2 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                  speechLanguage === langCode
+                  speechLanguage === code
                     ? 'bg-[#0B4627] text-white shadow-xs'
                     : 'text-gray-700 hover:text-black'
                 }`}
               >
-                {langCode === 'ar-SA' ? '🇸🇦 Saudi' : langCode === 'ar-KW' ? '🇰🇼 Kuwait' : '🇮🇩 Latin/ID'}
+                {label}
               </button>
             ))}
           </div>
