@@ -219,10 +219,10 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
       return;
     }
 
-    // Evaluate speech or offer self-validation
-    const evalResult = speechEngine.evaluateRecitation(cleanSpoken || target.transliteration, target, alternatives);
+    // Evaluate speech strictly against the expected continuation
+    const evalResult = speechEngine.evaluateRecitation(cleanSpoken, target, alternatives);
 
-    if (evalResult.isPassed || cleanSpoken.length >= 4) {
+    if (evalResult.isPassed) {
       audioPlayer.playSuccessChime();
       confetti({ particleCount: 60, spread: 60 });
       const pts = 250 + comboStreak * 50;
@@ -234,8 +234,8 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
 
       setLastResult({
         isCorrect: true,
-        accuracy: evalResult.accuracyScore > 0 ? evalResult.accuracyScore : 88,
-        praise: 'Maa Syaa Allah! Suara Anda berhasil direkam & sambungan ayat dinilai fasih!'
+        accuracy: evalResult.accuracyScore,
+        praise: 'Maa Syaa Allah! Suara Anda berhasil direkam & sambungan ayat dinilai fasih & tepat!'
       });
     } else {
       audioPlayer.playCorrectionPromptSound();
@@ -243,7 +243,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
       setLastResult({
         isCorrect: false,
         accuracy: evalResult.accuracyScore,
-        praise: 'Suara belum cocok sempurna. Dengarkan lantunan tartil Syekh Misyari berikut ini!'
+        praise: `Lafal belum tepat (Akurasi: ${evalResult.accuracyScore}%). Dengarkan lantunan tartil Syekh Misyari berikut ini!`
       });
 
       setTimeout(() => {
