@@ -269,7 +269,7 @@ export type SensitivityLevel = 'normal' | 'high' | 'ultra';
 export function isPrecompiledWordMatch(
   target: PrecompiledWord,
   candidate: SpokenTokenAnalysis,
-  sensitivity: SensitivityLevel = 'high'
+  sensitivity: SensitivityLevel = 'ultra'
 ): boolean {
   if (!target || !candidate) return false;
 
@@ -283,30 +283,38 @@ export function isPrecompiledWordMatch(
     return true;
   }
 
-  // Short words (length <= 3): MUST be strict to avoid false matching random Arabic syllables!
+  // 3. Latin phonetic direct match
+  if (target.latinPhonetic && candidate.latin && target.latinPhonetic === candidate.latin) {
+    return true;
+  }
+
+  // Short words (length <= 3):
   if (target.charLength <= 3 || candidate.canonical.length <= 3) {
     const diff = Math.abs(target.charLength - candidate.canonical.length);
-    if (diff > 1) return false;
+    if (diff > 2) return false;
 
+    const shortThresh = sensitivity === 'ultra' ? 0.45 : sensitivity === 'high' ? 0.55 : 0.65;
     return (
-      fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= 0.70 ||
-      target.latinPhonetic === candidate.latin
+      fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= shortThresh ||
+      (target.stemCanon && candidate.stemCanon && fastLevenshteinSimilarity(target.stemCanon, candidate.stemCanon) >= shortThresh) ||
+      fastLevenshteinSimilarity(target.latinPhonetic, candidate.latin) >= shortThresh
     );
   }
 
-  // 3. Medium / Long Words (length > 3): Substring inclusion if ratio is significant
+  // 4. Medium / Long Words (length > 3): Substring inclusion if ratio is significant
   if (target.canonical.length >= 4 && candidate.canonical.length >= 4) {
     if (target.canonical.includes(candidate.canonical) || candidate.canonical.includes(target.canonical)) {
       const minLen = Math.min(target.canonical.length, candidate.canonical.length);
       const maxLen = Math.max(target.canonical.length, candidate.canonical.length);
-      if (minLen / maxLen >= 0.65) {
+      const minRatio = sensitivity === 'ultra' ? 0.45 : sensitivity === 'high' ? 0.55 : 0.65;
+      if (minLen / maxLen >= minRatio) {
         return true;
       }
     }
   }
 
-  // 4. Levenshtein Phonetic Similarity (Calibrated Thresholds)
-  const canonThresh = sensitivity === 'ultra' ? 0.50 : sensitivity === 'high' ? 0.58 : 0.65;
+  // 5. Levenshtein Phonetic Similarity (Calibrated Thresholds for high sensitivity)
+  const canonThresh = sensitivity === 'ultra' ? 0.38 : sensitivity === 'high' ? 0.46 : 0.55;
   if (fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= canonThresh) {
     return true;
   }
@@ -315,9 +323,8 @@ export function isPrecompiledWordMatch(
     return true;
   }
 
-  // 5. Latin Phonetics Soundex
-  const latinThresh = sensitivity === 'ultra' ? 0.48 : sensitivity === 'high' ? 0.55 : 0.62;
-  if (target.latinPhonetic === candidate.latin) return true;
+  // 6. Latin Phonetics Soundex
+  const latinThresh = sensitivity === 'ultra' ? 0.36 : sensitivity === 'high' ? 0.44 : 0.52;
   if (fastLevenshteinSimilarity(target.latinPhonetic, candidate.latin) >= latinThresh) {
     return true;
   }
@@ -325,7 +332,7 @@ export function isPrecompiledWordMatch(
   return false;
 }
 
-export function isWordMatch(targetArabic: string, candidateSpoken: string, sensitivity: SensitivityLevel = 'high'): boolean {
+export function isWordMatch(targetArabic: string, candidateSpoken: string, sensitivity: SensitivityLevel = 'ultra'): boolean {
   if (!targetArabic || !candidateSpoken) return false;
   const tNorm = normalizeArabic(targetArabic);
   const sNorm = normalizeArabic(candidateSpoken);
@@ -339,8 +346,8 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string, sensi
   const sLatin = normalizeLatinPhonetics(candidateSpoken);
   if (tLatin === sLatin) return true;
 
-  const canonThresh = sensitivity === 'ultra' ? 0.50 : sensitivity === 'high' ? 0.58 : 0.65;
-  const latinThresh = sensitivity === 'ultra' ? 0.48 : sensitivity === 'high' ? 0.55 : 0.62;
+  const canonThresh = sensitivity === 'ultra' ? 0.38 : sensitivity === 'high' ? 0.46 : 0.55;
+  const latinThresh = sensitivity === 'ultra' ? 0.36 : sensitivity === 'high' ? 0.44 : 0.52;
 
   return fastLevenshteinSimilarity(tCanon, sCanon) >= canonThresh || fastLevenshteinSimilarity(tLatin, sLatin) >= latinThresh;
 }
@@ -352,11 +359,11 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string, sensi
 export type ArabicDialect = 'ar-SA' | 'ar-EG' | 'ar-AE' | 'ar-KW' | 'id-ID';
 
 export interface SpeechListenerOptions {
-  onInterimResult?: (text: string, alternatives?: string[]) => void;
-  onFinalResult?: (text: string, alternatives?: string[]) => void;
-  onError?: (err: any) => void;
-  onEnd?: () => void;
   language?: ArabicDialect;
+  onInterimResult?: (transcript: string, alternatives?: string[]) => void;
+  onFinalResult?: (transcript: string, alternatives?: string[]) => void;
+  onError?: (error: any) => void;
+  onEnd?: () => void;
   sensitivity?: SensitivityLevel;
 }
 
@@ -364,7 +371,7 @@ export class SpeechEngine {
   private recognition: any = null;
   private isListening = false;
   private currentLanguage: ArabicDialect = 'ar-SA';
-  private sensitivity: SensitivityLevel = 'high';
+  private sensitivity: SensitivityLevel = 'ultra';
   private accumulatedTranscript = '';
   private alternativeHypotheses: string[] = [];
   private restartTimeout: any = null;
@@ -710,9 +717,9 @@ export class ContinuousMurojaahTracker {
   private totalErrors = 0;
   private totalWordsCount = 0;
   private matchedWordsCount = 0;
-  private sensitivity: SensitivityLevel = 'high';
+  private sensitivity: SensitivityLevel = 'ultra';
 
-  public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'high'): void {
+  public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'ultra'): void {
     this.targetAyats = ayats;
     this.precompiledAyats = ayats.map(a => precompileAyat(a));
     this.callbacks = callbacks;
