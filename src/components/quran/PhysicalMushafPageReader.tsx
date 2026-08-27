@@ -70,8 +70,13 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const [isReciterMenuOpen, setIsReciterMenuOpen] = useState(false);
   const [isPlayingPageAudio, setIsPlayingPageAudio] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Swipe & Drag Gesture State (Efek Geser Lembaran Mushaf Madinah Asli)
+  const [dragOffset, setDragOffset] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragStartX, setDragStartX] = useState<number | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
 
   // Display Mode: 'scan' (Scanned Page Image - Physical Mushaf) | 'layout' (15-line Typography)
   const [viewMode, setViewMode] = useState<'scan' | 'layout'>('scan');
@@ -188,13 +193,44 @@ export const PhysicalMushafPageReader: React.FC = () => {
     }
   }, [currentPage]);
 
+  // Trigger Page Slide Animation (RTL Quran standard: Left Swipe = Next Page, Right Swipe = Prev Page)
+  const triggerPageTurn = useCallback((dir: 'next' | 'prev') => {
+    if (isTransitioning) return;
+    if (dir === 'next' && currentPage >= 604) {
+      setDragOffset(0);
+      return;
+    }
+    if (dir === 'prev' && currentPage <= 1) {
+      setDragOffset(0);
+      return;
+    }
+
+    setIsTransitioning(true);
+    // Slide out smoothly in swipe direction
+    setDragOffset(dir === 'next' ? -220 : 220);
+
+    setTimeout(() => {
+      if (dir === 'next') {
+        setCurrentPage((prev) => Math.min(604, prev + 1));
+      } else {
+        setCurrentPage((prev) => Math.max(1, prev - 1));
+      }
+      // Enter from opposite side with smooth bounce in
+      setDragOffset(dir === 'next' ? 70 : -70);
+      setTimeout(() => {
+        setDragOffset(0);
+        setIsTransitioning(false);
+      }, 50);
+    }, 180);
+  }, [currentPage, isTransitioning]);
+
   const handleNextPage = useCallback(() => { 
-    if (currentPage < 604) setCurrentPage((prev) => prev + 1); 
-  }, [currentPage]);
+    triggerPageTurn('next');
+  }, [triggerPageTurn]);
 
   const handlePrevPage = useCallback(() => { 
-    if (currentPage > 1) setCurrentPage((prev) => prev - 1); 
-  }, [currentPage]);
+    triggerPageTurn('prev');
+  }, [triggerPageTurn]);
 
   const handleJumpToJuz = (juz: number) => {
     const targetPage = juz === 1 ? 1 : Math.min(604, (juz - 1) * 20 + 2);
@@ -255,23 +291,69 @@ export const PhysicalMushafPageReader: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleNextPage, handlePrevPage]);
 
+  // Touch Swipe Handlers (Mobile)
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.touches[0].clientX);
+    if (isTransitioning) return;
+    setIsDragging(true);
+    setDragStartX(e.touches[0].clientX);
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX === null) return;
-    const touchEndX = e.changedTouches[0].clientX;
-    const diffX = touchStartX - touchEndX;
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || dragStartX === null || isTransitioning) return;
+    const currentX = e.touches[0].clientX;
+    const diffX = currentX - dragStartX;
+    const clamped = Math.max(-180, Math.min(180, diffX));
+    setDragOffset(clamped);
+  };
 
-    if (Math.abs(diffX) > 50) {
-      if (diffX > 0) {
-        handleNextPage();
-      } else {
-        handlePrevPage();
-      }
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    setDragStartX(null);
+
+    if (dragOffset < -45) {
+      triggerPageTurn('next');
+    } else if (dragOffset > 45) {
+      triggerPageTurn('prev');
+    } else {
+      setDragOffset(0);
     }
-    setTouchStartX(null);
+  };
+
+  // Mouse Drag Handlers (Desktop Interactive Swipe)
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (isTransitioning) return;
+    setIsDragging(true);
+    setDragStartX(e.clientX);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || dragStartX === null || isTransitioning) return;
+    const diffX = e.clientX - dragStartX;
+    const clamped = Math.max(-180, Math.min(180, diffX));
+    setDragOffset(clamped);
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    setDragStartX(null);
+
+    if (dragOffset < -45) {
+      triggerPageTurn('next');
+    } else if (dragOffset > 45) {
+      triggerPageTurn('prev');
+    } else {
+      setDragOffset(0);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      setDragStartX(null);
+      setDragOffset(0);
+    }
   };
 
   return (
@@ -459,8 +541,6 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
       <div 
         className="relative bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-3xl p-3 sm:p-6 shadow-[6px_6px_0px_0px_#111827] flex flex-col items-center justify-center overflow-hidden"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
       >
         <div className="w-full flex items-center justify-between border-b-2 border-amber-800/40 pb-2 mb-3 px-2 text-xs font-bold text-amber-900 dark:text-amber-300 font-mono">
           <span className="truncate max-w-[200px] sm:max-w-none text-right font-quran text-sm sm:text-base font-black">
@@ -474,7 +554,28 @@ export const PhysicalMushafPageReader: React.FC = () => {
           </span>
         </div>
 
-        <div className="relative w-full max-w-2xl bg-[#FFFDF7] border-3 border-amber-900/40 rounded-2xl p-2 sm:p-5 shadow-[inset_0_0_20px_rgba(180,83,9,0.1)] flex flex-col min-h-[580px] sm:min-h-[780px] justify-between">
+        {/* INTERACTIVE FLIPPABLE / SLIDABLE MUSHAF PAGE FRAME */}
+        <div 
+          className={`relative w-full max-w-2xl bg-[#FFFDF7] border-3 border-amber-900/40 rounded-2xl p-2 sm:p-5 shadow-[inset_0_0_20px_rgba(180,83,9,0.1)] flex flex-col min-h-[580px] sm:min-h-[780px] justify-between cursor-grab active:cursor-grabbing select-none ${
+            isDragging ? '' : 'transition-all duration-300 ease-out'
+          }`}
+          style={{
+            transform: `translateX(${dragOffset}px) rotateY(${dragOffset * 0.035}deg)`,
+            opacity: Math.max(0.6, 1 - Math.abs(dragOffset) / 380),
+            perspective: '1000px',
+            transformStyle: 'preserve-3d',
+            boxShadow: isDragging 
+              ? `${dragOffset > 0 ? '16px' : '-16px'} 10px 30px rgba(0,0,0,0.18)` 
+              : undefined
+          }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+        >
           
           <div className="absolute inset-2 border-2 border-dashed border-amber-700/30 rounded-xl pointer-events-none"></div>
 
@@ -618,6 +719,29 @@ export const PhysicalMushafPageReader: React.FC = () => {
               )}
             </div>
           )}
+        </div>
+
+        {/* Swipe Guidance & Quick Turn Navigation Footer */}
+        <div className="flex items-center justify-between w-full max-w-2xl text-[11px] font-bold text-amber-900 dark:text-amber-300 pt-3 px-2">
+          <button 
+            onClick={handleNextPage}
+            disabled={currentPage >= 604}
+            className="flex items-center gap-1 text-[#0B4627] dark:text-emerald-400 hover:underline disabled:opacity-30 cursor-pointer font-black text-xs bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800"
+            title="Buka Halaman Berikutnya"
+          >
+            <span>👈 Hal. {currentPage < 604 ? currentPage + 1 : 604}</span>
+          </button>
+          <div className="flex items-center gap-1.5 text-[10px] text-emerald-950 font-black bg-amber-200/90 px-3 py-1 rounded-full border border-amber-400 shadow-xs">
+            <span>✨ Usap / Geser Lembaran Mushaf</span>
+          </div>
+          <button 
+            onClick={handlePrevPage}
+            disabled={currentPage <= 1}
+            className="flex items-center gap-1 text-[#0B4627] dark:text-emerald-400 hover:underline disabled:opacity-30 cursor-pointer font-black text-xs bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800"
+            title="Buka Halaman Sebelumnya"
+          >
+            <span>Hal. {currentPage > 1 ? currentPage - 1 : 1} 👉</span>
+          </button>
         </div>
 
         <div className="w-full flex items-center justify-between border-t-2 border-amber-800/40 pt-2 mt-3 px-3 text-xs font-mono font-black text-amber-900 dark:text-amber-300">
