@@ -481,27 +481,32 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
               {/* Reciter Dropdown */}
               {isReciterMenuOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] p-2 z-50 space-y-1">
-                  <p className="text-[10px] font-black uppercase text-gray-500 px-2 py-1">Syekh Pembimbing Muroja'ah:</p>
-                  {RECITERS_LIST.map((r: Reciter) => (
-                    <button
-                      key={r.id}
-                      onClick={() => {
-                        audioPlayer.setActiveReciter(r.id);
-                        setActiveReciter(r);
-                        setIsReciterMenuOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-all ${
-                        activeReciter.id === r.id ? 'bg-[#0B4627] text-white' : 'hover:bg-gray-100 text-black'
-                      }`}
-                    >
-                      <div>
-                        <p className="font-bold">{r.name}</p>
-                        <p className="text-[10px] opacity-75">{r.arabicName} • {r.style}</p>
-                      </div>
-                      {activeReciter.id === r.id && <CheckCircle2 className="w-4 h-4 text-[#F59E0B]" />}
-                    </button>
-                  ))}
+                <div className="absolute right-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] p-2 z-50 space-y-1">
+                  <div className="flex items-center justify-between px-2 py-1 border-b border-gray-200">
+                    <p className="text-[10px] font-black uppercase text-gray-500">Syekh Pembimbing:</p>
+                    <span className="text-[10px] font-bold text-[#0B4627] bg-emerald-100 px-1.5 py-0.2 rounded">{RECITERS_LIST.length} Qari</span>
+                  </div>
+                  <div className="max-h-72 overflow-y-auto space-y-1 pr-1">
+                    {RECITERS_LIST.map((r: Reciter) => (
+                      <button
+                        key={r.id}
+                        onClick={() => {
+                          audioPlayer.setActiveReciter(r.id);
+                          setActiveReciter(r);
+                          setIsReciterMenuOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-all ${
+                          activeReciter.id === r.id ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]' : 'hover:bg-gray-100 text-black'
+                        }`}
+                      >
+                        <div className="truncate pr-2">
+                          <p className="font-bold truncate">{r.name}</p>
+                          <p className="text-[10px] opacity-75 truncate">{r.arabicName} • {r.style}</p>
+                        </div>
+                        {activeReciter.id === r.id && <CheckCircle2 className="w-4 h-4 text-[#F59E0B] shrink-0" />}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

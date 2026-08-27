@@ -123,10 +123,10 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
             </button>
 
             {isReciterMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 bg-white border-3 border-black rounded-2xl p-2 shadow-[6px_6px_0px_0px_#000] z-50 animate-in fade-in zoom-in-95 space-y-1">
+              <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-white border-3 border-black rounded-2xl p-2 shadow-[6px_6px_0px_0px_#000] z-50 animate-in fade-in zoom-in-95 space-y-1">
                 <div className="p-1.5 border-b-2 border-black flex items-center justify-between">
                   <span className="text-[11px] font-black text-[#0B4627]">
-                    {language === 'ar' ? 'اختر القارئ المعتمد:' : 'Pilih Qari / Syekh Murottal:'}
+                    {language === 'ar' ? 'اختر القارئ المعتمد:' : `Pilih Qari (${RECITERS_LIST.length} Tersedia):`}
                   </span>
                   <button
                     onClick={() => setIsReciterMenuOpen(false)}
@@ -135,32 +135,34 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
                     ✕
                   </button>
                 </div>
-                {RECITERS_LIST.map((r) => {
-                  const isSelected = r.id === activeReciter.id;
-                  return (
-                    <button
-                      key={r.id}
-                      onClick={() => handleSelectReciter(r)}
-                      className={`w-full p-2 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-                          : 'bg-[#F9FAFB] hover:bg-amber-50 text-gray-900'
-                      }`}
-                    >
-                      <div className="truncate pr-2">
-                        <p className="text-xs font-black truncate">{r.name}</p>
-                        <p className={`text-[10px] font-bold ${isSelected ? 'text-amber-300' : 'text-gray-600'}`}>
-                          {r.style}
-                        </p>
-                      </div>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold shrink-0 border ${
-                        isSelected ? 'bg-[#F59E0B] text-black border-black' : 'bg-gray-200 text-gray-700 border-gray-400'
-                      }`}>
-                        {r.bitrate}
-                      </span>
-                    </button>
-                  );
-                })}
+                <div className="max-h-72 overflow-y-auto space-y-1 pr-1">
+                  {RECITERS_LIST.map((r) => {
+                    const isSelected = r.id === activeReciter.id;
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => handleSelectReciter(r)}
+                        className={`w-full p-2 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
+                            : 'bg-[#F9FAFB] hover:bg-amber-50 text-gray-900'
+                        }`}
+                      >
+                        <div className="truncate pr-2">
+                          <p className="text-xs font-black truncate">{r.name}</p>
+                          <p className={`text-[10px] font-bold ${isSelected ? 'text-amber-300' : 'text-gray-600'}`}>
+                            {r.style}
+                          </p>
+                        </div>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold shrink-0 border ${
+                          isSelected ? 'bg-[#F59E0B] text-black border-black' : 'bg-gray-200 text-gray-700 border-gray-400'
+                        }`}>
+                          {r.bitrate}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

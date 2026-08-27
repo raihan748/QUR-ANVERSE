@@ -428,31 +428,34 @@ export const PhysicalMushafPageReader: React.FC = () => {
               </button>
 
               {isReciterMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-72 bg-white border-3 border-black rounded-2xl shadow-[6px_6px_0px_0px_#111827] z-50 p-2 space-y-1">
-                  <div className="px-2 py-1 border-b border-black font-black text-xs text-gray-700">
-                    Pilih Qari Tilawah:
+                <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-white border-3 border-black rounded-2xl shadow-[6px_6px_0px_0px_#111827] z-50 p-2 space-y-1">
+                  <div className="px-2 py-1 border-b border-black font-black text-xs text-gray-700 flex justify-between items-center">
+                    <span>Pilih Qari Tilawah:</span>
+                    <span className="text-[10px] bg-amber-200 px-1.5 py-0.5 rounded font-black text-amber-900">{RECITERS_LIST.length} Qari</span>
                   </div>
-                  {RECITERS_LIST.map((r) => {
-                    const isSelected = r.id === activeReciter.id;
-                    return (
-                      <button
-                        key={r.id}
-                        onClick={() => handleSelectReciter(r)}
-                        className={`w-full text-left p-2 rounded-xl flex items-center justify-between transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#0B4627] text-white font-black'
-                            : 'hover:bg-amber-100 text-black'
-                        }`}
-                      >
-                        <div className="truncate pr-2">
-                          <p className="text-xs font-black truncate">{r.name}</p>
-                          <p className={`text-[10px] font-bold ${isSelected ? 'text-amber-300' : 'text-gray-600'}`}>
-                            {r.style}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
+                  <div className="max-h-72 overflow-y-auto space-y-1 pr-1">
+                    {RECITERS_LIST.map((r) => {
+                      const isSelected = r.id === activeReciter.id;
+                      return (
+                        <button
+                          key={r.id}
+                          onClick={() => handleSelectReciter(r)}
+                          className={`w-full text-left p-2 rounded-xl flex items-center justify-between transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#0B4627] text-white font-black shadow-[2px_2px_0px_0px_#000]'
+                              : 'hover:bg-amber-100 text-black'
+                          }`}
+                        >
+                          <div className="truncate pr-2">
+                            <p className="text-xs font-black truncate">{r.name}</p>
+                            <p className={`text-[10px] font-bold ${isSelected ? 'text-amber-300' : 'text-gray-600'}`}>
+                              {r.style}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>

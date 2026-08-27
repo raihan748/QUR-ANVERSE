@@ -250,9 +250,9 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
 
                   {/* Dropdown Reciter Menu */}
                   {isReciterMenuOpen && (
-                    <div className="absolute left-0 top-full mt-2 w-72 bg-white border-3 border-black rounded-2xl p-2 shadow-[6px_6px_0px_0px_#000] z-50 animate-in fade-in zoom-in-95 space-y-1">
+                    <div className="absolute left-0 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-white border-3 border-black rounded-2xl p-2 shadow-[6px_6px_0px_0px_#000] z-50 animate-in fade-in zoom-in-95 space-y-1">
                       <div className="p-1.5 border-b-2 border-black flex items-center justify-between text-black">
-                        <span className="text-[11px] font-black text-[#0B4627]">Pilih Qari / Syekh Murottal:</span>
+                        <span className="text-[11px] font-black text-[#0B4627]">Pilih Qari ({RECITERS_LIST.length} Tersedia):</span>
                         <button
                           onClick={() => setIsReciterMenuOpen(false)}
                           className="text-xs font-bold text-gray-500 hover:text-black"
@@ -260,7 +260,8 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
                           ✕
                         </button>
                       </div>
-                      {RECITERS_LIST.map((r) => {
+                      <div className="max-h-72 overflow-y-auto space-y-1 pr-1">
+                        {RECITERS_LIST.map((r) => {
                         const isSelected = r.id === activeReciter.id;
                         return (
                           <button
@@ -293,6 +294,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
                           </button>
                         );
                       })}
+                      </div>
                     </div>
                   )}
                 </div>
