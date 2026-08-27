@@ -799,80 +799,40 @@ export class ContinuousMurojaahTracker {
     const consumedTokenIndices = new Set<number>();
     let matchedInThisCycle = false;
 
-    // Sequential chronological matching: each spoken token can match at most ONE target word
+    // Strictly 1-by-1 chronological progression without skipping
     while (this.currentWordIndex < expectedWords.length) {
       const targetWord = expectedWords[this.currentWordIndex];
       let matchedTokenIndex = -1;
-      let advanceCount = 0;
 
-      // 1. Compound 2-Word Fast Match (e.g. "bismillahi" -> "bismi" + "allahi")
-      if (this.currentWordIndex + 1 < expectedWords.length) {
-        const comp2 = currentPrecompiled.compound2Words[this.currentWordIndex];
-        if (comp2) {
-          for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
-            if (consumedTokenIndices.has(sIdx)) continue;
-            const spoken = analyzedTokens[sIdx];
-            if (spoken.canonical === comp2.canonical ||
-                fastLevenshteinSimilarity(comp2.canonical, spoken.canonical) >= 0.58 ||
-                fastLevenshteinSimilarity(comp2.latin, spoken.latin) >= 0.55) {
-              advanceCount = 2;
-              matchedTokenIndex = sIdx;
-              break;
-            }
-          }
+      // Sequential Match: Find the first unconsumed spoken token that matches targetWord
+      for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
+        if (consumedTokenIndices.has(sIdx)) continue;
+        const spoken = analyzedTokens[sIdx];
+        if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
+          matchedTokenIndex = sIdx;
+          break;
         }
       }
 
-      // 2. Single Word Sequential Match
-      if (advanceCount === 0) {
-        for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
-          if (consumedTokenIndices.has(sIdx)) continue;
-          const spoken = analyzedTokens[sIdx];
-          if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
-            advanceCount = 1;
-            matchedTokenIndex = sIdx;
-            break;
-          }
-        }
-      }
-
-      // 3. Lookahead (Next Word N+1) only if confidence is high
-      if (advanceCount === 0 && this.currentWordIndex + 1 < expectedWords.length) {
-        const nextTargetWord = expectedWords[this.currentWordIndex + 1];
-        for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
-          if (consumedTokenIndices.has(sIdx)) continue;
-          const spoken = analyzedTokens[sIdx];
-          if (isPrecompiledWordMatch(nextTargetWord, spoken, this.sensitivity)) {
-            advanceCount = 2;
-            matchedTokenIndex = sIdx;
-            break;
-          }
-        }
-      }
-
-      if (advanceCount > 0 && matchedTokenIndex >= 0) {
+      if (matchedTokenIndex >= 0) {
         consumedTokenIndices.add(matchedTokenIndex);
 
         if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
           this.matchedWordsMap.set(this.currentAyahIndex, new Set());
         }
 
-        for (let k = 0; k < advanceCount; k++) {
-          const wIdx = this.currentWordIndex + k;
-          if (wIdx < expectedWords.length) {
-            this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
-            this.matchedWordsCount++;
-            matchedInThisCycle = true;
+        const wIdx = this.currentWordIndex;
+        this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
+        this.matchedWordsCount++;
+        matchedInThisCycle = true;
 
-            if (this.callbacks) {
-              this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, expectedWords[wIdx].raw);
-            }
-          }
+        if (this.callbacks) {
+          this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, expectedWords[wIdx].raw);
         }
 
-        this.currentWordIndex += advanceCount;
+        this.currentWordIndex++;
 
-        // Check Ayah completion immediately
+        // Check Ayah completion
         if (this.currentWordIndex >= expectedWords.length) {
           for (let i = 0; i < expectedWords.length; i++) {
             this.matchedWordsMap.get(this.currentAyahIndex)!.add(i);
@@ -895,11 +855,11 @@ export class ContinuousMurojaahTracker {
             }
           }
 
-          // CRITICAL: Stop further processing in this cycle to prevent multi-ayah cascade/skipping!
+          // CRITICAL: Exit stream loop immediately when an Ayah finishes to isolate verses
           break;
         }
       } else {
-        // No match for this expected word: stop and wait for subsequent speech
+        // No match for this exact word: stop and wait for speaker
         break;
       }
     }
