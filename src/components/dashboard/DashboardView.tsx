@@ -61,13 +61,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </p>
             </div>
           </div>
-
-          <div className="flex gap-2">
-            <div className="px-4 py-2 bg-black/40 border border-[#F59E0B] rounded-xl text-center shadow-[2px_2px_0px_0px_#000]">
-              <span className="text-[10px] font-bold text-gray-300 uppercase block">Total Poin</span>
-              <span className="text-lg font-black text-[#F59E0B]">{userProfile.totalXp} XP</span>
-            </div>
-          </div>
         </div>
       </NeobrutalCard>
 

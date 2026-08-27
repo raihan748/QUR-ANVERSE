@@ -72,7 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: t.nav_challenge,
       sublabel: t.nav_challengeSub,
       icon: Swords,
-      badge: language === 'ar' ? 'تحدي ونقاط' : 'XP & Badges',
+      badge: language === 'ar' ? 'تحدي الحفظ' : 'Game Mutqin',
       color: 'bg-[#9333EA]'
     },
     {

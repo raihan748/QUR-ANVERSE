@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Download, Flame, Trophy, ShieldCheck, Languages } from 'lucide-react';
+import { Sparkles, Download, ShieldCheck, Languages } from 'lucide-react';
 import { UserProfile, NavigationTab } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -63,12 +63,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               {language === 'id' ? 'العربية' : 'Indonesia'}
             </span>
           </button>
-
-          {/* Total XP / Poin */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F59E0B] text-black border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] text-xs font-extrabold animate-fade-up">
-            <Trophy className="w-4 h-4 text-amber-900" />
-            <span>{profile.totalXp} {t.points}</span>
-          </div>
 
           {/* INSTALL APP BUTTON (Featured) */}
           <button

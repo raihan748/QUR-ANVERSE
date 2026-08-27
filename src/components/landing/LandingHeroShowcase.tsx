@@ -225,7 +225,7 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
             <Award className="w-5 h-5" />
           </div>
           <h4 className="font-extrabold text-sm text-black">Game Tantangan</h4>
-          <p className="text-[11px] text-gray-600 mt-0.5">Audio vs Audio + XP Poin</p>
+          <p className="text-[11px] text-gray-600 mt-0.5">Uji Hafalan & Sambung Ayat</p>
         </div>
 
         {/* Card 4: Waktu Shalat & Adzan */}

@@ -945,7 +945,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               </h4>
             </div>
             <p className="text-xs font-bold text-emerald-900">
-              Skor Kelancaran: <b className="text-base font-black text-[#0B4627]">{finalScore}% (Mutqin)</b> • +{150 + passageAyats.length * 20} XP Poin Diperoleh!
+              Skor Kelancaran: <b className="text-base font-black text-[#0B4627]">{finalScore}% (Mutqin)</b>
             </p>
           </div>
         )}

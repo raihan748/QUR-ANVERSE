@@ -128,7 +128,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
             </div>
 
-            {/* Gamification Stats Card */}
+            {/* Profile Info Card */}
             <div className="p-3.5 bg-[#FFFDF7] border-2 border-black rounded-2xl space-y-2 shadow-[2px_2px_0px_0px_#000]">
               <div className="flex items-center justify-between text-xs font-bold text-gray-700">
                 <span className="flex items-center gap-1.5 font-black">
@@ -141,17 +141,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
               <div className="flex items-center justify-between text-xs font-bold text-gray-700">
                 <span className="flex items-center gap-1.5 font-black">
-                  <Trophy className="w-4 h-4 text-[#D97706]" />
-                  Total XP Murojaah:
+                  <ShieldCheck className="w-4 h-4 text-[#0B4627]" />
+                  Status Penyimpanan:
                 </span>
-                <span className="text-[#D97706] font-black">{currentProfile.totalXp} XP</span>
-              </div>
-              <div className="flex items-center justify-between text-xs font-bold text-gray-700">
-                <span className="flex items-center gap-1.5 font-black">
-                  <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
-                  Streak Berturut-turut:
-                </span>
-                <span className="text-orange-600 font-black">🔥 {currentProfile.streakCount} Hari</span>
+                <span className="text-[#0B4627] font-black text-[11px]">Offline Terenkripsi (Lokal)</span>
               </div>
             </div>
 
