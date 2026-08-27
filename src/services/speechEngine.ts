@@ -271,35 +271,52 @@ export function isPrecompiledWordMatch(
   candidate: SpokenTokenAnalysis,
   sensitivity: SensitivityLevel = 'high'
 ): boolean {
+  if (!target || !candidate) return false;
+
   // 1. Direct Equality Fast-Path (0.01ms)
   if (target.normalized === candidate.normalized || target.canonical === candidate.canonical) {
     return true;
   }
 
-  // 2. Canonical Substring & Emphatic Phonetic Inclusion
-  const maxDiff = sensitivity === 'ultra' ? 4 : sensitivity === 'high' ? 3 : 2;
-  if (target.canonical && candidate.canonical) {
-    if (target.canonical === candidate.canonical ||
-        target.stemCanon === candidate.stemCanon ||
-        target.canonical.includes(candidate.canonical) ||
-        candidate.canonical.includes(target.canonical)) {
-      if (Math.abs(target.charLength - candidate.canonical.length) <= maxDiff) {
+  // 2. Prefix stripped match (e.g., "wa-huwa" -> "huwa", "al-kitab" -> "kitab")
+  if (target.stemCanon && candidate.stemCanon && target.stemCanon === candidate.stemCanon) {
+    return true;
+  }
+
+  // Short words (length <= 3): MUST be strict to avoid false matching random Arabic syllables!
+  if (target.charLength <= 3 || candidate.canonical.length <= 3) {
+    const diff = Math.abs(target.charLength - candidate.canonical.length);
+    if (diff > 1) return false;
+
+    return (
+      fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= 0.70 ||
+      target.latinPhonetic === candidate.latin
+    );
+  }
+
+  // 3. Medium / Long Words (length > 3): Substring inclusion if ratio is significant
+  if (target.canonical.length >= 4 && candidate.canonical.length >= 4) {
+    if (target.canonical.includes(candidate.canonical) || candidate.canonical.includes(target.canonical)) {
+      const minLen = Math.min(target.canonical.length, candidate.canonical.length);
+      const maxLen = Math.max(target.canonical.length, candidate.canonical.length);
+      if (minLen / maxLen >= 0.65) {
         return true;
       }
     }
   }
 
-  // 3. Fast Levenshtein on Canonical Roots (Dynamic Threshold)
-  const canonThresh = sensitivity === 'ultra' ? 0.38 : sensitivity === 'high' ? 0.46 : 0.55;
+  // 4. Levenshtein Phonetic Similarity (Calibrated Thresholds)
+  const canonThresh = sensitivity === 'ultra' ? 0.50 : sensitivity === 'high' ? 0.58 : 0.65;
   if (fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= canonThresh) {
     return true;
   }
+
   if (target.stemCanon && candidate.stemCanon && fastLevenshteinSimilarity(target.stemCanon, candidate.stemCanon) >= canonThresh) {
     return true;
   }
 
-  // 4. Latin Phonetics Soundex (Nusantara Tajwid Phonics)
-  const latinThresh = sensitivity === 'ultra' ? 0.36 : sensitivity === 'high' ? 0.44 : 0.52;
+  // 5. Latin Phonetics Soundex
+  const latinThresh = sensitivity === 'ultra' ? 0.48 : sensitivity === 'high' ? 0.55 : 0.62;
   if (target.latinPhonetic === candidate.latin) return true;
   if (fastLevenshteinSimilarity(target.latinPhonetic, candidate.latin) >= latinThresh) {
     return true;
@@ -322,8 +339,8 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string, sensi
   const sLatin = normalizeLatinPhonetics(candidateSpoken);
   if (tLatin === sLatin) return true;
 
-  const canonThresh = sensitivity === 'ultra' ? 0.38 : sensitivity === 'high' ? 0.46 : 0.55;
-  const latinThresh = sensitivity === 'ultra' ? 0.36 : sensitivity === 'high' ? 0.44 : 0.52;
+  const canonThresh = sensitivity === 'ultra' ? 0.50 : sensitivity === 'high' ? 0.58 : 0.65;
+  const latinThresh = sensitivity === 'ultra' ? 0.48 : sensitivity === 'high' ? 0.55 : 0.62;
 
   return fastLevenshteinSimilarity(tCanon, sCanon) >= canonThresh || fastLevenshteinSimilarity(tLatin, sLatin) >= latinThresh;
 }
@@ -778,58 +795,64 @@ export class ContinuousMurojaahTracker {
 
     if (rawTokens.length === 0) return;
 
-    // Fast token analysis of all tokens in current speech
-    const analyzedSlice: SpokenTokenAnalysis[] = rawTokens.map(w => analyzeSpokenToken(w));
+    const analyzedTokens: SpokenTokenAnalysis[] = rawTokens.map(w => analyzeSpokenToken(w));
+    const consumedTokenIndices = new Set<number>();
     let matchedInThisCycle = false;
 
-    const compCanonThresh = this.sensitivity === 'ultra' ? 0.38 : this.sensitivity === 'high' ? 0.46 : 0.55;
-    const compLatinThresh = this.sensitivity === 'ultra' ? 0.36 : this.sensitivity === 'high' ? 0.44 : 0.52;
-
+    // Sequential chronological matching: each spoken token can match at most ONE target word
     while (this.currentWordIndex < expectedWords.length) {
       const targetWord = expectedWords[this.currentWordIndex];
+      let matchedTokenIndex = -1;
       let advanceCount = 0;
 
       // 1. Compound 2-Word Fast Match (e.g. "bismillahi" -> "bismi" + "allahi")
       if (this.currentWordIndex + 1 < expectedWords.length) {
         const comp2 = currentPrecompiled.compound2Words[this.currentWordIndex];
         if (comp2) {
-          for (let sIdx = 0; sIdx < analyzedSlice.length; sIdx++) {
-            const spoken = analyzedSlice[sIdx];
+          for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
+            if (consumedTokenIndices.has(sIdx)) continue;
+            const spoken = analyzedTokens[sIdx];
             if (spoken.canonical === comp2.canonical ||
-                fastLevenshteinSimilarity(comp2.canonical, spoken.canonical) >= compCanonThresh ||
-                fastLevenshteinSimilarity(comp2.latin, spoken.latin) >= compLatinThresh) {
+                fastLevenshteinSimilarity(comp2.canonical, spoken.canonical) >= 0.58 ||
+                fastLevenshteinSimilarity(comp2.latin, spoken.latin) >= 0.55) {
               advanceCount = 2;
+              matchedTokenIndex = sIdx;
               break;
             }
           }
         }
       }
 
-      // 2. Single Word Match against any token in current utterance
+      // 2. Single Word Sequential Match
       if (advanceCount === 0) {
-        for (let sIdx = 0; sIdx < analyzedSlice.length; sIdx++) {
-          const spoken = analyzedSlice[sIdx];
+        for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
+          if (consumedTokenIndices.has(sIdx)) continue;
+          const spoken = analyzedTokens[sIdx];
           if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
             advanceCount = 1;
+            matchedTokenIndex = sIdx;
             break;
           }
         }
       }
 
-      // 3. Smart Soft Lookahead Recovery (Never Freeze / Stuck)
-      // If speaker pronounced next word N+1, auto-pass word N and lock N+1!
+      // 3. Lookahead (Next Word N+1) only if confidence is high
       if (advanceCount === 0 && this.currentWordIndex + 1 < expectedWords.length) {
         const nextTargetWord = expectedWords[this.currentWordIndex + 1];
-        for (let sIdx = 0; sIdx < analyzedSlice.length; sIdx++) {
-          const spoken = analyzedSlice[sIdx];
+        for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
+          if (consumedTokenIndices.has(sIdx)) continue;
+          const spoken = analyzedTokens[sIdx];
           if (isPrecompiledWordMatch(nextTargetWord, spoken, this.sensitivity)) {
             advanceCount = 2;
+            matchedTokenIndex = sIdx;
             break;
           }
         }
       }
 
-      if (advanceCount > 0) {
+      if (advanceCount > 0 && matchedTokenIndex >= 0) {
+        consumedTokenIndices.add(matchedTokenIndex);
+
         if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
           this.matchedWordsMap.set(this.currentAyahIndex, new Set());
         }
@@ -871,9 +894,12 @@ export class ContinuousMurojaahTracker {
               this.callbacks.onPassageCompleted(score);
             }
           }
+
+          // CRITICAL: Stop further processing in this cycle to prevent multi-ayah cascade/skipping!
           break;
         }
       } else {
+        // No match for this expected word: stop and wait for subsequent speech
         break;
       }
     }
