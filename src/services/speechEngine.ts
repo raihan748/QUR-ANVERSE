@@ -288,12 +288,12 @@ export function isPrecompiledWordMatch(
     return true;
   }
 
-  // Short words (length <= 3):
+  // 4. Short words (length <= 3): Strict to prevent false matching random syllables
   if (target.charLength <= 3 || candidate.canonical.length <= 3) {
     const diff = Math.abs(target.charLength - candidate.canonical.length);
-    if (diff > 2) return false;
+    if (diff > 1) return false;
 
-    const shortThresh = sensitivity === 'ultra' ? 0.35 : sensitivity === 'high' ? 0.45 : 0.55;
+    const shortThresh = sensitivity === 'ultra' ? 0.60 : sensitivity === 'high' ? 0.68 : 0.75;
     return (
       fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= shortThresh ||
       (target.stemCanon && candidate.stemCanon && fastLevenshteinSimilarity(target.stemCanon, candidate.stemCanon) >= shortThresh) ||
@@ -301,18 +301,10 @@ export function isPrecompiledWordMatch(
     );
   }
 
-  // 4. Medium / Long Words (length > 3): Substring inclusion
-  if (target.canonical.length >= 3 && candidate.canonical.length >= 3) {
-    if (target.canonical.includes(candidate.canonical) || candidate.canonical.includes(target.canonical)) {
-      return true;
-    }
-    if (target.latinPhonetic.includes(candidate.latin) || candidate.latin.includes(target.latinPhonetic)) {
-      return true;
-    }
-  }
+  // 5. Medium / Long Words (length >= 4)
+  const canonThresh = sensitivity === 'ultra' ? 0.48 : sensitivity === 'high' ? 0.55 : 0.62;
+  const latinThresh = sensitivity === 'ultra' ? 0.45 : sensitivity === 'high' ? 0.52 : 0.60;
 
-  // 5. Levenshtein Phonetic Similarity (Calibrated for Ultra-High Responsiveness)
-  const canonThresh = sensitivity === 'ultra' ? 0.32 : sensitivity === 'high' ? 0.40 : 0.50;
   if (fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= canonThresh) {
     return true;
   }
@@ -321,8 +313,6 @@ export function isPrecompiledWordMatch(
     return true;
   }
 
-  // 6. Latin Phonetics Soundex
-  const latinThresh = sensitivity === 'ultra' ? 0.30 : sensitivity === 'high' ? 0.38 : 0.48;
   if (fastLevenshteinSimilarity(target.latinPhonetic, candidate.latin) >= latinThresh) {
     return true;
   }
@@ -443,42 +433,29 @@ export class SpeechEngine {
       this.alternativeHypotheses = [];
 
       this.recognition.onresult = (event: any) => {
-        let interimText = '';
-        let finalChunk = '';
+        if (!event || !event.results || event.results.length === 0) return;
+
+        // Extract ONLY the latest utterance delta (never accumulate previous verses)
+        const lastResult = event.results[event.results.length - 1];
+        if (!lastResult || !lastResult[0]) return;
+
+        const currentTranscript = lastResult[0].transcript.trim();
         const currentAlternatives: string[] = [];
-
-        const startIndex = typeof event.resultIndex === 'number' ? event.resultIndex : 0;
-        for (let i = startIndex; i < event.results.length; i++) {
-          const res = event.results[i];
-          if (!res || !res[0]) continue;
-
-          if (res.isFinal) {
-            finalChunk += res[0].transcript + ' ';
-          } else {
-            interimText += res[0].transcript + ' ';
-          }
-
-          for (let alt = 0; alt < res.length; alt++) {
-            if (res[alt]?.transcript) {
-              currentAlternatives.push(res[alt].transcript);
-            }
+        for (let alt = 0; alt < lastResult.length; alt++) {
+          if (lastResult[alt]?.transcript) {
+            currentAlternatives.push(lastResult[alt].transcript.trim());
           }
         }
 
-        let consolidated = (finalChunk + ' ' + interimText).trim();
-        if (!consolidated && event.results.length > 0) {
-          const last = event.results[event.results.length - 1];
-          if (last?.[0]?.transcript) {
-            consolidated = last[0].transcript.trim();
-          }
-        }
-
-        if (consolidated) {
-          this.accumulatedTranscript = consolidated;
+        if (currentTranscript) {
+          this.accumulatedTranscript = currentTranscript;
           this.alternativeHypotheses = currentAlternatives;
 
-          options.onInterimResult?.(consolidated, currentAlternatives);
-          options.onFinalResult?.(consolidated, currentAlternatives);
+          if (lastResult.isFinal) {
+            options.onFinalResult?.(currentTranscript, currentAlternatives);
+          } else {
+            options.onInterimResult?.(currentTranscript, currentAlternatives);
+          }
         }
       };
 
@@ -821,74 +798,61 @@ export class ContinuousMurojaahTracker {
     const consumedTokenIndices = new Set<number>();
     let anyMatched = false;
 
-    // Strictly 1-by-1 chronological progression without skipping
-    while (this.currentWordIndex < expectedWords.length) {
-      const targetWord = expectedWords[this.currentWordIndex];
-      let matchedTokenIndex = -1;
+    // Strictly 1-by-1 chronological progression: Match AT MOST ONE WORD per delta event
+    const targetWord = expectedWords[this.currentWordIndex];
+    if (!targetWord) return;
 
-      // Sequential Match: Find the first unconsumed spoken token that matches targetWord
-      for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
-        if (consumedTokenIndices.has(sIdx)) continue;
-        const spoken = analyzedTokens[sIdx];
-        if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
-          matchedTokenIndex = sIdx;
-          break;
-        }
-      }
+    let matchedTokenIndex = -1;
 
-      if (matchedTokenIndex >= 0) {
-        consumedTokenIndices.add(matchedTokenIndex);
-        anyMatched = true;
-
-        if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
-          this.matchedWordsMap.set(this.currentAyahIndex, new Set());
-        }
-
-        const wIdx = this.currentWordIndex;
-        this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
-        this.matchedWordsCount++;
-
-        if (this.callbacks) {
-          this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, targetWord.raw);
-        }
-
-        this.currentWordIndex++;
-
-        // Check Ayah completion
-        if (this.currentWordIndex >= expectedWords.length) {
-          for (let i = 0; i < expectedWords.length; i++) {
-            this.matchedWordsMap.get(this.currentAyahIndex)!.add(i);
-          }
-
-          const currentAyat = this.targetAyats[this.currentAyahIndex];
-          if (this.callbacks) {
-            this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
-          }
-
-          this.currentAyahIndex++;
-          this.currentWordIndex = 0;
-
-          if (this.currentAyahIndex >= this.targetAyats.length) {
-            this.isActive = false;
-            this.clearHesitationWatchdog();
-            const score = Math.max(85, Math.round(100 - (this.totalErrors * 2)));
-            if (this.callbacks) {
-              this.callbacks.onPassageCompleted(score);
-            }
-          }
-
-          // Exit loop when an Ayah finishes to isolate verses
-          break;
-        }
-      } else {
-        // No match for this active word; wait for user to pronounce it
+    // Sequential Match: Find the first unconsumed spoken token that matches targetWord
+    for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
+      const spoken = analyzedTokens[sIdx];
+      if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
+        matchedTokenIndex = sIdx;
         break;
       }
     }
 
-    if (anyMatched) {
+    if (matchedTokenIndex >= 0) {
+      if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
+        this.matchedWordsMap.set(this.currentAyahIndex, new Set());
+      }
+
+      const wIdx = this.currentWordIndex;
+      this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
+      this.matchedWordsCount++;
       this.lastMatchTime = Date.now();
       this.resetHesitationWatchdog();
+
+      if (this.callbacks) {
+        this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, targetWord.raw);
+      }
+
+      this.currentWordIndex++;
+
+      // Check Ayah completion
+      if (this.currentWordIndex >= expectedWords.length) {
+        for (let i = 0; i < expectedWords.length; i++) {
+          this.matchedWordsMap.get(this.currentAyahIndex)!.add(i);
+        }
+
+        const currentAyat = this.targetAyats[this.currentAyahIndex];
+        if (this.callbacks) {
+          this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
+        }
+
+        this.currentAyahIndex++;
+        this.currentWordIndex = 0;
+
+        if (this.currentAyahIndex >= this.targetAyats.length) {
+          this.isActive = false;
+          this.clearHesitationWatchdog();
+          const score = Math.max(85, Math.round(100 - (this.totalErrors * 2)));
+          if (this.callbacks) {
+            this.callbacks.onPassageCompleted(score);
+          }
+        }
+      }
     } else if (isFinal && analyzedTokens.length > 0) {
       // ONLY on final transcript event when user uttered an unmatchable word
       const targetWord = expectedWords[this.currentWordIndex];
