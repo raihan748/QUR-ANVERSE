@@ -316,7 +316,13 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         const targetAyat = passageAyats[ayahIdx];
         if (!targetAyat) return;
 
-        // 🚨 1. Highlight word in RED & set error state
+        // 🛑 1. Pause tracking & stop mic while Sheikh speaks
+        continuousTracker.pause();
+        speechEngine.stopListening();
+        setIsRecording(false);
+        setIsSheikhSpeaking(true);
+
+        // 🚨 2. Highlight word in RED & set error state
         setErrorWordState({
           ayahIdx,
           wordIdx,
@@ -326,8 +332,16 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         });
         setSheikhTeguranMessage(`🚨 Teguran Syekh: ${reason}`);
 
-        // Soft alarm warning chime without forcefully disconnecting microphone
+        // 🔔 3. Play alarm teguran + Syekh voice audio
         audioPlayer.playAlarmTeguranSound();
+        await audioPlayer.playSheikhIntervention(
+          targetAyat.surahNumber,
+          targetAyat.numberInSurah,
+          activeReciter.id,
+          () => {
+            setIsSheikhSpeaking(false);
+          }
+        );
 
         // Record weak verse for spaced repetition
         recordWeakVerse({

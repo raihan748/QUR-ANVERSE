@@ -38,14 +38,9 @@ export function getLocalProfile(): UserProfile {
       return defaultProfile;
     }
     const parsed = safeJsonParse<any>(raw, defaultProfile);
-
-    // Auto-migrate if user had old mock 1250 XP
+    // Auto-calculate exact streak mathematically
     let xp = Math.max(0, Number(parsed.totalXp) || 0);
-    let streak = Math.max(0, Number(parsed.streakCount) || 0);
-    if (xp === 1250 && streak === 7) {
-      xp = 0;
-      streak = 0;
-    }
+    let streak = calculateConsecutiveStreak();
 
     return {
       id: sanitizeInput(parsed.id || defaultProfile.id, 50),
@@ -78,40 +73,6 @@ export function saveLocalProfile(profile: UserProfile): void {
   }
 }
 
-export function addXpAndCheckStreak(xpGain: number): UserProfile {
-  const profile = getLocalProfile();
-  const today = new Date().toISOString().split('T')[0];
-  
-  let newStreak = profile.streakCount;
-  if (profile.lastMurojaahDate !== today) {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    if (profile.lastMurojaahDate === yesterday) {
-      newStreak += 1;
-    } else {
-      newStreak = 1;
-    }
-  }
-
-  let newLevel = profile.hafidzLevel;
-  const newXp = profile.totalXp + Math.max(0, Math.min(1000, xpGain)); // capped gain per session
-  if (newXp >= 10000) newLevel = 'Hafidz 30 Juz (Master)';
-  else if (newXp >= 5000) newLevel = 'Hafidzah Mutqin';
-  else if (newXp >= 2500) newLevel = 'Pejuang Tahfidz';
-  else if (newXp >= 1000) newLevel = 'Santri Murojaah';
-
-  const updatedProfile: UserProfile = {
-    ...profile,
-    totalXp: newXp,
-    streakCount: newStreak,
-    hafidzLevel: newLevel,
-    lastMurojaahDate: today
-  };
-
-  saveLocalProfile(updatedProfile);
-  recordStreakDay(today);
-  return updatedProfile;
-}
-
 // Streak Calendar
 export function getStreakCalendar(): Record<string, boolean> {
   try {
@@ -136,6 +97,72 @@ export function recordStreakDay(dateStr: string): void {
   } catch (e) {
     console.warn(e);
   }
+}
+
+export function calculateConsecutiveStreak(cal?: Record<string, boolean>): number {
+  const calendar = cal || getStreakCalendar();
+  const now = new Date();
+  
+  const formatDate = (d: Date) => d.toISOString().split('T')[0];
+  
+  const todayStr = formatDate(now);
+  const yesterday = new Date(now.getTime() - 86400000);
+  const yesterdayStr = formatDate(yesterday);
+
+  let currentCheckDate: Date;
+  let streak = 0;
+
+  if (calendar[todayStr]) {
+    streak = 1;
+    currentCheckDate = yesterday;
+  } else if (calendar[yesterdayStr]) {
+    streak = 1;
+    currentCheckDate = new Date(yesterday.getTime() - 86400000);
+  } else {
+    return 0;
+  }
+
+  // Count backwards day by day
+  for (let i = 0; i < 365; i++) {
+    const dStr = formatDate(currentCheckDate);
+    if (calendar[dStr]) {
+      streak++;
+      currentCheckDate = new Date(currentCheckDate.getTime() - 86400000);
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+export function addXpAndCheckStreak(xpGain: number): UserProfile {
+  const profile = getLocalProfile();
+  const today = new Date().toISOString().split('T')[0];
+  
+  // 1. Record today's activity in calendar
+  recordStreakDay(today);
+
+  // 2. Compute exact consecutive streak mathematically
+  const trueStreak = calculateConsecutiveStreak();
+
+  let newLevel = profile.hafidzLevel;
+  const newXp = profile.totalXp + Math.max(0, Math.min(1000, xpGain)); // capped gain per session
+  if (newXp >= 10000) newLevel = 'Hafidz 30 Juz (Master)';
+  else if (newXp >= 5000) newLevel = 'Hafidzah Mutqin';
+  else if (newXp >= 2500) newLevel = 'Pejuang Tahfidz';
+  else if (newXp >= 1000) newLevel = 'Santri Murojaah';
+
+  const updatedProfile: UserProfile = {
+    ...profile,
+    totalXp: newXp,
+    streakCount: trueStreak,
+    hafidzLevel: newLevel,
+    lastMurojaahDate: today
+  };
+
+  saveLocalProfile(updatedProfile);
+  return updatedProfile;
 }
 
 // Bookmarks (Max 200 bookmarks quota)
