@@ -41,7 +41,7 @@ import {
   getRandomAyatFromAvailable 
 } from '../../data/quranData';
 import { NeobrutalCard } from '../common/NeobrutalCard';
-import { speechEngine, continuousTracker, ArabicDialect } from '../../services/speechEngine';
+import { speechEngine, continuousTracker, ArabicDialect, normalizeArabic } from '../../services/speechEngine';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { audioRecorder } from '../../services/audioRecorderService';
 import { recordWeakVerse, resolveWeakVerse, addXpAndCheckStreak } from '../../services/offlineStorage';
@@ -460,7 +460,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           const isActive = aIdx === activeAyahIndex && isRecording;
           const isDone = completedAyahsSet.has(aIdx);
           const matchedWords = matchedWordsState[aIdx] || [];
-          const words = (ayat.arabicText || '').split(/\s+/).filter(Boolean);
+          const words = (ayat.arabicText || '').split(/\s+/).filter((w) => normalizeArabic(w).length > 0);
 
           return (
             <div

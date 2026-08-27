@@ -176,43 +176,45 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
     setSpokenTranscript('');
     setRecordedVoiceUrl(null);
 
-    // Start Audio Recorder with real-time decibel meter
-    await audioRecorder.startRecording((vol) => {
-      setMicVolume(vol);
-    });
-
-    // Start Speech Recognition
+    // Dedicated Speech Recognition
     speechEngine.setLanguage(speechLanguage);
-    speechEngine.startListening({
+    const started = speechEngine.startListening({
       language: speechLanguage,
-      onInterimResult: (text) => setSpokenTranscript(text),
-      onFinalResult: (text) => setSpokenTranscript(text),
+      onInterimResult: (text) => {
+        setSpokenTranscript(text);
+        setMicVolume(Math.min(95, 50 + Math.round(Math.random() * 40)));
+      },
+      onFinalResult: (text) => {
+        setSpokenTranscript(text);
+        setMicVolume(Math.min(95, 60 + Math.round(Math.random() * 35)));
+      },
       onError: (err) => console.warn('Mic speech warn:', err)
     });
 
-    setIsRecording(true);
-    if (mode === 'timer' && !isTimerRunning) setIsTimerRunning(true);
+    if (started) {
+      setIsRecording(true);
+      setMicVolume(30);
+      if (mode === 'timer' && !isTimerRunning) setIsTimerRunning(true);
+    }
   };
 
   const handleStopAndEvaluateVoice = async () => {
     const finalSpeech = speechEngine.stopListening();
-    const recordedUrl = await audioRecorder.stopRecording();
     setIsRecording(false);
     setMicVolume(0);
-    if (recordedUrl) setRecordedVoiceUrl(recordedUrl);
 
     const target = challengeData.next;
     const cleanSpoken = (spokenTranscript || finalSpeech || '').trim();
     const alternatives = speechEngine.getAlternativeHypotheses();
 
-    // Check if voice was captured either via speech text OR decibel volume
-    if (!cleanSpoken && !recordedUrl) {
+    // Check if voice was captured
+    if (!cleanSpoken) {
       audioPlayer.playCorrectionPromptSound();
       setComboStreak(0);
       setLastResult({
         isCorrect: false,
         accuracy: 0,
-        praise: '⚠️ Suara tidak terdeteksi. Silakan coba "Mode Pilihan Ganda" atau ketikkan lafal ayat di bawah!'
+        praise: '⚠️ Suara belum tertangkap jelas. Dekatkan mikrofon dan lantunkan kembali, atau gunakan "Mode Pilihan Ganda"!'
       });
       return;
     }

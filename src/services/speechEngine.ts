@@ -208,7 +208,7 @@ export interface PrecompiledAyah {
 }
 
 export function precompileAyat(ayat: Ayat): PrecompiledAyah {
-  const rawWords = (ayat.arabicText || '').split(/\s+/).filter(Boolean);
+  const rawWords = (ayat.arabicText || '').split(/\s+/).filter((w) => normalizeArabic(w).length > 0);
   const words: PrecompiledWord[] = rawWords.map((raw) => {
     const norm = normalizeArabic(raw);
     const canon = canonicalizeArabicPhonemes(raw);

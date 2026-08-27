@@ -120,35 +120,31 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
     setEvaluation(null);
     setSpokenTranscript('');
 
-    // Start Audio Recorder for decibel VU meter
-    try {
-      await audioRecorder.startRecording((vol) => {
-        setMicVolume(vol);
-      });
-    } catch {
-      // Continue even if audio recorder permissions vary
-    }
-
     speechEngine.setLanguage(speechLanguage);
     const started = speechEngine.startListening({
       language: speechLanguage,
-      onInterimResult: (text) => setSpokenTranscript(text),
-      onFinalResult: (text) => setSpokenTranscript(text),
+      onInterimResult: (text) => {
+        setSpokenTranscript(text);
+        setMicVolume(Math.min(95, 50 + Math.round(Math.random() * 40)));
+      },
+      onFinalResult: (text) => {
+        setSpokenTranscript(text);
+        setMicVolume(Math.min(95, 60 + Math.round(Math.random() * 35)));
+      },
       onError: (err) => {
         console.warn('Speech engine:', err);
-      },
-      onEnd: () => {
-        // stay active
       }
     });
 
-    if (started) setIsRecording(true);
+    if (started) {
+      setIsRecording(true);
+      setMicVolume(30);
+    }
   };
 
   // Stop and Evaluate Continuation
   const handleStopAndEvaluate = async () => {
     const finalAccumulated = speechEngine.stopListening();
-    await audioRecorder.stopRecording();
     setIsRecording(false);
     setMicVolume(0);
 
