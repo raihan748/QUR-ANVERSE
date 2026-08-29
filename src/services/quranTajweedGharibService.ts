@@ -441,6 +441,22 @@ export const GHARIB_DICTIONARY: Record<number, GharibItem[]> = {
     tips: 'Bantahan terhadap orang kafir yang enggan bersujud kepada Ar-Rahman.',
     type: 'sajdah'
   }],
+  378: [{
+    id: 'gh-378',
+    title: 'Idgham Mutajanisain Naqis (إِدْغَام نَاقِص)',
+    arabicTerm: 'فَقَالَ أَحَطتُ بِمَا لَمْ تُحِطْ بِهِۦ',
+    surahNumber: 27,
+    surahName: 'An-Naml',
+    ayahNumber: 22,
+    word: 'أَحَطتُ',
+    page: 378,
+    pengertianBahasa: 'Idgham Naqis berarti peleburan yang tidak sempurna.',
+    pengertianIstilah: 'Peleburan huruf Tha\' sukun ke dalam huruf Ta\' dengan tetap mempertahankan ketebalan sifat Isti\'la dan Ithbaq huruf Tha\'.',
+    description: 'Huruf Tha\' (ط) sukun bertemu huruf Ta\' (ت) berharakat pada kata أَحَطتُ.',
+    caraBaca: 'Makhraj Tha\' masuk ke Ta\' namun sifat Isti\'la (tebal) Tha\' tetap ditahan sebelum membuka makhraj Ta\' berharakat dhommah.',
+    tips: 'Tutup makhraj dengan tebal (Tha\') lalu buka dengan desis Ta\' ("Ahat-tu").',
+    type: 'idgham_khusus'
+  }],
   379: [{
     id: 'gh-379',
     title: 'Ayat Sajdah (سَجْدَة)',
@@ -567,6 +583,22 @@ export const GHARIB_DICTIONARY: Record<number, GharibItem[]> = {
     caraBaca: 'Sunnah Sujud Tilawah (Sujud Syukur & Taubat).',
     tips: 'Meneladani taubat dan ketundukan Nabi Dawud saat memohon ampunan.',
     type: 'sajdah'
+  }],
+  464: [{
+    id: 'gh-464',
+    title: 'Idgham Mutajanisain Naqis (إِدْغَام نَاقِص)',
+    arabicTerm: 'يَـٰحَسْرَتَىٰ عَلَىٰ مَا فَرَّطتُ فِى جَنۢبِ ٱللَّهِ',
+    surahNumber: 39,
+    surahName: 'Az-Zumar',
+    ayahNumber: 56,
+    word: 'فَرَّطتُ',
+    page: 464,
+    pengertianBahasa: 'Idgham Naqis berarti peleburan tidak sempurna.',
+    pengertianIstilah: 'Peleburan huruf Tha\' sukun ke dalam huruf Ta\' dengan tetap mempertahankan ketebalan sifat Isti\'la dan Ithbaq Tha\'.',
+    description: 'Huruf Tha\' (ط) sukun bertemu huruf Ta\' (ت) pada kata فَرَّطتُ.',
+    caraBaca: 'Makhraj Tha\' masuk ke Ta\' dengan mempertahankan sifat tebal Tha\' sebelum melepaskan harakat Ta\'.',
+    tips: 'Tutup makhraj dengan tebal (Tha\') lalu buka desis Ta\' tanpa jeda qalqalah.',
+    type: 'idgham_khusus'
   }],
   480: [{
     id: 'gh-480',
