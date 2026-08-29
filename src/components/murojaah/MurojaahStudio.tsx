@@ -846,12 +846,22 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               })()}
 
               {/* Transliteration & Indonesian Translation */}
-              <p className="text-xs text-emerald-900 font-bold border-t border-gray-200 pt-2 font-mono">
-                {ayat.transliteration}
-              </p>
-              <p className="text-xs text-gray-700 italic border-t border-gray-200 pt-1.5 mt-1 font-medium">
-                "{ayat.translation}"
-              </p>
+              {ayat.transliteration && (
+                <div className="pt-2.5 border-t border-emerald-100">
+                  <p className="text-xs sm:text-[13px] text-emerald-950 font-semibold leading-relaxed tracking-wide font-sans bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200">
+                    <span className="text-[10px] font-black uppercase text-emerald-700 block mb-0.5 tracking-wider font-mono">🔤 Transliterasi Latin:</span>
+                    {ayat.transliteration}
+                  </p>
+                </div>
+              )}
+              {ayat.translation && (
+                <div className="pt-2">
+                  <p className="text-xs sm:text-[13px] text-gray-800 leading-relaxed font-normal bg-amber-50/60 p-2.5 rounded-xl border border-amber-200/80">
+                    <span className="text-[10px] font-black uppercase text-amber-800 block mb-0.5 tracking-wider font-mono">🇮🇩 Terjemahan (Kemenag RI):</span>
+                    "{ayat.translation}"
+                  </p>
+                </div>
+              )}
             </div>
           );
         })}

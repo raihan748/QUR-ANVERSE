@@ -871,6 +871,9 @@ function buildMasterQuranDB(): Record<number, Ayat[]> {
       const sNo = a.surah;
       if (!master[sNo]) master[sNo] = [];
 
+      // Avoid duplicate verse entries if spanning across pages
+      if (master[sNo].some((x) => x.numberInSurah === a.numberInSurah)) continue;
+
       let cleanArabic = String(a.text || '');
       // Clean leading Bismillah for verse 1 (except Al-Fatihah #1 and At-Taubah #9)
       if (sNo !== 1 && sNo !== 9 && a.numberInSurah === 1) {
@@ -884,14 +887,17 @@ function buildMasterQuranDB(): Record<number, Ayat[]> {
       }
 
       const meta = SURAH_LIST.find((s) => s.number === sNo) || SURAH_LIST[0];
-      const words = cleanArabic.split(/\s+/).filter(Boolean).map((w, idx) => ({
+      
+      // Clean isolated waqaf punctuation symbols so words array contains pure recitation words
+      const cleanWordsText = cleanArabic.replace(/\s+[ۚۖۗۘۙۛۜ۞۩]\s+/g, ' ').replace(/\s+[ۚۖۗۘۙۛۜ۞۩]$/g, '').trim();
+      const words = cleanWordsText.split(/\s+/).filter(Boolean).map((w, idx) => ({
         id: idx + 1,
         arabic: w,
-        transliteration: w,
-        meaningId: ''
+        transliteration: `Kata ${idx + 1}`,
+        meaningId: `Bagian kata ${idx + 1}`
       }));
 
-      // Check if authentic offline Indonesian translation & transliteration exists
+      // Check authentic offline Indonesian translation & transliteration dataset
       const indoTranslitList = (quranIndoTranslitData as Record<string, Array<{ ayah: number; arabic: string; latin: string; indo: string }>>)[String(sNo)];
       const indoTranslitMatch = indoTranslitList?.find(
         (it) => it.ayah === a.numberInSurah
@@ -902,7 +908,7 @@ function buildMasterQuranDB(): Record<number, Ayat[]> {
         (c) => c.numberInSurah === a.numberInSurah
       );
 
-      const resolvedTranslation = curatedMatch?.translation || indoTranslitMatch?.indo || `Terjemahan ayat ke-${a.numberInSurah} Surat ${meta.latinName}.`;
+      const resolvedTranslation = curatedMatch?.translation || indoTranslitMatch?.indo || '';
       const resolvedTransliteration = curatedMatch?.transliteration || indoTranslitMatch?.latin || '';
 
       const ayahObj: Ayat = {
@@ -935,20 +941,30 @@ function buildMasterQuranDB(): Record<number, Ayat[]> {
 export const CORE_AYATS_DB: Record<number, Ayat[]> = buildMasterQuranDB();
 
 // Fetch Surah Ayahs (100% Complete & Uncut - All Ayahs of Every Surah)
-// Multi-Source Pipeline: Full Memory DB -> Validated Local Cache -> Equran.id API -> AlQuran.Cloud API -> Fallback
+// Multi-Source Pipeline: Full In-Memory Master DB -> Validated Local Cache -> Equran.id API -> AlQuran.Cloud API
 export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
   const safeSurahNo = Math.max(1, Math.min(114, Number(surahNumber) || 1));
   const meta = SURAH_LIST.find((s) => s.number === safeSurahNo) || SURAH_LIST[0];
   const expectedAyahCount = meta.ayahCount;
   const masterFallback = CORE_AYATS_DB[safeSurahNo] || [];
 
-  // 1. Check Local Storage cache ONLY IF it has 100% of all ayahs in the surah
-  const cacheKey = `quran_surah_${safeSurahNo}_full_v2`;
+  // 1. Purge stale older caches and check validated v4 cache
+  const cacheKey = `quran_surah_${safeSurahNo}_master_v4`;
   try {
+    localStorage.removeItem(`quran_surah_${safeSurahNo}_full_v1`);
+    localStorage.removeItem(`quran_surah_${safeSurahNo}_full_v2`);
+    localStorage.removeItem(`quran_surah_${safeSurahNo}_full_v3`);
+
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       const parsed = JSON.parse(cached);
-      if (Array.isArray(parsed) && parsed.length === expectedAyahCount) {
+      if (
+        Array.isArray(parsed) &&
+        parsed.length === expectedAyahCount &&
+        parsed[0]?.translation &&
+        !parsed[0].translation.includes('Terjemahan ayat ke-') &&
+        parsed[0]?.transliteration
+      ) {
         return parsed;
       } else {
         localStorage.removeItem(cacheKey);
@@ -958,7 +974,19 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
     // continue
   }
 
-  // 2. Primary Open API: Equran.id (Kemenag Official Translation & Transliteration)
+  // 2. Instant In-Memory Master DB (Preloaded with all 6,236 Verses, Latin Transliterations & Kemenag Indonesian Translations)
+  if (
+    masterFallback.length === expectedAyahCount &&
+    masterFallback[0]?.translation &&
+    !masterFallback[0].translation.includes('Terjemahan ayat ke-')
+  ) {
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify(masterFallback));
+    } catch {}
+    return masterFallback;
+  }
+
+  // 3. Primary Open API: Equran.id (Kemenag Official Translation & Transliteration)
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);
@@ -975,8 +1003,9 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
       if (data && Array.isArray(data.ayat) && data.ayat.length > 0) {
         const ayats: Ayat[] = data.ayat.map((a: any) => {
           const ayahNum = Number(a.nomorAyat) || 1;
-          const arabicText = String(a.teksArab || masterFallback[ayahNum - 1]?.arabicText || '');
-          const words = arabicText.split(/\s+/).filter(Boolean).map((w, idx) => ({
+          const arabicText = String(masterFallback[ayahNum - 1]?.arabicText || a.teksArab || '');
+          const cleanWordsText = arabicText.replace(/\s+[ۚۖۗۘۙۛۜ۞۩]\s+/g, ' ').replace(/\s+[ۚۖۗۘۙۛۜ۞۩]$/g, '').trim();
+          const words = cleanWordsText.split(/\s+/).filter(Boolean).map((w, idx) => ({
             id: idx + 1,
             arabic: w,
             transliteration: `Kata ${idx + 1}`,
@@ -990,7 +1019,7 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
             surahName: String(data.namaLatin || meta.latinName),
             arabicText: arabicText,
             translation: String(a.teksIndonesia || masterFallback[ayahNum - 1]?.translation || ''),
-            transliteration: String(a.teksLatin || ''),
+            transliteration: String(a.teksLatin || masterFallback[ayahNum - 1]?.transliteration || ''),
             juz: getAyatJuzNumber(safeSurahNo, ayahNum),
             audioUrl: formatAlafasyAudioUrl(safeSurahNo, ayahNum),
             tafsirShort: a.tafsirKemenag ? String(a.tafsirKemenag) : undefined,
@@ -998,7 +1027,6 @@ export async function getSurahAyahs(surahNumber: number): Promise<Ayat[]> {
           };
         });
 
-        // If returned full count or substantial verses, cache and return
         if (ayats.length === expectedAyahCount || ayats.length > 0) {
           try {
             localStorage.setItem(cacheKey, JSON.stringify(ayats));
