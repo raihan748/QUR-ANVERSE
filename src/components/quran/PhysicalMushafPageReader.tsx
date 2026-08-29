@@ -21,7 +21,9 @@ import {
   AlertCircle,
   X,
   Search,
-  Check
+  Check,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { 
   SURAH_LIST, 
@@ -50,8 +52,40 @@ import { saveBookmark, setLastRead } from '../../services/offlineStorage';
 import { useLanguage } from '../../context/LanguageContext';
 
 const STORAGE_LAST_PAGE = 'quranverse_physical_mushaf_last_page_v1';
+const STORAGE_PAGE_SOUND = 'quranverse_mushaf_page_sound_v1';
 
 export type MushafPageLine = MushafLine;
+
+/**
+ * Generates an organic, whisper-soft synthetic paper rustle sound when flipping pages.
+ * 100% offline & instantaneous via Web Audio API.
+ */
+function playPageTurnSound() {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const bufferSize = Math.floor(ctx.sampleRate * 0.12);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const output = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
+    }
+    const whiteNoise = ctx.createBufferSource();
+    whiteNoise.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1100;
+    filter.Q.value = 0.9;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.045, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+    whiteNoise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    whiteNoise.start();
+  } catch {}
+}
 
 export const PhysicalMushafPageReader: React.FC = () => {
   const { language } = useLanguage();
@@ -77,6 +111,17 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragStartX, setDragStartX] = useState<number | null>(null);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+  const [slidePhase, setSlidePhase] = useState<'idle' | 'sliding-out' | 'sliding-in'>('idle');
+  const [slideDirection, setSlideDirection] = useState<'next' | 'prev' | null>(null);
+  const [pageSoundEnabled, setPageSoundEnabled] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_PAGE_SOUND);
+      return saved !== 'false';
+    } catch {
+      return true;
+    }
+  });
+  const dragStartTimeRef = useRef<number>(0);
 
   // Display Mode: 'scan' (Scanned Page Image - Physical Mushaf) | 'layout' (15-line Typography)
   const [viewMode, setViewMode] = useState<'scan' | 'layout'>('scan');
@@ -124,6 +169,18 @@ export const PhysicalMushafPageReader: React.FC = () => {
     return matchesCat && matchesSearch;
   }), [encyclopediaCategory, encyclopediaSearch]);
 
+  // Toggle paper rustle sound
+  const handleToggleSound = () => {
+    setPageSoundEnabled((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(STORAGE_PAGE_SOUND, String(next));
+      } catch {}
+      if (next) playPageTurnSound();
+      return next;
+    });
+  };
+
   // Toast Auto-dismiss
   useEffect(() => {
     if (toastMessage) {
@@ -158,7 +215,6 @@ export const PhysicalMushafPageReader: React.FC = () => {
   // Load authentic 15-Line Madinah Mushaf dataset (100% offline & instantaneous)
   useEffect(() => {
     setIsLoadingPage(true);
-    // Clear old corrupted cache entries
     try {
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -197,17 +253,29 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const triggerPageTurn = useCallback((dir: 'next' | 'prev') => {
     if (isTransitioning) return;
     if (dir === 'next' && currentPage >= 604) {
-      setDragOffset(0);
+      setDragOffset(35);
+      setTimeout(() => setDragOffset(0), 220);
+      setToastMessage('📖 Anda telah berada di halaman terakhir (Surat An-Nas / Halaman 604)');
       return;
     }
     if (dir === 'prev' && currentPage <= 1) {
-      setDragOffset(0);
+      setDragOffset(-35);
+      setTimeout(() => setDragOffset(0), 220);
+      setToastMessage('📖 Anda telah berada di halaman pertama (Surat Al-Fatihah / Halaman 1)');
       return;
     }
 
+    if (pageSoundEnabled) {
+      playPageTurnSound();
+    }
+
     setIsTransitioning(true);
-    // Slide out smoothly in swipe direction
-    setDragOffset(dir === 'next' ? -220 : 220);
+    setSlideDirection(dir);
+    setSlidePhase('sliding-out');
+
+    // Slide out smoothly with 3D perspective fold
+    const targetOffset = dir === 'next' ? -380 : 380;
+    setDragOffset(targetOffset);
 
     setTimeout(() => {
       if (dir === 'next') {
@@ -215,14 +283,22 @@ export const PhysicalMushafPageReader: React.FC = () => {
       } else {
         setCurrentPage((prev) => Math.max(1, prev - 1));
       }
-      // Enter from opposite side with smooth bounce in
-      setDragOffset(dir === 'next' ? 70 : -70);
-      setTimeout(() => {
-        setDragOffset(0);
-        setIsTransitioning(false);
-      }, 50);
-    }, 180);
-  }, [currentPage, isTransitioning]);
+
+      setSlidePhase('sliding-in');
+      setDragOffset(dir === 'next' ? 140 : -140);
+
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          setDragOffset(0);
+          setTimeout(() => {
+            setSlidePhase('idle');
+            setSlideDirection(null);
+            setIsTransitioning(false);
+          }, 340);
+        }, 30);
+      });
+    }, 220);
+  }, [currentPage, isTransitioning, pageSoundEnabled]);
 
   const handleNextPage = useCallback(() => { 
     triggerPageTurn('next');
@@ -234,11 +310,13 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
   const handleJumpToJuz = (juz: number) => {
     const targetPage = juz === 1 ? 1 : Math.min(604, (juz - 1) * 20 + 2);
+    if (pageSoundEnabled) playPageTurnSound();
     setCurrentPage(targetPage);
   };
 
   const handleJumpToSurah = (surahNumber: number) => {
     const targetPage = SURAH_PAGE_STARTS[surahNumber] || 1;
+    if (pageSoundEnabled) playPageTurnSound();
     setCurrentPage(targetPage);
   };
 
@@ -296,14 +374,19 @@ export const PhysicalMushafPageReader: React.FC = () => {
     if (isTransitioning) return;
     setIsDragging(true);
     setDragStartX(e.touches[0].clientX);
+    dragStartTimeRef.current = Date.now();
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging || dragStartX === null || isTransitioning) return;
     const currentX = e.touches[0].clientX;
     const diffX = currentX - dragStartX;
-    const clamped = Math.max(-180, Math.min(180, diffX));
-    setDragOffset(clamped);
+    if ((currentPage >= 604 && diffX < 0) || (currentPage <= 1 && diffX > 0)) {
+      setDragOffset(diffX * 0.25);
+    } else {
+      const clamped = Math.max(-240, Math.min(240, diffX));
+      setDragOffset(clamped);
+    }
   };
 
   const handleTouchEnd = () => {
@@ -311,9 +394,12 @@ export const PhysicalMushafPageReader: React.FC = () => {
     setIsDragging(false);
     setDragStartX(null);
 
-    if (dragOffset < -45) {
+    const elapsed = Date.now() - dragStartTimeRef.current;
+    const isFlick = elapsed < 250 && Math.abs(dragOffset) > 20;
+
+    if (dragOffset < -40 || (isFlick && dragOffset < -15)) {
       triggerPageTurn('next');
-    } else if (dragOffset > 45) {
+    } else if (dragOffset > 40 || (isFlick && dragOffset > 15)) {
       triggerPageTurn('prev');
     } else {
       setDragOffset(0);
@@ -325,13 +411,18 @@ export const PhysicalMushafPageReader: React.FC = () => {
     if (isTransitioning) return;
     setIsDragging(true);
     setDragStartX(e.clientX);
+    dragStartTimeRef.current = Date.now();
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || dragStartX === null || isTransitioning) return;
     const diffX = e.clientX - dragStartX;
-    const clamped = Math.max(-180, Math.min(180, diffX));
-    setDragOffset(clamped);
+    if ((currentPage >= 604 && diffX < 0) || (currentPage <= 1 && diffX > 0)) {
+      setDragOffset(diffX * 0.25);
+    } else {
+      const clamped = Math.max(-240, Math.min(240, diffX));
+      setDragOffset(clamped);
+    }
   };
 
   const handleMouseUp = () => {
@@ -339,9 +430,12 @@ export const PhysicalMushafPageReader: React.FC = () => {
     setIsDragging(false);
     setDragStartX(null);
 
-    if (dragOffset < -45) {
+    const elapsed = Date.now() - dragStartTimeRef.current;
+    const isFlick = elapsed < 250 && Math.abs(dragOffset) > 20;
+
+    if (dragOffset < -40 || (isFlick && dragOffset < -15)) {
       triggerPageTurn('next');
-    } else if (dragOffset > 45) {
+    } else if (dragOffset > 40 || (isFlick && dragOffset > 15)) {
       triggerPageTurn('prev');
     } else {
       setDragOffset(0);
@@ -461,6 +555,16 @@ export const PhysicalMushafPageReader: React.FC = () => {
             </div>
 
             <button
+              onClick={handleToggleSound}
+              className={`p-1.5 border-2 border-black rounded-xl cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all ${
+                pageSoundEnabled ? 'bg-amber-100 text-amber-900' : 'bg-gray-100 text-gray-400'
+              }`}
+              title={pageSoundEnabled ? 'Efek Suara Geser Kertas: AKTIF' : 'Efek Suara Geser Kertas: MATI'}
+            >
+              {pageSoundEnabled ? <Volume2 className="w-4 h-4 text-[#0B4627]" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+
+            <button
               onClick={handleTogglePageAudio}
               className={`px-3 py-1.5 border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] ${
                 isPlayingPageAudio ? 'bg-[#F59E0B] text-black animate-pulse' : 'bg-[#10B981] text-white'
@@ -524,7 +628,10 @@ export const PhysicalMushafPageReader: React.FC = () => {
               min="1"
               max="604"
               value={currentPage}
-              onChange={(e) => setCurrentPage(Number(e.target.value))}
+              onChange={(e) => {
+                if (pageSoundEnabled) playPageTurnSound();
+                setCurrentPage(Number(e.target.value));
+              }}
               className="w-full accent-[#0B4627] cursor-pointer"
             />
             <input
@@ -534,7 +641,10 @@ export const PhysicalMushafPageReader: React.FC = () => {
               value={currentPage}
               onChange={(e) => {
                 const val = Number(e.target.value);
-                if (val >= 1 && val <= 604) setCurrentPage(val);
+                if (val >= 1 && val <= 604) {
+                  if (pageSoundEnabled) playPageTurnSound();
+                  setCurrentPage(val);
+                }
               }}
               className="w-14 p-1 bg-white border-2 border-black rounded-lg text-center font-bold font-mono text-xs"
             />
@@ -557,19 +667,23 @@ export const PhysicalMushafPageReader: React.FC = () => {
           </span>
         </div>
 
-        {/* INTERACTIVE FLIPPABLE / SLIDABLE MUSHAF PAGE FRAME */}
+        {/* INTERACTIVE 3D FLIPPABLE / SLIDABLE MUSHAF PAGE FRAME */}
         <div 
-          className={`relative w-full max-w-2xl bg-[#FFFDF7] border-3 border-amber-900/40 rounded-2xl p-2 sm:p-5 shadow-[inset_0_0_20px_rgba(180,83,9,0.1)] flex flex-col min-h-[580px] sm:min-h-[780px] justify-between cursor-grab active:cursor-grabbing select-none ${
-            isDragging ? '' : 'transition-all duration-300 ease-out'
-          }`}
+          className="relative w-full max-w-2xl bg-[#FFFDF7] border-3 border-amber-900/40 rounded-2xl p-2 sm:p-5 flex flex-col min-h-[580px] sm:min-h-[780px] justify-between cursor-grab active:cursor-grabbing select-none overflow-hidden"
           style={{
-            transform: `translateX(${dragOffset}px) rotateY(${dragOffset * 0.035}deg)`,
-            opacity: Math.max(0.6, 1 - Math.abs(dragOffset) / 380),
-            perspective: '1000px',
+            transform: `translateX(${dragOffset}px) rotateY(${dragOffset * 0.055}deg) scale(${Math.max(0.93, 1 - Math.abs(dragOffset) * 0.00035)})`,
+            transformOrigin: dragOffset < 0 ? 'right center' : 'left center',
+            opacity: isTransitioning && slidePhase === 'sliding-out' 
+              ? Math.max(0.2, 1 - Math.abs(dragOffset) / 380) 
+              : 1,
+            transition: isDragging 
+              ? 'none' 
+              : 'transform 0.36s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease-out, box-shadow 0.3s ease-out',
+            perspective: '1400px',
             transformStyle: 'preserve-3d',
-            boxShadow: isDragging 
-              ? `${dragOffset > 0 ? '16px' : '-16px'} 10px 30px rgba(0,0,0,0.18)` 
-              : undefined
+            boxShadow: isDragging || isTransitioning
+              ? `${dragOffset > 0 ? '22px' : '-22px'} 12px 35px rgba(0, 0, 0, ${Math.min(0.3, Math.abs(dragOffset) * 0.0012 + 0.08)})`
+              : '0 12px 32px rgba(0, 0, 0, 0.09), inset 0 0 25px rgba(180, 83, 9, 0.07)'
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -579,6 +693,56 @@ export const PhysicalMushafPageReader: React.FC = () => {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
         >
+          {/* Dynamic Paper Lighting & Spine Fold Crease */}
+          {(isDragging || isTransitioning) && (
+            <div 
+              className="absolute inset-0 pointer-events-none z-30 rounded-2xl transition-opacity duration-200"
+              style={{
+                background: dragOffset < 0 
+                  ? 'linear-gradient(to right, transparent 35%, rgba(180,83,9,0.06) 70%, rgba(0,0,0,0.16) 100%)'
+                  : 'linear-gradient(to left, transparent 35%, rgba(180,83,9,0.06) 70%, rgba(0,0,0,0.16) 100%)',
+                opacity: Math.min(1, Math.abs(dragOffset) / 90)
+              }}
+            />
+          )}
+
+          {/* Floating Flip Target Badge */}
+          {(isDragging || (isTransitioning && slidePhase === 'sliding-out')) && Math.abs(dragOffset) > 25 && (
+            <div className={`absolute top-5 ${dragOffset < 0 ? 'left-5' : 'right-5'} z-40 bg-emerald-950/95 text-amber-300 backdrop-blur-md px-3.5 py-1.5 rounded-full border-2 border-amber-400/80 shadow-[3px_3px_0px_0px_#000] text-xs font-black flex items-center gap-1.5 animate-fadeIn pointer-events-none`}>
+              {dragOffset < 0 ? (
+                <>
+                  <span>👈 Halaman {Math.min(604, currentPage + 1)}</span>
+                  <span className="text-[10px] text-emerald-300 font-normal hidden sm:inline">• Lepas untuk membalik</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-[10px] text-emerald-300 font-normal hidden sm:inline">Lepas untuk membalik •</span>
+                  <span>Halaman {Math.max(1, currentPage - 1)} 👉</span>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Interactive Golden Corner Peels */}
+          {currentPage < 604 && (
+            <div 
+              onClick={(e) => { e.stopPropagation(); handleNextPage(); }}
+              className="absolute bottom-2 left-2 w-8 h-8 rounded-br-2xl group cursor-pointer z-30 transition-transform hover:scale-125"
+              title={`Buka Halaman ${currentPage + 1} (👈)`}
+            >
+              <div className="w-full h-full bg-gradient-to-tr from-amber-400 via-amber-200 to-transparent border-t-2 border-r-2 border-amber-600/70 rounded-tr-lg shadow-sm opacity-60 group-hover:opacity-100 transition-all transform -rotate-12 group-hover:rotate-0"></div>
+            </div>
+          )}
+
+          {currentPage > 1 && (
+            <div 
+              onClick={(e) => { e.stopPropagation(); handlePrevPage(); }}
+              className="absolute bottom-2 right-2 w-8 h-8 rounded-bl-2xl group cursor-pointer z-30 transition-transform hover:scale-125"
+              title={`Buka Halaman ${currentPage - 1} (👉)`}
+            >
+              <div className="w-full h-full bg-gradient-to-tl from-amber-400 via-amber-200 to-transparent border-t-2 border-l-2 border-amber-600/70 rounded-tl-lg shadow-sm opacity-60 group-hover:opacity-100 transition-all transform rotate-12 group-hover:rotate-0"></div>
+            </div>
+          )}
           
           <div className="absolute inset-2 border-2 border-dashed border-amber-700/30 rounded-xl pointer-events-none"></div>
 
