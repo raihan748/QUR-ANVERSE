@@ -63,10 +63,10 @@ npm install
 ```
 
 ### 2. Konfigurasi Environment (`.env`)
-File `.env` sudah disiapkan dengan kredensial Supabase Anda:
+Buat file `.env` di root direktori dengan template berikut:
 ```env
-VITE_SUPABASE_URL=https://czpkkhcejmrtlaguynnh.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_e-Q-WWbOzH3MVY7jm0dSyg_5oIdr-P6
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 ```
 
 ### 3. Menjalankan di Komputer Lokal
