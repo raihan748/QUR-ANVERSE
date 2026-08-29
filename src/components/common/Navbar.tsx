@@ -8,7 +8,6 @@ interface NavbarProps {
   activeTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
   onOpenInstallModal: () => void;
-  onOpenAuthModal: () => void;
   onOpenQuranVaultModal?: () => void;
 }
 
@@ -17,7 +16,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   onSelectTab,
   onOpenInstallModal,
-  onOpenAuthModal,
   onOpenQuranVaultModal
 }) => {
   const { language, toggleLanguage, t, isRtl } = useLanguage();
@@ -85,18 +83,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Download className="w-4 h-4 text-[#F59E0B]" />
             <span className="hidden xs:inline">{t.heroInstallApk}</span>
-          </button>
-
-          {/* Profile Button */}
-          <button
-            onClick={onOpenAuthModal}
-            className="flex items-center gap-1.5 p-1.5 bg-[#FFFDF7] hover:bg-[#FEF3C7] text-black border-2 border-black rounded-xl neo-button cursor-pointer"
-            title="Profil Santri"
-          >
-            <div className="w-6 h-6 rounded-lg bg-[#0B4627] text-white flex items-center justify-center font-bold text-xs">
-              {profile.fullName.charAt(0).toUpperCase()}
-            </div>
-            <ShieldCheck className="w-3.5 h-3.5 text-green-600 hidden sm:block" />
           </button>
         </div>
       </div>

@@ -21,13 +21,11 @@ import { useLanguage } from '../../context/LanguageContext';
 interface LandingHeroShowcaseProps {
   onSelectTab: (tab: NavigationTab) => void;
   onOpenInstallModal: () => void;
-  onOpenAuthModal: () => void;
 }
 
 export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
   onSelectTab,
-  onOpenInstallModal,
-  onOpenAuthModal
+  onOpenInstallModal
 }) => {
   const { language, t, isRtl } = useLanguage();
 

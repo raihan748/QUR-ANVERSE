@@ -6,7 +6,6 @@ import { Navbar } from './components/common/Navbar';
 import { Sidebar } from './components/common/Sidebar';
 import { BottomNav } from './components/common/BottomNav';
 import { InstallPwaModal } from './components/common/InstallPwaModal';
-import { AuthModal } from './components/auth/AuthModal';
 import { QuranVaultModal } from './components/security/QuranVaultModal';
 import { ScrollToTopButton } from './components/common/ScrollToTopButton';
 import { LandingHeroShowcase } from './components/landing/LandingHeroShowcase';
@@ -25,7 +24,6 @@ export function App() {
   const [activeTab, setActiveTab] = useState<NavigationTab>('murojaah_ai');
   const [userProfile, setUserProfile] = useState<UserProfile>(getLocalProfile());
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isQuranVaultModalOpen, setIsQuranVaultModalOpen] = useState(false);
 
   // Prayer times state
@@ -61,7 +59,6 @@ export function App() {
         activeTab={activeTab}
         onSelectTab={handleSelectTabWithScroll}
         onOpenInstallModal={() => setIsInstallModalOpen(true)}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenQuranVaultModal={() => setIsQuranVaultModalOpen(true)}
       />
 
@@ -138,14 +135,6 @@ export function App() {
       <InstallPwaModal
         isOpen={isInstallModalOpen}
         onClose={() => setIsInstallModalOpen(false)}
-      />
-
-      {/* Profile & Hafidz Card Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        currentProfile={userProfile}
-        onProfileUpdated={handleProfileUpdated}
       />
 
       {/* Quran Vault Security & Anti-Deface Center */}

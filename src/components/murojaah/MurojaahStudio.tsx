@@ -1101,57 +1101,56 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         </div>
       )}
 
-      {/* 🔍 INTERACTIVE WORD TAJWEED INSPECTOR MODAL */}
+      {/* 🔍 TOP FLOATING WORD TAJWEED INSPECTOR BANNER */}
       {selectedWordInspector && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-[#FFFDF7] dark:bg-[#0F172A] border-3 border-black rounded-3xl w-full max-w-md p-5 space-y-4 shadow-[6px_6px_0px_0px_#000] text-gray-900 dark:text-gray-100">
-            <div className="flex items-center justify-between border-b-2 border-black pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#0B4627] text-[#F59E0B] flex items-center justify-center font-bold border border-black shadow-xs">
-                  <Sparkles className="w-5 h-5" />
+        <div className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-3 animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="bg-[#FFFDF7] dark:bg-[#0F172A] border-3 border-black rounded-2xl sm:rounded-3xl p-4 sm:p-5 space-y-3.5 shadow-[6px_6px_0px_0px_#000] text-gray-900 dark:text-gray-100 ring-4 ring-emerald-500/30">
+            <div className="flex items-center justify-between border-b-2 border-black pb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#0B4627] text-[#F59E0B] flex items-center justify-center font-bold border border-black shadow-xs">
+                  <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="font-black text-sm text-black dark:text-white">Inspektur Kaidah Tajwid</h4>
-                  <p className="text-[11px] text-gray-500 font-mono">Surat {selectedWordInspector.surahNumber} • Ayat {selectedWordInspector.ayahNumber}</p>
+                  <h4 className="font-black text-xs sm:text-sm text-black dark:text-white">Inspektur Kaidah Tajwid</h4>
+                  <p className="text-[10px] text-gray-500 font-mono">Surat {selectedWordInspector.surahNumber} • Ayat {selectedWordInspector.ayahNumber}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedWordInspector(null)}
-                className="p-1.5 px-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-black border-2 border-black cursor-pointer font-bold text-xs"
+                className="p-1 px-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-black border-2 border-black cursor-pointer font-black text-xs shadow-[1px_1px_0px_0px_#000] active:translate-y-0.5"
               >
-                ✕
+                ✕ Tutup
               </button>
             </div>
 
-            {/* Vocalized Word Showcase */}
-            <div className="text-center p-5 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border-2 border-black space-y-1" dir="rtl">
-              <span className="font-arabic text-4xl sm:text-5xl font-bold text-[#0B4627] dark:text-emerald-300 block py-1">
-                {selectedWordInspector.word}
-              </span>
-            </div>
-
-            {/* Tajweed Explanation Card */}
-            <div className="space-y-2 text-xs">
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border-2 border-amber-500 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-amber-900 dark:text-amber-200 font-extrabold uppercase text-[10px]">Hukum Tajwid:</span>
-                  <span className="px-2 py-0.5 bg-amber-400 text-black font-black rounded text-[10px] border border-black">
-                    {selectedWordInspector.ruleName ? 'Teridentifikasi' : 'Standar'}
-                  </span>
-                </div>
-                <p className="text-sm font-black text-black dark:text-white">
+            {/* Vocalized Word Showcase & Rule Pill */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 sm:p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl sm:rounded-2xl border-2 border-black">
+              <div className="w-full sm:w-auto text-center sm:text-right" dir="rtl">
+                <span className="font-arabic text-3xl sm:text-4xl font-bold text-[#0B4627] dark:text-emerald-300 block py-0.5">
+                  {selectedWordInspector.word}
+                </span>
+              </div>
+              <div className="flex flex-col items-center sm:items-end gap-1 w-full sm:w-auto">
+                <span className="px-2.5 py-0.5 bg-amber-400 text-black font-black rounded-lg text-[10px] border border-black shadow-xs">
+                  {selectedWordInspector.ruleName ? 'Hukum Teridentifikasi' : 'Standar'}
+                </span>
+                <span className="text-xs sm:text-sm font-black text-[#0B4627] dark:text-emerald-300 text-center sm:text-right">
                   {selectedWordInspector.ruleName || 'Makharijul Huruf & Harakat Asli'}
-                </p>
-                <p className="text-gray-600 dark:text-gray-300 text-[11px] pt-1 border-t border-amber-300/60">
-                  {selectedWordInspector.ruleName 
-                    ? `Kata ini memiliki kaidah khusus « ${selectedWordInspector.ruleName} » yang wajib dilafalkan dengan dengung, panjang mad, atau makhraj yang tepat saat muroja'ah.`
-                    : 'Kata ini dibaca jelas sesuai harakat fathah, kasrah, dhommah, atau sukun tanpa penambahan dengung ekstra.'}
-                </p>
+                </span>
               </div>
             </div>
 
+            {/* Tajweed Explanation Details */}
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border-2 border-amber-400 text-xs space-y-1">
+              <p className="text-gray-700 dark:text-gray-200 text-[11px] sm:text-xs leading-relaxed font-medium">
+                {selectedWordInspector.ruleName 
+                  ? `Kata ini memiliki kaidah khusus « ${selectedWordInspector.ruleName} » yang wajib dilafalkan dengan dengung, panjang mad, atau makhraj yang tepat saat muroja'ah.`
+                  : 'Kata ini dibaca jelas sesuai harakat fathah, kasrah, dhommah, atau sukun tanpa penambahan dengung ekstra.'}
+              </p>
+            </div>
+
             {/* Action Buttons */}
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex items-center gap-2 pt-0.5">
               <button
                 onClick={() => {
                   audioPlayer.playSheikhIntervention(
@@ -1160,14 +1159,14 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     activeReciter.id
                   );
                 }}
-                className="flex-1 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs rounded-xl border-2 border-black cursor-pointer shadow-[2px_2px_0px_0px_#000] flex items-center justify-center gap-1.5"
+                className="flex-1 py-2 px-3 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs rounded-xl border-2 border-black cursor-pointer shadow-[2px_2px_0px_0px_#000] flex items-center justify-center gap-1.5 active:translate-y-0.5 transition-all"
               >
                 <Volume2 className="w-4 h-4" />
                 <span>Dengar Contoh Syekh</span>
               </button>
               <button
                 onClick={() => setSelectedWordInspector(null)}
-                className="px-5 py-2.5 bg-black hover:bg-gray-800 text-white font-black text-xs rounded-xl border-2 border-black cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+                className="px-4 py-2 bg-black hover:bg-gray-800 text-white font-black text-xs rounded-xl border-2 border-black cursor-pointer shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5 transition-all"
               >
                 Tutup
               </button>
