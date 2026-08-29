@@ -664,8 +664,11 @@ export const PhysicalMushafPageReader: React.FC = () => {
                       className="w-full font-quran text-lg sm:text-2xl md:text-[25px] text-emerald-950 dark:text-emerald-950 font-bold leading-[2.2] sm:leading-[2.5] text-center tracking-normal py-0.5"
                     >
                       {line.text ? (
-                        line.text.split(' ').map((w, wIdx) => {
-                          const style = getTajweedColorForWord(w);
+                        line.text.split(/\s+/).filter(Boolean).map((w, wIdx, wordsArr) => {
+                          const nextW = wordsArr[wIdx + 1] || '';
+                          const prevW = wordsArr[wIdx - 1] || '';
+                          const isEnd = wIdx === wordsArr.length - 1;
+                          const style = getTajweedColorForWord(w, nextW, prevW, isEnd);
                           return (
                             <span
                               key={wIdx}

@@ -279,9 +279,9 @@ export class TajwidRuleEngine {
       }
 
       // 4. Mim Sukun (مْ) Rules (Strictly Mim with Sukun ْ)
-      const isMimSukun = currentChar === 'م' && (nextChar === SUKUN_CHAR || nextChar === '\u06DF');
+      const isMimSukun = currentChar === 'م' && (nextChar === SUKUN_CHAR || nextChar === '\u06DF' || (nextChar !== SHADDAH_CHAR && !['\u064E', '\u064F', '\u0650', '\u064B', '\u064C', '\u064D', '\u0651'].includes(nextChar) && [' ', '\n', '\t'].includes(nextChar)));
       if (isMimSukun) {
-        const lookahead = getNextNonSpaceChar(i + 1);
+        const lookahead = getNextNonSpaceChar(nextChar === SUKUN_CHAR ? i + 1 : i);
         if (lookahead) {
           if (lookahead.char === 'ب') {
             tokens.push({
@@ -314,6 +314,22 @@ export class TajwidRuleEngine {
             });
             ruleSummary.idgham_mimi++;
             totalBeats += 2;
+            continue;
+          } else if (lookahead.char !== ' ' && lookahead.char !== '\n') {
+            tokens.push({
+              index: i,
+              char: 'م',
+              rule: 'izhar_syafawi',
+              ruleLabel: 'Izhar Syafawi',
+              description: `Mim mati bertemu huruf ${lookahead.char}, dibaca jelas dan tegas tanpa dengung.${['و', 'ف'].includes(lookahead.char) ? ' (Izhar Syafawi Ashadd - ekstra jelas agar tidak samar).' : ''}`,
+              colorHex: '#0891B2',
+              harakatDuration: 1,
+              startOffset: i,
+              endOffset: lookahead.index,
+              matchedPhoneme: `مْ + ${lookahead.char}`
+            });
+            ruleSummary.izhar_syafawi++;
+            totalBeats += 1;
             continue;
           }
         }
@@ -365,24 +381,26 @@ export class TajwidRuleEngine {
         continue;
       }
 
-      // 6. Iqlab Small Superscript Mim (ۢ / ۭ)
-      if (currentChar === '\u06E2' || currentChar === '\u06ED') {
+      // 6. Iqlab Small Superscript Mim (ۢ) - Verified with Ba lookahead
+      if (currentChar === '\u06E2') {
         const lookahead = getNextNonSpaceChar(i);
-        tokens.push({
-          index: i,
-          char: currentChar,
-          rule: 'iqlab',
-          ruleLabel: 'Iqlab',
-          description: `Terdapat tanda mim iqlab, bunyi 'N' ditukar menjadi 'M' mendengung rapat selama 2 harakat.`,
-          colorHex: '#8B5CF6',
-          harakatDuration: 2,
-          startOffset: Math.max(0, i - 1),
-          endOffset: (lookahead ? lookahead.index : i + 1),
-          matchedPhoneme: 'ـۢ'
-        });
-        ruleSummary.iqlab++;
-        totalBeats += 2;
-        continue;
+        if (lookahead && lookahead.char === 'ب') {
+          tokens.push({
+            index: i,
+            char: currentChar,
+            rule: 'iqlab',
+            ruleLabel: 'Iqlab',
+            description: `Terdapat tanda mim iqlab bertemu Ba (ب), bunyi 'N' ditukar menjadi 'M' mendengung rapat selama 2 harakat.`,
+            colorHex: '#8B5CF6',
+            harakatDuration: 2,
+            startOffset: Math.max(0, i - 1),
+            endOffset: lookahead.index,
+            matchedPhoneme: 'ـۢ + ب'
+          });
+          ruleSummary.iqlab++;
+          totalBeats += 2;
+          continue;
+        }
       }
 
       // 7. Lam Jalalah (Lafadz Allah Tafkhim & Tarqiq)
