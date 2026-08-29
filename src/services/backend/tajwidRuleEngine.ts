@@ -88,16 +88,28 @@ export class TajwidRuleEngine {
       const nextChar = safeArabic[i + 1] || '';
       const thirdChar = safeArabic[i + 2] || '';
 
-      // 1. Ghunnah Musyaddadah: Nun (ن) or Mim (م) with Shaddah (ّ) directly on itself
+      // 1. Ghunnah Musyaddadah: Nun (ن) or Mim (م) with Shaddah (ّ) directly on itself (Ashli only)
       const isNunOrMim = currentChar === 'ن' || currentChar === 'م';
       const hasDirectShaddah = nextChar === SHADDAH_CHAR;
-      if (isNunOrMim && hasDirectShaddah) {
+      
+      // Check if preceding non-space character is Tanwin or Nun Sukun (which causes Idgham Shaddah)
+      let prevNonSpace = '';
+      for (let pIdx = i - 1; pIdx >= 0; pIdx--) {
+        const c = safeArabic[pIdx];
+        if (c !== ' ' && c !== '\t' && c !== '\n') {
+          prevNonSpace = c;
+          break;
+        }
+      }
+      const isIdghamEffect = TANWIN_CHARS.includes(prevNonSpace) || (prevNonSpace === SUKUN_CHAR && i >= 2 && safeArabic[i - 2] === 'ن');
+
+      if (isNunOrMim && hasDirectShaddah && !isIdghamEffect) {
         tokens.push({
           index: i,
           char: currentChar,
           rule: 'ghunnah_musyaddadah',
           ruleLabel: 'Ghunnah Musyaddadah',
-          description: `Huruf ${currentChar} bertasydid wajib dibaca mendengung (ghunnah) sempurna selama 2-3 harakat.`,
+          description: `Huruf ${currentChar} bertasydid asli wajib dibaca mendengung (ghunnah) sempurna selama 2-3 harakat.`,
           colorHex: '#10B981', // Emerald Green
           harakatDuration: 3,
           startOffset: i,
