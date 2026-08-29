@@ -9,6 +9,7 @@ export interface Reciter {
   bitrate: string;
   country: string;
   folder: string;
+  surahAudioUrl?: (surahNumber: number) => string;
 }
 
 export const RECITERS_LIST: Reciter[] = [
@@ -110,6 +111,16 @@ export const RECITERS_LIST: Reciter[] = [
     bitrate: '128 kbps',
     country: 'Arab Saudi',
     folder: 'Ghamadi_40kbps'
+  },
+  {
+    id: 'luhaidan',
+    name: 'Syekh Muhammad Al-Luhaidan',
+    arabicName: 'محمد اللحيدان',
+    style: 'Irama Menangis & Maqam Hijaz Syahdu',
+    bitrate: '128 kbps HD',
+    country: 'Arab Saudi',
+    folder: 'lhdan',
+    surahAudioUrl: (surahNumber: number) => `https://server8.mp3quran.net/lhdan/${String(surahNumber).padStart(3, '0')}.mp3`
   }
 ];
 
@@ -145,7 +156,27 @@ export function formatAyatAudioUrl(
   const reciter = RECITERS_LIST.find(r => r.id === rId) || RECITERS_LIST[0];
   const sStr = String(Math.max(1, Math.min(114, surahNumber))).padStart(3, '0');
   const aStr = String(Math.max(1, ayahNumber)).padStart(3, '0');
+  
+  if (reciter.id === 'luhaidan') {
+    // High compatibility fallback for verse-by-verse mode
+    return `https://everyayah.com/data/Nasser_Alqatami_128kbps/${sStr}${aStr}.mp3`;
+  }
   return `https://everyayah.com/data/${reciter.folder}/${sStr}${aStr}.mp3`;
+}
+
+// Format Full Surah Audio Stream
+export function formatSurahAudioUrl(
+  surahNumber: number,
+  reciterId?: string
+): string {
+  const rId = reciterId || getSavedReciterId();
+  const reciter = RECITERS_LIST.find(r => r.id === rId) || RECITERS_LIST[0];
+  const sStr = String(Math.max(1, Math.min(114, surahNumber))).padStart(3, '0');
+  
+  if (reciter.id === 'luhaidan') {
+    return `https://server8.mp3quran.net/lhdan/${sStr}.mp3`;
+  }
+  return `https://everyayah.com/data/${reciter.folder}/${sStr}001.mp3`;
 }
 
 // Backward compatibility alias

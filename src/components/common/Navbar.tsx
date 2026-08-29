@@ -9,6 +9,7 @@ interface NavbarProps {
   onSelectTab: (tab: NavigationTab) => void;
   onOpenInstallModal: () => void;
   onOpenAuthModal: () => void;
+  onOpenQuranVaultModal?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,7 +17,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   onSelectTab,
   onOpenInstallModal,
-  onOpenAuthModal
+  onOpenAuthModal,
+  onOpenQuranVaultModal
 }) => {
   const { language, toggleLanguage, t, isRtl } = useLanguage();
 
@@ -51,6 +53,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Stats & Quick Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* QURAN VAULT INTEGRITY BADGE */}
+          {onOpenQuranVaultModal && (
+            <button
+              onClick={onOpenQuranVaultModal}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#06331D] hover:bg-black text-[#10B981] border-2 border-[#10B981] rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop"
+              title="Quran Vault: Pengamanan Kriptografi & Anti-Deface Aktif"
+            >
+              <ShieldCheck className="w-4 h-4 text-[#10B981]" />
+              <span className="hidden md:inline font-mono text-[11px]">VAULT: LOCKED</span>
+            </button>
+          )}
+
           {/* BILINGUAL LANGUAGE SWITCHER (ID <-> AR - KUWAIT) */}
           <button
             onClick={toggleLanguage}

@@ -7,6 +7,7 @@ import { Sidebar } from './components/common/Sidebar';
 import { BottomNav } from './components/common/BottomNav';
 import { InstallPwaModal } from './components/common/InstallPwaModal';
 import { AuthModal } from './components/auth/AuthModal';
+import { QuranVaultModal } from './components/security/QuranVaultModal';
 import { ScrollToTopButton } from './components/common/ScrollToTopButton';
 import { LandingHeroShowcase } from './components/landing/LandingHeroShowcase';
 import { MushafView } from './components/quran/MushafView';
@@ -25,6 +26,7 @@ export function App() {
   const [userProfile, setUserProfile] = useState<UserProfile>(getLocalProfile());
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isQuranVaultModalOpen, setIsQuranVaultModalOpen] = useState(false);
 
   // Prayer times state
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>(calculatePrayerTimes());
@@ -60,6 +62,7 @@ export function App() {
         onSelectTab={handleSelectTabWithScroll}
         onOpenInstallModal={() => setIsInstallModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
+        onOpenQuranVaultModal={() => setIsQuranVaultModalOpen(true)}
       />
 
       {/* Main Layout (Dual Panel Desktop + Responsive Mobile) */}
@@ -143,6 +146,12 @@ export function App() {
         onClose={() => setIsAuthModalOpen(false)}
         currentProfile={userProfile}
         onProfileUpdated={handleProfileUpdated}
+      />
+
+      {/* Quran Vault Security & Anti-Deface Center */}
+      <QuranVaultModal
+        isOpen={isQuranVaultModalOpen}
+        onClose={() => setIsQuranVaultModalOpen(false)}
       />
     </div>
   );
