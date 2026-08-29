@@ -231,6 +231,7 @@ class AudioPlayerService {
       let hasEnded = false;
       const finishPlayback = () => {
         if (hasEnded) return;
+        if (!this.isPlaying) return;
         hasEnded = true;
         this.isPlaying = false;
         if (this.onEndedCallback) {
@@ -249,6 +250,7 @@ class AudioPlayerService {
       });
 
       this.currentAudio.addEventListener('error', () => {
+        if (!this.isPlaying) return;
         console.warn('Audio playback network error, triggering graceful end.');
         finishPlayback();
       });
@@ -261,15 +263,19 @@ class AudioPlayerService {
         }
       }, 12000);
 
+      this.isPlaying = true;
       const playPromise = this.currentAudio.play();
       if (playPromise !== undefined) {
-        await playPromise.catch((err) => {
+        await playPromise.catch((err: Error) => {
+          if (err.name === 'AbortError' || !this.isPlaying) {
+            // Interrupted cleanly by pause() or stop()
+            return;
+          }
           console.warn('Auto-play blocked or network failure:', err);
           finishPlayback();
         });
       }
 
-      this.isPlaying = true;
       return true;
     } catch (err) {
       console.warn('Audio player exception:', err);
@@ -323,6 +329,10 @@ class AudioPlayerService {
       this.isPlaying = true;
       this.currentAudio.play().catch(console.warn);
     }
+  }
+
+  public isPaused(): boolean {
+    return Boolean(this.currentAudio && this.currentAudio.paused);
   }
 
   public stop(): void {

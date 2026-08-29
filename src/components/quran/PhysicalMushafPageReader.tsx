@@ -157,7 +157,8 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Sequential Page Audio State
-  const [isPlayingPageAudio, setIsPlayingPageAudio] = useState<boolean>(false);
+  const [isAudioActive, setIsAudioActive] = useState<boolean>(false);
+  const [isAudioPaused, setIsAudioPaused] = useState<boolean>(false);
   const isAudioPlayingRef = useRef<boolean>(false);
   const [currentPlayingVerse, setCurrentPlayingVerse] = useState<PlayingVerseItem | null>(null);
   const [pageAudioQueue, setPageAudioQueue] = useState<PlayingVerseItem[]>([]);
@@ -337,10 +338,11 @@ export const PhysicalMushafPageReader: React.FC = () => {
     setScanErrorLeft(false);
     setScanUrlIndexLeft(0);
 
-    if (isPlayingPageAudio || isAudioPlayingRef.current) {
+    if (isAudioActive || isAudioPlayingRef.current) {
       isAudioPlayingRef.current = false;
       audioPlayer.stop();
-      setIsPlayingPageAudio(false);
+      setIsAudioActive(false);
+      setIsAudioPaused(false);
       setCurrentPlayingVerse(null);
     }
   }, [currentPage]);
@@ -414,7 +416,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
     audioPlayer.setActiveReciter(reciter.id);
     setActiveReciter(reciter);
     setIsReciterMenuOpen(false);
-    if (isPlayingPageAudio && currentPlayingVerse) {
+    if (isAudioActive && currentPlayingVerse && !isAudioPaused) {
       // Re-trigger current verse with new reciter voice
       audioPlayer.playAyat(currentPlayingVerse.surahNumber, currentPlayingVerse.ayahNumber, undefined, reciter.id);
     }
@@ -464,7 +466,8 @@ export const PhysicalMushafPageReader: React.FC = () => {
         triggerPageTurn('next');
       } else {
         isAudioPlayingRef.current = false;
-        setIsPlayingPageAudio(false);
+        setIsAudioActive(false);
+        setIsAudioPaused(false);
         setCurrentPlayingVerse(null);
         setToastMessage('✅ Tilawah khatam.');
       }
@@ -474,7 +477,8 @@ export const PhysicalMushafPageReader: React.FC = () => {
     const item = queue[index];
     setCurrentQueueIdx(index);
     setCurrentPlayingVerse(item);
-    setIsPlayingPageAudio(true);
+    setIsAudioActive(true);
+    setIsAudioPaused(false);
 
     // Preload next ayah in queue for instant zero-latency transition
     if (index + 1 < queue.length) {
@@ -486,7 +490,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
       item.surahNumber,
       item.ayahNumber,
       () => {
-        // Callback when current ayah audio finishes -> ONLY advance if user hasn't pressed stop!
+        // Callback when current ayah audio finishes -> ONLY advance if user hasn't paused or stopped!
         if (isAudioPlayingRef.current) {
           playQueueAt(index + 1, queue);
         }
@@ -498,39 +502,63 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const handleStopPageAudio = () => {
     isAudioPlayingRef.current = false;
     audioPlayer.stop();
-    setIsPlayingPageAudio(false);
+    setIsAudioActive(false);
+    setIsAudioPaused(false);
     setCurrentPlayingVerse(null);
     setToastMessage('⏹ Audio tilawah dihentikan');
   };
 
-  const handleTogglePageAudio = () => {
-    if (isPlayingPageAudio || isAudioPlayingRef.current) {
-      handleStopPageAudio();
+  const handleTogglePlayPause = () => {
+    // 1. If not active -> Start playing from beginning
+    if (!isAudioActive) {
+      const queue = buildPagePlaylist();
+      if (queue.length === 0) {
+        setToastMessage('Tidak ada ayat terdeteksi pada halaman ini');
+        return;
+      }
+      isAudioPlayingRef.current = true;
+      setIsAudioActive(true);
+      setIsAudioPaused(false);
+      setPageAudioQueue(queue);
+      playQueueAt(0, queue);
+      setToastMessage('▶ Memulai tilawah halaman...');
       return;
     }
 
-    const queue = buildPagePlaylist();
-    if (queue.length === 0) {
-      setToastMessage('Tidak ada ayat terdeteksi pada halaman ini');
+    // 2. If active and currently playing -> PAUSE
+    if (!isAudioPaused) {
+      isAudioPlayingRef.current = false;
+      audioPlayer.pause();
+      setIsAudioPaused(true);
+      setToastMessage('⏸ Audio tilawah dijeda');
       return;
     }
 
+    // 3. If active and currently paused -> RESUME
     isAudioPlayingRef.current = true;
-    setIsPlayingPageAudio(true);
-    setPageAudioQueue(queue);
-    playQueueAt(0, queue);
+    setIsAudioPaused(false);
+    if (audioPlayer.isPaused()) {
+      audioPlayer.resume();
+    } else if (pageAudioQueue.length > 0) {
+      playQueueAt(currentQueueIdx, pageAudioQueue);
+    }
+    setToastMessage('▶ Melanjutkan audio tilawah...');
   };
 
   const handleSkipNextAyat = () => {
-    if (!isAudioPlayingRef.current) return;
     if (pageAudioQueue.length > 0 && currentQueueIdx + 1 < pageAudioQueue.length) {
+      isAudioPlayingRef.current = true;
+      setIsAudioActive(true);
+      setIsAudioPaused(false);
       playQueueAt(currentQueueIdx + 1, pageAudioQueue);
     }
   };
 
   const handleSkipPrevAyat = () => {
-    if (!isAudioPlayingRef.current) return;
     if (pageAudioQueue.length > 0 && currentQueueIdx > 0) {
+      isAudioPlayingRef.current = true;
+      setIsAudioActive(true);
+      setIsAudioPaused(false);
       playQueueAt(currentQueueIdx - 1, pageAudioQueue);
     }
   };
@@ -561,12 +589,12 @@ export const PhysicalMushafPageReader: React.FC = () => {
         handlePrevPage();
       } else if (e.key === ' ') {
         e.preventDefault();
-        handleTogglePageAudio();
+        handleTogglePlayPause();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNextPage, handlePrevPage, isPlayingPageAudio]);
+  }, [handleNextPage, handlePrevPage, isAudioActive, isAudioPaused]);
 
   // Touch Swipe Handlers
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -779,6 +807,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
                   // Detect if this line belongs to the currently reciting verse
                   const isLineActive = Boolean(
+                    isAudioActive &&
                     currentPlayingVerse && 
                     currentPlayingVerse.pageNumber === pageNum && 
                     line.verseRange && 
@@ -796,7 +825,9 @@ export const PhysicalMushafPageReader: React.FC = () => {
                       key={idx}
                       className={`w-full font-quran text-base sm:text-xl md:text-[21px] font-bold leading-[2.1] sm:leading-[2.4] text-center tracking-normal py-0.5 sm:py-1 px-1 transition-all duration-300 rounded-lg ${
                         isLineActive 
-                          ? 'bg-gradient-to-r from-amber-400/20 via-amber-300/35 to-amber-400/20 border-b-4 border-amber-500 shadow-[0_4px_16px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/60' 
+                          ? isAudioPaused
+                            ? 'bg-amber-300/15 border-b-4 border-amber-400/80 shadow-[0_4px_12px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/40'
+                            : 'bg-gradient-to-r from-amber-400/20 via-amber-300/35 to-amber-400/20 border-b-4 border-amber-500 shadow-[0_4px_16px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/60' 
                           : 'text-emerald-950 dark:text-emerald-300'
                       }`}
                     >
@@ -1021,18 +1052,30 @@ export const PhysicalMushafPageReader: React.FC = () => {
               {pageSoundEnabled ? <Volume2 className="w-4 h-4 text-[#0B4627]" /> : <VolumeX className="w-4 h-4" />}
             </button>
 
-            {/* AUDIO PLAY/PAUSE/STOP */}
+            {/* AUDIO PLAY / PAUSE / STOP */}
             <div className="flex items-center gap-1">
               <button
-                onClick={handleTogglePageAudio}
-                className={`px-3 py-1.5 border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] ${
-                  isPlayingPageAudio ? 'bg-[#F59E0B] text-black animate-pulse' : 'bg-[#10B981] text-white'
+                onClick={handleTogglePlayPause}
+                className={`px-3 py-1.5 border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all ${
+                  isAudioActive
+                    ? isAudioPaused
+                      ? 'bg-amber-400 hover:bg-amber-300 text-black'
+                      : 'bg-[#F59E0B] text-black animate-pulse'
+                    : 'bg-[#10B981] hover:bg-[#059669] text-white'
                 }`}
+                title={isAudioActive ? (isAudioPaused ? 'Lanjutkan Tilawah' : 'Jeda Tilawah') : 'Dengar Halaman'}
               >
-                {isPlayingPageAudio ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                <span>{isPlayingPageAudio ? 'Jeda Audio' : 'Dengar Halaman'}</span>
+                {isAudioActive ? (
+                  isAudioPaused ? <Play className="w-3.5 h-3.5 fill-black" /> : <Pause className="w-3.5 h-3.5 fill-black" />
+                ) : (
+                  <Play className="w-3.5 h-3.5 fill-white" />
+                )}
+                <span>
+                  {isAudioActive ? (isAudioPaused ? 'Lanjut Tilawah' : 'Jeda Audio') : 'Dengar Halaman'}
+                </span>
               </button>
-              {isPlayingPageAudio && (
+
+              {isAudioActive && (
                 <button
                   onClick={handleStopPageAudio}
                   className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white border-2 border-black rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
@@ -1208,21 +1251,25 @@ export const PhysicalMushafPageReader: React.FC = () => {
         </div>
 
         {/* 🔊 FLOATING LIVE RECITATION HUD BAR */}
-        {isPlayingPageAudio && currentPlayingVerse && (
+        {isAudioActive && currentPlayingVerse && (
           <div className="absolute bottom-3 left-4 right-4 sm:left-8 sm:right-8 bg-gradient-to-r from-[#0B4627] via-[#064E3B] to-[#0B4627] text-white p-3 sm:p-4 rounded-2xl border-3 border-amber-400 shadow-[0_8px_24px_rgba(0,0,0,0.45)] flex flex-wrap items-center justify-between gap-3 z-40 animate-fade-in backdrop-blur-md">
             <div className="flex items-center gap-3">
               {/* Equalizer Soundwave Animation */}
               <div className="flex items-end gap-1 h-6">
-                <span className="w-1.5 bg-amber-400 rounded-full animate-bounce h-5"></span>
-                <span className="w-1.5 bg-amber-300 rounded-full animate-bounce h-3 delay-75"></span>
-                <span className="w-1.5 bg-amber-400 rounded-full animate-bounce h-6 delay-150"></span>
-                <span className="w-1.5 bg-amber-300 rounded-full animate-bounce h-4 delay-200"></span>
+                <span className={`w-1.5 bg-amber-400 rounded-full h-5 ${!isAudioPaused ? 'animate-bounce' : ''}`}></span>
+                <span className={`w-1.5 bg-amber-300 rounded-full h-3 ${!isAudioPaused ? 'animate-bounce delay-75' : ''}`}></span>
+                <span className={`w-1.5 bg-amber-400 rounded-full h-6 ${!isAudioPaused ? 'animate-bounce delay-150' : ''}`}></span>
+                <span className={`w-1.5 bg-amber-300 rounded-full h-4 ${!isAudioPaused ? 'animate-bounce delay-200' : ''}`}></span>
               </div>
 
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-amber-400 text-black rounded border border-amber-500 shadow-xs">
-                    Sedang Mengaji
+                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border shadow-xs ${
+                    isAudioPaused 
+                      ? 'bg-amber-200 text-amber-950 border-amber-400' 
+                      : 'bg-amber-400 text-black border-amber-500'
+                  }`}>
+                    {isAudioPaused ? '⏸ Tilawah Dijeda' : '▶ Sedang Tilawah'}
                   </span>
                   <span className="text-xs sm:text-sm font-black text-amber-200">
                     QS. {currentPlayingVerse.surahLatin} [{currentPlayingVerse.surahNumber}] : Ayat {currentPlayingVerse.ayahNumber}
@@ -1250,12 +1297,14 @@ export const PhysicalMushafPageReader: React.FC = () => {
               </button>
 
               <button 
-                onClick={handleTogglePageAudio}
-                className="px-3 py-2 bg-amber-400 hover:bg-amber-300 text-black font-black rounded-xl border-2 border-black flex items-center gap-1.5 text-xs shadow-xs cursor-pointer"
-                title="Jeda Audio"
+                onClick={handleTogglePlayPause}
+                className={`px-3 py-2 text-black font-black rounded-xl border-2 border-black flex items-center gap-1.5 text-xs shadow-xs cursor-pointer ${
+                  isAudioPaused ? 'bg-emerald-400 hover:bg-emerald-300' : 'bg-amber-400 hover:bg-amber-300'
+                }`}
+                title={isAudioPaused ? 'Lanjutkan Tilawah' : 'Jeda Tilawah'}
               >
-                <Pause className="w-4 h-4" />
-                <span>Jeda</span>
+                {isAudioPaused ? <Play className="w-4 h-4 fill-black" /> : <Pause className="w-4 h-4 fill-black" />}
+                <span>{isAudioPaused ? 'Lanjut' : 'Jeda'}</span>
               </button>
 
               <button 
