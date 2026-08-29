@@ -3,6 +3,7 @@ import { formatAlafasyAudioUrl } from '../services/audioPlayerService';
 import { JUZ_29_AYATS } from './juz29Data';
 import { JUZ_30_AYATS } from './juz30Data';
 import madinahPagesAyahsData from './madinahPagesAyahs.json';
+import quranIndoTranslitData from './quranIndoTranslit.json';
 
 // Authentic 30 Juz Mapping & Surah Directory (Standar Mushaf Utsmani Madinah / Kemenag RI)
 export interface JuzInfo {
@@ -890,10 +891,19 @@ function buildMasterQuranDB(): Record<number, Ayat[]> {
         meaningId: ''
       }));
 
+      // Check if authentic offline Indonesian translation & transliteration exists
+      const indoTranslitList = (quranIndoTranslitData as Record<string, Array<{ ayah: number; arabic: string; latin: string; indo: string }>>)[String(sNo)];
+      const indoTranslitMatch = indoTranslitList?.find(
+        (it) => it.ayah === a.numberInSurah
+      );
+
       // Check if curated entry exists for rich translation, transliteration & tafsir
       const curatedMatch = CURATED_AYAHS_DB[sNo]?.find(
         (c) => c.numberInSurah === a.numberInSurah
       );
+
+      const resolvedTranslation = curatedMatch?.translation || indoTranslitMatch?.indo || `Terjemahan ayat ke-${a.numberInSurah} Surat ${meta.latinName}.`;
+      const resolvedTransliteration = curatedMatch?.transliteration || indoTranslitMatch?.latin || '';
 
       const ayahObj: Ayat = {
         numberInSurah: a.numberInSurah,
@@ -901,8 +911,8 @@ function buildMasterQuranDB(): Record<number, Ayat[]> {
         surahNumber: sNo,
         surahName: curatedMatch?.surahName || meta.latinName,
         arabicText: cleanArabic,
-        translation: curatedMatch?.translation || `Terjemahan ayat ke-${a.numberInSurah} Surat ${meta.latinName}.`,
-        transliteration: curatedMatch?.transliteration || '',
+        translation: resolvedTranslation,
+        transliteration: resolvedTransliteration,
         juz: a.juz || getAyatJuzNumber(sNo, a.numberInSurah),
         audioUrl: curatedMatch?.audioUrl || formatAlafasyAudioUrl(sNo, a.numberInSurah),
         tafsirShort: curatedMatch?.tafsirShort,
