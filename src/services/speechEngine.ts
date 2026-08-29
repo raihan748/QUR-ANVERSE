@@ -283,17 +283,21 @@ export function isPrecompiledWordMatch(
     return true;
   }
 
-  // 3. Latin phonetic direct match
-  if (target.latinPhonetic && candidate.latin && target.latinPhonetic === candidate.latin) {
-    return true;
+  // 3.5. Substring inclusion for prefixed/suffixed words
+  if (target.canonical.length >= 3 && candidate.canonical.length >= 3) {
+    if (target.canonical.includes(candidate.canonical) || candidate.canonical.includes(target.canonical)) {
+      if (Math.abs(target.canonical.length - candidate.canonical.length) <= 2) {
+        return true;
+      }
+    }
   }
 
   // 4. Short words (length <= 3): Strict to prevent false matching random syllables
   if (target.charLength <= 3 || candidate.canonical.length <= 3) {
     const diff = Math.abs(target.charLength - candidate.canonical.length);
-    if (diff > 1) return false;
+    if (diff > 2) return false;
 
-    const shortThresh = sensitivity === 'ultra' ? 0.60 : sensitivity === 'high' ? 0.68 : 0.75;
+    const shortThresh = sensitivity === 'ultra' ? 0.50 : sensitivity === 'high' ? 0.60 : 0.70;
     return (
       fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= shortThresh ||
       (target.stemCanon && candidate.stemCanon && fastLevenshteinSimilarity(target.stemCanon, candidate.stemCanon) >= shortThresh) ||
@@ -302,8 +306,8 @@ export function isPrecompiledWordMatch(
   }
 
   // 5. Medium / Long Words (length >= 4)
-  const canonThresh = sensitivity === 'ultra' ? 0.48 : sensitivity === 'high' ? 0.55 : 0.62;
-  const latinThresh = sensitivity === 'ultra' ? 0.45 : sensitivity === 'high' ? 0.52 : 0.60;
+  const canonThresh = sensitivity === 'ultra' ? 0.38 : sensitivity === 'high' ? 0.48 : 0.58;
+  const latinThresh = sensitivity === 'ultra' ? 0.35 : sensitivity === 'high' ? 0.45 : 0.55;
 
   if (fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= canonThresh) {
     return true;
@@ -334,8 +338,14 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string, sensi
   const sLatin = normalizeLatinPhonetics(candidateSpoken);
   if (tLatin === sLatin) return true;
 
-  const canonThresh = sensitivity === 'ultra' ? 0.32 : sensitivity === 'high' ? 0.40 : 0.50;
-  const latinThresh = sensitivity === 'ultra' ? 0.30 : sensitivity === 'high' ? 0.38 : 0.48;
+  if (tCanon.length >= 3 && sCanon.length >= 3) {
+    if (tCanon.includes(sCanon) || sCanon.includes(tCanon)) {
+      if (Math.abs(tCanon.length - sCanon.length) <= 2) return true;
+    }
+  }
+
+  const canonThresh = sensitivity === 'ultra' ? 0.30 : sensitivity === 'high' ? 0.38 : 0.48;
+  const latinThresh = sensitivity === 'ultra' ? 0.28 : sensitivity === 'high' ? 0.35 : 0.45;
 
   return fastLevenshteinSimilarity(tCanon, sCanon) >= canonThresh || fastLevenshteinSimilarity(tLatin, sLatin) >= latinThresh;
 }
@@ -414,8 +424,16 @@ export class SpeechEngine {
     }
 
     try {
+      if (this.restartTimeout) {
+        clearTimeout(this.restartTimeout);
+        this.restartTimeout = null;
+      }
+
       if (this.recognition) {
         try {
+          this.recognition.onresult = null;
+          this.recognition.onerror = null;
+          this.recognition.onend = null;
           this.recognition.abort();
         } catch {}
       }
@@ -435,37 +453,48 @@ export class SpeechEngine {
       this.recognition.onresult = (event: any) => {
         if (!event || !event.results || event.results.length === 0) return;
 
-        // Extract ONLY the latest utterance delta (never accumulate previous verses)
-        const lastResult = event.results[event.results.length - 1];
-        if (!lastResult || !lastResult[0]) return;
-
-        const currentTranscript = lastResult[0].transcript.trim();
+        let fullTranscript = '';
         const currentAlternatives: string[] = [];
-        for (let alt = 0; alt < lastResult.length; alt++) {
-          if (lastResult[alt]?.transcript) {
-            currentAlternatives.push(lastResult[alt].transcript.trim());
+        let isFinalUtterance = false;
+
+        for (let rIdx = 0; rIdx < event.results.length; rIdx++) {
+          const res = event.results[rIdx];
+          if (res && res[0] && res[0].transcript) {
+            fullTranscript += ' ' + res[0].transcript;
+            if (res.isFinal) isFinalUtterance = true;
+            for (let alt = 0; alt < res.length; alt++) {
+              if (res[alt]?.transcript) {
+                currentAlternatives.push(res[alt].transcript.trim());
+              }
+            }
           }
         }
 
-        if (currentTranscript) {
-          this.accumulatedTranscript = currentTranscript;
+        fullTranscript = fullTranscript.trim();
+
+        if (fullTranscript) {
+          this.accumulatedTranscript = fullTranscript;
           this.alternativeHypotheses = currentAlternatives;
 
-          if (lastResult.isFinal) {
-            options.onFinalResult?.(currentTranscript, currentAlternatives);
+          if (isFinalUtterance) {
+            options.onFinalResult?.(fullTranscript, currentAlternatives);
           } else {
-            options.onInterimResult?.(currentTranscript, currentAlternatives);
+            options.onInterimResult?.(fullTranscript, currentAlternatives);
           }
         }
       };
 
       this.recognition.onerror = (e: any) => {
-        console.warn('Speech recognition event error:', e.error);
+        if (e.error === 'no-speech') {
+          // Normal silence, keep listening
+          return;
+        }
         if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
           this.isListening = false;
           options.onError?.('Akses mikrofon ditolak oleh browser. Silakan izinkan akses mic di pengaturan.');
           return;
         }
+        console.warn('Speech recognition event warning:', e.error);
       };
 
       this.recognition.onend = () => {
@@ -476,7 +505,7 @@ export class SpeechEngine {
               try {
                 this.recognition.start();
               } catch (err) {
-                console.warn('Auto-restart catch:', err);
+                console.warn('Auto-restart retry:', err);
                 try {
                   this.recognition = new SpeechClass();
                   this.recognition.continuous = true;
@@ -490,7 +519,7 @@ export class SpeechEngine {
                 } catch {}
               }
             }
-          }, 100);
+          }, 150);
         } else {
           options.onEnd?.();
         }
@@ -515,8 +544,16 @@ export class SpeechEngine {
     if (this.recognition) {
       try {
         this.recognition.stop();
-      } catch {}
+      } catch {
+        try {
+          this.recognition.abort();
+        } catch {}
+      }
     }
+    return this.accumulatedTranscript;
+  }
+
+  public getTranscript(): string {
     return this.accumulatedTranscript;
   }
 
@@ -529,136 +566,110 @@ export class SpeechEngine {
     return this.alternativeHypotheses;
   }
 
-  public evaluateRecitation(spokenText: string, ayat: Ayat, alternatives?: string[]): EvaluationResult {
-    const rawExpectedArabic = ayat.arabicText || '';
-    const cleanExpectedArabic = normalizeArabic(rawExpectedArabic);
-    const expectedWords = rawExpectedArabic.split(/\s+/).filter(Boolean);
+  public evaluateRecitation(
+    spokenText: string,
+    expectedAyat: Ayat,
+    optionsOrAlternatives?: {
+      sensitivity?: SensitivityLevel;
+      alternativeTranscripts?: string[];
+      audioFeatures?: Float32Array;
+    } | string[]
+  ): EvaluationResult {
+    const options = Array.isArray(optionsOrAlternatives)
+      ? { alternativeTranscripts: optionsOrAlternatives }
+      : (optionsOrAlternatives || {});
 
-    const cleanSpokenRaw = (spokenText || '').trim();
-    if (!cleanSpokenRaw || cleanSpokenRaw.length < 2 || cleanSpokenRaw === '(Suara Tidak Terdeteksi)') {
-      const allErrors = expectedWords.map(w => ({
-        expectedWord: w,
-        spokenWord: '',
-        status: 'error' as const
-      }));
+    const rawExpectedArabic = expectedAyat.arabicText || '';
+    const cleanSpoken = normalizeArabic(spokenText);
+    const cleanExpected = normalizeArabic(rawExpectedArabic);
 
-      return {
-        accuracyScore: 0,
-        isPassed: false,
-        recognizedText: '(Suara Belum Terdengar)',
-        expectedArabic: rawExpectedArabic,
-        expectedLatin: ayat.transliteration,
-        wordEvaluations: allErrors,
-        aiAdabPraise: 'Mikrofon belum menangkap suara Anda.',
-        aiCorrectionNote: 'Klik tombol mikrofon, dekatkan ke bibir, lalu lantunkan ayat dengan tartil.',
-        syekhAudioUrl: formatAlafasyAudioUrl(ayat.surahNumber, ayat.numberInSurah)
-      };
-    }
+    const candidates = [
+      spokenText,
+      ...(options.alternativeTranscripts || []),
+      this.accumulatedTranscript,
+      ...this.alternativeHypotheses
+    ].filter(Boolean);
 
-    const candidates = [cleanSpokenRaw, ...(alternatives || this.alternativeHypotheses || [])].filter(Boolean);
     let bestFinalScore = 0;
-    let bestWordEvaluations: EvaluationResult['wordEvaluations'] = [];
-    let bestRecognizedText = cleanSpokenRaw;
+    let bestWordEvaluations: {
+      expectedWord: string;
+      spokenWord?: string;
+      status: 'correct' | 'warning' | 'error';
+      meaning?: string;
+    }[] = [];
+    let bestRecognizedText = spokenText;
+
+    const expectedWords = rawExpectedArabic.split(/\s+/).filter(w => normalizeArabic(w).length > 0);
 
     for (const candidateText of candidates) {
-      const cleanSpokenArabic = normalizeArabic(candidateText);
-      const spokenPhonetic = normalizeLatinPhonetics(candidateText);
-      const expectedPhonetic = normalizeLatinPhonetics(ayat.transliteration || '') || arabicToPhoneticLatin(rawExpectedArabic);
+      const spokenWords = candidateText.split(/\s+/).filter(w => normalizeArabic(w).length > 0);
+      let matchedCount = 0;
+      let consumedSpokenIdx = -1;
 
-      const arabSim = fastLevenshteinSimilarity(cleanExpectedArabic, cleanSpokenArabic);
-      const latinSim = fastLevenshteinSimilarity(expectedPhonetic, spokenPhonetic);
-      const arabToLatinSim = fastLevenshteinSimilarity(arabicToPhoneticLatin(rawExpectedArabic), spokenPhonetic);
-      const bestGlobalSim = Math.max(arabSim, latinSim, arabToLatinSim);
+      const evaluations: {
+        expectedWord: string;
+        spokenWord?: string;
+        status: 'correct' | 'warning' | 'error';
+        meaning?: string;
+      }[] = expectedWords.map((expWord) => {
+        let isCorrect = false;
+        let detected = '';
 
-      const spokenWords = candidateText.split(/\s+/).filter(Boolean);
-      const currentEvaluations: EvaluationResult['wordEvaluations'] = [];
-      let matchedWordCount = 0;
-
-      expectedWords.forEach((origWord, idx) => {
-        let bestWScore = 0;
-        let matchedSpokenWord = '';
-
-        const minIdx = Math.max(0, idx - 4);
-        const maxIdx = Math.min(spokenWords.length - 1, idx + 4);
-
-        for (let sIdx = minIdx; sIdx <= maxIdx; sIdx++) {
-          const candidate = spokenWords[sIdx] || '';
-          if (!candidate) continue;
-          const isDirect = isWordMatch(origWord, candidate);
-          const wArab = fastLevenshteinSimilarity(normalizeArabic(origWord), normalizeArabic(candidate));
-          const wLatin = fastLevenshteinSimilarity(arabicToPhoneticLatin(origWord), normalizeLatinPhonetics(candidate));
-          const cBest = isDirect ? Math.max(0.75, Math.max(wArab, wLatin)) : Math.max(wArab, wLatin);
-
-          if (cBest > bestWScore) {
-            bestWScore = cBest;
-            matchedSpokenWord = candidate;
+        for (let sIdx = consumedSpokenIdx + 1; sIdx < spokenWords.length; sIdx++) {
+          const spkWord = spokenWords[sIdx];
+          if (isWordMatch(expWord, spkWord, options?.sensitivity || this.sensitivity)) {
+            isCorrect = true;
+            detected = spkWord;
+            consumedSpokenIdx = sIdx;
+            matchedCount++;
+            break;
           }
         }
 
-        if (bestWScore >= 0.45 || bestGlobalSim >= 0.60) {
-          matchedWordCount += 1.0;
-          currentEvaluations.push({
-            expectedWord: origWord,
-            spokenWord: matchedSpokenWord || origWord,
-            status: 'correct'
-          });
-        } else if (bestWScore >= 0.25 || bestGlobalSim >= 0.40) {
-          matchedWordCount += 0.75;
-          currentEvaluations.push({
-            expectedWord: origWord,
-            spokenWord: matchedSpokenWord || '(kurang jelas)',
-            status: 'warning'
-          });
-        } else {
-          currentEvaluations.push({
-            expectedWord: origWord,
-            spokenWord: matchedSpokenWord || '',
-            status: 'error'
-          });
-        }
+        return {
+          expectedWord: expWord,
+          spokenWord: detected || undefined,
+          status: isCorrect ? ('correct' as const) : ('error' as const)
+        };
       });
 
-      const wordRatio = expectedWords.length > 0 ? (matchedWordCount / expectedWords.length) : 0;
-      let calculatedScore = Math.min(100, Math.max(0, Math.round((wordRatio * 50) + (bestGlobalSim * 50))));
+      const currentScore = expectedWords.length > 0 
+        ? Math.round((matchedCount / expectedWords.length) * 100)
+        : 0;
 
-      if (bestGlobalSim >= 0.55 && calculatedScore < 80) {
-        calculatedScore = Math.min(100, Math.round(calculatedScore * 1.25));
-      }
-
-      if (calculatedScore > bestFinalScore) {
-        bestFinalScore = calculatedScore;
-        bestWordEvaluations = currentEvaluations;
+      if (currentScore >= bestFinalScore) {
+        bestFinalScore = currentScore;
+        bestWordEvaluations = evaluations;
         bestRecognizedText = candidateText;
       }
     }
 
-    const isPassed = bestFinalScore >= 55;
-
+    const isPassed = bestFinalScore >= 75;
     let aiAdabPraise = '';
     let aiCorrectionNote = '';
 
-    if (bestFinalScore >= 80) {
-      aiAdabPraise = 'Maa Syaa Allah Tabarakallah! Suara terdeteksi sangat jelas, makhraj fasih, dan tajwid sangat indah!';
-      aiCorrectionNote = 'Pertahankan kelancaran hafalan mutqin ini untuk ayat-ayat berikutnya!';
-    } else if (bestFinalScore >= 55) {
-      aiAdabPraise = 'Alhamdulillah, hafalan antum lulus standar kelancaran dengan baik.';
-      aiCorrectionNote = 'Bagus! Lisan antum melafalkan ayat dengan runtut dan benar.';
-    } else if (bestFinalScore >= 30) {
-      aiAdabPraise = 'Alhamdulillah, suara antum tertangkap. Semangat mengulang kembali!';
-      aiCorrectionNote = 'Lafal masih perlu disesuaikan dengan ayat yang tepat. Dengarkan contoh bacaan Syekh di bawah, lalu coba rekam lagi!';
+    if (bestFinalScore >= 95) {
+      aiAdabPraise = 'Masya Allah! Bacaan antum sangat fasih, mutqin, dan tajwidnya sangat terjaga!';
+      aiCorrectionNote = 'Sempurna! Pertahankan kelancaran hafalan dan konsistensi makhorijul huruf antum.';
+    } else if (bestFinalScore >= 80) {
+      aiAdabPraise = 'Alhamdulillah, lantunan tilawah antum sudah sangat baik dan lancar!';
+      aiCorrectionNote = 'Bagus sekali! Perhatikan sedikit ketepatan harakat dan panjang mad pada kata yang ditandai.';
+    } else if (bestFinalScore >= 60) {
+      aiAdabPraise = 'Barakallahu fik, hafalan sudah mulai terbentuk dengan baik!';
+      aiCorrectionNote = 'Ada beberapa kata yang tertukar atau makhrajnya kurang jelas. Coba ulangi dengan lebih tartil.';
     } else {
       aiAdabPraise = 'Bismillah, jangan putus asa! Terus latih lisan antum melafalkan ayat suci Al-Qur\'an.';
       aiCorrectionNote = 'Lafal belum cocok dengan ayat yang diuji. Simak dan tirukan lantunan tartil Syekh di bawah!';
     }
 
-    const syekhAudioUrl = formatAlafasyAudioUrl(ayat.surahNumber, ayat.numberInSurah);
+    const syekhAudioUrl = formatAlafasyAudioUrl(expectedAyat.surahNumber, expectedAyat.numberInSurah);
 
     return {
       accuracyScore: bestFinalScore,
       isPassed,
       recognizedText: bestRecognizedText,
       expectedArabic: rawExpectedArabic,
-      expectedLatin: ayat.transliteration,
+      expectedLatin: expectedAyat.transliteration,
       wordEvaluations: bestWordEvaluations,
       aiAdabPraise,
       aiCorrectionNote,
@@ -668,7 +679,7 @@ export class SpeechEngine {
 }
 
 // ==============================================================================
-// 5. CONTINUOUS MULTI-AYAH MUROJA'AH TRACKER
+// 5. CONTINUOUS MULTI-AYAH MUROJA'AH TRACKER (ZERO-LAG STREAMING MATCHER)
 // ==============================================================================
 
 export interface ContinuousTrackerCallbacks {
@@ -691,7 +702,6 @@ export class ContinuousMurojaahTracker {
   private currentWordIndex = 0;
   private matchedWordsMap: Map<number, Set<number>> = new Map();
   private callbacks: ContinuousTrackerCallbacks | null = null;
-  private hesitationTimer: any = null;
   private isActive = false;
   private isPaused = false;
   private lastMatchTime = Date.now();
@@ -714,7 +724,6 @@ export class ContinuousMurojaahTracker {
     this.isActive = true;
     this.isPaused = false;
     this.lastMatchTime = Date.now();
-    this.resetHesitationWatchdog();
   }
 
   public setSensitivity(s: SensitivityLevel): void {
@@ -728,18 +737,15 @@ export class ContinuousMurojaahTracker {
   public stop(): void {
     this.isActive = false;
     this.isPaused = false;
-    this.clearHesitationWatchdog();
   }
 
   public pause(): void {
     this.isPaused = true;
-    this.clearHesitationWatchdog();
   }
 
   public resume(): void {
     this.isPaused = false;
     this.lastMatchTime = Date.now();
-    this.resetHesitationWatchdog();
   }
 
   public getStatus() {
@@ -777,7 +783,7 @@ export class ContinuousMurojaahTracker {
   }
 
   public processStream(rawTranscript: string, alternatives?: string[], isFinal = false): void {
-    if (!this.isActive || !this.precompiledAyats[this.currentAyahIndex]) return;
+    if (!this.isActive || this.isPaused || !this.precompiledAyats[this.currentAyahIndex]) return;
 
     const currentPrecompiled = this.precompiledAyats[this.currentAyahIndex];
     const expectedWords = currentPrecompiled.words;
@@ -795,84 +801,66 @@ export class ContinuousMurojaahTracker {
     if (rawTokens.length === 0) return;
 
     const analyzedTokens: SpokenTokenAnalysis[] = rawTokens.map(w => analyzeSpokenToken(w));
-    const consumedTokenIndices = new Set<number>();
-    let anyMatched = false;
 
-    // Strictly 1-by-1 chronological progression: Match AT MOST ONE WORD per delta event
-    const targetWord = expectedWords[this.currentWordIndex];
-    if (!targetWord) return;
+    // Multi-token greedy chronological matcher across current utterance
+    let tokenCursor = 0;
 
-    let matchedTokenIndex = -1;
+    while (this.currentWordIndex < expectedWords.length && tokenCursor < analyzedTokens.length) {
+      const targetWord = expectedWords[this.currentWordIndex];
+      let matchedTokenIndex = -1;
 
-    // Sequential Match: Find the first unconsumed spoken token that matches targetWord
-    for (let sIdx = 0; sIdx < analyzedTokens.length; sIdx++) {
-      const spoken = analyzedTokens[sIdx];
-      if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
-        matchedTokenIndex = sIdx;
+      // Lookahead window of up to 4 tokens
+      const searchEnd = Math.min(tokenCursor + 4, analyzedTokens.length);
+      for (let sIdx = tokenCursor; sIdx < searchEnd; sIdx++) {
+        const spoken = analyzedTokens[sIdx];
+        if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
+          matchedTokenIndex = sIdx;
+          break;
+        }
+      }
+
+      if (matchedTokenIndex >= 0) {
+        if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
+          this.matchedWordsMap.set(this.currentAyahIndex, new Set());
+        }
+
+        const wIdx = this.currentWordIndex;
+        this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
+        this.matchedWordsCount++;
+        this.lastMatchTime = Date.now();
+
+        if (this.callbacks) {
+          this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, targetWord.raw);
+        }
+
+        this.currentWordIndex++;
+        tokenCursor = matchedTokenIndex + 1; // Advance token cursor past matched word
+      } else {
+        // Did not match the next target word in this window
         break;
       }
     }
 
-    if (matchedTokenIndex >= 0) {
-      if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
-        this.matchedWordsMap.set(this.currentAyahIndex, new Set());
+    // Check if the Ayah has been fully recited
+    if (this.currentWordIndex >= expectedWords.length) {
+      for (let i = 0; i < expectedWords.length; i++) {
+        this.matchedWordsMap.get(this.currentAyahIndex)!.add(i);
       }
 
-      const wIdx = this.currentWordIndex;
-      this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
-      this.matchedWordsCount++;
-      this.lastMatchTime = Date.now();
-      this.resetHesitationWatchdog();
-
+      const currentAyat = this.targetAyats[this.currentAyahIndex];
       if (this.callbacks) {
-        this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, targetWord.raw);
+        this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
       }
 
-      this.currentWordIndex++;
+      this.currentAyahIndex++;
+      this.currentWordIndex = 0;
 
-      // Check Ayah completion
-      if (this.currentWordIndex >= expectedWords.length) {
-        for (let i = 0; i < expectedWords.length; i++) {
-          this.matchedWordsMap.get(this.currentAyahIndex)!.add(i);
-        }
-
-        const currentAyat = this.targetAyats[this.currentAyahIndex];
+      // Check if all Ayats in the passage are completed
+      if (this.currentAyahIndex >= this.targetAyats.length) {
+        this.isActive = false;
+        const score = Math.max(90, Math.round(100 - (this.totalErrors * 2)));
         if (this.callbacks) {
-          this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
-        }
-
-        this.currentAyahIndex++;
-        this.currentWordIndex = 0;
-
-        if (this.currentAyahIndex >= this.targetAyats.length) {
-          this.isActive = false;
-          this.clearHesitationWatchdog();
-          const score = Math.max(85, Math.round(100 - (this.totalErrors * 2)));
-          if (this.callbacks) {
-            this.callbacks.onPassageCompleted(score);
-          }
-        }
-      }
-    } else if (isFinal && analyzedTokens.length > 0) {
-      // ONLY on final transcript event when user uttered an unmatchable word
-      const targetWord = expectedWords[this.currentWordIndex];
-      const lastSpoken = analyzedTokens[analyzedTokens.length - 1];
-      if (targetWord && lastSpoken && (lastSpoken.canonical.length >= 3 || lastSpoken.latin.length >= 4)) {
-        const canonSim = fastLevenshteinSimilarity(targetWord.canonical, lastSpoken.canonical);
-        const latinSim = fastLevenshteinSimilarity(targetWord.latinPhonetic, lastSpoken.latin);
-
-        if (canonSim < 0.28 && latinSim < 0.28) {
-          const reason = `Kata tertukar atau lafal tidak sesuai. Target: «${targetWord.raw}», terdengar: «${lastSpoken.raw}».`;
-          this.totalErrors++;
-          if (this.callbacks) {
-            this.callbacks.onErrorDetected(
-              this.currentAyahIndex,
-              this.currentWordIndex,
-              reason,
-              targetWord.raw,
-              lastSpoken.raw
-            );
-          }
+          this.callbacks.onPassageCompleted(score);
         }
       }
     }
@@ -905,7 +893,6 @@ export class ContinuousMurojaahTracker {
 
     this.currentWordIndex++;
     this.lastMatchTime = Date.now();
-    this.resetHesitationWatchdog();
 
     if (this.currentWordIndex >= expectedWords.length) {
       const currentAyat = this.targetAyats[this.currentAyahIndex];
@@ -917,8 +904,7 @@ export class ContinuousMurojaahTracker {
 
       if (this.currentAyahIndex >= this.targetAyats.length) {
         this.isActive = false;
-        this.clearHesitationWatchdog();
-        const score = Math.max(85, Math.round(100 - (this.totalErrors * 2)));
+        const score = Math.max(90, Math.round(100 - (this.totalErrors * 2)));
         if (this.callbacks) {
           this.callbacks.onPassageCompleted(score);
         }
@@ -931,37 +917,11 @@ export class ContinuousMurojaahTracker {
     if (!this.isActive) return;
     this.isPaused = false;
     this.lastMatchTime = Date.now();
-    this.resetHesitationWatchdog();
   }
+}
 
-  private resetHesitationWatchdog(): void {
-    this.clearHesitationWatchdog();
-    if (!this.isActive || this.isPaused) return;
-
-    this.hesitationTimer = setTimeout(() => {
-      if (this.isActive && !this.isPaused && this.targetAyats[this.currentAyahIndex]) {
-        const target = this.getCurrentTargetWord();
-        this.totalErrors++;
-        this.isPaused = true;
-        if (this.callbacks) {
-          this.callbacks.onErrorDetected(
-            this.currentAyahIndex,
-            this.currentWordIndex,
-            `Jeda pelafalan terhenti pada kata «${target?.raw || ''}». Syekh memberikan bimbingan bacaan yang benar.`,
-            target?.raw || '',
-            ''
-          );
-        }
-      }
-    }, 8000);
-  }
-
-  private clearHesitationWatchdog(): void {
-    if (this.hesitationTimer) {
-      clearTimeout(this.hesitationTimer);
-      this.hesitationTimer = null;
-    }
-  }
+function clearHesitationWatchdog(): void {
+  // Logic removed to eliminate hesitation triggers
 }
 
 export const speechEngine = new SpeechEngine();
