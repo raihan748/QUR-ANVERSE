@@ -1709,7 +1709,7 @@ function getFirstConsonant(str?: string): string {
   return clean[0] || '';
 }
 
-const HALQI_LETTERS = ['ء', 'ه', 'ع', 'ح', 'غ', 'خ', 'أ', 'إ', 'آ', 'ٱ'];
+const HALQI_QATHI_LETTERS = ['ء', 'ه', 'ع', 'ح', 'غ', 'خ', 'أ', 'إ', 'آ', 'ؤ', 'ئ'];
 const IDGHAM_BIGHUNNAH_LETTERS = ['ي', 'ن', 'م', 'و'];
 const IDGHAM_BILAGHUNNAH_LETTERS = ['ل', 'ر'];
 const IKHFA_HAQIQI_LETTERS = ['ت', 'ث', 'ج', 'د', 'ذ', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ف', 'ق', 'ك'];
@@ -1753,7 +1753,7 @@ export function getTajweedColorForWord(
     return { color: '#D97706', bg: '#FEF3C7', ruleName: 'Sifir Mustathil (Waqaf 2 Harakat, Washal Gugur)' };
   }
   if (/[\u06DF]/.test(w)) {
-    return { color: '#6B7280', bg: '#F3F4F6', ruleName: 'Sifir Mustadir (Huruf Gugur Mutlak)' };
+    return { color: '#6B7280', bg: '#F3F4F6', ruleName: 'Sifir Mustadir (Huruf Tambahan Gugur Mutlak)' };
   }
 
   // Izhar Muthlaq (4 kata khusus dalam 1 kalimat)
@@ -1761,45 +1761,81 @@ export function getTajweedColorForWord(
     return { color: '#059669', bg: '#D1FAE5', ruleName: 'Izhar Muthlaq (Wajib Jelas Tanpa Dengung)' };
   }
 
-  // 1. Mad Lazim (Mad bendera ~ bertemu tasydid atau huruf Muqatta'at: 6 harakat)
+  // Idgham Mutajanisain & Mutaqaribain Khusus
+  if (/بَسَطتَ|أَحَطتُ|فَرَّطتُ|فَرَّطتُمْ/.test(w)) {
+    return { color: '#4338CA', bg: '#E0E7FF', ruleName: 'Idgham Mutajanisain Naqis (Tha melebur ke Ta, Ithbaq tetap)' };
+  }
+  if (/أَلَمْ نَخْلُقكُّم|نَّخْلُقكُّم/.test(w)) {
+    return { color: '#4338CA', bg: '#E0E7FF', ruleName: 'Idgham Mutaqaribain (Qaf melebur ke Kaf)' };
+  }
+  if (w.includes('يَلْهَث') && nextWord.includes('ذَّٰلِكَ')) {
+    return { color: '#4338CA', bg: '#E0E7FF', ruleName: 'Idgham Mutajanisain (Tha melebur ke Dzal)' };
+  }
+  if (w.includes('ٱرْكَب') && nextWord.includes('مَّعَنَا')) {
+    return { color: '#4338CA', bg: '#E0E7FF', ruleName: 'Idgham Mutajanisain (Ba melebur ke Mim ber-ghunnah)' };
+  }
+
+  // 1. Mad Shilah Thawilah (ـهُۥٓ / ـهِۦٓ) & Shilah Qashirah (ـهُۥ / ـهِۦ)
+  if (/[\u06E5\u06E6][\u0653~]/.test(w)) {
+    return { color: '#B91C1C', bg: '#FEE2E2', ruleName: 'Mad Shilah Thawilah (4-5 Harakat)' };
+  }
+  if (/[\u06E5\u06E6]/.test(w)) {
+    return { color: '#92400E', bg: '#FEF3C7', ruleName: 'Mad Shilah Qashirah (2 Harakat)' };
+  }
+
+  // 2. Mad Lazim (Mad bendera ~ bertemu tasydid atau huruf Muqatta'at: 6 harakat)
   if (/[\u0653~].*[\u0651]/.test(w) || /^(?:الٓمٓ|الٓمٓصٓ|الٓرٰ|الٓمٓرٰ|كٓهٰيٰعٓصٓ|طٰهٰ|طٰسٓمٓ|طٰسٓ|يٰسٓ|صٓ|حٰمٓ|عٓسٓقٓ|قٓ|نٓ)/.test(w)) {
     return { color: '#991B1B', bg: '#FEE2E2', ruleName: 'Mad Lazim (Wajib 6 Harakat)' };
   }
 
-  // 2. Mad Wajib Muttashil (Mad bendera ~ bertemu Hamzah dalam SATU kata: 4-5 harakat)
+  // 3. Mad Wajib Muttashil (Mad bendera ~ bertemu Hamzah dalam SATU kata: 4-5 harakat)
   if (/[\u0653~]/.test(w) && /[ءأإؤئ]/.test(w)) {
     return { color: '#B91C1C', bg: '#FEE2E2', ruleName: 'Mad Wajib Muttashil (4-5 Harakat)' };
   }
 
-  // 3. Mad Jaiz Munfashil (Mad bendera ~ bertemu Hamzah di kata berikutnya: 4-5 harakat)
+  // 4. Mad Jaiz Munfashil (Mad bendera ~ bertemu Hamzah di kata berikutnya: 4-5 harakat)
   if (/[\u0653~]/.test(w)) {
     return { color: '#C026D3', bg: '#FAE8FF', ruleName: 'Mad Jaiz Munfashil (4-5 Harakat)' };
   }
 
-  // 4. Ghunnah Musyaddadah: Nun (ن) atau Mim (م) bertasydid (ّ) langsung
+  // 5. Ghunnah Musyaddadah: Nun (ن) atau Mim (م) bertasydid (ّ) langsung
   if (/(?:ن\u0651|م\u0651|ن[\u064E\u064F\u0650]\u0651|م[\u064E\u064F\u0650]\u0651)/.test(w)) {
     return { color: '#047857', bg: '#D1FAE5', ruleName: 'Ghunnah Musyaddadah (Dengung 2-3 Harakat)' };
   }
 
-  // 5. Iqlab (STRICT: Nun sukun atau tanwin BERTEMU Ba ب baik di dalam kata maupun antar-kata)
+  // 6. Iqlab (STRICT: Nun sukun atau tanwin BERTEMU Ba ب)
   const isIqlabInternal = /(?:[ًٌٍ]|ن[\u0652]?)\s*ب/.test(w) || /ن[\u06E2]ب|[\u06E2]ب/.test(w);
   const isIqlabCross = (/(?:[ًٌٍ]|ن[\u0652]?)$/.test(w) || /[\u06E2]$/.test(w)) && nextFirst === 'ب';
   if (isIqlabInternal || isIqlabCross) {
     return { color: '#7C3AED', bg: '#EDE9FE', ruleName: 'Iqlab (Suara N berganti M mendengung)' };
   }
 
-  // 6. Nun Sukun & Tanwin Antar-Kata (Cross-Word Recitation Context)
+  // 7. End of Ayah / Waqaf Special Rules
+  if (isLineEnd) {
+    if (/[ً\u06ED]ا?$/.test(w)) {
+      return { color: '#059669', bg: '#D1FAE5', ruleName: "Mad 'Iwad (Waqaf Fathatain 2 Harakat)" };
+    }
+    if (/[قطبجد][\u064B-\u065F\u0670]?$/.test(w)) {
+      return { color: '#DC2626', bg: '#FEE2E2', ruleName: 'Qalqalah Kubra (Pantulan Tebal Waqaf)' };
+    }
+  }
+
+  // 8. Nun Sukun & Tanwin Antar-Kata (Cross-Word Recitation Context)
   const hasTanwinEnd = /[ًٌٍ]/.test(w);
-  const hasNunSukunEnd = /ن[\u0652]?$/.test(w) || /ن$/.test(w);
+  const isVowelledNunEnd = /ن[\u064E\u064F\u0650\u0651]$/.test(w);
+  const hasNunSukunEnd = (/(?:ن[\u0652]?|ن)$/.test(w)) && !isVowelledNunEnd;
 
   if ((hasTanwinEnd || hasNunSukunEnd) && nextFirst) {
+    if (hasTanwinEnd && (nextFirst === 'ٱ' || nextWord.startsWith('ٱل'))) {
+      return { color: '#0891B2', bg: '#CFFAFE', ruleName: 'Nun Wiqayah / Nun Wasl (Tanwin dibaca Kasrah - Iltiqa Sakinain)' };
+    }
     if (IDGHAM_BIGHUNNAH_LETTERS.includes(nextFirst)) {
       return { color: '#2563EB', bg: '#DBEAFE', ruleName: `Idgham Bighunnah (Melebur ke ${nextFirst} ber-ghunnah)` };
     }
     if (IDGHAM_BILAGHUNNAH_LETTERS.includes(nextFirst)) {
       return { color: '#4F46E5', bg: '#E0E7FF', ruleName: `Idgham Bilaghunnah (Melebur ke ${nextFirst} tanpa dengung)` };
     }
-    if (HALQI_LETTERS.includes(nextFirst)) {
+    if (HALQI_QATHI_LETTERS.includes(nextFirst)) {
       return { color: '#059669', bg: '#D1FAE5', ruleName: `Izhar Halqi (Jelas & Terang bertemu ${nextFirst})` };
     }
     if (IKHFA_HAQIQI_LETTERS.includes(nextFirst)) {
@@ -1814,21 +1850,26 @@ export function getTajweedColorForWord(
   if (/(?:ن[\u0652]?)[لر]/.test(w)) {
     return { color: '#4F46E5', bg: '#E0E7FF', ruleName: 'Idgham Bilaghunnah (Melebur Tanpa Dengung)' };
   }
-  if (/(?:ن[\u0652]?)[ءهعحغخأإآٱ]/.test(w)) {
+  if (/(?:ن[\u0652]?)[ءهعحغخأإآؤئ]/.test(w)) {
     return { color: '#059669', bg: '#D1FAE5', ruleName: 'Izhar Halqi (Jelas & Terang)' };
   }
   if (/(?:ن[\u0652]?)[تثجدذزسشصضطظفقك]/.test(w)) {
     return { color: '#DB2777', bg: '#FCE7F3', ruleName: "Ikhfa' Haqiqi (Samar Dengung)" };
   }
 
-  // 7. Mim Sukun (مْ) Rules
-  const hasMimSukunEnd = /م[\u0652]?$/.test(w);
+  // 9. Mim Sukun (مْ) Rules
+  const isVowelledMimEnd = /م[\u064E\u064F\u0650\u0651]$/.test(w);
+  const hasMimSukunEnd = (/(?:م[\u0652]?|م)$/.test(w)) && !isVowelledMimEnd;
+
   if (hasMimSukunEnd && nextFirst) {
     if (nextFirst === 'ب') {
       return { color: '#C026D3', bg: '#FAE8FF', ruleName: "Ikhfa' Syafawi (Mim mati bertemu Ba)" };
     }
     if (nextFirst === 'م') {
       return { color: '#0D9488', bg: '#CCFBF1', ruleName: 'Idgham Mimi (Mim mati melebur ke Mim)' };
+    }
+    if (nextFirst === 'و' || nextFirst === 'ف') {
+      return { color: '#0891B2', bg: '#CFFAFE', ruleName: `Izhar Syafawi Ashadd (Ekstra jelas bertemu ${nextFirst})` };
     }
     return { color: '#0891B2', bg: '#CFFAFE', ruleName: `Izhar Syafawi (Mim mati dibaca jelas bertemu ${nextFirst})` };
   }
@@ -1842,15 +1883,12 @@ export function getTajweedColorForWord(
     return { color: '#0891B2', bg: '#CFFAFE', ruleName: 'Izhar Syafawi (Mim Jelas)' };
   }
 
-  // 8. Qalqalah (Pantulan Huruf ق, ط, ب, ج, د)
+  // 10. Qalqalah (Pantulan Huruf ق, ط, ب, ج, د)
   if (/[قطبجد][\u0652]/.test(w)) {
     return { color: '#EA580C', bg: '#FFEDD5', ruleName: 'Qalqalah Sughra (Pantulan Ringan)' };
   }
-  if (isLineEnd && /[قطبجد][\u064B-\u065F\u0670]?$/.test(w)) {
-    return { color: '#DC2626', bg: '#FEE2E2', ruleName: 'Qalqalah Kubra (Pantulan Tebal Waqaf)' };
-  }
 
-  // 9. Lam Jalalah (Lafadz Allah)
+  // 11. Lam Jalalah (Lafadz Allah)
   if (/(?:ٱللَّ|اللَّ|لِلَّ)/.test(w)) {
     if (/لِلَّ/.test(w) || (prevWord && /[\u0650]$/.test(prevWord))) {
       return { color: '#0284C7', bg: '#E0F2FE', ruleName: 'Lam Jalalah Tarqiq (Tipis - Lillah)' };
@@ -1858,7 +1896,7 @@ export function getTajweedColorForWord(
     return { color: '#0D9488', bg: '#CCFBF1', ruleName: 'Lam Jalalah Tafkhim (Tebal Bergema - Alloh)' };
   }
 
-  // 10. Alif Lam Syamsiyah & Qamariyah
+  // 12. Alif Lam Syamsiyah & Qamariyah
   if (/(?:ٱل|ال)[تثدذرزسشصضطظلن]\u0651/.test(w)) {
     return { color: '#4338CA', bg: '#E0E7FF', ruleName: 'Idgham Syamsiyah (Al-Syamsiyah)' };
   }
@@ -1866,12 +1904,17 @@ export function getTajweedColorForWord(
     return { color: '#0369A1', bg: '#E0F2FE', ruleName: 'Izhar Qamariyah (Al-Qamariyah)' };
   }
 
-  // 11. Mad Thobi'i / Mad Asli / Alif Khanjariyah
+  // 13. Mad Badal (Hamzah bertemu huruf Mad)
+  if (/^(?:ءَامَ|ءَاتَ|أُوتُ|إِيمَ|ءَالِ)/.test(w)) {
+    return { color: '#92400E', bg: '#FEF3C7', ruleName: 'Mad Badal (2 Harakat)' };
+  }
+
+  // 14. Mad Thobi'i / Mad Asli / Alif Khanjariyah
   if (/[\u0670]/.test(w) || /[\u064E]ا|[\u064F]و[\u0652]?|[\u0650]ي[\u0652]?|[\u0649]/.test(w)) {
     return { color: '#92400E', bg: '#FEF3C7', ruleName: "Mad Thobi'i / Mad Asli (2 Harakat)" };
   }
 
-  // 12. Ra' Tafkhim & Tarqiq
+  // 15. Ra' Tafkhim & Tarqiq
   if (/ر[\u064E\u064F\u0651]/.test(w)) {
     return { color: '#B45309', bg: '#FEF3C7', ruleName: "Ra' Tafkhim (Tebal)" };
   }
