@@ -54,6 +54,7 @@ import {
 } from '../../services/dailyTargetService';
 import { DailyTargetWidget } from '../common/DailyTargetWidget';
 import { useLanguage } from '../../context/LanguageContext';
+import { getTajweedColorForWord } from '../../services/quranTajweedGharibService';
 
 interface MurojaahStudioProps {
   userProfile: UserProfile;
@@ -73,6 +74,14 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   const [studyMode, setStudyMode] = useState<MurojaahMode>('continuous_surah');
   const [inputMode, setInputMode] = useState<InputMode>('voice');
   const [dailyTarget, setDailyTarget] = useState<DailyQuranTarget>(getDailyTarget());
+  const [selectedWordInspector, setSelectedWordInspector] = useState<{
+    word: string;
+    ruleName?: string;
+    color: string;
+    bg: string;
+    surahNumber: number;
+    ayahNumber: number;
+  } | null>(null);
 
   // Surah & Range Selection (Persisted in LocalStorage)
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(() => {
@@ -623,43 +632,80 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 )}
               </div>
 
-              {/* Arabic Text with Word-by-Word Active Highlighting (Authentic RTL Quranic Flow) */}
+              {/* Arabic Text with Word-by-Word Active Highlighting & Tajweed Badges */}
               <div className="text-right py-2 leading-loose" dir="rtl">
-                <div className="flex flex-wrap gap-2 justify-start items-center" dir="rtl">
+                <div className="flex flex-wrap gap-2.5 justify-start items-center" dir="rtl">
                   {words.map((w, wIdx) => {
                     const isWordDone = matchedWords.includes(wIdx);
                     const isWordError = errorWordState?.ayahIdx === aIdx && errorWordState?.wordIdx === wIdx;
                     const isCurrentWordTarget = (isActive || isWordError) && matchedWords.length === wIdx;
+                    const tajweed = getTajweedColorForWord(
+                      w,
+                      words[wIdx + 1] || '',
+                      words[wIdx - 1] || '',
+                      wIdx === words.length - 1
+                    );
 
                     return (
-                      <span
+                      <div
                         key={wIdx}
+                        className="inline-flex flex-col items-center group relative cursor-pointer"
                         onClick={() => {
                           if (isWordError) {
                             handleRetryCurrentWord();
                           } else if (isActive && isCurrentWordTarget) {
                             continuousTracker.advanceCurrentWord(true);
+                          } else {
+                            setSelectedWordInspector({
+                              word: w,
+                              ruleName: tajweed.ruleName,
+                              color: tajweed.color,
+                              bg: tajweed.bg,
+                              surahNumber: ayat.surahNumber,
+                              ayahNumber: ayat.numberInSurah
+                            });
                           }
                         }}
-                        title={
-                          isWordError
-                            ? `Salah lafal: ${errorWordState.reason}. Klik untuk coba ulang!`
-                            : isCurrentWordTarget
-                            ? 'Kata yang wajib dibaca sekarang'
-                            : undefined
-                        }
-                        className={`font-arabic text-2xl sm:text-3xl px-2.5 py-1 rounded-xl transition-all inline-block select-none ${
-                          isWordDone
-                            ? 'bg-[#10B981] text-white shadow-xs font-bold scale-105'
-                            : isWordError
-                            ? 'bg-[#EF4444] text-white border-3 border-black shadow-[4px_4px_0px_0px_#000] scale-115 font-black ring-4 ring-red-300 animate-pulse cursor-pointer'
-                            : isCurrentWordTarget
-                            ? 'bg-[#FBBF24] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000] scale-110 font-bold animate-pulse cursor-pointer hover:bg-amber-300 ring-4 ring-amber-300'
-                            : 'text-gray-800'
-                        }`}
                       >
-                        {w}
-                      </span>
+                        <span
+                          title={
+                            isWordError
+                              ? `Salah lafal: ${errorWordState.reason}. Klik untuk coba ulang!`
+                              : isCurrentWordTarget
+                              ? `Kata aktif yang wajib dibaca sekarang (${tajweed.ruleName || 'Harakat Standar'})`
+                              : tajweed.ruleName
+                              ? `Hukum Tajwid: ${tajweed.ruleName}`
+                              : undefined
+                          }
+                          className={`font-arabic text-2xl sm:text-3xl px-2.5 py-1 rounded-xl transition-all inline-block select-none ${
+                            isWordDone
+                              ? 'bg-[#10B981] text-white shadow-xs font-bold scale-105'
+                              : isWordError
+                              ? 'bg-[#EF4444] text-white border-3 border-black shadow-[4px_4px_0px_0px_#000] scale-115 font-black ring-4 ring-red-300 animate-pulse'
+                              : isCurrentWordTarget
+                              ? 'bg-[#FBBF24] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000] scale-110 font-bold animate-pulse hover:bg-amber-300 ring-4 ring-amber-300'
+                              : 'text-gray-800 hover:bg-gray-100'
+                          }`}
+                        >
+                          {w}
+                        </span>
+
+                        {/* Tajweed Mini Pill Badge */}
+                        {tajweed.ruleName && (
+                          <span
+                            className={`text-[9px] font-sans font-black px-1.5 py-0.2 rounded mt-0.5 border border-black shadow-xs transition-transform ${
+                              isCurrentWordTarget
+                                ? 'bg-amber-400 text-black scale-105 animate-bounce'
+                                : isWordDone
+                                ? 'bg-emerald-200 text-emerald-950 opacity-90'
+                                : 'bg-gray-100 text-gray-700 opacity-70 group-hover:opacity-100'
+                            }`}
+                            dir="ltr"
+                          >
+                            {tajweed.ruleName.split('(')[0].trim()}
+                          </span>
+                        )}
+                      </div>
                     );
                   })}
                   <span className="text-sm font-arabic font-bold text-[#0B4627] px-2 py-0.5 bg-emerald-50 rounded-full border border-emerald-300">
@@ -669,108 +715,152 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               </div>
 
               {/* 🚨 AUTO-TEGUR SYEKH ALERT CARD (When Mistake is Detected) */}
-              {errorWordState && errorWordState.ayahIdx === aIdx && (
-                <div className="my-3 p-4 bg-gradient-to-r from-red-950 via-red-900 to-red-950 text-white rounded-2xl border-3 border-red-500 shadow-[5px_5px_0px_0px_#000] space-y-3 animate-shake">
-                  <div className="flex items-center justify-between border-b border-red-700/80 pb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-red-400 animate-ping"></span>
-                      <span className="font-black text-sm text-red-200 uppercase tracking-wide flex items-center gap-1.5">
-                        <AlertCircle className="w-4 h-4 text-red-400" />
-                        🚨 TEGURAN OTOMATIS SYEKH (BACAAN SALAH)
-                      </span>
+              {errorWordState && errorWordState.ayahIdx === aIdx && (() => {
+                const errTajweed = getTajweedColorForWord(errorWordState.targetWord);
+                return (
+                  <div className="my-3 p-4 bg-gradient-to-r from-red-950 via-red-900 to-red-950 text-white rounded-2xl border-3 border-red-500 shadow-[5px_5px_0px_0px_#000] space-y-3 animate-shake">
+                    <div className="flex items-center justify-between border-b border-red-700/80 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-red-400 animate-ping"></span>
+                        <span className="font-black text-sm text-red-200 uppercase tracking-wide flex items-center gap-1.5">
+                          <AlertCircle className="w-4 h-4 text-red-400" />
+                          🚨 TEGURAN OTOMATIS SYEKH (BACAAN SALAH)
+                        </span>
+                      </div>
+                      {isSheikhSpeaking && (
+                        <span className="px-2.5 py-1 bg-red-600 text-white font-black text-xs rounded-full border border-white animate-pulse flex items-center gap-1">
+                          <Volume2 className="w-3.5 h-3.5" /> Syekh Membimbing...
+                        </span>
+                      )}
                     </div>
-                    {isSheikhSpeaking && (
-                      <span className="px-2.5 py-1 bg-red-600 text-white font-black text-xs rounded-full border border-white animate-pulse flex items-center gap-1">
-                        <Volume2 className="w-3.5 h-3.5" /> Syekh Membimbing...
-                      </span>
-                    )}
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="p-2.5 bg-black/40 rounded-xl border border-red-700">
-                      <span className="text-red-300 font-bold block mb-1">🎯 Lafadz Target yang Benar:</span>
-                      <span className="font-arabic text-xl font-black text-emerald-300" dir="rtl">
-                        « {errorWordState.targetWord} »
-                      </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="p-2.5 bg-black/40 rounded-xl border border-red-700">
+                        <span className="text-red-300 font-bold block mb-1">🎯 Lafadz Target yang Benar (Rasm Utsmani):</span>
+                        <div className="flex items-center justify-between gap-2" dir="rtl">
+                          <span className="font-arabic text-2xl font-black text-emerald-300">
+                            « {errorWordState.targetWord} »
+                          </span>
+                          {errTajweed.ruleName && (
+                            <span className="text-[10px] font-sans font-black bg-emerald-900/90 text-emerald-200 border border-emerald-400 px-2 py-0.5 rounded-md" dir="ltr">
+                              {errTajweed.ruleName}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="p-2.5 bg-black/40 rounded-xl border border-red-700">
+                        <span className="text-red-300 font-bold block mb-1">❌ Terdengar Keliru / Tertukar (Dikte):</span>
+                        <span className="font-arabic text-xl font-bold text-red-400 line-through" dir="rtl">
+                          « {errorWordState.spokenWord || '(Belum terdengar)'} »
+                        </span>
+                      </div>
                     </div>
-                    <div className="p-2.5 bg-black/40 rounded-xl border border-red-700">
-                      <span className="text-red-300 font-bold block mb-1">❌ Terdengar Keliru / Tertukar:</span>
-                      <span className="font-arabic text-xl font-bold text-red-400 line-through" dir="rtl">
-                        « {errorWordState.spokenWord || '(Belum terdengar)'} »
-                      </span>
+
+                    {/* Tajweed & Makhraj Deep Diagnostic Card */}
+                    <div className="p-3 bg-red-900/80 rounded-xl border border-red-500 text-red-100 font-medium text-xs space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-yellow-300 font-black">
+                        <Sparkles className="w-4 h-4 text-yellow-400" />
+                        <span>Analisis Hukum Tajwid: {errTajweed.ruleName || 'Makharijul Huruf & Harakat Standar'}</span>
+                      </div>
+                      <p className="text-red-200 text-xs">
+                        <strong>Penyebab Kesalahan:</strong> {errorWordState.reason}
+                      </p>
+                      <div className="text-[11px] bg-black/50 p-2 rounded-lg text-emerald-200 border border-red-700 font-sans">
+                        <strong>📖 Panduan Pelafalan yang Benar:</strong> Bunyikan huruf dengan makhraj yang fasih dan perhatikan kaidah {errTajweed.ruleName || 'harakat'} sebelum melanjutkan muroja'ah.
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <button
+                        onClick={handleRetryCurrentWord}
+                        className="flex-1 min-w-[200px] flex items-center justify-center gap-2 py-2 px-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5 transition-all cursor-pointer"
+                      >
+                        <Mic className="w-4 h-4 text-black animate-pulse" />
+                        🎙️ Wajib Baca Ulang Kata Ini Sekarang
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsSheikhSpeaking(true);
+                          audioPlayer.playSheikhIntervention(
+                            ayat.surahNumber,
+                            ayat.numberInSurah,
+                            activeReciter.id,
+                            () => setIsSheikhSpeaking(false)
+                          );
+                        }}
+                        className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl border border-white/40 transition-all cursor-pointer"
+                      >
+                        <Volume2 className="w-4 h-4" />
+                        Putar Ulang Audio Syekh
+                      </button>
                     </div>
                   </div>
-
-                  <div className="p-2.5 bg-red-900/60 rounded-xl border border-red-600 text-red-100 font-medium text-xs">
-                    <span className="font-bold text-yellow-300">💡 Analisis Tajwid/Makhraj: </span>
-                    {errorWordState.reason}
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    <button
-                      onClick={handleRetryCurrentWord}
-                      className="flex-1 min-w-[200px] flex items-center justify-center gap-2 py-2 px-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5 transition-all"
-                    >
-                      <Mic className="w-4 h-4 text-black animate-pulse" />
-                      🎙️ Wajib Baca Ulang Kata Ini Sekarang
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsSheikhSpeaking(true);
-                        audioPlayer.playSheikhIntervention(
-                          ayat.surahNumber,
-                          ayat.numberInSurah,
-                          activeReciter.id,
-                          () => setIsSheikhSpeaking(false)
-                        );
-                      }}
-                      className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl border border-white/40 transition-all"
-                    >
-                      <Volume2 className="w-4 h-4" />
-                      Putar Ulang Audio Syekh
-                    </button>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* 🎙️ SUPER PROMINENT LIVE DICTATION HUD INSIDE ACTIVE AYAH CARD */}
-              {isActive && isRecording && !errorWordState && (
-                <div className="my-3 p-3.5 bg-gradient-to-r from-[#022C22] via-[#064E3B] to-[#022C22] text-white rounded-2xl border-3 border-[#F59E0B] shadow-[4px_4px_0px_0px_#000] space-y-2">
-                  <div className="flex items-center justify-between text-[11px] font-black border-b border-emerald-700/60 pb-1.5">
-                    <span className="flex items-center gap-2 text-amber-300">
-                      <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
-                      🎙️ HASIL DIKTE SUARA (LIVE TRANSCRIPT ARAB):
-                    </span>
-                    <div className="flex items-center gap-1.5 font-mono text-[10px] bg-black/40 px-2 py-0.5 rounded-md border border-emerald-500">
-                      <Activity className="w-3 h-3 text-[#F59E0B] animate-pulse" />
-                      <span>VU: {micVolume} dB</span>
+              {isActive && isRecording && !errorWordState && (() => {
+                const currentWordTarget = words[matchedWords.length] || words[0] || '';
+                const currentWordTajweed = getTajweedColorForWord(
+                  currentWordTarget,
+                  words[matchedWords.length + 1] || '',
+                  words[matchedWords.length - 1] || ''
+                );
+
+                return (
+                  <div className="my-3 p-3.5 bg-gradient-to-r from-[#022C22] via-[#064E3B] to-[#022C22] text-white rounded-2xl border-3 border-[#F59E0B] shadow-[4px_4px_0px_0px_#000] space-y-3">
+                    <div className="flex items-center justify-between text-[11px] font-black border-b border-emerald-700/60 pb-1.5">
+                      <span className="flex items-center gap-2 text-amber-300">
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+                        🎙️ HASIL DIKTE SUARA & KOREKSI TAJWID REAL-TIME:
+                      </span>
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] bg-black/40 px-2 py-0.5 rounded-md border border-emerald-500">
+                        <Activity className="w-3 h-3 text-[#F59E0B] animate-pulse" />
+                        <span>VU: {micVolume} dB</span>
+                      </div>
+                    </div>
+
+                    {/* Dual Column: Arab Gundul Dikte vs Target Tajwid Utsmani */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                      {/* Unvocalized Dictation (Arab Gundul) */}
+                      <div className="bg-[#021F17] p-2.5 rounded-xl border border-emerald-700 text-right space-y-1" dir="rtl">
+                        <div className="flex items-center justify-between text-[10px] text-amber-400 font-sans font-bold" dir="ltr">
+                          <span>🗣️ Dikte Mic (Arab Gundul):</span>
+                          <span className="bg-emerald-950 px-1 rounded border border-emerald-800 text-[9px] font-mono">Live STT</span>
+                        </div>
+                        <p className="font-arabic text-xl sm:text-2xl font-bold text-amber-300 leading-normal break-words min-h-[36px]">
+                          {liveTranscript ? `« ${liveTranscript} »` : <span className="text-xs font-sans text-emerald-300 font-normal italic" dir="ltr">⏳ Mendengarkan pelafalan...</span>}
+                        </p>
+                      </div>
+
+                      {/* Target Word with Active Tajweed Rule */}
+                      <div className="bg-[#064E3B] p-2.5 rounded-xl border border-amber-400/80 text-right space-y-1" dir="rtl">
+                        <div className="flex items-center justify-between text-[10px] text-emerald-200 font-sans font-bold" dir="ltr">
+                          <span>🎯 Target Kata Aktif (Tajwid & Harakat):</span>
+                          {currentWordTajweed.ruleName && (
+                            <span className="bg-amber-400 text-black px-1.5 py-0.2 rounded text-[9px] font-bold font-sans">
+                              {currentWordTajweed.ruleName}
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-arabic text-xl sm:text-2xl font-black text-white leading-normal break-words min-h-[36px]">
+                          « {currentWordTarget} »
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-emerald-200 pt-0.5 border-t border-emerald-700/50">
+                      <span className="flex items-center gap-1 font-sans">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Kaidah Tajwid: <b>{currentWordTajweed.ruleName || 'Makhraj huruf standar'}</b></span>
+                      </span>
+                      <span className="text-[10px] font-mono text-amber-300">
+                        Kata {matchedWords.length + 1} dari {words.length}
+                      </span>
                     </div>
                   </div>
-
-                  {/* Big Arabic Calligraphy Spoken Text Display */}
-                  <div className="text-right py-1" dir="rtl">
-                    {liveTranscript ? (
-                      <div className="space-y-1">
-                        <p className="font-arabic text-2xl sm:text-3xl font-bold text-amber-300 leading-loose tracking-wide break-words drop-shadow-md">
-                          « {liveTranscript} »
-                        </p>
-                        <p className="text-[11px] text-emerald-200 font-sans font-bold text-left" dir="ltr">
-                          ✓ Mesin sedang mencocokkan kata demi kata secara real-time
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="text-center py-2 space-y-1" dir="ltr">
-                        <p className="font-arabic text-lg text-emerald-200 font-bold">
-                          بانتظار صوتك الكريم...
-                        </p>
-                        <p className="text-xs text-emerald-300/80 italic font-sans">
-                          🎙️ Silakan mulai melantunkan ayat ini ke mikrofon...
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Transliteration & Indonesian Translation */}
               <p className="text-xs text-emerald-900 font-bold border-t border-gray-200 pt-2 font-mono">
@@ -1013,6 +1103,81 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                   </span>
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🔍 INTERACTIVE WORD TAJWEED INSPECTOR MODAL */}
+      {selectedWordInspector && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-[#FFFDF7] dark:bg-[#0F172A] border-3 border-black rounded-3xl w-full max-w-md p-5 space-y-4 shadow-[6px_6px_0px_0px_#000] text-gray-900 dark:text-gray-100">
+            <div className="flex items-center justify-between border-b-2 border-black pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#0B4627] text-[#F59E0B] flex items-center justify-center font-bold border border-black shadow-xs">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-black text-sm text-black dark:text-white">Inspektur Kaidah Tajwid</h4>
+                  <p className="text-[11px] text-gray-500 font-mono">Surat {selectedWordInspector.surahNumber} • Ayat {selectedWordInspector.ayahNumber}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedWordInspector(null)}
+                className="p-1.5 px-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-black border-2 border-black cursor-pointer font-bold text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Vocalized Word Showcase */}
+            <div className="text-center p-5 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border-2 border-black space-y-1" dir="rtl">
+              <span className="font-arabic text-4xl sm:text-5xl font-bold text-[#0B4627] dark:text-emerald-300 block py-1">
+                {selectedWordInspector.word}
+              </span>
+            </div>
+
+            {/* Tajweed Explanation Card */}
+            <div className="space-y-2 text-xs">
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border-2 border-amber-500 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-amber-900 dark:text-amber-200 font-extrabold uppercase text-[10px]">Hukum Tajwid:</span>
+                  <span className="px-2 py-0.5 bg-amber-400 text-black font-black rounded text-[10px] border border-black">
+                    {selectedWordInspector.ruleName ? 'Teridentifikasi' : 'Standar'}
+                  </span>
+                </div>
+                <p className="text-sm font-black text-black dark:text-white">
+                  {selectedWordInspector.ruleName || 'Makharijul Huruf & Harakat Asli'}
+                </p>
+                <p className="text-gray-600 dark:text-gray-300 text-[11px] pt-1 border-t border-amber-300/60">
+                  {selectedWordInspector.ruleName 
+                    ? `Kata ini memiliki kaidah khusus « ${selectedWordInspector.ruleName} » yang wajib dilafalkan dengan dengung, panjang mad, atau makhraj yang tepat saat muroja'ah.`
+                    : 'Kata ini dibaca jelas sesuai harakat fathah, kasrah, dhommah, atau sukun tanpa penambahan dengung ekstra.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                onClick={() => {
+                  audioPlayer.playSheikhIntervention(
+                    selectedWordInspector.surahNumber,
+                    selectedWordInspector.ayahNumber,
+                    activeReciter.id
+                  );
+                }}
+                className="flex-1 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs rounded-xl border-2 border-black cursor-pointer shadow-[2px_2px_0px_0px_#000] flex items-center justify-center gap-1.5"
+              >
+                <Volume2 className="w-4 h-4" />
+                <span>Dengar Contoh Syekh</span>
+              </button>
+              <button
+                onClick={() => setSelectedWordInspector(null)}
+                className="px-5 py-2.5 bg-black hover:bg-gray-800 text-white font-black text-xs rounded-xl border-2 border-black cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+              >
+                Tutup
+              </button>
             </div>
           </div>
         </div>
