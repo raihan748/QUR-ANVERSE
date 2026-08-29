@@ -151,8 +151,10 @@ export function formatAyatAudioUrl(
 // Backward compatibility alias
 export const formatAlafasyAudioUrl = formatAyatAudioUrl;
 
-// Audio Adzan Syekh Misyari Rasyid Al-Afasi
-export const ADZAN_ALAFASY_URL = 'https://ia800301.us.archive.org/24/items/Athan_Mishary_Rashid_Alafasy/Athan.mp3';
+// Audio Adzan Tunggal Resmi: Syekh Muhammad Marwan Al-Qassas (Muadzin Masjid Nabawi Madinah)
+export const ADZAN_MARWAN_ALQASSAS_URL = '/audio/adzan-marwan-al-qassas.mp3';
+export const ADZAN_DEFAULT_URL = ADZAN_MARWAN_ALQASSAS_URL;
+export const ADZAN_ALAFASY_URL = ADZAN_MARWAN_ALQASSAS_URL;
 
 class AudioPlayerService {
   private currentAudio: HTMLAudioElement | null = null;

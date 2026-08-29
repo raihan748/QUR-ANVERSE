@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Compass, 
   Clock, 
   MapPin, 
   Volume2, 
   Bell, 
+  BellOff,
   Sparkles, 
   CheckCircle2, 
   BookOpen,
@@ -13,7 +14,8 @@ import {
   Globe,
   Navigation,
   Loader2,
-  ChevronDown
+  ChevronDown,
+  Check
 } from 'lucide-react';
 import { PrayerTime } from '../../types';
 import { 
@@ -43,6 +45,26 @@ export const PrayerTimesBanner: React.FC = () => {
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
   const [isGpsLoading, setIsGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const lastAdzanTriggeredRef = useRef<string>('');
+
+  // Auto-Adzan State with Persisted Permission
+  const [autoAdzanEnabled, setAutoAdzanEnabled] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('quranverse_auto_adzan_enabled_v1');
+      return saved !== 'false';
+    } catch {
+      return true;
+    }
+  });
+
+  // Auto-dismiss Toast
+  useEffect(() => {
+    if (toastMessage) {
+      const t = setTimeout(() => setToastMessage(null), 3500);
+      return () => clearTimeout(t);
+    }
+  }, [toastMessage]);
 
   // Load Live Prayer Times from Internet
   const loadPrayerData = useCallback(async (loc: LocationConfig) => {
@@ -64,7 +86,7 @@ export const PrayerTimesBanner: React.FC = () => {
     loadPrayerData(activeLocation);
   }, [activeLocation, loadPrayerData]);
 
-  // Update countdown every second
+  // Update countdown every second & trigger auto-adzan
   useEffect(() => {
     const timer = setInterval(() => {
       if (liveApiResponse) {
@@ -73,16 +95,68 @@ export const PrayerTimesBanner: React.FC = () => {
         const countdown = getCountdownToNextPrayer(updatedList);
         setCountdownData(countdown);
 
-        // Trigger automatic fullscreen Adzan if seconds reach 0
-        if (countdown.secondsRemaining === 0 && !isFullscreenAdzanOpen) {
-          setAdzanPrayerName(countdown.nextPrayer?.name || 'Shalat');
-          setIsFullscreenAdzanOpen(true);
+        // Trigger automatic fullscreen Adzan if seconds reach 0 AND auto-adzan is enabled
+        if (countdown.secondsRemaining === 0 && autoAdzanEnabled && !isFullscreenAdzanOpen) {
+          const prayerName = countdown.nextPrayer?.name || 'Shalat';
+          const triggerKey = `${prayerName}_${new Date().toDateString()}_${new Date().getHours()}`;
+          
+          if (lastAdzanTriggeredRef.current !== triggerKey) {
+            lastAdzanTriggeredRef.current = triggerKey;
+            setAdzanPrayerName(prayerName);
+            setIsFullscreenAdzanOpen(true);
+
+            // Send Web / Mobile Push Notification
+            if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+              try {
+                new Notification(`🕌 Waktu Shalat ${prayerName} Telah Tiba!`, {
+                  body: `Lantunan Adzan: Syekh Muhammad Marwan Al-Qassas (Muadzin Masjid Nabawi Madinah).`,
+                  icon: '/favicon.svg',
+                  badge: '/icon-192.svg'
+                });
+              } catch {}
+            }
+          }
         }
       }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [liveApiResponse, isFullscreenAdzanOpen]);
+  }, [liveApiResponse, isFullscreenAdzanOpen, autoAdzanEnabled]);
+
+  // Toggle Auto-Adzan & Request User Permission
+  const handleToggleAutoAdzan = async () => {
+    const nextState = !autoAdzanEnabled;
+    if (nextState) {
+      // 1. Request Notification Permission
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        try {
+          if (Notification.permission !== 'granted') {
+            await Notification.requestPermission();
+          }
+        } catch {}
+      }
+
+      // 2. Unlock Web Audio Context for background playback
+      try {
+        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        if (AudioCtx) {
+          const ctx = new AudioCtx();
+          if (ctx.state === 'suspended') {
+            await ctx.resume();
+          }
+        }
+      } catch {}
+
+      setToastMessage('✅ Adzan Otomatis AKTIF: Suara Syekh Muhammad Marwan Al-Qassas akan berkumandang saat waktu shalat tiba.');
+    } else {
+      setToastMessage('🔕 Adzan Otomatis DINONAKTIFKAN.');
+    }
+
+    setAutoAdzanEnabled(nextState);
+    try {
+      localStorage.setItem('quranverse_auto_adzan_enabled_v1', String(nextState));
+    } catch {}
+  };
 
   // Handle City Change
   const handleSelectCity = (cityConfig: LocationConfig) => {
@@ -114,6 +188,14 @@ export const PrayerTimesBanner: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-24 max-w-4xl mx-auto">
+      {/* FLOATING TOAST */}
+      {toastMessage && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-emerald-900 text-white px-4 py-2.5 rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_#000] text-xs font-bold flex items-center gap-2 animate-bounce">
+          <Check className="w-4 h-4 text-emerald-300" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* 1. HEADER & LIVE INTERNET LOCATION SELECTOR */}
       <NeobrutalCard variant="emerald" className="p-5 sm:p-6 relative overflow-visible shadow-[6px_6px_0px_0px_#111827] space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -133,7 +215,7 @@ export const PrayerTimesBanner: React.FC = () => {
               Waktu Shalat & Adzan Presisi
             </h2>
             <p className="text-xs text-emerald-100 font-medium">
-              Sinkronisasi waktu lokal internet otomatis + pemutaran audio adzan Syekh Misyari saat masuk waktu shalat.
+              Sinkronisasi waktu lokal internet otomatis + pemutaran audio adzan Syekh Muhammad Marwan Al-Qassas (Masjid Nabawi Madinah) saat masuk waktu shalat.
             </p>
           </div>
 
@@ -210,6 +292,46 @@ export const PrayerTimesBanner: React.FC = () => {
           </p>
         )}
       </NeobrutalCard>
+
+      {/* 2. AUTO-ADZAN SWITCH WITH USER PERMISSION & SYEKH MARWAN AL-QASSAS PROFILE */}
+      <div className="bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className={`w-12 h-12 rounded-2xl border-2 border-black flex items-center justify-center text-2xl shadow-[2px_2px_0px_0px_#000] shrink-0 ${
+            autoAdzanEnabled ? 'bg-[#10B981] text-white' : 'bg-gray-200 text-gray-400'
+          }`}>
+            {autoAdzanEnabled ? <Volume2 className="w-6 h-6 animate-pulse" /> : <VolumeX className="w-6 h-6" />}
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="text-sm sm:text-base font-black text-black dark:text-white">
+                Adzan Otomatis Masuk Waktu Shalat
+              </h4>
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded border border-black shadow-xs ${
+                autoAdzanEnabled ? 'bg-emerald-300 text-emerald-950' : 'bg-gray-200 text-gray-600'
+              }`}>
+                {autoAdzanEnabled ? 'AKTIF' : 'NONAKTIF'}
+              </span>
+            </div>
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+              Muadzin Tunggal: <strong className="text-[#0B4627] dark:text-emerald-400 font-black">Syekh Muhammad Marwan Al-Qassas</strong> (Muadzin Masjid Nabawi Madinah 🇸🇦)
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-center">
+          <button
+            onClick={handleToggleAutoAdzan}
+            className={`px-4 py-2 border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all ${
+              autoAdzanEnabled 
+                ? 'bg-[#10B981] hover:bg-[#059669] text-white' 
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+            }`}
+          >
+            {autoAdzanEnabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+            <span>{autoAdzanEnabled ? 'Adzan Otomatis: AKTIF' : 'Aktifkan Adzan'}</span>
+          </button>
+        </div>
+      </div>
 
       {/* 2. 10-MINUTE WARNING ALERT */}
       {countdownData.isWithin10Minutes && (

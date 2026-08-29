@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Volume2, VolumeX, X, Sparkles, BookOpen, Clock, Heart } from 'lucide-react';
 import { PrayerTime } from '../../types';
-import { ADZAN_ALAFASY_URL, audioPlayer } from '../../services/audioPlayerService';
+import { ADZAN_MARWAN_ALQASSAS_URL, audioPlayer } from '../../services/audioPlayerService';
 import { DOA_SETELAH_ADZAN } from '../../data/dzikirData';
 
 interface FullscreenAdzanProps {
@@ -21,8 +21,8 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      // Auto play adzan audio by Syekh Mishary
-      audioPlayer.playUrl(ADZAN_ALAFASY_URL, () => {
+      // Auto play adzan audio by Syekh Muhammad Marwan Al-Qassas (Masjid Nabawi Madinah)
+      audioPlayer.playUrl(ADZAN_MARWAN_ALQASSAS_URL, () => {
         setIsPlayingAudio(false);
         setShowDoa(true);
       });
@@ -52,7 +52,7 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
       audioPlayer.stop();
       setIsPlayingAudio(false);
     } else {
-      audioPlayer.playUrl(ADZAN_ALAFASY_URL, () => setIsPlayingAudio(false));
+      audioPlayer.playUrl(ADZAN_MARWAN_ALQASSAS_URL, () => setIsPlayingAudio(false));
       setIsPlayingAudio(true);
     }
   };
@@ -70,7 +70,7 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
           </div>
           <div>
             <span className="text-xs font-extrabold text-[#F59E0B] tracking-wider uppercase">
-              Waktu Shalat Tiba • Makassar, Sulsel
+              Waktu Shalat Tiba • Lantunan Adzan Madinah
             </span>
             <h2 className="text-xl sm:text-2xl font-black font-display text-white">
               Adzan Shalat {prayerName}
@@ -110,9 +110,14 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
           <p className="text-sm sm:text-base text-emerald-200 font-semibold mt-2">
             "Marilah mendirikan shalat, marilah menuju kemenangan."
           </p>
-          <p className="text-xs text-gray-300 font-mono mt-1">
-            Lantunan Adzan Merdu: Syekh Misyari Rasyid Al-Afasi
-          </p>
+          <div className="mt-3 inline-block px-4 py-1.5 bg-black/50 border border-amber-400/40 rounded-xl">
+            <p className="text-xs text-amber-300 font-bold">
+              Muadzin: Syekh Muhammad Marwan Al-Qassas (الشيخ محمد مروان قصاص)
+            </p>
+            <p className="text-[11px] text-emerald-200">
+              Masjid Nabawi, Madinah Al-Munawwarah 🇸🇦
+            </p>
+          </div>
         </div>
 
         {/* Iqamah Countdown Badge */}
