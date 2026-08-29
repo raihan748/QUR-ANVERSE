@@ -158,6 +158,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
   // Sequential Page Audio State
   const [isPlayingPageAudio, setIsPlayingPageAudio] = useState<boolean>(false);
+  const isAudioPlayingRef = useRef<boolean>(false);
   const [currentPlayingVerse, setCurrentPlayingVerse] = useState<PlayingVerseItem | null>(null);
   const [pageAudioQueue, setPageAudioQueue] = useState<PlayingVerseItem[]>([]);
   const [currentQueueIdx, setCurrentQueueIdx] = useState<number>(0);
@@ -278,6 +279,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
   useEffect(() => {
     return () => {
+      isAudioPlayingRef.current = false;
       audioPlayer.stop();
     };
   }, []);
@@ -334,6 +336,13 @@ export const PhysicalMushafPageReader: React.FC = () => {
     setScanLoadedLeft(false);
     setScanErrorLeft(false);
     setScanUrlIndexLeft(0);
+
+    if (isPlayingPageAudio || isAudioPlayingRef.current) {
+      isAudioPlayingRef.current = false;
+      audioPlayer.stop();
+      setIsPlayingPageAudio(false);
+      setCurrentPlayingVerse(null);
+    }
   }, [currentPage]);
 
   // Trigger Page Slide & Flip Animation
@@ -446,7 +455,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
   // Sequential Verse Player with auto-advance across the page
   const playQueueAt = useCallback((index: number, queue: PlayingVerseItem[]) => {
-    if (!queue || queue.length === 0) return;
+    if (!queue || queue.length === 0 || !isAudioPlayingRef.current) return;
 
     if (index >= queue.length) {
       // Finished all verses on current page!
@@ -454,6 +463,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
         setToastMessage('📖 Halaman selesai. Melanjutkan ke halaman berikutnya...');
         triggerPageTurn('next');
       } else {
+        isAudioPlayingRef.current = false;
         setIsPlayingPageAudio(false);
         setCurrentPlayingVerse(null);
         setToastMessage('✅ Tilawah khatam.');
@@ -476,18 +486,26 @@ export const PhysicalMushafPageReader: React.FC = () => {
       item.surahNumber,
       item.ayahNumber,
       () => {
-        // Callback when current ayah audio finishes -> play next ayah automatically!
-        playQueueAt(index + 1, queue);
+        // Callback when current ayah audio finishes -> ONLY advance if user hasn't pressed stop!
+        if (isAudioPlayingRef.current) {
+          playQueueAt(index + 1, queue);
+        }
       },
       activeReciter.id
     );
   }, [currentPage, triggerPageTurn, activeReciter.id]);
 
+  const handleStopPageAudio = () => {
+    isAudioPlayingRef.current = false;
+    audioPlayer.stop();
+    setIsPlayingPageAudio(false);
+    setCurrentPlayingVerse(null);
+    setToastMessage('⏹ Audio tilawah dihentikan');
+  };
+
   const handleTogglePageAudio = () => {
-    if (isPlayingPageAudio) {
-      audioPlayer.stop();
-      setIsPlayingPageAudio(false);
-      setCurrentPlayingVerse(null);
+    if (isPlayingPageAudio || isAudioPlayingRef.current) {
+      handleStopPageAudio();
       return;
     }
 
@@ -497,17 +515,21 @@ export const PhysicalMushafPageReader: React.FC = () => {
       return;
     }
 
+    isAudioPlayingRef.current = true;
+    setIsPlayingPageAudio(true);
     setPageAudioQueue(queue);
     playQueueAt(0, queue);
   };
 
   const handleSkipNextAyat = () => {
+    if (!isAudioPlayingRef.current) return;
     if (pageAudioQueue.length > 0 && currentQueueIdx + 1 < pageAudioQueue.length) {
       playQueueAt(currentQueueIdx + 1, pageAudioQueue);
     }
   };
 
   const handleSkipPrevAyat = () => {
+    if (!isAudioPlayingRef.current) return;
     if (pageAudioQueue.length > 0 && currentQueueIdx > 0) {
       playQueueAt(currentQueueIdx - 1, pageAudioQueue);
     }
@@ -999,16 +1021,28 @@ export const PhysicalMushafPageReader: React.FC = () => {
               {pageSoundEnabled ? <Volume2 className="w-4 h-4 text-[#0B4627]" /> : <VolumeX className="w-4 h-4" />}
             </button>
 
-            {/* AUDIO PLAY/PAUSE */}
-            <button
-              onClick={handleTogglePageAudio}
-              className={`px-3 py-1.5 border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] ${
-                isPlayingPageAudio ? 'bg-[#F59E0B] text-black animate-pulse' : 'bg-[#10B981] text-white'
-              }`}
-            >
-              {isPlayingPageAudio ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-              <span>{isPlayingPageAudio ? 'Jeda Audio' : 'Dengar Halaman'}</span>
-            </button>
+            {/* AUDIO PLAY/PAUSE/STOP */}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleTogglePageAudio}
+                className={`px-3 py-1.5 border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] ${
+                  isPlayingPageAudio ? 'bg-[#F59E0B] text-black animate-pulse' : 'bg-[#10B981] text-white'
+                }`}
+              >
+                {isPlayingPageAudio ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                <span>{isPlayingPageAudio ? 'Jeda Audio' : 'Dengar Halaman'}</span>
+              </button>
+              {isPlayingPageAudio && (
+                <button
+                  onClick={handleStopPageAudio}
+                  className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white border-2 border-black rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+                  title="Hentikan Audio Sepenuhnya"
+                >
+                  <Square className="w-3.5 h-3.5 fill-white" />
+                  <span>Stop</span>
+                </button>
+              )}
+            </div>
 
             {/* BOOKMARK BUTTON */}
             <button
@@ -1218,9 +1252,19 @@ export const PhysicalMushafPageReader: React.FC = () => {
               <button 
                 onClick={handleTogglePageAudio}
                 className="px-3 py-2 bg-amber-400 hover:bg-amber-300 text-black font-black rounded-xl border-2 border-black flex items-center gap-1.5 text-xs shadow-xs cursor-pointer"
+                title="Jeda Audio"
               >
                 <Pause className="w-4 h-4" />
                 <span>Jeda</span>
+              </button>
+
+              <button 
+                onClick={handleStopPageAudio}
+                className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl border-2 border-black flex items-center gap-1.5 text-xs shadow-xs cursor-pointer"
+                title="Hentikan Audio Sepenuhnya"
+              >
+                <Square className="w-3.5 h-3.5 fill-white" />
+                <span>Stop</span>
               </button>
 
               <button 

@@ -312,26 +312,34 @@ class AudioPlayerService {
   }
 
   public pause(): void {
+    this.isPlaying = false;
     if (this.currentAudio && !this.currentAudio.paused) {
       this.currentAudio.pause();
-      this.isPlaying = false;
     }
   }
 
   public resume(): void {
     if (this.currentAudio && this.currentAudio.paused) {
-      this.currentAudio.play().catch(console.warn);
       this.isPlaying = true;
+      this.currentAudio.play().catch(console.warn);
     }
   }
 
   public stop(): void {
+    this.isPlaying = false;
+    this.onEndedCallback = null;
+    this.onTimeUpdateCallback = null;
+
     if (this.currentAudio) {
-      this.currentAudio.pause();
-      this.currentAudio.currentTime = 0;
-      this.currentAudio.src = '';
+      try {
+        this.currentAudio.onended = null;
+        this.currentAudio.onerror = null;
+        this.currentAudio.ontimeupdate = null;
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+        this.currentAudio.src = '';
+      } catch {}
       this.currentAudio = null;
-      this.isPlaying = false;
     }
   }
 
