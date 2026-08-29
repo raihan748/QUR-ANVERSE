@@ -23,7 +23,9 @@ import {
   Search,
   Check,
   Volume2,
-  VolumeX
+  VolumeX,
+  Columns,
+  Square
 } from 'lucide-react';
 import { 
   SURAH_LIST, 
@@ -53,13 +55,26 @@ import { useLanguage } from '../../context/LanguageContext';
 
 const STORAGE_LAST_PAGE = 'quranverse_physical_mushaf_last_page_v1';
 const STORAGE_PAGE_SOUND = 'quranverse_mushaf_page_sound_v1';
+const STORAGE_SPREAD_MODE = 'quranverse_mushaf_spread_mode_v1';
 
 export type MushafPageLine = MushafLine;
 
-/**
- * Generates an organic, whisper-soft synthetic paper rustle sound when flipping pages.
- * 100% offline & instantaneous via Web Audio API.
- */
+const toArabicNumerals = (num: number): string => {
+  const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  return String(num).replace(/[0-9]/g, (d) => arabicDigits[Number(d)]);
+};
+
+const JUZ_ARABIC_NAMES: Record<number, string> = {
+  1: 'الجزء الأول', 2: 'الجزء الثاني', 3: 'الجزء الثالث', 4: 'الجزء الرابع',
+  5: 'الجزء الخامس', 6: 'الجزء السادس', 7: 'الجزء السابع', 8: 'الجزء الثامن',
+  9: 'الجزء التاسع', 10: 'الجزء العاشر', 11: 'الجزء الحادي عشر', 12: 'الجزء الثاني عشر',
+  13: 'الجزء الثالث عشر', 14: 'الجزء الرابع عشر', 15: 'الجزء الخامس عشر', 16: 'الجزء السادس عشر',
+  17: 'الجزء السابع عشر', 18: 'الجزء الثامن عشر', 19: 'الجزء التاسع عشر', 20: 'الجزء العشرون',
+  21: 'الجزء الحادي والعشرون', 22: 'الجزء الثاني والعشرون', 23: 'الجزء الثالث والعشرون', 24: 'الجزء الرابع والعشرون',
+  25: 'الجزء الخامس والعشرون', 26: 'الجزء السادس والعشرون', 27: 'الجزء السابع والعشرون', 28: 'الجزء الثامن والعشرون',
+  29: 'الجزء التاسع والعشرون', 30: 'الجزء الثلاثون'
+};
+
 function playPageTurnSound() {
   try {
     const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -97,8 +112,34 @@ export const PhysicalMushafPageReader: React.FC = () => {
         if (p >= 1 && p <= 604) return p;
       }
     } catch {}
-    return 1;
+    return 293;
   });
+
+  // Spread Mode: 'double' (Dual-page open book like real Mushaf) | 'single' (1-page view)
+  const [spreadMode, setSpreadMode] = useState<'double' | 'single'>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_SPREAD_MODE);
+      if (saved === 'single' || saved === 'double') return saved;
+    } catch {}
+    return typeof window !== 'undefined' && window.innerWidth >= 1024 ? 'double' : 'single';
+  });
+
+  const isDualSpread = spreadMode === 'double';
+
+  // In authentic standard Quran layout:
+  // Right Page is always ODD (e.g. 293 or 1)
+  // Left Page is always EVEN (e.g. 294 or 2)
+  const rightPageNumber = useMemo(() => {
+    if (!isDualSpread) return currentPage;
+    if (currentPage === 1) return 1;
+    return currentPage % 2 === 1 ? currentPage : Math.max(1, currentPage - 1);
+  }, [currentPage, isDualSpread]);
+
+  const leftPageNumber = useMemo(() => {
+    if (!isDualSpread) return null;
+    if (rightPageNumber === 1) return 2;
+    return rightPageNumber + 1 <= 604 ? rightPageNumber + 1 : null;
+  }, [rightPageNumber, isDualSpread]);
 
   const [activeReciter, setActiveReciter] = useState<Reciter>(audioPlayer.getActiveReciter());
   const [isReciterMenuOpen, setIsReciterMenuOpen] = useState(false);
@@ -106,7 +147,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Swipe & Drag Gesture State (Efek Geser Lembaran Mushaf Madinah Asli)
+  // Swipe & Drag Gesture State
   const [dragOffset, setDragOffset] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragStartX, setDragStartX] = useState<number | null>(null);
@@ -123,10 +164,23 @@ export const PhysicalMushafPageReader: React.FC = () => {
   });
   const dragStartTimeRef = useRef<number>(0);
 
-  // Display Mode: 'scan' (Scanned Page Image - Physical Mushaf) | 'layout' (15-line Typography)
+  // Display Mode: 'scan' | 'layout'
   const [viewMode, setViewMode] = useState<'scan' | 'layout'>('scan');
-  const [mushafLines, setMushafLines] = useState<MushafPageLine[]>([]);
-  const [isLoadingPage, setIsLoadingPage] = useState<boolean>(false);
+  
+  // Right Page Lines & Scans
+  const [mushafLinesRight, setMushafLinesRight] = useState<MushafPageLine[]>([]);
+  const [isLoadingPageRight, setIsLoadingPageRight] = useState<boolean>(false);
+  const [scanLoadedRight, setScanLoadedRight] = useState<boolean>(false);
+  const [scanErrorRight, setScanErrorRight] = useState<boolean>(false);
+  const [scanUrlIndexRight, setScanUrlIndexRight] = useState<number>(0);
+
+  // Left Page Lines & Scans (For Dual Mode)
+  const [mushafLinesLeft, setMushafLinesLeft] = useState<MushafPageLine[]>([]);
+  const [isLoadingPageLeft, setIsLoadingPageLeft] = useState<boolean>(false);
+  const [scanLoadedLeft, setScanLoadedLeft] = useState<boolean>(false);
+  const [scanErrorLeft, setScanErrorLeft] = useState<boolean>(false);
+  const [scanUrlIndexLeft, setScanUrlIndexLeft] = useState<number>(0);
+
   const [reloadKey, setReloadKey] = useState<number>(0);
 
   // Tajweed & Gharib State
@@ -135,27 +189,35 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const [encyclopediaSearch, setEncyclopediaSearch] = useState<string>('');
   const [encyclopediaCategory, setEncyclopediaCategory] = useState<string>('Semua');
 
-  // Scan Image State
-  const [scanLoaded, setScanLoaded] = useState<boolean>(false);
-  const [scanError, setScanError] = useState<boolean>(false);
-  const [scanUrlIndex, setScanUrlIndex] = useState<number>(0);
-
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const primarySurah = useMemo(() => getPrimarySurahForPage(currentPage), [currentPage]);
-  const juzNumber = useMemo(() => getJuzForPage(currentPage), [currentPage]);
-  const fallbackUrls = useMemo(() => getMadinahPageFallbackUrls(currentPage), [currentPage]);
-
-  const pageSurahs = useMemo(() => getMadinahPageSurahs(currentPage, primarySurah), [currentPage, primarySurah]);
-  const pageSurahsLatinLabel = useMemo(() => pageSurahs
+  // Right Page Metadata
+  const primarySurahRight = useMemo(() => getPrimarySurahForPage(rightPageNumber), [rightPageNumber]);
+  const juzNumberRight = useMemo(() => getJuzForPage(rightPageNumber), [rightPageNumber]);
+  const fallbackUrlsRight = useMemo(() => getMadinahPageFallbackUrls(rightPageNumber), [rightPageNumber]);
+  const pageSurahsRight = useMemo(() => getMadinahPageSurahs(rightPageNumber, primarySurahRight), [rightPageNumber, primarySurahRight]);
+  const pageSurahsLatinLabelRight = useMemo(() => pageSurahsRight
     .map((s) => `${s.surahLatin} (${s.startAyah === s.endAyah ? `Ayat ${s.startAyah}` : `Ayat ${s.startAyah}–${s.endAyah}`})`)
-    .join(' • '), [pageSurahs]);
-  const pageSurahsArabicLabel = useMemo(() => pageSurahs
+    .join(' • '), [pageSurahsRight]);
+  const pageSurahsArabicLabelRight = useMemo(() => pageSurahsRight
     .map((s) => s.surahArabic)
-    .join(' • '), [pageSurahs]);
+    .join(' • '), [pageSurahsRight]);
 
-  const pageTajweedData = useMemo(() => analyzePageTajweedRules(mushafLines), [mushafLines]);
-  const pageGharibData = useMemo(() => getPageGharibRules(currentPage), [currentPage]);
+  // Left Page Metadata
+  const primarySurahLeft = useMemo(() => leftPageNumber ? getPrimarySurahForPage(leftPageNumber) : null, [leftPageNumber]);
+  const juzNumberLeft = useMemo(() => leftPageNumber ? getJuzForPage(leftPageNumber) : null, [leftPageNumber]);
+  const fallbackUrlsLeft = useMemo(() => leftPageNumber ? getMadinahPageFallbackUrls(leftPageNumber) : [], [leftPageNumber]);
+  const pageSurahsLeft = useMemo(() => leftPageNumber && primarySurahLeft ? getMadinahPageSurahs(leftPageNumber, primarySurahLeft) : [], [leftPageNumber, primarySurahLeft]);
+  const pageSurahsLatinLabelLeft = useMemo(() => pageSurahsLeft
+    .map((s) => `${s.surahLatin} (${s.startAyah === s.endAyah ? `Ayat ${s.startAyah}` : `Ayat ${s.startAyah}–${s.endAyah}`})`)
+    .join(' • '), [pageSurahsLeft]);
+  const pageSurahsArabicLabelLeft = useMemo(() => pageSurahsLeft
+    .map((s) => s.surahArabic)
+    .join(' • '), [pageSurahsLeft]);
+
+  // Active page tajweed data
+  const pageTajweedData = useMemo(() => analyzePageTajweedRules(mushafLinesRight), [mushafLinesRight]);
+  const pageGharibData = useMemo(() => getPageGharibRules(rightPageNumber), [rightPageNumber]);
 
   const filteredEncyclopedia = useMemo(() => MASTER_TAJWEED_ENCYCLOPEDIA.filter((item) => {
     const matchesCat = encyclopediaCategory === 'Semua' || item.category === encyclopediaCategory;
@@ -169,7 +231,6 @@ export const PhysicalMushafPageReader: React.FC = () => {
     return matchesCat && matchesSearch;
   }), [encyclopediaCategory, encyclopediaSearch]);
 
-  // Toggle paper rustle sound
   const handleToggleSound = () => {
     setPageSoundEnabled((prev) => {
       const next = !prev;
@@ -177,6 +238,17 @@ export const PhysicalMushafPageReader: React.FC = () => {
         localStorage.setItem(STORAGE_PAGE_SOUND, String(next));
       } catch {}
       if (next) playPageTurnSound();
+      return next;
+    });
+  };
+
+  const handleToggleSpreadMode = () => {
+    setSpreadMode((prev) => {
+      const next = prev === 'double' ? 'single' : 'double';
+      try {
+        localStorage.setItem(STORAGE_SPREAD_MODE, next);
+      } catch {}
+      if (pageSoundEnabled) playPageTurnSound();
       return next;
     });
   };
@@ -189,17 +261,17 @@ export const PhysicalMushafPageReader: React.FC = () => {
     }
   }, [toastMessage]);
 
-  // Cleanup audio on unmount
   useEffect(() => {
     return () => {
       audioPlayer.stop();
     };
   }, []);
 
-  // Preload adjacent scanned pages for instant flipping
+  // Preload adjacent scanned pages
   useEffect(() => {
-    const nextP = currentPage < 604 ? currentPage + 1 : 1;
-    const prevP = currentPage > 1 ? currentPage - 1 : 604;
+    const step = isDualSpread ? 2 : 1;
+    const nextP = Math.min(604, currentPage + step);
+    const prevP = Math.max(1, currentPage - step);
     const urlsNext = getMadinahPageFallbackUrls(nextP);
     const urlsPrev = getMadinahPageFallbackUrls(prevP);
     if (urlsNext[0]) {
@@ -210,38 +282,43 @@ export const PhysicalMushafPageReader: React.FC = () => {
       const img2 = new Image();
       img2.src = urlsPrev[0];
     }
-  }, [currentPage]);
+  }, [currentPage, isDualSpread]);
 
-  // Load authentic 15-Line Madinah Mushaf dataset (100% offline & instantaneous)
+  // Load 15-Line Madinah dataset for Right Page
   useEffect(() => {
-    setIsLoadingPage(true);
-    try {
-      const keysToRemove: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith('quranverse_mushaf_layout_')) {
-          keysToRemove.push(k);
-        }
-      }
-      keysToRemove.forEach((k) => localStorage.removeItem(k));
-    } catch {}
+    setIsLoadingPageRight(true);
+    const lines = getMadinahPageLines(rightPageNumber);
+    setMushafLinesRight(lines as MushafPageLine[]);
+    setIsLoadingPageRight(false);
+  }, [rightPageNumber, reloadKey]);
 
-    const lines = getMadinahPageLines(currentPage);
-    setMushafLines(lines as MushafPageLine[]);
-    setIsLoadingPage(false);
-  }, [currentPage, reloadKey]);
+  // Load 15-Line Madinah dataset for Left Page
+  useEffect(() => {
+    if (leftPageNumber) {
+      setIsLoadingPageLeft(true);
+      const lines = getMadinahPageLines(leftPageNumber);
+      setMushafLinesLeft(lines as MushafPageLine[]);
+      setIsLoadingPageLeft(false);
+    } else {
+      setMushafLinesLeft([]);
+    }
+  }, [leftPageNumber, reloadKey]);
 
   // Reset scan state on page change
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_LAST_PAGE, String(currentPage));
-      const firstSurah = pageSurahs[0] || { surahNumber: primarySurah.number, startAyah: 1 };
-      setLastRead(firstSurah.surahNumber, firstSurah.startAyah, `Halaman ${currentPage} (${pageSurahsLatinLabel})`);
+      const firstSurah = pageSurahsRight[0] || { surahNumber: primarySurahRight.number, startAyah: 1 };
+      setLastRead(firstSurah.surahNumber, firstSurah.startAyah, `Halaman ${currentPage} (${pageSurahsLatinLabelRight})`);
     } catch {}
 
-    setScanLoaded(false);
-    setScanError(false);
-    setScanUrlIndex(0);
+    setScanLoadedRight(false);
+    setScanErrorRight(false);
+    setScanUrlIndexRight(0);
+
+    setScanLoadedLeft(false);
+    setScanErrorLeft(false);
+    setScanUrlIndexLeft(0);
 
     if (isPlayingPageAudio) {
       audioPlayer.stop();
@@ -249,9 +326,11 @@ export const PhysicalMushafPageReader: React.FC = () => {
     }
   }, [currentPage]);
 
-  // Trigger Page Slide Animation (RTL Quran standard: Left Swipe = Next Page, Right Swipe = Prev Page)
+  // Trigger Page Slide & Flip Animation
   const triggerPageTurn = useCallback((dir: 'next' | 'prev') => {
     if (isTransitioning) return;
+    const step = isDualSpread ? 2 : 1;
+
     if (dir === 'next' && currentPage >= 604) {
       setDragOffset(35);
       setTimeout(() => setDragOffset(0), 220);
@@ -273,15 +352,14 @@ export const PhysicalMushafPageReader: React.FC = () => {
     setSlideDirection(dir);
     setSlidePhase('sliding-out');
 
-    // Slide out smoothly with 3D perspective fold
     const targetOffset = dir === 'next' ? -380 : 380;
     setDragOffset(targetOffset);
 
     setTimeout(() => {
       if (dir === 'next') {
-        setCurrentPage((prev) => Math.min(604, prev + 1));
+        setCurrentPage((prev) => Math.min(604, prev + step));
       } else {
-        setCurrentPage((prev) => Math.max(1, prev - 1));
+        setCurrentPage((prev) => Math.max(1, prev - step));
       }
 
       setSlidePhase('sliding-in');
@@ -298,7 +376,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
         }, 30);
       });
     }, 220);
-  }, [currentPage, isTransitioning, pageSoundEnabled]);
+  }, [currentPage, isTransitioning, isDualSpread, pageSoundEnabled]);
 
   const handleNextPage = useCallback(() => { 
     triggerPageTurn('next');
@@ -333,23 +411,23 @@ export const PhysicalMushafPageReader: React.FC = () => {
       return;
     }
     setIsPlayingPageAudio(true);
-    const startSurah = pageSurahs[0] || { surahNumber: primarySurah.number, startAyah: 1 };
+    const startSurah = pageSurahsRight[0] || { surahNumber: primarySurahRight.number, startAyah: 1 };
     await audioPlayer.playAyat(startSurah.surahNumber, startSurah.startAyah, () => {
       setIsPlayingPageAudio(false);
     }, activeReciter.id);
   };
 
   const handleBookmarkPage = () => {
-    const startSurah = pageSurahs[0] || { surahNumber: primarySurah.number, startAyah: 1 };
+    const startSurah = pageSurahsRight[0] || { surahNumber: primarySurahRight.number, startAyah: 1 };
     saveBookmark({
       surahNumber: startSurah.surahNumber,
       ayahNumber: startSurah.startAyah,
-      surahName: `Halaman ${currentPage} - ${pageSurahsLatinLabel}`,
-      arabicText: `مصحف المدينة المنورة - الصفحة ${currentPage}`,
-      translation: `Tanda Baca Halaman ${currentPage} (Juz ${juzNumber} • ${pageSurahsLatinLabel})`,
-      note: `Ditandai dari Mode Mushaf Fisik Asli (Halaman ${currentPage})`
+      surahName: `Halaman ${rightPageNumber} - ${pageSurahsLatinLabelRight}`,
+      arabicText: `مصحف المدينة المنورة - الصفحة ${rightPageNumber}`,
+      translation: `Tanda Baca Halaman ${rightPageNumber} (Juz ${juzNumberRight} • ${pageSurahsLatinLabelRight})`,
+      note: `Ditandai dari Mode Mushaf Fisik Asli (Halaman ${rightPageNumber})`
     });
-    setToastMessage(`🔖 Halaman ${currentPage} (${pageSurahsLatinLabel}) berhasil disimpan ke Bookmark!`);
+    setToastMessage(`🔖 Halaman ${rightPageNumber} (${pageSurahsLatinLabelRight}) berhasil disimpan ke Bookmark!`);
   };
 
   useEffect(() => {
@@ -369,7 +447,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleNextPage, handlePrevPage]);
 
-  // Touch Swipe Handlers (Mobile)
+  // Touch Swipe Handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     if (isTransitioning) return;
     setIsDragging(true);
@@ -406,7 +484,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
     }
   };
 
-  // Mouse Drag Handlers (Desktop Interactive Swipe)
+  // Mouse Drag Handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isTransitioning) return;
     setIsDragging(true);
@@ -450,10 +528,210 @@ export const PhysicalMushafPageReader: React.FC = () => {
     }
   };
 
+  // Helper to render individual authentic page with ornate cartouches & borders
+  const renderSingleMushafPage = (
+    pageNum: number,
+    lines: MushafPageLine[],
+    isLoading: boolean,
+    scanLoaded: boolean,
+    scanError: boolean,
+    scanUrlIndex: number,
+    fallbackUrls: string[],
+    setScanLoaded: (v: boolean) => void,
+    setScanError: (v: boolean) => void,
+    setScanUrlIndex: React.Dispatch<React.SetStateAction<number>>,
+    surahArabic: string,
+    juzNum: number,
+    isLeftPage: boolean
+  ) => {
+    const isEven = pageNum % 2 === 0;
+
+    return (
+      <div 
+        className={`relative flex-1 bg-[#FFFDF7] text-black border-2 border-amber-900/60 rounded-xl p-2.5 sm:p-4 shadow-[inset_0_0_20px_rgba(180,83,9,0.06)] flex flex-col justify-between min-h-[580px] sm:min-h-[760px] select-none ${
+          isEven ? 'border-r-amber-900/20' : 'border-l-amber-900/20'
+        }`}
+      >
+        {/* TOP ORNATE CARTOUCHE HEADER (SURAH • ARABIC PAGE NUM DOME • JUZ) */}
+        <div className="w-full flex items-center justify-between border-b-2 border-amber-800/50 pb-2 mb-2 px-1 text-xs font-bold text-amber-950 font-mono">
+          {/* Outer Header: Surah Cartouche */}
+          <div className="flex-1 text-right">
+            <span className="inline-block px-2.5 py-0.5 bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 border border-amber-800/80 rounded-md font-quran text-xs sm:text-sm font-black text-amber-950 shadow-xs">
+              {surahArabic}
+            </span>
+          </div>
+
+          {/* Center Header: Scalloped Page Number Dome (e.g. ٢٩٣ / ٢٩٤) */}
+          <div className="px-2 text-center">
+            <span className="inline-flex items-center justify-center w-8 h-7 bg-amber-200 border border-amber-900 rounded-t-xl rounded-b-md font-quran text-sm font-black text-amber-950 shadow-xs">
+              {toArabicNumerals(pageNum)}
+            </span>
+          </div>
+
+          {/* Inner Header: Juz Cartouche */}
+          <div className="flex-1 text-left">
+            <span className="inline-block px-2.5 py-0.5 bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 border border-amber-800/80 rounded-md font-quran text-xs sm:text-sm font-black text-amber-950 shadow-xs">
+              {JUZ_ARABIC_NAMES[juzNum] || `الجزء ${toArabicNumerals(juzNum)}`}
+            </span>
+          </div>
+        </div>
+
+        {/* ORNATE DOUBLE ILLUMINATED BORDER FRAME */}
+        <div className="relative flex-1 w-full border-[3px] border-amber-900/60 rounded-lg p-1 sm:p-2 bg-white flex flex-col justify-between shadow-inner">
+          <div className="absolute inset-1 border border-dashed border-amber-700/30 rounded pointer-events-none z-10"></div>
+
+          {/* VIEW MODE 1: PHYSICAL SCANNED MADINAH MUSHAF */}
+          {viewMode === 'scan' && (
+            <div className="w-full flex-1 flex items-center justify-center relative min-h-[500px] sm:min-h-[680px] bg-white rounded overflow-hidden">
+              {!scanLoaded && !scanError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/90 z-20 space-y-2">
+                  <div className="w-8 h-8 border-3 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-[11px] font-bold text-emerald-950">Memuat Halaman {pageNum}...</p>
+                </div>
+              )}
+
+              {!scanError ? (
+                <img
+                  src={fallbackUrls[scanUrlIndex] || fallbackUrls[0]}
+                  alt={`Halaman ${pageNum} Mushaf Al-Quran Standar Madinah`}
+                  onLoad={() => {
+                    setScanLoaded(true);
+                    setScanError(false);
+                  }}
+                  onError={() => {
+                    if (scanUrlIndex + 1 < fallbackUrls.length) {
+                      setScanUrlIndex((prev) => prev + 1);
+                    } else {
+                      setScanLoaded(false);
+                      setScanError(true);
+                      setViewMode('layout');
+                    }
+                  }}
+                  className={`w-full max-h-[75vh] object-contain transition-opacity duration-300 pointer-events-none select-none drop-shadow-sm ${
+                    scanLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                />
+              ) : (
+                <div className="text-center p-4 space-y-1">
+                  <p className="text-xs font-bold text-amber-900">
+                    Gambar scan dialihkan otomatis ke mode 15 Baris Teks.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* VIEW MODE 2: NATURAL 15-LINE TYPOGRAPHY */}
+          {viewMode === 'layout' && (
+            <div className="w-full flex-1 flex flex-col justify-between space-y-1 z-10 select-text px-1 py-2" dir="rtl">
+              {isLoading && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/90 z-20 space-y-2 rounded-xl">
+                  <div className="w-8 h-8 border-3 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-xs font-black text-emerald-900">
+                    Memuat Baris Halaman {pageNum}...
+                  </p>
+                </div>
+              )}
+
+              {lines.length > 0 ? (
+                lines.map((line, idx) => {
+                  if (line.type === 'surah-header') {
+                    return (
+                      <div 
+                        key={idx} 
+                        className="my-1.5 p-1.5 bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 border-2 border-amber-800/70 rounded-lg text-center shadow-xs"
+                      >
+                        <span className="font-quran text-lg sm:text-xl font-black text-amber-950 block">
+                          {line.surahName || surahArabic}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  if (line.type === 'basmala') {
+                    return (
+                      <div key={idx} className="my-0.5 text-center font-quran text-base sm:text-lg text-amber-950 font-bold">
+                        بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div 
+                      key={idx}
+                      className="w-full font-quran text-base sm:text-xl md:text-[21px] text-emerald-950 font-bold leading-[2.1] sm:leading-[2.4] text-center tracking-normal py-0.5"
+                    >
+                      {line.text ? (
+                        line.text.split(/\s+/).filter(Boolean).map((w, wIdx, wordsArr) => {
+                          const nextW = wordsArr[wIdx + 1] || '';
+                          const prevW = wordsArr[wIdx - 1] || '';
+                          const isEnd = wIdx === wordsArr.length - 1;
+                          const style = getTajweedColorForWord(w, nextW, prevW, isEnd);
+                          return (
+                            <span
+                              key={wIdx}
+                              onClick={() => {
+                                if (style.ruleName) {
+                                  setSelectedTajweedWord({ word: w, ruleName: style.ruleName });
+                                }
+                              }}
+                              className={`inline-block mx-0.5 px-0.5 py-0.2 rounded transition-all cursor-pointer select-text hover:scale-105 ${
+                                selectedTajweedWord?.word === w ? 'ring-2 ring-amber-500 bg-amber-100 font-black' : ''
+                              }`}
+                              style={{
+                                color: style.color,
+                                backgroundColor: style.bg !== 'transparent' && selectedTajweedWord?.word !== w ? style.bg : undefined
+                              }}
+                              title={style.ruleName ? `${w} (${style.ruleName})` : w}
+                            >
+                              {w}
+                            </span>
+                          );
+                        })
+                      ) : (
+                        <span className="inline font-quran select-text">{line.text}</span>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                !isLoading && (
+                  <div className="text-center py-8 px-2 space-y-2 font-sans" dir="ltr">
+                    <BookOpen className="w-6 h-6 mx-auto text-amber-900" />
+                    <p className="text-xs font-bold text-gray-700">Halaman {pageNum}</p>
+                    <button
+                      onClick={() => setReloadKey((prev) => prev + 1)}
+                      className="px-3 py-1 bg-[#0B4627] text-white rounded-lg text-xs font-bold cursor-pointer"
+                    >
+                      Muat Baris Ayat
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* BOTTOM CARTOUCHE: PAGE NUMBER IN ISLAMIC FRAME */}
+        <div className="w-full flex items-center justify-between border-t-2 border-amber-800/50 pt-2 mt-2 px-2 text-xs font-mono font-black text-amber-950">
+          <span className="font-quran text-xs text-amber-900">
+            {isEven ? `الحزب ${toArabicNumerals(Math.ceil(juzNum * 2))}` : `الجزء ${toArabicNumerals(juzNum)}`}
+          </span>
+          <span className="px-3 py-0.5 bg-amber-200 border border-amber-900 rounded-md shadow-xs">
+            - {pageNum} -
+          </span>
+          <span className="font-quran text-xs text-amber-900">
+            {!isEven ? `الحزب ${toArabicNumerals(Math.ceil(juzNum * 2))}` : `الجزء ${toArabicNumerals(juzNum)}`}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div 
       ref={containerRef}
-      className={`space-y-4 max-w-4xl mx-auto transition-all ${
+      className={`space-y-4 max-w-6xl mx-auto transition-all ${
         isFullscreen ? 'fixed inset-0 z-50 bg-[#F8F5EE] p-4 overflow-y-auto max-w-none' : ''
       }`}
     >
@@ -465,6 +743,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
         </div>
       )}
 
+      {/* TOP CONTROL BAR */}
       <div className="bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-2xl p-3 sm:p-4 shadow-[4px_4px_0px_0px_#111827] space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -473,18 +752,53 @@ export const PhysicalMushafPageReader: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-black text-black dark:text-white flex items-center gap-1.5">
-                <span>{language === 'ar' ? `مصحف المدينة (صفحة ${currentPage})` : `Mushaf Madinah (Hal. ${currentPage})`}</span>
+                <span>
+                  {isDualSpread 
+                    ? `Mushaf Madinah (Hal. ${rightPageNumber} & ${leftPageNumber || 604})` 
+                    : `Mushaf Madinah (Hal. ${currentPage})`}
+                </span>
                 <span className="text-[10px] bg-[#0B4627] text-[#F59E0B] px-1.5 py-0.5 rounded-md font-mono font-bold border border-black">
-                  {currentPage} / 604
+                  {isDualSpread ? `${rightPageNumber}-${leftPageNumber || 604} / 604` : `${currentPage} / 604`}
                 </span>
               </h3>
               <p className="text-[11px] font-bold text-gray-700 dark:text-gray-300">
-                Juz {juzNumber} • {pageSurahsLatinLabel}
+                Juz {juzNumberRight} • {pageSurahsLatinLabelRight} {leftPageNumber ? `& ${pageSurahsLatinLabelLeft}` : ''}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap">
+            {/* SPREAD MODE TOGGLE: DUAL PAGE SPREAD VS SINGLE PAGE */}
+            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_#000]">
+              <button
+                onClick={handleToggleSpreadMode}
+                className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 cursor-pointer transition-all ${
+                  isDualSpread 
+                    ? 'bg-[#0B4627] text-white shadow-xs' 
+                    : 'text-gray-700 dark:text-gray-300 hover:text-black'
+                }`}
+                title="Tampilan 2 Halaman Berdampingan (Buku Terbuka)"
+              >
+                <Columns className="w-3.5 h-3.5 text-[#F59E0B]" />
+                <span className="hidden sm:inline">2 Halaman (Buku Terbuka)</span>
+                <span className="sm:hidden">2 Hal</span>
+              </button>
+              <button
+                onClick={handleToggleSpreadMode}
+                className={`px-2.5 py-1 rounded-lg flex items-center gap-1.5 cursor-pointer transition-all ${
+                  !isDualSpread 
+                    ? 'bg-[#0B4627] text-white shadow-xs' 
+                    : 'text-gray-700 dark:text-gray-300 hover:text-black'
+                }`}
+                title="Tampilan 1 Lembaran Tunggal"
+              >
+                <Square className="w-3.5 h-3.5 text-[#F59E0B]" />
+                <span className="hidden sm:inline">1 Halaman</span>
+                <span className="sm:hidden">1 Hal</span>
+              </button>
+            </div>
+
+            {/* VIEW MODE: SCAN ASLI VS 15 BARIS TEKS */}
             <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_#000]">
               <button
                 onClick={() => setViewMode('scan')}
@@ -495,7 +809,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
                 }`}
               >
                 <ImageIcon className="w-3.5 h-3.5 text-[#F59E0B]" />
-                <span>Scan Asli Fisik</span>
+                <span>Scan Asli</span>
               </button>
               <button
                 onClick={() => setViewMode('layout')}
@@ -506,10 +820,11 @@ export const PhysicalMushafPageReader: React.FC = () => {
                 }`}
               >
                 <Layers className="w-3.5 h-3.5 text-[#F59E0B]" />
-                <span>15 Baris Teks</span>
+                <span>15 Baris</span>
               </button>
             </div>
 
+            {/* QARI SELECTOR */}
             <div className="relative">
               <button
                 onClick={() => setIsReciterMenuOpen(!isReciterMenuOpen)}
@@ -554,16 +869,18 @@ export const PhysicalMushafPageReader: React.FC = () => {
               )}
             </div>
 
+            {/* SOUND EFFECT TOGGLE */}
             <button
               onClick={handleToggleSound}
               className={`p-1.5 border-2 border-black rounded-xl cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all ${
                 pageSoundEnabled ? 'bg-amber-100 text-amber-900' : 'bg-gray-100 text-gray-400'
               }`}
-              title={pageSoundEnabled ? 'Efek Suara Geser Kertas: AKTIF' : 'Efek Suara Geser Kertas: MATI'}
+              title={pageSoundEnabled ? 'Efek Suara Lembaran Kertas: AKTIF' : 'Efek Suara Lembaran Kertas: MATI'}
             >
               {pageSoundEnabled ? <Volume2 className="w-4 h-4 text-[#0B4627]" /> : <VolumeX className="w-4 h-4" />}
             </button>
 
+            {/* AUDIO PLAY/PAUSE */}
             <button
               onClick={handleTogglePageAudio}
               className={`px-3 py-1.5 border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] ${
@@ -574,6 +891,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
               <span>{isPlayingPageAudio ? 'Jeda Audio' : 'Audio Hal.'}</span>
             </button>
 
+            {/* BOOKMARK BUTTON */}
             <button
               onClick={handleBookmarkPage}
               className="p-1.5 bg-white hover:bg-[#FEF3C7] text-black border-2 border-black rounded-xl cursor-pointer shadow-[2px_2px_0px_0px_#000]"
@@ -582,6 +900,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
               <BookmarkIcon className="w-4 h-4" />
             </button>
 
+            {/* FULLSCREEN */}
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
               className="p-1.5 bg-white hover:bg-gray-100 text-black border-2 border-black rounded-xl cursor-pointer shadow-[2px_2px_0px_0px_#000]"
@@ -592,11 +911,12 @@ export const PhysicalMushafPageReader: React.FC = () => {
           </div>
         </div>
 
+        {/* JUZ / SURAH / PAGE QUICK JUMP */}
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 pt-2 border-t border-dashed border-gray-300 text-xs">
           <div className="sm:col-span-3 flex items-center gap-1.5">
             <span className="font-bold text-gray-700 shrink-0">Juz:</span>
             <select
-              value={juzNumber}
+              value={juzNumberRight}
               onChange={(e) => handleJumpToJuz(Number(e.target.value))}
               className="w-full p-1.5 bg-white border-2 border-black rounded-xl font-bold focus:outline-none"
             >
@@ -609,7 +929,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
           <div className="sm:col-span-4 flex items-center gap-1.5">
             <span className="font-bold text-gray-700 shrink-0">Surat:</span>
             <select
-              value={primarySurah.number}
+              value={primarySurahRight.number}
               onChange={(e) => handleJumpToSurah(Number(e.target.value))}
               className="w-full p-1.5 bg-white border-2 border-black rounded-xl font-bold focus:outline-none"
             >
@@ -652,38 +972,40 @@ export const PhysicalMushafPageReader: React.FC = () => {
         </div>
       </div>
 
+      {/* AUTHENTIC PHYSICAL MUSHAF BOOK SPREAD CASING */}
       <div 
-        className="relative bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-3xl p-3 sm:p-6 shadow-[6px_6px_0px_0px_#111827] flex flex-col items-center justify-center overflow-hidden"
+        className="relative bg-[#200F09] dark:bg-[#120804] border-4 border-amber-950 rounded-3xl p-2 sm:p-5 shadow-[0_25px_60px_rgba(0,0,0,0.55)] flex flex-col items-center justify-center overflow-hidden"
       >
-        <div className="w-full flex items-center justify-between border-b-2 border-amber-800/40 pb-2 mb-3 px-2 text-xs font-bold text-amber-900 dark:text-amber-300 font-mono">
-          <span className="truncate max-w-[200px] sm:max-w-none text-right font-quran text-sm sm:text-base font-black">
-            {pageSurahsArabicLabel}
+        {/* TOP ELEGANT HEADER BAR */}
+        <div className="w-full flex items-center justify-between border-b-2 border-amber-700/40 pb-2 mb-3 px-3 text-xs font-bold text-amber-200 font-mono">
+          <span className="truncate max-w-[200px] sm:max-w-none text-right font-quran text-sm sm:text-base font-black text-amber-300">
+            {leftPageNumber ? pageSurahsArabicLabelLeft : pageSurahsArabicLabelRight}
           </span>
-          <span className="font-sans font-black tracking-wider text-[#0B4627] dark:text-[#34D399] px-2 text-center text-[10px] sm:text-xs">
-            {language === 'ar' ? 'مصحف المدينة النبوية الشريفة' : 'MUSHAF MADINAH ASLI (604 HALAMAN)'}
+          <span className="font-sans font-black tracking-widest text-[#F59E0B] px-2 text-center text-[10px] sm:text-xs">
+            {language === 'ar' ? 'مصحف المدينة النبوية الشريفة' : 'MUSHAF MADINAH ASLI • BUKU TERBUKA (604 HALAMAN)'}
           </span>
-          <span className="font-quran text-sm sm:text-base font-black">
-            الجزء {juzNumber}
+          <span className="font-quran text-sm sm:text-base font-black text-amber-300">
+            الجزء {juzNumberRight}
           </span>
         </div>
 
-        {/* INTERACTIVE 3D FLIPPABLE / SLIDABLE MUSHAF PAGE FRAME */}
+        {/* 3D FLIPPABLE BOOK CONTAINER */}
         <div 
-          className="relative w-full max-w-2xl bg-[#FFFDF7] border-3 border-amber-900/40 rounded-2xl p-2 sm:p-5 flex flex-col min-h-[580px] sm:min-h-[780px] justify-between cursor-grab active:cursor-grabbing select-none overflow-hidden"
+          className="relative w-full bg-[#180A05] border-2 border-amber-900/80 rounded-2xl p-1.5 sm:p-3 flex flex-col sm:flex-row gap-2 justify-between cursor-grab active:cursor-grabbing select-none overflow-hidden shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]"
           style={{
-            transform: `translateX(${dragOffset}px) rotateY(${dragOffset * 0.055}deg) scale(${Math.max(0.93, 1 - Math.abs(dragOffset) * 0.00035)})`,
+            transform: `translateX(${dragOffset}px) rotateY(${dragOffset * 0.045}deg) scale(${Math.max(0.94, 1 - Math.abs(dragOffset) * 0.0003)})`,
             transformOrigin: dragOffset < 0 ? 'right center' : 'left center',
             opacity: isTransitioning && slidePhase === 'sliding-out' 
               ? Math.max(0.2, 1 - Math.abs(dragOffset) / 380) 
               : 1,
             transition: isDragging 
               ? 'none' 
-              : 'transform 0.36s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease-out, box-shadow 0.3s ease-out',
+              : 'transform 0.36s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease-out',
             perspective: '1400px',
             transformStyle: 'preserve-3d',
             boxShadow: isDragging || isTransitioning
               ? `${dragOffset > 0 ? '22px' : '-22px'} 12px 35px rgba(0, 0, 0, ${Math.min(0.3, Math.abs(dragOffset) * 0.0012 + 0.08)})`
-              : '0 12px 32px rgba(0, 0, 0, 0.09), inset 0 0 25px rgba(180, 83, 9, 0.07)'
+              : '0 15px 35px rgba(0, 0, 0, 0.35)'
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -699,8 +1021,8 @@ export const PhysicalMushafPageReader: React.FC = () => {
               className="absolute inset-0 pointer-events-none z-30 rounded-2xl transition-opacity duration-200"
               style={{
                 background: dragOffset < 0 
-                  ? 'linear-gradient(to right, transparent 35%, rgba(180,83,9,0.06) 70%, rgba(0,0,0,0.16) 100%)'
-                  : 'linear-gradient(to left, transparent 35%, rgba(180,83,9,0.06) 70%, rgba(0,0,0,0.16) 100%)',
+                  ? 'linear-gradient(to right, transparent 35%, rgba(180,83,9,0.06) 70%, rgba(0,0,0,0.2) 100%)'
+                  : 'linear-gradient(to left, transparent 35%, rgba(180,83,9,0.06) 70%, rgba(0,0,0,0.2) 100%)',
                 opacity: Math.min(1, Math.abs(dragOffset) / 90)
               }}
             />
@@ -711,214 +1033,113 @@ export const PhysicalMushafPageReader: React.FC = () => {
             <div className={`absolute top-5 ${dragOffset < 0 ? 'left-5' : 'right-5'} z-40 bg-emerald-950/95 text-amber-300 backdrop-blur-md px-3.5 py-1.5 rounded-full border-2 border-amber-400/80 shadow-[3px_3px_0px_0px_#000] text-xs font-black flex items-center gap-1.5 animate-fadeIn pointer-events-none`}>
               {dragOffset < 0 ? (
                 <>
-                  <span>👈 Halaman {Math.min(604, currentPage + 1)}</span>
+                  <span>👈 Buka Halaman {Math.min(604, rightPageNumber + (isDualSpread ? 2 : 1))}</span>
                   <span className="text-[10px] text-emerald-300 font-normal hidden sm:inline">• Lepas untuk membalik</span>
                 </>
               ) : (
                 <>
                   <span className="text-[10px] text-emerald-300 font-normal hidden sm:inline">Lepas untuk membalik •</span>
-                  <span>Halaman {Math.max(1, currentPage - 1)} 👉</span>
+                  <span>Buka Halaman {Math.max(1, rightPageNumber - (isDualSpread ? 2 : 1))} 👉</span>
                 </>
               )}
             </div>
           )}
 
+          {/* LEFT PAGE (EVEN PAGE IN DUAL SPREAD, e.g. 294) */}
+          {isDualSpread && leftPageNumber && renderSingleMushafPage(
+            leftPageNumber,
+            mushafLinesLeft,
+            isLoadingPageLeft,
+            scanLoadedLeft,
+            scanErrorLeft,
+            scanUrlIndexLeft,
+            fallbackUrlsLeft,
+            setScanLoadedLeft,
+            setScanErrorLeft,
+            setScanUrlIndexLeft,
+            pageSurahsArabicLabelLeft,
+            juzNumberLeft || juzNumberRight,
+            true
+          )}
+
+          {/* CENTRAL BOOK SPINNER / SPINAL CREASE & GOLDEN BOOKMARK RIBBON */}
+          {isDualSpread && leftPageNumber && (
+            <div className="hidden sm:flex relative w-6 flex-col items-center justify-center shrink-0">
+              {/* Deep 3D Spine Gutter Shadow */}
+              <div className="absolute inset-y-0 -inset-x-2 bg-gradient-to-r from-black/35 via-black/10 to-black/35 pointer-events-none z-20"></div>
+              
+              {/* Golden Silk Bookmark Ribbon */}
+              <div className="w-2.5 h-full bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 shadow-md rounded-b-md border-x border-amber-700/60 z-25 relative">
+                <div className="absolute bottom-0 inset-x-0 h-4 bg-gradient-to-t from-black/30 to-transparent"></div>
+              </div>
+            </div>
+          )}
+
+          {/* RIGHT PAGE (ODD PAGE IN DUAL SPREAD, e.g. 293 / OR SINGLE PAGE) */}
+          {renderSingleMushafPage(
+            rightPageNumber,
+            mushafLinesRight,
+            isLoadingPageRight,
+            scanLoadedRight,
+            scanErrorRight,
+            scanUrlIndexRight,
+            fallbackUrlsRight,
+            setScanLoadedRight,
+            setScanErrorRight,
+            setScanUrlIndexRight,
+            pageSurahsArabicLabelRight,
+            juzNumberRight,
+            false
+          )}
+
           {/* Interactive Golden Corner Peels */}
-          {currentPage < 604 && (
+          {rightPageNumber < 604 && (
             <div 
               onClick={(e) => { e.stopPropagation(); handleNextPage(); }}
               className="absolute bottom-2 left-2 w-8 h-8 rounded-br-2xl group cursor-pointer z-30 transition-transform hover:scale-125"
-              title={`Buka Halaman ${currentPage + 1} (👈)`}
+              title={`Buka Halaman Berikutnya (👈)`}
             >
-              <div className="w-full h-full bg-gradient-to-tr from-amber-400 via-amber-200 to-transparent border-t-2 border-r-2 border-amber-600/70 rounded-tr-lg shadow-sm opacity-60 group-hover:opacity-100 transition-all transform -rotate-12 group-hover:rotate-0"></div>
+              <div className="w-full h-full bg-gradient-to-tr from-amber-400 via-amber-200 to-transparent border-t-2 border-r-2 border-amber-600/70 rounded-tr-lg shadow-sm opacity-70 group-hover:opacity-100 transition-all transform -rotate-12 group-hover:rotate-0"></div>
             </div>
           )}
 
-          {currentPage > 1 && (
+          {rightPageNumber > 1 && (
             <div 
               onClick={(e) => { e.stopPropagation(); handlePrevPage(); }}
               className="absolute bottom-2 right-2 w-8 h-8 rounded-bl-2xl group cursor-pointer z-30 transition-transform hover:scale-125"
-              title={`Buka Halaman ${currentPage - 1} (👉)`}
+              title={`Buka Halaman Sebelumnya (👉)`}
             >
-              <div className="w-full h-full bg-gradient-to-tl from-amber-400 via-amber-200 to-transparent border-t-2 border-l-2 border-amber-600/70 rounded-tl-lg shadow-sm opacity-60 group-hover:opacity-100 transition-all transform rotate-12 group-hover:rotate-0"></div>
-            </div>
-          )}
-          
-          <div className="absolute inset-2 border-2 border-dashed border-amber-700/30 rounded-xl pointer-events-none"></div>
-
-          {/* VIEW MODE 1: PHYSICAL SCANNED MADINAH MUSHAF (DEFAULT & 100% AUTHENTIC) */}
-          {viewMode === 'scan' && (
-            <div className="w-full flex-1 flex items-center justify-center relative min-h-[540px] sm:min-h-[740px] bg-white rounded-xl shadow-inner p-1 sm:p-3 overflow-hidden">
-              {!scanLoaded && !scanError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/90 z-10 space-y-2">
-                  <div className="w-9 h-9 border-3 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-xs font-bold text-emerald-950">Membuka Lembaran Halaman {currentPage}...</p>
-                </div>
-              )}
-
-              {!scanError ? (
-                <img
-                  src={fallbackUrls[scanUrlIndex] || fallbackUrls[0]}
-                  alt={`Halaman ${currentPage} Mushaf Al-Quran Standar Madinah`}
-                  onLoad={() => {
-                    setScanLoaded(true);
-                    setScanError(false);
-                  }}
-                  onError={() => {
-                    if (scanUrlIndex + 1 < fallbackUrls.length) {
-                      setScanUrlIndex((prev) => prev + 1);
-                    } else {
-                      setScanLoaded(false);
-                      setScanError(true);
-                      setViewMode('layout');
-                    }
-                  }}
-                  className={`w-full max-h-[85vh] object-contain transition-opacity duration-300 pointer-events-none select-none rounded-lg drop-shadow-md ${
-                    scanLoaded ? 'opacity-100' : 'opacity-0'
-                  }`}
-                />
-              ) : (
-                <div className="text-center p-6 space-y-2">
-                  <p className="text-xs font-bold text-amber-900">
-                    Gambar scan dialihkan otomatis ke mode 15 Baris Teks.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* VIEW MODE 2: NATURAL 15-LINE TYPOGRAPHY (CORRECTED WORD SPACING) */}
-          {viewMode === 'layout' && (
-            <div className="w-full flex-1 flex flex-col justify-between space-y-2 z-10 select-text px-2 py-3" dir="rtl">
-              {isLoadingPage && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/90 z-20 space-y-2 rounded-2xl">
-                  <div className="w-10 h-10 border-4 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-xs font-black text-emerald-900">
-                    Membuka Baris Halaman {currentPage}...
-                  </p>
-                </div>
-              )}
-
-              {mushafLines.length > 0 ? (
-                mushafLines.map((line, idx) => {
-                  if (line.type === 'surah-header') {
-                    return (
-                      <div 
-                        key={idx} 
-                        className="my-2 p-2 bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 border-2 border-amber-800/60 rounded-xl text-center shadow-xs"
-                      >
-                        <span className="font-quran text-xl sm:text-2xl font-black text-amber-950 block">
-                          {line.surahName || `سُورَةُ ${primarySurah.name}`}
-                        </span>
-                      </div>
-                    );
-                  }
-
-                  if (line.type === 'basmala') {
-                    return (
-                      <div key={idx} className="my-1 text-center font-quran text-lg sm:text-xl text-amber-950 font-bold">
-                        بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div 
-                      key={idx}
-                      className="w-full font-quran text-lg sm:text-2xl md:text-[25px] text-emerald-950 dark:text-emerald-950 font-bold leading-[2.2] sm:leading-[2.5] text-center tracking-normal py-0.5"
-                    >
-                      {line.text ? (
-                        line.text.split(/\s+/).filter(Boolean).map((w, wIdx, wordsArr) => {
-                          const nextW = wordsArr[wIdx + 1] || '';
-                          const prevW = wordsArr[wIdx - 1] || '';
-                          const isEnd = wIdx === wordsArr.length - 1;
-                          const style = getTajweedColorForWord(w, nextW, prevW, isEnd);
-                          return (
-                            <span
-                              key={wIdx}
-                              onClick={() => {
-                                if (style.ruleName) {
-                                  setSelectedTajweedWord({ word: w, ruleName: style.ruleName });
-                                }
-                              }}
-                              className={`inline-block mx-0.5 px-0.5 py-0.2 rounded transition-all cursor-pointer select-text hover:scale-105 ${
-                                selectedTajweedWord?.word === w ? 'ring-2 ring-amber-500 bg-amber-100 font-black' : ''
-                              }`}
-                              style={{
-                                color: style.color,
-                                backgroundColor: style.bg !== 'transparent' && selectedTajweedWord?.word !== w ? style.bg : undefined
-                              }}
-                              title={style.ruleName ? `${w} (${style.ruleName})` : w}
-                            >
-                              {w}
-                            </span>
-                          );
-                        })
-                      ) : (
-                        <span className="inline font-quran select-text">{line.text}</span>
-                      )}
-                    </div>
-                  );
-                })
-              ) : (
-                !isLoadingPage && (
-                  <div className="text-center py-10 px-4 space-y-4 font-sans" dir="ltr">
-                    <div className="w-14 h-14 bg-amber-100 border-2 border-black rounded-2xl flex items-center justify-center mx-auto text-amber-900 shadow-[3px_3px_0px_0px_#000]">
-                      <BookOpen className="w-7 h-7" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="font-quran text-2xl text-emerald-900 font-bold leading-loose">
-                        بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                      </p>
-                      <h4 className="text-base font-black text-black">
-                        Halaman {currentPage} (Juz {juzNumber} - {pageSurahsLatinLabel})
-                      </h4>
-                      <p className="text-xs text-gray-600 max-w-sm mx-auto">
-                        Sedang menghubungkan ke server mushaf. Klik tombol di bawah untuk memuat baris ayat halaman {currentPage}.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setReloadKey((prev) => prev + 1)}
-                      className="px-4 py-2 bg-[#0B4627] hover:bg-[#07301B] text-white border-2 border-black rounded-xl font-black text-xs cursor-pointer shadow-[3px_3px_0px_0px_#000] inline-flex items-center gap-2 transition-all hover:scale-105"
-                    >
-                      <RotateCcw className="w-4 h-4 text-[#F59E0B]" />
-                      <span>Muat Baris Ayat Halaman {currentPage}</span>
-                    </button>
-                  </div>
-                )
-              )}
+              <div className="w-full h-full bg-gradient-to-tl from-amber-400 via-amber-200 to-transparent border-t-2 border-l-2 border-amber-600/70 rounded-tl-lg shadow-sm opacity-70 group-hover:opacity-100 transition-all transform rotate-12 group-hover:rotate-0"></div>
             </div>
           )}
         </div>
 
-        {/* Swipe Guidance & Quick Turn Navigation Footer */}
-        <div className="flex items-center justify-between w-full max-w-2xl text-[11px] font-bold text-amber-900 dark:text-amber-300 pt-3 px-2">
+        {/* SWIPE GUIDANCE & BOTTOM CONTROLS */}
+        <div className="flex items-center justify-between w-full text-[11px] font-bold text-amber-200 pt-3 px-2">
           <button 
             onClick={handleNextPage}
             disabled={currentPage >= 604}
-            className="flex items-center gap-1 text-[#0B4627] dark:text-emerald-400 hover:underline disabled:opacity-30 cursor-pointer font-black text-xs bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800"
+            className="flex items-center gap-1 text-[#F59E0B] hover:underline disabled:opacity-30 cursor-pointer font-black text-xs bg-amber-950/80 px-3 py-1.5 rounded-xl border border-amber-700/60"
             title="Buka Halaman Berikutnya"
           >
-            <span>👈 Hal. {currentPage < 604 ? currentPage + 1 : 604}</span>
+            <span>👈 Buka Hal. {Math.min(604, rightPageNumber + (isDualSpread ? 2 : 1))}</span>
           </button>
-          <div className="flex items-center gap-1.5 text-[10px] text-emerald-950 font-black bg-amber-200/90 px-3 py-1 rounded-full border border-amber-400 shadow-xs">
-            <span>✨ Usap / Geser Lembaran Mushaf</span>
+          
+          <div className="flex items-center gap-1.5 text-[10px] text-amber-950 font-black bg-amber-300 px-3.5 py-1 rounded-full border border-amber-500 shadow-xs">
+            <span>✨ Usap Lembaran Mushaf untuk Membalik</span>
           </div>
+
           <button 
             onClick={handlePrevPage}
             disabled={currentPage <= 1}
-            className="flex items-center gap-1 text-[#0B4627] dark:text-emerald-400 hover:underline disabled:opacity-30 cursor-pointer font-black text-xs bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800"
+            className="flex items-center gap-1 text-[#F59E0B] hover:underline disabled:opacity-30 cursor-pointer font-black text-xs bg-amber-950/80 px-3 py-1.5 rounded-xl border border-amber-700/60"
             title="Buka Halaman Sebelumnya"
           >
-            <span>Hal. {currentPage > 1 ? currentPage - 1 : 1} 👉</span>
+            <span>Buka Hal. {Math.max(1, rightPageNumber - (isDualSpread ? 2 : 1))} 👉</span>
           </button>
         </div>
 
-        <div className="w-full flex items-center justify-between border-t-2 border-amber-800/40 pt-2 mt-3 px-3 text-xs font-mono font-black text-amber-900 dark:text-amber-300">
-          <span>- {currentPage} -</span>
-          <span>الحزب {Math.ceil(juzNumber * 2)}</span>
-        </div>
-
+        {/* SIDE TURN FLOATING BUTTONS */}
         <button
           onClick={handlePrevPage}
           disabled={currentPage <= 1}
@@ -966,7 +1187,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
         </div>
       )}
 
-      {/* TAJWEED & GHARIB KNOWLEDGE PANEL (ALL 604 PAGES) */}
+      {/* TAJWEED & GHARIB KNOWLEDGE PANEL */}
       <div className="bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-3xl p-4 sm:p-5 shadow-[6px_6px_0px_0px_#111827] space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-dashed border-gray-300 dark:border-gray-700 pb-3">
           <div className="flex items-center gap-2.5">
@@ -977,11 +1198,11 @@ export const PhysicalMushafPageReader: React.FC = () => {
               <h4 className="text-sm sm:text-base font-black text-black dark:text-white flex items-center gap-2">
                 <span>Panduan Tajwid & Kaidah Gharib</span>
                 <span className="text-[10px] bg-[#FEF3C7] text-amber-900 border border-amber-800 px-1.5 py-0.5 rounded-md font-bold">
-                  Halaman {currentPage}
+                  Halaman {rightPageNumber} {leftPageNumber ? `& ${leftPageNumber}` : ''}
                 </span>
               </h4>
               <p className="text-[11px] font-bold text-gray-600 dark:text-gray-400">
-                Analisis otomatis hukum tajwid per kata & kaidah bacaan khusus halaman {currentPage}
+                Analisis otomatis hukum tajwid per kata & kaidah bacaan khusus pada bukaan mushaf
               </p>
             </div>
           </div>
@@ -996,7 +1217,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
               }`}
             >
               <BookOpen className="w-3.5 h-3.5 text-[#F59E0B]" />
-              <span>Hukum Tajwid ({pageTajweedData.rulesList.length})</span>
+              <span>Hukum Tajwid ({pageTajweedData?.rulesList?.length || 0})</span>
             </button>
             <button
               onClick={() => setActiveTajweedTab('gharib')}
@@ -1007,7 +1228,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
               }`}
             >
               <HelpCircle className="w-3.5 h-3.5 text-[#F59E0B]" />
-              <span>Bacaan Gharib ({pageGharibData.length})</span>
+              <span>Kaidah Gharib {pageGharibData && pageGharibData.length > 0 ? '🌟' : ''}</span>
             </button>
             <button
               onClick={() => setActiveTajweedTab('legend')}
@@ -1028,237 +1249,126 @@ export const PhysicalMushafPageReader: React.FC = () => {
                   : 'text-gray-700 dark:text-gray-300 hover:text-black'
               }`}
             >
-              <Search className="w-3.5 h-3.5 text-[#F59E0B]" />
-              <span>Kamus Tajwid & Gharib ({MASTER_TAJWEED_ENCYCLOPEDIA.length})</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
+              <span>Ensiklopedia Tajwid</span>
             </button>
           </div>
         </div>
 
-        {/* TAB 1: HUKUM TAJWID */}
+        {/* TAB 1: TAJWEED RULES */}
         {activeTajweedTab === 'tajweed' && (
           <div className="space-y-3">
-            {pageTajweedData.rulesList.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {pageTajweedData.rulesList.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-3.5 bg-white dark:bg-gray-800 border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_#000] space-y-2 hover:bg-amber-50/60 dark:hover:bg-gray-700 transition-all"
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                Ditemukan <strong className="text-emerald-700 dark:text-emerald-400">{pageTajweedData?.rulesList?.length || 0}</strong> jenis hukum tajwid pada halaman ini:
+              </span>
+            </div>
+
+            {pageTajweedData?.rulesList && pageTajweedData.rulesList.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                {pageTajweedData.rulesList.map((t, idx) => (
+                  <div 
+                    key={idx}
+                    className="p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] flex flex-col justify-between space-y-1.5"
                   >
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between">
                       <span 
-                        className="px-2.5 py-1 rounded-lg text-white font-black text-xs border border-black shadow-xs"
-                        style={{ backgroundColor: item.colorHex }}
+                        className="px-2 py-0.5 rounded text-[11px] font-black"
+                        style={{ backgroundColor: t.colorHex + '25', color: t.colorHex }}
                       >
-                        {item.ruleName}
+                        {t.ruleName}
                       </span>
-                      <span className="text-[10px] bg-gray-100 dark:bg-gray-700 border border-black px-2 py-0.5 rounded-md font-bold text-gray-800 dark:text-gray-200">
-                        {item.harakatDuration} Harakat
-                      </span>
+                      <span className="font-quran text-xs font-bold text-amber-900 dark:text-amber-300">{t.matchedWord}</span>
                     </div>
-
-                    <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-gray-700">
-                      <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Contoh Lafadz Halaman Ini:</span>
-                      <span className="font-quran text-xl font-bold text-emerald-950 dark:text-emerald-300" dir="rtl">
-                        {item.matchedWord}
-                      </span>
-                    </div>
-
-                    <div className="space-y-1.5 text-xs">
-                      {item.pengertianBahasa && (
-                        <div className="bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-700">
-                          <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">
-                            <span className="font-bold text-emerald-900 dark:text-emerald-400">📖 Pengertian Bahasa:</span> {item.pengertianBahasa}
-                          </p>
-                        </div>
-                      )}
-                      {item.pengertianIstilah && (
-                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 p-2 rounded-xl border border-emerald-800/20">
-                          <p className="text-[11px] text-emerald-950 dark:text-emerald-200 leading-snug">
-                            <span className="font-bold text-emerald-900 dark:text-emerald-400">🎯 Pengertian Istilah:</span> {item.pengertianIstilah}
-                          </p>
-                        </div>
-                      )}
-                      <p className="text-[11px] text-gray-800 dark:text-gray-200 leading-snug">
-                        <b>🗣️ Cara Membaca:</b> {item.caraBaca}
-                      </p>
+                    <p className="text-xs text-gray-700 dark:text-gray-300">{t.description}</p>
+                    <div className="pt-1 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-[11px]">
+                      <span className="font-bold text-gray-500">Durasi:</span>
+                      <span className="font-bold text-emerald-800 dark:text-emerald-300">{t.harakatDuration} Harakat</span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-6 text-xs text-gray-500 font-bold">
-                Memuat kaidah tajwid halaman {currentPage}...
+              <div className="text-center py-6 text-xs font-bold text-gray-500">
+                Pilih mode 15 Baris Teks untuk melihat analisis otomatis hukum tajwid per kata.
               </div>
             )}
           </div>
         )}
 
-        {/* TAB 2: BACAAN GHARIB */}
+        {/* TAB 2: GHARIB RULES */}
         {activeTajweedTab === 'gharib' && (
           <div className="space-y-3">
-            {pageGharibData.length > 0 ? (
+            {pageGharibData && pageGharibData.length > 0 ? (
               <div className="space-y-3">
-                <div className="p-3 bg-amber-100 dark:bg-amber-950/60 border-2 border-amber-800 rounded-xl text-xs font-bold text-amber-950 dark:text-amber-200 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-amber-900 shrink-0" />
-                  <span>Ditemukan <b>{pageGharibData.length} Bacaan Khusus (Gharib)</b> pada Halaman {currentPage}!</span>
-                </div>
-
-                {pageGharibData.map((g) => (
-                  <div
-                    key={g.id}
-                    className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-800 border-3 border-amber-900 rounded-2xl shadow-[4px_4px_0px_0px_#000] space-y-2.5"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-800/30 pb-2">
-                      <div>
-                        <h5 className="text-sm font-black text-amber-950 dark:text-amber-300 flex items-center gap-2">
-                          <span>{g.title}</span>
-                          <span className="text-xs bg-[#0B4627] text-[#F59E0B] px-2 py-0.5 rounded-md font-mono">
-                            QS. {g.surahName} : {g.ayahNumber}
-                          </span>
-                        </h5>
-                      </div>
-                      <span className="font-quran text-2xl font-black text-emerald-950 dark:text-emerald-300" dir="rtl">
-                        {g.arabicTerm}
-                      </span>
+                {pageGharibData.map((gharib, gIdx) => (
+                  <div key={gIdx} className="p-4 bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-800 rounded-2xl space-y-2">
+                    <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300">
+                      <AlertCircle className="w-5 h-5" />
+                      <h5 className="font-black text-sm">{gharib.title} ({gharib.surahName} : {gharib.ayahNumber})</h5>
                     </div>
-
-                    <div className="space-y-1.5 text-xs">
-                      {g.pengertianBahasa && (
-                        <div className="bg-white/80 dark:bg-gray-900/60 p-2 rounded-xl border border-amber-800/20">
-                          <p className="text-[11px] text-gray-800 dark:text-gray-200 leading-snug">
-                            <span className="font-bold text-amber-950 dark:text-amber-400">📖 Pengertian Bahasa:</span> {g.pengertianBahasa}
-                          </p>
-                        </div>
-                      )}
-                      {g.pengertianIstilah && (
-                        <div className="bg-amber-100/70 dark:bg-amber-950/40 p-2 rounded-xl border border-amber-800/30">
-                          <p className="text-[11px] text-amber-950 dark:text-amber-200 leading-snug">
-                            <span className="font-bold text-amber-950 dark:text-amber-400">🎯 Pengertian Istilah:</span> {g.pengertianIstilah}
-                          </p>
-                        </div>
-                      )}
-                      <p className="text-gray-800 dark:text-gray-200">
-                        <b>🗣️ Cara Membaca:</b> {g.caraBaca}
-                      </p>
-                      <p className="text-emerald-900 dark:text-emerald-400 font-bold text-[11px] bg-emerald-50 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-800/30">
-                        💡 <b>Tips Praktis & Kaidah:</b> {g.tips}
-                      </p>
+                    <p className="text-xs text-gray-800 dark:text-gray-200 leading-relaxed">
+                      {gharib.description}
+                    </p>
+                    <div className="bg-white dark:bg-gray-800 p-2.5 rounded-xl border border-amber-700/40 font-mono text-xs">
+                      <span className="font-bold text-emerald-800 dark:text-emerald-300">Cara Membaca: </span>
+                      <span className="text-gray-700 dark:text-gray-200">{gharib.caraBaca}</span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-4 bg-[#F8FAFC] dark:bg-gray-800 border-2 border-black rounded-2xl text-xs space-y-2 shadow-[2px_2px_0px_0px_#000]">
-                <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-400 font-black">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Kaidah Bacaan Standar (Tanpa Saktah/Imalah Khusus)</span>
-                </div>
-                <p className="text-gray-700 dark:text-gray-300 text-[11px] leading-relaxed">
-                  Halaman {currentPage} dibaca menggunakan kaidah tilawah standar Rasm Utsmani Imam Hafs. Perhatikan tanda waqaf:
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-                  <div className="p-2 bg-white dark:bg-gray-700 border border-black rounded-xl text-center">
-                    <span className="font-bold text-red-600 text-sm block font-quran">مـ</span>
-                    <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300">Waqaf Lazim (Wajib Berhenti)</span>
-                  </div>
-                  <div className="p-2 bg-white dark:bg-gray-700 border border-black rounded-xl text-center">
-                    <span className="font-bold text-emerald-600 text-sm block font-quran">ج</span>
-                    <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300">Waqaf Jaiz (Boleh Berhenti/Lanjut)</span>
-                  </div>
-                  <div className="p-2 bg-white dark:bg-gray-700 border border-black rounded-xl text-center">
-                    <span className="font-bold text-blue-600 text-sm block font-quran">قلى</span>
-                    <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300">Waqaf Aula (Lebih Utama Berhenti)</span>
-                  </div>
-                  <div className="p-2 bg-white dark:bg-gray-700 border border-black rounded-xl text-center">
-                    <span className="font-bold text-amber-600 text-sm block font-quran">صلى</span>
-                    <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300">Washal Aula (Lebih Utama Lanjut)</span>
-                  </div>
-                </div>
+              <div className="text-center py-8 text-xs font-bold text-gray-600 dark:text-gray-400 space-y-1">
+                <p>Tidak ada bacaan Gharib khusus pada halaman {rightPageNumber}.</p>
+                <p className="text-[11px] text-gray-500">Gharib terdapat pada ayat-ayat tertentu seperti Imalah (Hud: 41), Isymam (Yusuf: 11), Tashil (Fushshilat: 44), Naql (Al-Hujurat: 11), dan Saktah.</p>
               </div>
             )}
           </div>
         )}
 
-        {/* TAB 3: PANDUAN WARNA TAJWID */}
+        {/* TAB 3: COLOR LEGEND */}
         {activeTajweedTab === 'legend' && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-800 rounded-xl flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#10B981] border border-black shrink-0"></div>
-              <div>
-                <p className="font-black text-emerald-950 dark:text-emerald-300 text-[11px]">Ghunnah / Dengung</p>
-                <p className="text-[10px] text-gray-600 dark:text-gray-400">Nun/Mim Tasydid (2-3 Harakat)</p>
-              </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+            <div className="p-2.5 bg-red-50 dark:bg-red-950/40 border-2 border-red-800 rounded-xl">
+              <span className="font-black text-red-700 dark:text-red-300 block">🔴 Hukum Mad</span>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-1">Mad Wajib, Jaiz, Lazim, 'Aridh (2-6 harakat)</p>
             </div>
-            <div className="p-2.5 bg-orange-50 dark:bg-orange-950/40 border-2 border-orange-800 rounded-xl flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#F97316] border border-black shrink-0"></div>
-              <div>
-                <p className="font-black text-orange-950 dark:text-orange-300 text-[11px]">Qalqalah</p>
-                <p className="text-[10px] text-gray-600 dark:text-gray-400">Pantulan Huruf (ب ج د ط ق)</p>
-              </div>
+            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-800 rounded-xl">
+              <span className="font-black text-emerald-700 dark:text-emerald-300 block">🟢 Ghunnah & Idgham</span>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-1">Nun/Mim Tasydid & Idgham Bighunnah (2 harakat)</p>
             </div>
-            <div className="p-2.5 bg-pink-50 dark:bg-pink-950/40 border-2 border-pink-800 rounded-xl flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#EC4899] border border-black shrink-0"></div>
-              <div>
-                <p className="font-black text-pink-950 dark:text-pink-300 text-[11px]">Ikhfa' Haqiqi</p>
-                <p className="text-[10px] text-gray-600 dark:text-gray-400">Samar-samar (2 Harakat)</p>
-              </div>
+            <div className="p-2.5 bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-800 rounded-xl">
+              <span className="font-black text-blue-700 dark:text-blue-300 block">🔵 Ikhfa' Haqiqi</span>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-1">Samar-samar berdengung (15 huruf ikhfa')</p>
             </div>
-            <div className="p-2.5 bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-800 rounded-xl flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#3B82F6] border border-black shrink-0"></div>
-              <div>
-                <p className="font-black text-blue-950 dark:text-blue-300 text-[11px]">Idgham Bighunnah</p>
-                <p className="text-[10px] text-gray-600 dark:text-gray-400">Melebur Dengung (ي ن م و)</p>
-              </div>
-            </div>
-            <div className="p-2.5 bg-purple-50 dark:bg-purple-950/40 border-2 border-purple-800 rounded-xl flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#8B5CF6] border border-black shrink-0"></div>
-              <div>
-                <p className="font-black text-purple-950 dark:text-purple-300 text-[11px]">Iqlab</p>
-                <p className="text-[10px] text-gray-600 dark:text-gray-400">Nun/Tanwin jadi Mim (ب)</p>
-              </div>
-            </div>
-            <div className="p-2.5 bg-red-50 dark:bg-red-950/40 border-2 border-red-800 rounded-xl flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#DC2626] border border-black shrink-0"></div>
-              <div>
-                <p className="font-black text-red-950 dark:text-red-300 text-[11px]">Mad Wajib / Jaiz</p>
-                <p className="text-[10px] text-gray-600 dark:text-gray-400">Panjang 4-6 Harakat (~ / ٓ)</p>
-              </div>
+            <div className="p-2.5 bg-purple-50 dark:bg-purple-950/40 border-2 border-purple-800 rounded-xl">
+              <span className="font-black text-purple-700 dark:text-purple-300 block">🟣 Iqlab & Qalqalah</span>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-1">Tukar bunyi ke mim & pantulan huruf Quthbu Jaddin</p>
             </div>
           </div>
         )}
 
-        {/* TAB 4: ENSIKLOPEDIA & KAMUS TAJWID 30 JUZ */}
+        {/* TAB 4: TAJWEED ENCYCLOPEDIA */}
         {activeTajweedTab === 'encyclopedia' && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-center gap-2">
-              <div className="relative flex-1 w-full">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[200px]">
                 <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
+                  placeholder="Cari kaidah tajwid..."
                   value={encyclopediaSearch}
                   onChange={(e) => setEncyclopediaSearch(e.target.value)}
-                  placeholder="Cari kaidah tajwid, huruf, atau lafadz..."
-                  className="w-full pl-9 pr-8 py-2 bg-white dark:bg-gray-800 border-2 border-black rounded-xl text-xs font-bold text-black dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
+                  className="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-gray-800 border-2 border-black rounded-xl text-xs font-bold focus:outline-none"
                 />
-                {encyclopediaSearch && (
-                  <button
-                    onClick={() => setEncyclopediaSearch('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black dark:hover:text-white"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
               </div>
-
-              <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
-                {['Semua', 'Nun & Tanwin', 'Mim Sukun', 'Ghunnah & Qalqalah', 'Mad Lengkap', 'Lam & Ra', 'Idgham Makhraj', 'Bacaan Gharib', 'Tanda Waqaf'].map((cat) => (
+              <div className="flex gap-1 flex-wrap">
+                {['Semua', 'Nun & Tanwin', 'Mim Mati', 'Hukum Mad', 'Gharib'].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setEncyclopediaCategory(cat)}
-                    className={`px-2.5 py-1.5 rounded-lg text-[10px] font-black whitespace-nowrap border cursor-pointer transition-all ${
-                      encyclopediaCategory === cat
-                        ? 'bg-[#0B4627] text-white border-black shadow-xs'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 hover:border-black'
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold border border-black cursor-pointer ${
+                      encyclopediaCategory === cat ? 'bg-[#0B4627] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                     }`}
                   >
                     {cat}
@@ -1267,121 +1377,31 @@ export const PhysicalMushafPageReader: React.FC = () => {
               </div>
             </div>
 
-            {filteredEncyclopedia.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[520px] overflow-y-auto pr-1">
-                {filteredEncyclopedia.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-4 bg-white dark:bg-gray-800 border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_#000] space-y-2.5 hover:bg-amber-50/40 dark:hover:bg-gray-700/60 transition-all"
-                  >
-                    <div className="flex items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-2">
-                      <div>
-                        <h5 className="text-xs sm:text-sm font-black text-black dark:text-white flex items-center gap-1.5">
-                          <span 
-                            className="w-2.5 h-2.5 rounded-full inline-block shrink-0" 
-                            style={{ backgroundColor: item.colorHex }}
-                          />
-                          <span>{item.title}</span>
-                        </h5>
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold">
-                          {item.category}
-                        </span>
-                      </div>
-                      <span className="font-quran text-xl font-bold text-emerald-950 dark:text-emerald-300" dir="rtl">
-                        {item.arabicName}
-                      </span>
-                    </div>
-
-                    <div className="space-y-1.5 text-xs">
-                      {item.letters && (
-                        <div className="flex items-center gap-1.5 text-[11px]">
-                          <span className="font-bold text-gray-600 dark:text-gray-400">Huruf:</span>
-                          <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-amber-900 dark:text-amber-300 font-black">
-                            {item.letters}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-1.5 text-[11px]">
-                        <span className="font-bold text-gray-600 dark:text-gray-400">Ketukan Harakat:</span>
-                        <span className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold px-1.5 py-0.5 rounded">
-                          {item.harakat}
-                        </span>
-                      </div>
-
-                      {item.pengertianBahasa && (
-                        <div className="bg-gray-50 dark:bg-gray-900/50 p-2 rounded-xl border border-gray-200 dark:border-gray-700">
-                          <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-snug">
-                            <span className="font-bold text-emerald-900 dark:text-emerald-400">📖 Pengertian Bahasa:</span> {item.pengertianBahasa}
-                          </p>
-                        </div>
-                      )}
-
-                      {item.pengertianIstilah && (
-                        <div className="bg-emerald-50/70 dark:bg-emerald-950/40 p-2 rounded-xl border border-emerald-800/20">
-                          <p className="text-[11px] text-emerald-950 dark:text-emerald-200 leading-snug">
-                            <span className="font-bold text-emerald-900 dark:text-emerald-400">🎯 Pengertian Istilah:</span> {item.pengertianIstilah}
-                          </p>
-                        </div>
-                      )}
-
-                      {item.sebabHukum && (
-                        <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-snug">
-                          <b>🔍 Sebab Hukum:</b> {item.sebabHukum}
-                        </p>
-                      )}
-
-                      <p className="text-[11px] text-gray-800 dark:text-gray-200 leading-snug">
-                        <b>🗣️ Cara Membaca:</b> {item.caraBaca}
-                      </p>
-
-                      <div className="bg-amber-50/80 dark:bg-gray-700/80 p-2 rounded-xl border border-amber-800/20 text-center mt-1">
-                        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 block mb-0.5">Contoh Potongan Lafadz:</span>
-                        <span className="font-quran text-lg font-bold text-emerald-950 dark:text-emerald-200 block" dir="rtl">
-                          {item.contohLafadz}
-                        </span>
-                      </div>
-                    </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-80 overflow-y-auto pr-1">
+              {filteredEncyclopedia.map((entry, idx) => (
+                <div 
+                  key={idx}
+                  className="p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-xl space-y-1.5 shadow-[2px_2px_0px_0px_#000]"
+                >
+                  <div className="flex items-center justify-between">
+                    <h6 className="font-black text-xs text-black dark:text-white flex items-center gap-1.5">
+                      <span>{entry.title}</span>
+                      <span className="font-quran text-emerald-800 dark:text-emerald-300 font-bold">({entry.arabicName})</span>
+                    </h6>
+                    <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-1.5 py-0.5 rounded border border-amber-800">
+                      {entry.category}
+                    </span>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300">
-                <p className="text-xs font-bold text-gray-500">
-                  Tidak ditemukan kaidah tajwid/gharib yang cocok dengan "{encyclopediaSearch}".
-                </p>
-              </div>
-            )}
+                  <p className="text-[11px] text-gray-700 dark:text-gray-300">{entry.summary}</p>
+                  <div className="bg-amber-50 dark:bg-amber-950/40 p-2 rounded-lg border border-amber-800/40 font-mono text-[11px] flex justify-between items-center">
+                    <span className="text-gray-600 dark:text-gray-400">Contoh:</span>
+                    <span className="font-quran text-sm font-bold text-amber-950 dark:text-amber-200">{entry.contohLafadz}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
-      </div>
-
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-[#F0FDF4] border-2 border-black rounded-xl text-xs text-gray-700">
-        <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-[#0B4627] shrink-0" />
-          <p className="font-medium">
-            <b>Mushaf Standar Madinah (Mujamma' Malik Fahd):</b> Tata letak persis 15 Baris per halaman, 604 Halaman Rasm Utsmani lengkap.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => setCurrentPage(1)}
-            className="px-2 py-1 bg-white hover:bg-gray-100 border border-black rounded-lg font-bold text-[11px] cursor-pointer"
-          >
-            Halaman 1
-          </button>
-          <button
-            onClick={() => setCurrentPage(293)}
-            className="px-2 py-1 bg-white hover:bg-gray-100 border border-black rounded-lg font-bold text-[11px] cursor-pointer"
-          >
-            Al-Kahf (293)
-          </button>
-          <button
-            onClick={() => setCurrentPage(582)}
-            className="px-2 py-1 bg-white hover:bg-gray-100 border border-black rounded-lg font-bold text-[11px] cursor-pointer"
-          >
-            Juz 30 (582)
-          </button>
-        </div>
       </div>
     </div>
   );
