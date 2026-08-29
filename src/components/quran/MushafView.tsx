@@ -23,6 +23,7 @@ import { getBookmarks, saveBookmark, setLastRead, getLastRead } from '../../serv
 
 import { PhysicalMushafPageReader } from './PhysicalMushafPageReader';
 import { useLanguage } from '../../context/LanguageContext';
+import { getTajweedColorForWord } from '../../services/quranTajweedGharibService';
 
 const STORAGE_MUSHAF_MODE = 'quranverse_mushaf_view_mode_v1';
 
@@ -33,7 +34,7 @@ export const MushafView: React.FC = () => {
       const saved = localStorage.getItem(STORAGE_MUSHAF_MODE);
       if (saved === 'digital' || saved === 'physical') return saved;
     } catch {}
-    return 'digital';
+    return 'physical'; // Default: Mushaf Fisik Asli (Open Book Spread)
   });
 
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(1);
@@ -373,22 +374,37 @@ export const MushafView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Arabic Text (Clickable Words) */}
+                {/* Arabic Text (Clickable Words with Tajweed Colors) */}
                 <div className="my-4 text-right" dir="rtl">
                   {ayat.words && ayat.words.length > 0 ? (
-                    <div className="flex flex-wrap gap-x-2 gap-y-3 items-center">
-                      {ayat.words.map((w) => (
-                        <span
-                          key={w.id}
-                          onClick={() => handleWordClick(ayat, w)}
-                          style={{ fontSize: `${fontSize}px` }}
-                          className="font-quran leading-loose text-emerald-950 dark:text-emerald-300 hover:bg-[#FEF3C7] hover:text-black px-1.5 py-0.5 rounded-lg border border-transparent hover:border-black cursor-pointer transition-all inline-block"
-                          title={`Klik: "${w.meaningId}" (${w.transliteration})`}
-                        >
-                          {w.arabic}
-                        </span>
-                      ))}
-                      <span className="w-8 h-8 rounded-full border-2 border-black bg-[#F59E0B] text-black font-quran text-xs flex items-center justify-center font-bold mr-2 shadow-[1px_1px_0px_0px_#000]">
+                    <div className="flex flex-wrap gap-x-2.5 gap-y-3.5 items-center">
+                      {ayat.words.map((w, wIdx) => {
+                        const nextW = ayat.words ? ayat.words[wIdx + 1]?.arabic || '' : '';
+                        const prevW = ayat.words ? ayat.words[wIdx - 1]?.arabic || '' : '';
+                        const isLineEnd = wIdx === (ayat.words?.length || 0) - 1;
+                        const tajweed = getTajweedColorForWord(w.arabic, nextW, prevW, isLineEnd);
+
+                        return (
+                          <span
+                            key={w.id}
+                            onClick={() => handleWordClick(ayat, w)}
+                            style={{ 
+                              fontSize: `${fontSize}px`,
+                              color: tajweed.color !== '#0F172A' ? tajweed.color : undefined,
+                              backgroundColor: tajweed.bg !== 'transparent' ? tajweed.bg : undefined
+                            }}
+                            className={`font-quran leading-loose px-2 py-0.5 rounded-lg cursor-pointer transition-all inline-block ${
+                              tajweed.bg !== 'transparent' 
+                                ? 'shadow-xs border border-amber-300/40 font-bold' 
+                                : 'text-emerald-950 dark:text-emerald-300 hover:bg-[#FEF3C7] hover:text-black border border-transparent hover:border-black'
+                            }`}
+                            title={tajweed.ruleName ? `[${tajweed.ruleName}] ${w.meaningId} (${w.transliteration})` : `"${w.meaningId}" (${w.transliteration})`}
+                          >
+                            {w.arabic}
+                          </span>
+                        );
+                      })}
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full border-2 border-black bg-[#F59E0B] text-black font-quran text-xs font-bold mr-2 shadow-[1px_1px_0px_0px_#000]">
                         ۝{ayat.numberInSurah}
                       </span>
                     </div>

@@ -1883,44 +1883,26 @@ export function getTajweedColorForWord(
     return { color: '#0891B2', bg: '#CFFAFE', ruleName: 'Izhar Syafawi (Mim Jelas)' };
   }
 
-  // 10. Qalqalah (Pantulan Huruf ق, ط, ب, ج, د)
+  // 10. Qalqalah (Pantulan Huruf ق, ط, ب, ج, د yang bersukun)
   if (/[قطبجد][\u0652]/.test(w)) {
-    return { color: '#EA580C', bg: '#FFEDD5', ruleName: 'Qalqalah Sughra (Pantulan Ringan)' };
+    return { color: '#C2410C', bg: '#FFEDD5', ruleName: 'Qalqalah Sughra (Pantulan Ringan)' };
   }
 
   // 11. Lam Jalalah (Lafadz Allah)
   if (/(?:ٱللَّ|اللَّ|لِلَّ)/.test(w)) {
     if (/لِلَّ/.test(w) || (prevWord && /[\u0650]$/.test(prevWord))) {
-      return { color: '#0284C7', bg: '#E0F2FE', ruleName: 'Lam Jalalah Tarqiq (Tipis - Lillah)' };
+      return { color: '#0369A1', bg: 'transparent', ruleName: 'Lam Jalalah Tarqiq (Tipis - Lillah)' };
     }
-    return { color: '#0D9488', bg: '#CCFBF1', ruleName: 'Lam Jalalah Tafkhim (Tebal Bergema - Alloh)' };
+    return { color: '#047857', bg: 'transparent', ruleName: 'Lam Jalalah Tafkhim (Tebal - Alloh)' };
   }
 
   // 12. Alif Lam Syamsiyah & Qamariyah
   if (/(?:ٱل|ال)[تثدذرزسشصضطظلن]\u0651/.test(w)) {
-    return { color: '#4338CA', bg: '#E0E7FF', ruleName: 'Idgham Syamsiyah (Al-Syamsiyah)' };
+    return { color: '#4338CA', bg: 'transparent', ruleName: 'Idgham Syamsiyah (Al-Syamsiyah)' };
   }
   if (/(?:ٱل[\u0652]|ال[\u0652]|ٱل|ال)[ابغحجكوخفعقيمھء]/.test(w) && !w.includes('\u0651')) {
-    return { color: '#0369A1', bg: '#E0F2FE', ruleName: 'Izhar Qamariyah (Al-Qamariyah)' };
+    return { color: '#0F172A', bg: 'transparent', ruleName: 'Izhar Qamariyah (Al-Qamariyah)' };
   }
 
-  // 13. Mad Badal (Hamzah bertemu huruf Mad)
-  if (/^(?:ءَامَ|ءَاتَ|أُوتُ|إِيمَ|ءَالِ)/.test(w)) {
-    return { color: '#92400E', bg: '#FEF3C7', ruleName: 'Mad Badal (2 Harakat)' };
-  }
-
-  // 14. Mad Thobi'i / Mad Asli / Alif Khanjariyah
-  if (/[\u0670]/.test(w) || /[\u064E]ا|[\u064F]و[\u0652]?|[\u0650]ي[\u0652]?|[\u0649]/.test(w)) {
-    return { color: '#92400E', bg: '#FEF3C7', ruleName: "Mad Thobi'i / Mad Asli (2 Harakat)" };
-  }
-
-  // 15. Ra' Tafkhim & Tarqiq
-  if (/ر[\u064E\u064F\u0651]/.test(w)) {
-    return { color: '#B45309', bg: '#FEF3C7', ruleName: "Ra' Tafkhim (Tebal)" };
-  }
-  if (/ر[\u0650]/.test(w)) {
-    return { color: '#0284C7', bg: '#E0F2FE', ruleName: "Ra' Tarqiq (Tipis)" };
-  }
-
-  return { color: '#064E3B', bg: 'transparent' };
+  return { color: '#0F172A', bg: 'transparent' };
 }
