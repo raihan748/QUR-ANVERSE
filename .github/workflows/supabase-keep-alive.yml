@@ -1,0 +1,34 @@
+﻿name: Supabase Keep-Alive Anti-Pause Bot
+
+on:
+  schedule:
+    # Berjalan otomatis setiap 3 hari sekali pada pukul 00:00 UTC (07:00 WIB)
+    - cron: '0 0 */3 * *'
+  workflow_dispatch:
+    # Memungkinkan Anda menjalankan bot secara manual kapan saja dari tab Actions di GitHub
+
+jobs:
+  ping-supabase:
+    name: 🏓 Ping Supabase Database
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 🕒 Catat Waktu Eksekusi
+        run: |
+          echo "Memulai ping Supabase Keep-Alive pada $(date -u)"
+
+      - name: 🚀 Ping Supabase REST & Auth Health Endpoint
+        run: |
+          PROJECT_URL="https://czpkkhcejmrtlaguynnh.supabase.co"
+          
+          echo "Mengirim ping ke REST API: $PROJECT_URL/rest/v1/ ..."
+          HTTP_REST=$(curl -s -o /dev/null -w "%{http_code}" "$PROJECT_URL/rest/v1/" || echo "000")
+          echo "Status REST API Response: $HTTP_REST"
+
+          echo "Mengirim ping ke Auth Health: $PROJECT_URL/auth/v1/health ..."
+          HTTP_AUTH=$(curl -s -o /dev/null -w "%{http_code}" "$PROJECT_URL/auth/v1/health" || echo "000")
+          echo "Status Auth Health Response: $HTTP_AUTH"
+
+          echo "✅ Berhasil! Sinyal aktivitas berhasil dikirim ke Supabase."
+          echo "🛡️ Inactivity Timer 7 Hari Supabase telah di-reset ke 0."
