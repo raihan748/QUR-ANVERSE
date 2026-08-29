@@ -1304,9 +1304,9 @@ export function getMadinahPageFallbackUrls(page: number): string[] {
   const safePage = Math.max(1, Math.min(604, page));
   const pStr = String(safePage).padStart(3, '0');
   return [
+    `https://www.mp3quran.net/api/quran_pages_svg/${pStr}.svg`,
     `https://quran.ksu.edu.sa/ayat/safahat1/${safePage}.png`,
     `https://android.quran.com/data/width_1260/page${pStr}.png`,
-    `https://www.mp3quran.net/api/quran_pages_svg/${pStr}.svg`,
     `https://android.quran.com/data/width_1024/page${pStr}.png`
   ];
 }
