@@ -249,6 +249,13 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
     speechEngine.clearTranscript();
     continuousTracker.resumeAfterCorrection();
 
+    // 1. Start real-time Web Audio API decibel metering (60 FPS, 0 delay)
+    audioRecorder.startRecording({
+      onVolumeUpdate: (volume) => setMicVolume(volume),
+      boostGain: true
+    });
+
+    // 2. Start speech recognition
     speechEngine.setLanguage(speechLanguage);
     speechEngine.setSensitivity(micSensitivity);
     const started = speechEngine.startListening({
@@ -256,12 +263,10 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       sensitivity: micSensitivity,
       onInterimResult: (text, alts) => {
         setLiveTranscript(text);
-        setMicVolume(Math.min(95, 45 + Math.round(Math.random() * 40)));
         continuousTracker.processStream(text, alts, false);
       },
       onFinalResult: (text, alts) => {
         setLiveTranscript(text);
-        setMicVolume(Math.min(95, 55 + Math.round(Math.random() * 35)));
         continuousTracker.processStream(text, alts, true);
       },
       onError: (err) => {
@@ -274,7 +279,6 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
     if (started) {
       setIsRecording(true);
-      setMicVolume(25);
     }
   };
 
@@ -372,7 +376,13 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       }
     }, micSensitivity);
 
-    // 2. Start Speech Recognition with 100% Dedicated Microphone Access
+    // 2. Start Web Audio API decibel metering (60 FPS, 0 delay)
+    audioRecorder.startRecording({
+      onVolumeUpdate: (volume) => setMicVolume(volume),
+      boostGain: true
+    });
+
+    // 3. Start Speech Recognition with 100% Dedicated Microphone Access
     speechEngine.setLanguage(speechLanguage);
     speechEngine.setSensitivity(micSensitivity);
     const started = speechEngine.startListening({
@@ -380,12 +390,10 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       sensitivity: micSensitivity,
       onInterimResult: (text, alts) => {
         setLiveTranscript(text);
-        setMicVolume(Math.min(95, 45 + Math.round(Math.random() * 40)));
         continuousTracker.processStream(text, alts, false);
       },
       onFinalResult: (text, alts) => {
         setLiveTranscript(text);
-        setMicVolume(Math.min(95, 55 + Math.round(Math.random() * 35)));
         continuousTracker.processStream(text, alts, true);
       },
       onError: (err) => {
@@ -398,7 +406,6 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
     if (started) {
       setIsRecording(true);
-      setMicVolume(25);
     } else {
       setSheikhTeguranMessage('Fitur Dikte Suara membutuhkan izin mikrofon atau gunakan browser Google Chrome / Edge / Safari.');
     }
@@ -408,6 +415,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   const handleStopSession = () => {
     continuousTracker.stop();
     speechEngine.stopListening();
+    audioRecorder.stopRecording();
     audioPlayer.stop();
     setIsRecording(false);
     setMicVolume(0);

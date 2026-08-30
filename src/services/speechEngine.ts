@@ -789,56 +789,88 @@ export class ContinuousMurojaahTracker {
     const expectedWords = currentPrecompiled.words;
     if (expectedWords.length === 0 || this.currentWordIndex >= expectedWords.length) return;
 
-    // Collect candidate tokens from current utterance
-    const candidates = [rawTranscript, ...(alternatives || [])].filter(Boolean);
-    const rawTokens: string[] = [];
+    // Distinct candidate phrases for multi-hypothesis evaluation
+    const candidatePhrases = [rawTranscript, ...(alternatives || [])].filter(Boolean);
+    if (candidatePhrases.length === 0) return;
 
-    for (const c of candidates) {
-      const words = c.split(/\s+/).filter(Boolean);
-      rawTokens.push(...words);
+    let bestAdvance = 0;
+    let bestMatchedIndices: number[] = [];
+
+    for (const phrase of candidatePhrases) {
+      const rawTokens = phrase.trim().split(/\s+/).filter(Boolean);
+      if (rawTokens.length === 0) continue;
+
+      const analyzed = rawTokens.map(w => analyzeSpokenToken(w));
+      let testWordIdx = this.currentWordIndex;
+      let tokenCursor = 0;
+      const matchedThisPhrase: number[] = [];
+
+      while (testWordIdx < expectedWords.length && tokenCursor < analyzed.length) {
+        const targetWord = expectedWords[testWordIdx];
+        let matchFound = false;
+
+        // Greedy window of up to 3 spoken tokens
+        const searchLimit = Math.min(tokenCursor + 3, analyzed.length);
+        for (let s = tokenCursor; s < searchLimit; s++) {
+          if (isPrecompiledWordMatch(targetWord, analyzed[s], this.sensitivity)) {
+            matchedThisPhrase.push(testWordIdx);
+            testWordIdx++;
+            tokenCursor = s + 1;
+            matchFound = true;
+            break;
+          }
+        }
+
+        if (!matchFound) {
+          tokenCursor++;
+        }
+      }
+
+      if (matchedThisPhrase.length > bestMatchedIndices.length) {
+        bestMatchedIndices = matchedThisPhrase;
+        bestAdvance = testWordIdx - this.currentWordIndex;
+      }
     }
 
-    if (rawTokens.length === 0) return;
-
-    const analyzedTokens: SpokenTokenAnalysis[] = rawTokens.map(w => analyzeSpokenToken(w));
-
-    // Multi-token greedy chronological matcher across current utterance
-    let tokenCursor = 0;
-
-    while (this.currentWordIndex < expectedWords.length && tokenCursor < analyzedTokens.length) {
-      const targetWord = expectedWords[this.currentWordIndex];
-      let matchedTokenIndex = -1;
-
-      // Lookahead window of up to 4 tokens
-      const searchEnd = Math.min(tokenCursor + 4, analyzedTokens.length);
-      for (let sIdx = tokenCursor; sIdx < searchEnd; sIdx++) {
-        const spoken = analyzedTokens[sIdx];
-        if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
-          matchedTokenIndex = sIdx;
+    // Direct match against latest spoken words if multi-phrase matching was blocked
+    if (bestMatchedIndices.length === 0) {
+      const allTokens = rawTranscript.trim().split(/\s+/).filter(Boolean);
+      const lastTokens = allTokens.slice(-2);
+      for (const tok of lastTokens) {
+        const analyzed = analyzeSpokenToken(tok);
+        if (isPrecompiledWordMatch(expectedWords[this.currentWordIndex], analyzed, this.sensitivity)) {
+          bestMatchedIndices = [this.currentWordIndex];
+          bestAdvance = 1;
+          break;
+        } else if (
+          this.currentWordIndex + 1 < expectedWords.length &&
+          isPrecompiledWordMatch(expectedWords[this.currentWordIndex + 1], analyzed, this.sensitivity)
+        ) {
+          bestMatchedIndices = [this.currentWordIndex, this.currentWordIndex + 1];
+          bestAdvance = 2;
           break;
         }
       }
+    }
 
-      if (matchedTokenIndex >= 0) {
-        if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
-          this.matchedWordsMap.set(this.currentAyahIndex, new Set());
-        }
-
-        const wIdx = this.currentWordIndex;
-        this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
-        this.matchedWordsCount++;
-        this.lastMatchTime = Date.now();
-
-        if (this.callbacks) {
-          this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, targetWord.raw);
-        }
-
-        this.currentWordIndex++;
-        tokenCursor = matchedTokenIndex + 1; // Advance token cursor past matched word
-      } else {
-        // Did not match the next target word in this window
-        break;
+    // Apply matched words instantly
+    if (bestMatchedIndices.length > 0) {
+      if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
+        this.matchedWordsMap.set(this.currentAyahIndex, new Set());
       }
+
+      for (const wIdx of bestMatchedIndices) {
+        if (wIdx < expectedWords.length) {
+          this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
+          this.matchedWordsCount++;
+          if (this.callbacks) {
+            this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, expectedWords[wIdx].raw);
+          }
+        }
+      }
+
+      this.currentWordIndex = Math.min(expectedWords.length, this.currentWordIndex + bestAdvance);
+      this.lastMatchTime = Date.now();
     }
 
     // Check if the Ayah has been fully recited

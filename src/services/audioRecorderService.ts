@@ -61,8 +61,12 @@ export class AudioRecorderService {
 
         this.analyser = this.audioContext.createAnalyser();
         this.analyser.fftSize = 256;
-        this.analyser.smoothingTimeConstant = 0.3;
+        this.analyser.smoothingTimeConstant = 0.1; // Instant dynamic response without sluggish lag
         targetNode.connect(this.analyser);
+
+        if (this.audioContext.state === 'suspended') {
+          this.audioContext.resume().catch(() => {});
+        }
 
         const bufferLength = this.analyser.frequencyBinCount;
         this.dataArray = new Uint8Array(bufferLength);
@@ -71,13 +75,23 @@ export class AudioRecorderService {
           if (!this.analyser || !this.dataArray) return;
           this.analyser.getByteFrequencyData(this.dataArray as any);
 
+          // Focus on human vocal frequencies (bins 2 to 45: ~100Hz to 3.5kHz)
           let sum = 0;
-          for (let i = 0; i < this.dataArray.length; i++) {
-            sum += this.dataArray[i];
+          let peak = 0;
+          const endBin = Math.min(45, this.dataArray.length);
+          const startBin = 2;
+          const count = endBin - startBin;
+
+          for (let i = startBin; i < endBin; i++) {
+            const val = this.dataArray[i];
+            sum += val;
+            if (val > peak) peak = val;
           }
-          const average = sum / this.dataArray.length;
-          // Scale from 0 to 100 with boosted dynamic range
-          const normalizedVol = Math.min(100, Math.round((average / 110) * 100));
+          const avg = sum / (count || 1);
+          
+          // Instant responsive decibel curve (0-100)
+          const energy = peak * 0.7 + avg * 0.3;
+          const normalizedVol = Math.min(100, Math.max(0, Math.round((energy / 140) * 100)));
 
           if (onVolumeUpdate) {
             onVolumeUpdate(normalizedVol);
