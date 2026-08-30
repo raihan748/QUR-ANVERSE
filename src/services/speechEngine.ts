@@ -102,23 +102,17 @@ export function canonicalizeArabicPhonemes(text: string): string {
   return clean
     // 1. Unify all Alif / Hamzah / Wasl variants -> ا
     .replace(/[أإآٱٲٳٵءئؤ]/g, 'ا')
-    // 2. Acoustic sibilant merger (ص, ث, ش -> س)
-    .replace(/[صثش]/g, 'س')
-    // 3. Acoustic coronal / emphatic merger (ض, ظ, ذ, ز -> د)
-    .replace(/[ضظذز]/g, 'د')
+    // 2. Acoustic sibilant merger (ص, ث -> س)
+    .replace(/[صث]/g, 'س')
+    // 3. Acoustic coronal / emphatic merger (ض, ظ, ذ -> د)
+    .replace(/[ضظذ]/g, 'د')
     // 4. Acoustic dental stop merger (ط -> ت)
     .replace(/[ط]/g, 'ت')
     // 5. Ta Marbutah & Ha merger (ة -> ه)
     .replace(/[ة]/g, 'ه')
-    // 6. Acoustic velar / uvular stop merger (ق, غ, خ -> ك)
-    .replace(/[قغخ]/g, 'ك')
-    // 7. Pharyngeal & Glottal fricative merger (ح -> ه)
-    .replace(/[ح]/g, 'ه')
-    // 8. 'Ain to Alif merger (ع -> ا)
-    .replace(/[ع]/g, 'ا')
-    // 9. Ya / Alif Maqsurah merger (ى -> ي)
+    // 6. Ya / Alif Maqsurah merger (ى -> ي)
     .replace(/[ى]/g, 'ي')
-    // 10. Strip repeated adjacent letters (e.g. ll -> l, dd -> d)
+    // 7. Strip repeated adjacent letters (e.g. ll -> l, dd -> d)
     .replace(/(.)\1+/g, '$1')
     .replace(/\s+/g, '')
     .trim();
@@ -332,9 +326,9 @@ export function isPrecompiledWordMatch(
   // 4. Short words (length <= 3): Strict to prevent false matching random syllables
   if (target.charLength <= 3 || candidate.canonical.length <= 3) {
     const diff = Math.abs(target.charLength - candidate.canonical.length);
-    if (diff > 2) return false;
+    if (diff > 1) return false;
 
-    const shortThresh = sensitivity === 'ultra' ? 0.50 : sensitivity === 'high' ? 0.60 : 0.70;
+    const shortThresh = sensitivity === 'ultra' ? 0.65 : sensitivity === 'high' ? 0.75 : 0.85;
     return (
       fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= shortThresh ||
       (target.stemCanon && candidate.stemCanon && fastLevenshteinSimilarity(target.stemCanon, candidate.stemCanon) >= shortThresh) ||
@@ -343,8 +337,8 @@ export function isPrecompiledWordMatch(
   }
 
   // 5. Medium / Long Words (length >= 4)
-  const canonThresh = sensitivity === 'ultra' ? 0.38 : sensitivity === 'high' ? 0.48 : 0.58;
-  const latinThresh = sensitivity === 'ultra' ? 0.35 : sensitivity === 'high' ? 0.45 : 0.55;
+  const canonThresh = sensitivity === 'ultra' ? 0.60 : sensitivity === 'high' ? 0.68 : 0.75;
+  const latinThresh = sensitivity === 'ultra' ? 0.58 : sensitivity === 'high' ? 0.65 : 0.72;
 
   if (fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= canonThresh) {
     return true;
@@ -377,12 +371,12 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string, sensi
 
   if (tCanon.length >= 3 && sCanon.length >= 3) {
     if (tCanon.includes(sCanon) || sCanon.includes(tCanon)) {
-      if (Math.abs(tCanon.length - sCanon.length) <= 2) return true;
+      if (Math.abs(tCanon.length - sCanon.length) <= 1) return true;
     }
   }
 
-  const canonThresh = sensitivity === 'ultra' ? 0.30 : sensitivity === 'high' ? 0.38 : 0.48;
-  const latinThresh = sensitivity === 'ultra' ? 0.28 : sensitivity === 'high' ? 0.35 : 0.45;
+  const canonThresh = sensitivity === 'ultra' ? 0.60 : sensitivity === 'high' ? 0.68 : 0.75;
+  const latinThresh = sensitivity === 'ultra' ? 0.58 : sensitivity === 'high' ? 0.65 : 0.72;
 
   return fastLevenshteinSimilarity(tCanon, sCanon) >= canonThresh || fastLevenshteinSimilarity(tLatin, sLatin) >= latinThresh;
 }
@@ -499,9 +493,11 @@ export class SpeechEngine {
         const currentAlternatives: string[] = [];
         let isFinalUtterance = false;
 
-        const effectiveStartIndex = Math.min(this.startResultIndex, event.results.length - 1);
+        if (this.startResultIndex >= event.results.length) {
+          return;
+        }
 
-        for (let rIdx = effectiveStartIndex; rIdx < event.results.length; rIdx++) {
+        for (let rIdx = this.startResultIndex; rIdx < event.results.length; rIdx++) {
           const res = event.results[rIdx];
           if (res && res[0] && res[0].transcript) {
             fullTranscript += ' ' + res[0].transcript;
@@ -944,14 +940,14 @@ export class ContinuousMurojaahTracker {
         }
       }
 
-      // Check whole verse coverage
+      // Check whole verse coverage (Only if spoken transcript actually covers the full verse)
       const phraseCanon = canonicalizeArabicPhonemes(phrase);
       if (
         phraseCanon.length >= 6 &&
         currentPrecompiled.fullArabicCanonical.length >= 6 &&
         (phraseCanon.includes(currentPrecompiled.fullArabicCanonical) ||
-          currentPrecompiled.fullArabicCanonical.includes(phraseCanon) ||
-          fastLevenshteinSimilarity(phraseCanon, currentPrecompiled.fullArabicCanonical) >= 0.60)
+          (phraseCanon.length >= currentPrecompiled.fullArabicCanonical.length * 0.75 &&
+            fastLevenshteinSimilarity(phraseCanon, currentPrecompiled.fullArabicCanonical) >= 0.70))
       ) {
         matchedThisPhrase.length = 0;
         for (let i = 0; i < expectedWords.length; i++) {
