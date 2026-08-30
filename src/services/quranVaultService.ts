@@ -212,7 +212,7 @@ class QuranVaultEngine {
           const prevW = wIdx > 0 ? wordsList[wIdx - 1].arabic : prevLastWord;
           const nextW = wIdx < wordsList.length - 1 ? wordsList[wIdx + 1].arabic : nextFirstWord;
           const isEnd = wIdx === wordsList.length - 1;
-          const tajweedRule = getTajweedColorForWord(w.arabic, prevW, nextW, isEnd);
+          const tajweedRule = getTajweedColorForWord(w.arabic, nextW, prevW, isEnd);
           return this.sha256(`${w.arabic}:${tajweedRule.ruleName || 'Harakat Asli'}`);
         });
         const wordsMerkleRoot = this.sha256(wordHashes.join('__'));
