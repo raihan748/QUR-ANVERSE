@@ -7,6 +7,7 @@ import { Sidebar } from './components/common/Sidebar';
 import { BottomNav } from './components/common/BottomNav';
 import { InstallPwaModal } from './components/common/InstallPwaModal';
 import { QuranVaultModal } from './components/security/QuranVaultModal';
+import { quranVault } from './services/quranVaultService';
 import { ScrollToTopButton } from './components/common/ScrollToTopButton';
 import { LandingHeroShowcase } from './components/landing/LandingHeroShowcase';
 import { MushafView } from './components/quran/MushafView';
@@ -25,6 +26,11 @@ export function App() {
   const [userProfile, setUserProfile] = useState<UserProfile>(getLocalProfile());
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isQuranVaultModalOpen, setIsQuranVaultModalOpen] = useState(false);
+
+  // Initialize Quran Vault 00:00 Midnight Autonomous Reconciliation on boot
+  useEffect(() => {
+    quranVault.startMidnightReconciliationScheduler();
+  }, []);
 
   // Prayer times state
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>(calculatePrayerTimes());

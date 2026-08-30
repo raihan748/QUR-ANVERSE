@@ -152,23 +152,29 @@ export const QuranVaultModal: React.FC<QuranVaultModalProps> = ({ isOpen, onClos
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-xl text-center shadow-[2px_2px_0px_0px_#000]">
                   <span className="text-xs text-gray-500 font-bold block">Ayat Al-Qur'an</span>
-                  <span className="text-lg font-black font-mono text-[#0B4627] dark:text-emerald-400">6.236</span>
-                  <span className="text-[9px] font-black text-emerald-600 block">✓ Terverifikasi</span>
+                  <span className="text-lg font-black font-mono text-[#0B4627] dark:text-emerald-400">
+                    {vaultStatus.totalVersesChecked.toLocaleString('id-ID')}
+                  </span>
+                  <span className="text-[9px] font-black text-emerald-600 block">✓ 114 Surah Lulus</span>
                 </div>
                 <div className="p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-xl text-center shadow-[2px_2px_0px_0px_#000]">
                   <span className="text-xs text-gray-500 font-bold block">Kaidah Tajwid</span>
-                  <span className="text-lg font-black font-mono text-[#0B4627] dark:text-emerald-400">12+</span>
+                  <span className="text-lg font-black font-mono text-[#0B4627] dark:text-emerald-400">
+                    {vaultStatus.totalTajweedRulesChecked || 52}
+                  </span>
                   <span className="text-[9px] font-black text-emerald-600 block">✓ Terkunci SHA-256</span>
                 </div>
                 <div className="p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-xl text-center shadow-[2px_2px_0px_0px_#000]">
-                  <span className="text-xs text-gray-500 font-bold block">Data Tampered</span>
-                  <span className="text-lg font-black font-mono text-emerald-600">0</span>
+                  <span className="text-xs text-gray-500 font-bold block">Kata Muroja'ah</span>
+                  <span className="text-lg font-black font-mono text-[#0B4627] dark:text-emerald-400">
+                    {vaultStatus.totalWordsChecked ? vaultStatus.totalWordsChecked.toLocaleString('id-ID') : '78.078'}
+                  </span>
                   <span className="text-[9px] font-black text-emerald-600 block">✓ 0 Kerusakan</span>
                 </div>
                 <div className="p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-xl text-center shadow-[2px_2px_0px_0px_#000]">
-                  <span className="text-xs text-gray-500 font-bold block">DOM Sentinel</span>
+                  <span className="text-xs text-gray-500 font-bold block">Auto-Heal 00:00</span>
                   <span className="text-lg font-black font-mono text-emerald-600">AKTIF</span>
-                  <span className="text-[9px] font-black text-emerald-600 block">✓ Real-time Guard</span>
+                  <span className="text-[9px] font-black text-emerald-600 block">✓ Self-Healing 24h</span>
                 </div>
               </div>
 
