@@ -337,7 +337,16 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           targetWord: targetWord || '',
           spokenWord: spokenWord || ''
         });
-        setSheikhTeguranMessage(`🚨 Peringatan Tajwid/Lafal: ${reason}`);
+        setSheikhTeguranMessage(`🚨 Teguran Otomatis Syekh: ${reason}`);
+
+        // 🔊 2. Play authentic Sheikh voice intervention automatically
+        setIsSheikhSpeaking(true);
+        audioPlayer.playSheikhIntervention(
+          targetAyat.surahNumber,
+          targetAyat.numberInSurah,
+          activeReciter.id,
+          () => setIsSheikhSpeaking(false)
+        );
 
         // Record weak verse for spaced repetition
         recordWeakVerse({

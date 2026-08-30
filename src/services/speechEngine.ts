@@ -749,6 +749,7 @@ export class ContinuousMurojaahTracker {
   private totalErrors = 0;
   private totalWordsCount = 0;
   private matchedWordsCount = 0;
+  private consecutiveMismatchCount = 0;
   private sensitivity: SensitivityLevel = 'ultra';
 
   public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'ultra'): void {
@@ -760,6 +761,7 @@ export class ContinuousMurojaahTracker {
     this.matchedWordsMap.clear();
     this.totalErrors = 0;
     this.matchedWordsCount = 0;
+    this.consecutiveMismatchCount = 0;
     this.totalWordsCount = this.precompiledAyats.reduce((sum, a) => sum + a.words.length, 0);
     this.sensitivity = sensitivity;
     this.isActive = true;
@@ -983,8 +985,9 @@ export class ContinuousMurojaahTracker {
       }
     }
 
-    // Apply matched words instantly
+    // Apply matched words or detect error
     if (bestMatchedIndices.length > 0) {
+      this.consecutiveMismatchCount = 0;
       if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
         this.matchedWordsMap.set(this.currentAyahIndex, new Set());
       }
@@ -1001,6 +1004,27 @@ export class ContinuousMurojaahTracker {
 
       this.currentWordIndex = Math.min(expectedWords.length, this.currentWordIndex + bestAdvance);
       this.lastMatchTime = Date.now();
+    } else {
+      const allTokens = rawTranscript.trim().split(/\s+/).filter(Boolean);
+      if (allTokens.length > 0) {
+        const lastSpoken = allTokens[allTokens.length - 1];
+        if (normalizeArabic(lastSpoken).length >= 2) {
+          this.consecutiveMismatchCount++;
+          const targetWord = expectedWords[this.currentWordIndex];
+
+          if ((isFinal || this.consecutiveMismatchCount >= 2) && targetWord && this.callbacks) {
+            this.totalErrors++;
+            this.isPaused = true;
+            this.callbacks.onErrorDetected(
+              this.currentAyahIndex,
+              this.currentWordIndex,
+              `Lafadz terdengar « ${lastSpoken} », target yang benar adalah « ${targetWord.raw} »`,
+              targetWord.raw,
+              lastSpoken
+            );
+          }
+        }
+      }
     }
 
     // Check if the Ayah has been fully recited
