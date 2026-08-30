@@ -373,6 +373,8 @@ export class SpeechEngine {
   private accumulatedTranscript = '';
   private alternativeHypotheses: string[] = [];
   private restartTimeout: any = null;
+  private startResultIndex = 0;
+  private totalResultCount = 0;
 
   constructor() {
     this.initRecognition();
@@ -447,17 +449,22 @@ export class SpeechEngine {
         this.sensitivity = options.sensitivity;
       }
 
+      this.startResultIndex = 0;
+      this.totalResultCount = 0;
       this.accumulatedTranscript = '';
       this.alternativeHypotheses = [];
 
       this.recognition.onresult = (event: any) => {
         if (!event || !event.results || event.results.length === 0) return;
 
+        this.totalResultCount = event.results.length;
         let fullTranscript = '';
         const currentAlternatives: string[] = [];
         let isFinalUtterance = false;
 
-        for (let rIdx = 0; rIdx < event.results.length; rIdx++) {
+        const effectiveStartIndex = Math.min(this.startResultIndex, event.results.length - 1);
+
+        for (let rIdx = effectiveStartIndex; rIdx < event.results.length; rIdx++) {
           const res = event.results[rIdx];
           if (res && res[0] && res[0].transcript) {
             fullTranscript += ' ' + res[0].transcript;
@@ -558,6 +565,7 @@ export class SpeechEngine {
   }
 
   public clearTranscript(): void {
+    this.startResultIndex = this.totalResultCount;
     this.accumulatedTranscript = '';
     this.alternativeHypotheses = [];
   }
@@ -812,12 +820,44 @@ export class ContinuousMurojaahTracker {
         // Greedy window of up to 3 spoken tokens
         const searchLimit = Math.min(tokenCursor + 3, analyzed.length);
         for (let s = tokenCursor; s < searchLimit; s++) {
-          if (isPrecompiledWordMatch(targetWord, analyzed[s], this.sensitivity)) {
+          const spoken = analyzed[s];
+
+          // 1. Direct single-word match
+          if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
             matchedThisPhrase.push(testWordIdx);
             testWordIdx++;
             tokenCursor = s + 1;
             matchFound = true;
             break;
+          }
+
+          // 2. Compound word match (e.g. "مالقارعة" matching ["ما", "القارعة"])
+          if (testWordIdx + 1 < expectedWords.length) {
+            const nextWord = expectedWords[testWordIdx + 1];
+            const compCanon = targetWord.canonical + nextWord.canonical;
+            if (
+              spoken.canonical === compCanon ||
+              fastLevenshteinSimilarity(spoken.canonical, compCanon) >= 0.65 ||
+              (spoken.canonical.includes(nextWord.canonical) && spoken.canonical.length >= compCanon.length - 1)
+            ) {
+              matchedThisPhrase.push(testWordIdx, testWordIdx + 1);
+              testWordIdx += 2;
+              tokenCursor = s + 1;
+              matchFound = true;
+              break;
+            }
+          }
+
+          // 3. Wasl short particle absorption (e.g. user recited "Mal-Qariah", STT transcribed "القارعة")
+          if (targetWord.charLength <= 3 && testWordIdx + 1 < expectedWords.length) {
+            const nextWord = expectedWords[testWordIdx + 1];
+            if (isPrecompiledWordMatch(nextWord, spoken, this.sensitivity)) {
+              matchedThisPhrase.push(testWordIdx, testWordIdx + 1);
+              testWordIdx += 2;
+              tokenCursor = s + 1;
+              matchFound = true;
+              break;
+            }
           }
         }
 
