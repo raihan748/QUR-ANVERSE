@@ -878,12 +878,11 @@ function buildMasterQuranDB(): Record<number, Ayat[]> {
       // Clean leading Bismillah for verse 1 (except Al-Fatihah #1 and At-Taubah #9)
       if (sNo !== 1 && sNo !== 9 && a.numberInSurah === 1) {
         cleanArabic = cleanArabic
-          .replace(/^﻿?بِسْمِ\s*ٱللَّهِ\s*ٱلرَّحْمَـٰنِ\s*ٱلرَّحِيمِ\s*/u, '')
-          .replace(/^﻿?بِسْمِ\s*ٱللَّهِ\s*ٱلرَّحْمَٰنِ\s*ٱلرَّحِيمِ\s*/u, '')
-          .replace(/^﻿/u, '')
+          .replace(/^[\uFEFF\u200B\u00AD\s]*بِسْمِ\s+[ٱا]?للَّ?هِ\s+[ٱا]?لرَّحْمَ[ـٰٰ\u0670]?نِ\s+[ٱا]?لرَّحِيمِ\s*/u, '')
+          .replace(/^[\uFEFF\u200B\u00AD\s]+/u, '')
           .trim();
       } else if (a.numberInSurah === 1) {
-        cleanArabic = cleanArabic.replace(/^﻿/u, '').trim();
+        cleanArabic = cleanArabic.replace(/^[\uFEFF\u200B\u00AD\s]+/u, '').trim();
       }
 
       const meta = SURAH_LIST.find((s) => s.number === sNo) || SURAH_LIST[0];

@@ -263,6 +263,24 @@ export function analyzeSpokenToken(raw: string): SpokenTokenAnalysis {
   return { raw, normalized: norm, canonical: canon, stemCanon, latin };
 }
 
+// Canonical expansion dictionary for Huruf Muqatta'at in 29 Surahs
+export const MUQATTAAT_DICTIONARY: Record<string, string[]> = {
+  'الم': ['الف لام ميم', 'الفلامميم', 'الف لآم ميم', 'alif lam mim', 'aliflaammim'],
+  'المص': ['الف لام ميم صاد', 'الفلامميمصاد', 'alif lam mim shad', 'aliflaammimshaad'],
+  'الر': ['الف لام را', 'الفلامرا', 'الف لام ر', 'alif lam ra', 'aliflaamraa'],
+  'المر': ['الف لام ميم را', 'الفلامميمرا', 'alif lam mim ra', 'aliflaammimraa'],
+  'كهيعص': ['كاف ها يا عين صاد', 'كافهاياعينصاد', 'كاف هاء ياء عين صاد', 'kaf ha ya ain shad', 'kaafhaayaaaainshaad'],
+  'طه': ['طا ها', 'طاها', 'طاء هاء', 'ta ha', 'thaahaa'],
+  'طسم': ['طا سين ميم', 'طاسينميم', 'طاء سين ميم', 'ta sin mim', 'thaasiinmiim'],
+  'طس': ['طا سين', 'طاسين', 'طاء سين', 'ta sin', 'thaasiin'],
+  'يس': ['يا سين', 'ياسين', 'ياء سين', 'ya sin', 'yaasiin'],
+  'ص': ['صاد', 'صآد', 'shad', 'shaad'],
+  'حم': ['حا ميم', 'حاميم', 'حاء ميم', 'ha mim', 'haamiim'],
+  'عسق': ['عين سين قاف', 'عينسينقاف', 'ain sin qaf', 'aiinsiinqaaf'],
+  'ق': ['قاف', 'قآف', 'qaf', 'qaaf'],
+  'ن': ['نون', 'نُون', 'nun', 'nuun']
+};
+
 // Ultra-Fast Word-Level Matcher using Precompiled Structures ($< 0.1ms$) with Dynamic Sensitivity Boost
 export type SensitivityLevel = 'normal' | 'high' | 'ultra';
 
@@ -272,6 +290,25 @@ export function isPrecompiledWordMatch(
   sensitivity: SensitivityLevel = 'ultra'
 ): boolean {
   if (!target || !candidate) return false;
+
+  // 0. Huruf Muqatta'at Fast-Path (29 Surahs)
+  const muqattaExpansions = MUQATTAAT_DICTIONARY[target.normalized];
+  if (muqattaExpansions) {
+    for (const exp of muqattaExpansions) {
+      const normExp = normalizeArabic(exp);
+      const canonExp = canonicalizeArabicPhonemes(exp);
+      const latinExp = normalizeLatinPhonetics(exp);
+      if (
+        candidate.normalized === normExp ||
+        candidate.canonical === canonExp ||
+        candidate.latin === latinExp ||
+        fastLevenshteinSimilarity(candidate.canonical, canonExp) >= 0.55 ||
+        fastLevenshteinSimilarity(candidate.latin, latinExp) >= 0.55
+      ) {
+        return true;
+      }
+    }
+  }
 
   // 1. Direct Equality Fast-Path (0.01ms)
   if (target.normalized === candidate.normalized || target.canonical === candidate.canonical) {
@@ -817,6 +854,30 @@ export class ContinuousMurojaahTracker {
         const targetWord = expectedWords[testWordIdx];
         let matchFound = false;
 
+        // 0. Multi-token Huruf Muqatta'at sequence (e.g. ["الف", "لام", "ميم"] for "الم")
+        const muqattaExp = MUQATTAAT_DICTIONARY[targetWord.normalized];
+        if (muqattaExp) {
+          for (let span = 2; span <= Math.min(5, analyzed.length - tokenCursor); span++) {
+            const combinedTokens = analyzed.slice(tokenCursor, tokenCursor + span).map(t => t.normalized).join(' ');
+            const combinedCanon = canonicalizeArabicPhonemes(combinedTokens);
+            for (const exp of muqattaExp) {
+              const expCanon = canonicalizeArabicPhonemes(exp);
+              if (
+                combinedCanon === expCanon ||
+                fastLevenshteinSimilarity(combinedCanon, expCanon) >= 0.65
+              ) {
+                matchedThisPhrase.push(testWordIdx);
+                testWordIdx++;
+                tokenCursor += span;
+                matchFound = true;
+                break;
+              }
+            }
+            if (matchFound) break;
+          }
+          if (matchFound) continue;
+        }
+
         // Greedy window of up to 3 spoken tokens
         const searchLimit = Math.min(tokenCursor + 3, analyzed.length);
         for (let s = tokenCursor; s < searchLimit; s++) {
@@ -831,13 +892,13 @@ export class ContinuousMurojaahTracker {
             break;
           }
 
-          // 2. Compound word match (e.g. "مالقارعة" matching ["ما", "القارعة"])
+          // 2. 2-Word Compound match (e.g. "مالقارعة" matching ["ما", "القارعة"], "فيلارض" matching ["في", "الارض"])
           if (testWordIdx + 1 < expectedWords.length) {
             const nextWord = expectedWords[testWordIdx + 1];
             const compCanon = targetWord.canonical + nextWord.canonical;
             if (
               spoken.canonical === compCanon ||
-              fastLevenshteinSimilarity(spoken.canonical, compCanon) >= 0.65 ||
+              fastLevenshteinSimilarity(spoken.canonical, compCanon) >= 0.60 ||
               (spoken.canonical.includes(nextWord.canonical) && spoken.canonical.length >= compCanon.length - 1)
             ) {
               matchedThisPhrase.push(testWordIdx, testWordIdx + 1);
@@ -848,7 +909,24 @@ export class ContinuousMurojaahTracker {
             }
           }
 
-          // 3. Wasl short particle absorption (e.g. user recited "Mal-Qariah", STT transcribed "القارعة")
+          // 3. 3-Word Compound match (e.g. "قلهوالله" matching ["قل", "هو", "الله"])
+          if (testWordIdx + 2 < expectedWords.length) {
+            const w2 = expectedWords[testWordIdx + 1];
+            const w3 = expectedWords[testWordIdx + 2];
+            const comp3Canon = targetWord.canonical + w2.canonical + w3.canonical;
+            if (
+              spoken.canonical === comp3Canon ||
+              fastLevenshteinSimilarity(spoken.canonical, comp3Canon) >= 0.60
+            ) {
+              matchedThisPhrase.push(testWordIdx, testWordIdx + 1, testWordIdx + 2);
+              testWordIdx += 3;
+              tokenCursor = s + 1;
+              matchFound = true;
+              break;
+            }
+          }
+
+          // 4. Wasl short particle absorption (e.g. user recited "Mal-Qariah", STT transcribed "القارعة")
           if (targetWord.charLength <= 3 && testWordIdx + 1 < expectedWords.length) {
             const nextWord = expectedWords[testWordIdx + 1];
             if (isPrecompiledWordMatch(nextWord, spoken, this.sensitivity)) {
@@ -864,6 +942,22 @@ export class ContinuousMurojaahTracker {
         if (!matchFound) {
           tokenCursor++;
         }
+      }
+
+      // Check whole verse coverage
+      const phraseCanon = canonicalizeArabicPhonemes(phrase);
+      if (
+        phraseCanon.length >= 6 &&
+        currentPrecompiled.fullArabicCanonical.length >= 6 &&
+        (phraseCanon.includes(currentPrecompiled.fullArabicCanonical) ||
+          currentPrecompiled.fullArabicCanonical.includes(phraseCanon) ||
+          fastLevenshteinSimilarity(phraseCanon, currentPrecompiled.fullArabicCanonical) >= 0.60)
+      ) {
+        matchedThisPhrase.length = 0;
+        for (let i = 0; i < expectedWords.length; i++) {
+          matchedThisPhrase.push(i);
+        }
+        testWordIdx = expectedWords.length;
       }
 
       if (matchedThisPhrase.length > bestMatchedIndices.length) {
