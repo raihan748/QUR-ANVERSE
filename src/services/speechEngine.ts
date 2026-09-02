@@ -6,6 +6,7 @@
 // ==============================================================================
 
 import { Ayat, EvaluationResult } from '../types';
+import { getTajweedColorForWord } from './quranTajweedGharibService';
 import { formatAlafasyAudioUrl } from './audioPlayerService';
 
 // ==============================================================================
@@ -412,6 +413,7 @@ export class SpeechEngine {
   }
 
   private initRecognition(): void {
+    if (typeof window === 'undefined') return;
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       try {
@@ -719,6 +721,101 @@ export class SpeechEngine {
   }
 }
 
+export interface TajweedDiagnosticResult {
+  ruleName: string;
+  category: string;
+  makhrajGuidance: string;
+  errorReason: string;
+}
+
+/**
+ * High-Precision Linguistic Diagnostic Engine:
+ * Meneliti hukum tajwid & makhraj huruf pada kata target vs lafadz yang diucapkan santri.
+ */
+export function diagnoseTajweedAndMakhrajError(
+  targetWord: string,
+  spokenWord: string,
+  nextWord: string = '',
+  prevWord: string = '',
+  isEnd: boolean = false
+): TajweedDiagnosticResult {
+  const tajweed = getTajweedColorForWord(targetWord, nextWord, prevWord, isEnd);
+  const ruleName = tajweed.ruleName || 'Makhraj & Harakat Standar';
+
+  const normTarget = normalizeArabic(targetWord);
+  const normSpoken = normalizeArabic(spokenWord);
+
+  let makhrajNote = '';
+  let specificReason = '';
+
+  // 1. Detect Makhraj Confusions
+  if (normTarget.includes('ع') && !normSpoken.includes('ع')) {
+    makhrajNote = "Makhraj 'Ain (ع): Keluar dari Wasathul Halq (pertengahan tenggorokan). Hindari menggantinya dengan Alif/Hamzah (ء).";
+  } else if (normTarget.includes('ح') && !normSpoken.includes('ح')) {
+    makhrajNote = "Makhraj Ha' (ح): Keluar dari Wasathul Halq dengan hembusan nafas halus yang bersih, jangan tertukar dengan Ha' besar (ه).";
+  } else if (normTarget.includes('ق') && !normSpoken.includes('ق')) {
+    makhrajNote = "Makhraj Qaf (ق): Pangkal lidah paling belakang menempel langit-langit lunak (Aqshal Lisan) dengan sifat tebal/Isti'la & Qalqalah.";
+  } else if (normTarget.includes('ص') && !normSpoken.includes('ص')) {
+    makhrajNote = "Makhraj Shad (ص): Ujung lidah di atas gigi seri bawah dengan sifat tebal/Ithbaq, jangan tertukar dengan Sin (س) tipis.";
+  } else if (normTarget.includes('ض') && !normSpoken.includes('ض')) {
+    makhrajNote = "Makhraj Dhad (ض): Sisi tepi lidah (Hafatul Lisan) menempel pada gigi geraham atas dengan sifat Istithalah.";
+  } else if (normTarget.includes('ط') && !normSpoken.includes('ط')) {
+    makhrajNote = "Makhraj Tha' (ط): Ujung lidah menempel pangkal gigi seri atas dengan sifat tebal/Ithbaq paling kuat.";
+  } else if (normTarget.includes('خ') && !normSpoken.includes('خ')) {
+    makhrajNote = "Makhraj Kha' (خ): Adnal Halq (ujung tenggorokan dekat lidah) dengan sifat Hams dan desah tebal.";
+  } else if (normTarget.includes('غ') && !normSpoken.includes('غ')) {
+    makhrajNote = "Makhraj Ghain (غ): Adnal Halq dengan sifat suara mengalir tanpa desah (Rikhwah).";
+  } else if (normTarget.includes('ث') && !normSpoken.includes('ث')) {
+    makhrajNote = "Makhraj Tsa' (ث): Ujung lidah keluar sedikit menyentuh ujung dua gigi seri atas.";
+  } else if (normTarget.includes('ذ') && !normSpoken.includes('ذ')) {
+    makhrajNote = "Makhraj Dzal (ذ): Ujung lidah menyentuh ujung gigi seri atas dengan suara mengalir lembut.";
+  }
+
+  // 2. Detect Specific Tajweed Violations
+  const hasIdghamBilaghunnah = ruleName.includes('Idgham Bilaghunnah') || /(?:نْ|ن|[ًٌٍ])\s*[لر]/.test(targetWord);
+  const hasIdghamBighunnah = ruleName.includes('Idgham Bighunnah') || /(?:نْ|ن|[ًٌٍ])\s*[ينمو]/.test(targetWord);
+  const hasIqlab = ruleName.includes('Iqlab') || /(?:نْ|ن|[ًٌٍ]|ۢ)\s*ب/.test(targetWord) || targetWord.includes('ۢ');
+  const hasIkhfa = ruleName.includes('Ikhfa') || /(?:نْ|ن|[ًٌٍ])\s*[تثجدذزسشصضطظفقك]/.test(targetWord);
+  const hasQalqalah = ruleName.includes('Qalqalah') || /[قطبدج][\u0652]/.test(targetWord);
+  const hasGhunnah = ruleName.includes('Ghunnah') || /[نم][\u0651]/.test(targetWord);
+
+  let determinedRule = ruleName;
+
+  if (hasIdghamBilaghunnah) {
+    determinedRule = 'Idgham Bilaghunnah (Melebur Tanpa Dengung)';
+    specificReason = `Kaidah Idgham Bilaghunnah: Nun mati/tanwin bertemu Lam (ل) atau Ra (ر) wajib melebur sempurna TANPA dengung. Lafadz terdengar « ${spokenWord} », target yang benar « ${targetWord} ».`;
+  } else if (hasIdghamBighunnah) {
+    determinedRule = 'Idgham Bighunnah (Melebur Disertai Dengung)';
+    specificReason = `Kaidah Idgham Bighunnah: Nun mati/tanwin bertemu Ya/Nun/Mim/Wau wajib melebur disertai dengung 2 harakat di pangkal hidung. Lafadz terdengar « ${spokenWord} », target « ${targetWord} ».`;
+  } else if (hasIqlab) {
+    determinedRule = 'Iqlab (Menukar Bunyi Mim Dengung)';
+    specificReason = `Kaidah Iqlab: Nun mati/tanwin bertemu Ba (ب) wajib ditukar suaranya menjadi Mim (م) disertai dengung 2 harakat di rongga hidung.`;
+  } else if (hasIkhfa) {
+    determinedRule = 'Ikhfa Haqiqi (Samar Disertai Dengung)';
+    specificReason = `Kaidah Ikhfa: Nun mati/tanwin wajib disamarkan mendekati makhraj huruf berikutnya disertai dengung 2 harakat di rongga hidung.`;
+  } else if (hasQalqalah) {
+    determinedRule = 'Qalqalah (Pantulan Suara Murni)';
+    specificReason = `Kaidah Qalqalah: Huruf pantul sukun (ب ج د ط ق) wajib dipantulkan secara mantap dan murni tanpa vokal tambahan.`;
+  } else if (hasGhunnah) {
+    determinedRule = 'Ghunnah Musyaddadah (Dengung Sempurna)';
+    specificReason = `Kaidah Ghunnah Musyaddadah: Huruf Nun atau Mim bertasydid wajib ditahan dengung 2 harakat penuh di pangkal hidung (Khaisyum).`;
+  } else if (ruleName.includes('Mad')) {
+    determinedRule = ruleName;
+    specificReason = `Kaidah ${ruleName}: Wajib dipanjangkan sesuai ketukan harakat yang diwajibkan dalam Rasm Utsmani.`;
+  } else if (makhrajNote) {
+    specificReason = makhrajNote;
+  } else {
+    specificReason = `Lafadz terdengar « ${spokenWord} », target yang benar adalah « ${targetWord} ». Perhatikan makhraj dan harakat rasm Utsmani.`;
+  }
+
+  return {
+    ruleName: determinedRule,
+    category: (determinedRule && determinedRule !== 'Makhraj & Harakat Standar') ? 'Hukum Tajwid' : 'Makharijul Huruf',
+    makhrajGuidance: makhrajNote || 'Lafalkan huruf dari makhraj aslinya dengan menyempurnakan vokal harakat.',
+    errorReason: specificReason
+  };
+}
+
 // ==============================================================================
 // 5. CONTINUOUS MULTI-AYAH MUROJA'AH TRACKER (ZERO-LAG STREAMING MATCHER)
 // ==============================================================================
@@ -1015,10 +1112,23 @@ export class ContinuousMurojaahTracker {
           if ((isFinal || this.consecutiveMismatchCount >= 2) && targetWord && this.callbacks) {
             this.totalErrors++;
             this.isPaused = true;
+
+            const nextWord = expectedWords[this.currentWordIndex + 1]?.raw || '';
+            const prevWord = this.currentWordIndex > 0 ? expectedWords[this.currentWordIndex - 1]?.raw : '';
+            const isEnd = this.currentWordIndex === expectedWords.length - 1;
+
+            const diagnosis = diagnoseTajweedAndMakhrajError(
+              targetWord.raw,
+              lastSpoken,
+              nextWord,
+              prevWord,
+              isEnd
+            );
+
             this.callbacks.onErrorDetected(
               this.currentAyahIndex,
               this.currentWordIndex,
-              `Lafadz terdengar « ${lastSpoken} », target yang benar adalah « ${targetWord.raw} »`,
+              diagnosis.errorReason,
               targetWord.raw,
               lastSpoken
             );
