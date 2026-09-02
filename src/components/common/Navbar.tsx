@@ -28,24 +28,28 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Brand & Logo (QURANVERSE) */}
         <div
           onClick={() => onSelectTab('murojaah_ai')}
-          className="flex items-center gap-3 cursor-pointer group"
+          className="flex items-center gap-3 cursor-pointer group select-none"
         >
-          <div className="w-10 h-10 rounded-xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black font-extrabold shadow-[2px_2px_0px_0px_#000] relative group-hover:scale-105 transition-transform animate-pop">
-            <span className="font-quran text-xl font-bold">قرآن</span>
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#10B981] border border-black flex items-center justify-center animate-bounce">
+          <div className="w-11 h-11 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black shadow-[3px_3px_0px_0px_#000] relative group-hover:scale-105 group-active:scale-95 transition-all overflow-hidden p-0.5 shrink-0 animate-pop">
+            <img 
+              src="/favicon.svg" 
+              alt="Quranverse App Logo" 
+              className="w-full h-full object-contain rounded-xl drop-shadow-sm" 
+            />
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#10B981] border border-black flex items-center justify-center animate-bounce shadow-xs">
               <Sparkles className="w-2.5 h-2.5 text-white" />
             </div>
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="font-extrabold text-base sm:text-xl tracking-wider font-display text-[#F59E0B]">
+            <div className="flex items-center gap-2">
+              <h1 className="font-extrabold text-base sm:text-xl tracking-wider font-display text-[#F59E0B] drop-shadow-xs">
                 {language === 'ar' ? t.brandTitle : 'QURANVERSE'}
               </h1>
-              <span className="px-1.5 py-0.2 bg-black text-[#10B981] text-[10px] font-black rounded border border-[#10B981] uppercase animate-pulse">
+              <span className="px-2 py-0.5 bg-black text-[#10B981] text-[10px] font-black rounded-md border border-[#10B981] uppercase animate-pulse shadow-xs tracking-wide">
                 {t.aiPlatform}
               </span>
             </div>
-            <p className="text-[11px] text-emerald-100 font-medium hidden sm:block">
+            <p className="text-[11px] text-emerald-100 font-semibold hidden sm:block">
               {t.brandSubtitle}
             </p>
           </div>
