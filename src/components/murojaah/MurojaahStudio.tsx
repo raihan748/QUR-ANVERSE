@@ -141,7 +141,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [micVolume, setMicVolume] = useState<number>(0);
   const [speechLanguage, setSpeechLanguage] = useState<ArabicDialect>('ar-SA');
-  const [micSensitivity, setMicSensitivity] = useState<'normal' | 'high' | 'ultra'>('ultra');
+  const [micSensitivity, setMicSensitivity] = useState<'normal' | 'high' | 'ultra'>('normal');
   const [liveTranscript, setLiveTranscript] = useState('');
   const [sheikhTeguranMessage, setSheikhTeguranMessage] = useState<string | null>(null);
   const [isSheikhSpeaking, setIsSheikhSpeaking] = useState(false);
@@ -938,7 +938,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
             {/* Sensitivitas & Touch Assist Helper */}
             <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-emerald-300 font-bold">Sensitivitas Mic:</span>
+                <span className="text-emerald-300 font-bold">Filter Lingkungan & Sensitivitas:</span>
                 {(['normal', 'high', 'ultra'] as const).map((lvl) => (
                   <button
                     key={lvl}
@@ -947,19 +947,23 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                       speechEngine.setSensitivity(lvl);
                       continuousTracker.setSensitivity(lvl);
                     }}
-                    className={`px-2 py-0.5 rounded text-[10px] font-black border transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all cursor-pointer ${
                       micSensitivity === lvl
-                        ? 'bg-[#F59E0B] text-black border-black shadow-xs'
+                        ? 'bg-[#F59E0B] text-black border-black shadow-xs font-black'
                         : 'bg-emerald-900 text-emerald-300 border-emerald-700 hover:bg-emerald-800'
                     }`}
                   >
-                    {lvl === 'normal' ? '🟢 Normal' : lvl === 'high' ? '🟡 Sensitif HP' : '🔥 Super Boost (Ramai)'}
+                    {lvl === 'normal' 
+                      ? '🛡️ Mode Umum (Redam Bising)' 
+                      : lvl === 'high' 
+                      ? '🟡 Mode Seimbang' 
+                      : '🔥 Mode Sunyi / Sensitif'}
                   </button>
                 ))}
               </div>
 
               <span className="text-amber-200 text-[10px] font-semibold">
-                💡 Tap kata kuning atau tombol <b>⚡ Bantu Kata</b> bila dikte macet.
+                💡 Mode Umum aktif: Menyaring suara bising sekitar agar AI tidak salah dengar di tempat umum.
               </span>
             </div>
           </div>

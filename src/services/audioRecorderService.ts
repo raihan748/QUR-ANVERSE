@@ -36,11 +36,11 @@ export class AudioRecorderService {
       }
       this.audioChunks = [];
 
-      // Request microphone access with tuned sensitivity constraints for mobile devices
+      // Request microphone access with tuned sensitivity constraints for mobile devices & public environments
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
-          noiseSuppression: !boostGain, // Disable harsh hardware noise suppression when boost is active
+          noiseSuppression: true, // Always enable hardware noise suppression to filter ambient public chatter
           autoGainControl: true
         }
       });
@@ -54,7 +54,7 @@ export class AudioRecorderService {
         let targetNode: AudioNode = source;
         if (boostGain) {
           const gainNode = this.audioContext.createGain();
-          gainNode.gain.value = 1.8; // Boost sensitivity for mobile / ambient noise
+          gainNode.gain.value = 1.2; // Balanced clean gain without amplifying background chatter
           source.connect(gainNode);
           targetNode = gainNode;
         }

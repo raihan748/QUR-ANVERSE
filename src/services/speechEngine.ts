@@ -282,7 +282,7 @@ export type SensitivityLevel = 'normal' | 'high' | 'ultra';
 export function isPrecompiledWordMatch(
   target: PrecompiledWord,
   candidate: SpokenTokenAnalysis,
-  sensitivity: SensitivityLevel = 'ultra'
+  sensitivity: SensitivityLevel = 'normal'
 ): boolean {
   if (!target || !candidate) return false;
 
@@ -297,8 +297,8 @@ export function isPrecompiledWordMatch(
         candidate.normalized === normExp ||
         candidate.canonical === canonExp ||
         candidate.latin === latinExp ||
-        fastLevenshteinSimilarity(candidate.canonical, canonExp) >= 0.55 ||
-        fastLevenshteinSimilarity(candidate.latin, latinExp) >= 0.55
+        fastLevenshteinSimilarity(candidate.canonical, canonExp) >= 0.60 ||
+        fastLevenshteinSimilarity(candidate.latin, latinExp) >= 0.60
       ) {
         return true;
       }
@@ -324,12 +324,12 @@ export function isPrecompiledWordMatch(
     }
   }
 
-  // 4. Short words (length <= 3): Strict to prevent false matching random syllables
+  // 4. Short words (length <= 3): Strict to prevent false matching random background noise
   if (target.charLength <= 3 || candidate.canonical.length <= 3) {
     const diff = Math.abs(target.charLength - candidate.canonical.length);
     if (diff > 1) return false;
 
-    const shortThresh = sensitivity === 'ultra' ? 0.65 : sensitivity === 'high' ? 0.75 : 0.85;
+    const shortThresh = sensitivity === 'ultra' ? 0.68 : sensitivity === 'high' ? 0.74 : 0.78;
     return (
       fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= shortThresh ||
       (target.stemCanon && candidate.stemCanon && fastLevenshteinSimilarity(target.stemCanon, candidate.stemCanon) >= shortThresh) ||
@@ -338,8 +338,8 @@ export function isPrecompiledWordMatch(
   }
 
   // 5. Medium / Long Words (length >= 4)
-  const canonThresh = sensitivity === 'ultra' ? 0.60 : sensitivity === 'high' ? 0.68 : 0.75;
-  const latinThresh = sensitivity === 'ultra' ? 0.58 : sensitivity === 'high' ? 0.65 : 0.72;
+  const canonThresh = sensitivity === 'ultra' ? 0.62 : sensitivity === 'high' ? 0.66 : 0.70;
+  const latinThresh = sensitivity === 'ultra' ? 0.60 : sensitivity === 'high' ? 0.64 : 0.68;
 
   if (fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= canonThresh) {
     return true;
@@ -356,7 +356,7 @@ export function isPrecompiledWordMatch(
   return false;
 }
 
-export function isWordMatch(targetArabic: string, candidateSpoken: string, sensitivity: SensitivityLevel = 'ultra'): boolean {
+export function isWordMatch(targetArabic: string, candidateSpoken: string, sensitivity: SensitivityLevel = 'normal'): boolean {
   if (!targetArabic || !candidateSpoken) return false;
   const tNorm = normalizeArabic(targetArabic);
   const sNorm = normalizeArabic(candidateSpoken);
@@ -847,9 +847,9 @@ export class ContinuousMurojaahTracker {
   private totalWordsCount = 0;
   private matchedWordsCount = 0;
   private consecutiveMismatchCount = 0;
-  private sensitivity: SensitivityLevel = 'ultra';
+  private sensitivity: SensitivityLevel = 'normal';
 
-  public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'ultra'): void {
+  public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'normal'): void {
     this.targetAyats = ayats;
     this.precompiledAyats = ayats.map(a => precompileAyat(a));
     this.callbacks = callbacks;
@@ -1105,33 +1105,48 @@ export class ContinuousMurojaahTracker {
       const allTokens = rawTranscript.trim().split(/\s+/).filter(Boolean);
       if (allTokens.length > 0) {
         const lastSpoken = allTokens[allTokens.length - 1];
-        if (normalizeArabic(lastSpoken).length >= 2) {
+        const normSpoken = normalizeArabic(lastSpoken);
+
+        // Ignore transient noise pops or stray single-letter background whispers
+        if (normSpoken.length >= 2) {
           this.consecutiveMismatchCount++;
           const targetWord = expectedWords[this.currentWordIndex];
 
-          if ((isFinal || this.consecutiveMismatchCount >= 2) && targetWord && this.callbacks) {
-            this.totalErrors++;
-            this.isPaused = true;
+          const errorMismatchThreshold = this.sensitivity === 'normal' ? 3 : 2;
+          const isSpokenSubstantial = normSpoken.length >= 3 || isFinal;
 
-            const nextWord = expectedWords[this.currentWordIndex + 1]?.raw || '';
-            const prevWord = this.currentWordIndex > 0 ? expectedWords[this.currentWordIndex - 1]?.raw : '';
-            const isEnd = this.currentWordIndex === expectedWords.length - 1;
+          if (
+            (isFinal || this.consecutiveMismatchCount >= errorMismatchThreshold) &&
+            isSpokenSubstantial &&
+            targetWord &&
+            this.callbacks
+          ) {
+            const similarity = fastLevenshteinSimilarity(targetWord.canonical, canonicalizeArabicPhonemes(lastSpoken));
+            // Only trigger error pause if truly divergent from target (< 0.55 similarity)
+            if (similarity < 0.55) {
+              this.totalErrors++;
+              this.isPaused = true;
 
-            const diagnosis = diagnoseTajweedAndMakhrajError(
-              targetWord.raw,
-              lastSpoken,
-              nextWord,
-              prevWord,
-              isEnd
-            );
+              const nextWord = expectedWords[this.currentWordIndex + 1]?.raw || '';
+              const prevWord = this.currentWordIndex > 0 ? expectedWords[this.currentWordIndex - 1]?.raw : '';
+              const isEnd = this.currentWordIndex === expectedWords.length - 1;
 
-            this.callbacks.onErrorDetected(
-              this.currentAyahIndex,
-              this.currentWordIndex,
-              diagnosis.errorReason,
-              targetWord.raw,
-              lastSpoken
-            );
+              const diagnosis = diagnoseTajweedAndMakhrajError(
+                targetWord.raw,
+                lastSpoken,
+                nextWord,
+                prevWord,
+                isEnd
+              );
+
+              this.callbacks.onErrorDetected(
+                this.currentAyahIndex,
+                this.currentWordIndex,
+                diagnosis.errorReason,
+                targetWord.raw,
+                lastSpoken
+              );
+            }
           }
         }
       }
