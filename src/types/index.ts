@@ -129,6 +129,31 @@ export interface MurojaahSessionLog {
 }
 
 // ==============================================================================
+// PRAYER ATTENDANCE & 30-MIN POST-ADHAN JURNAL TYPES
+// ==============================================================================
+
+export type PrayerAttendanceStatus = 'jamaah_masjid' | 'tepat_waktu' | 'munfarid' | 'belum';
+
+export interface PrayerRecordItem {
+  status: PrayerAttendanceStatus;
+  timestamp: string;
+  xpAwarded: number;
+}
+
+export interface DailyPrayerAttendance {
+  date: string; // YYYY-MM-DD
+  records: {
+    subuh?: PrayerRecordItem;
+    dzuhur?: PrayerRecordItem;
+    ashar?: PrayerRecordItem;
+    maghrib?: PrayerRecordItem;
+    isya?: PrayerRecordItem;
+  };
+  completedCount: number;
+  totalXpEarned: number;
+}
+
+// ==============================================================================
 // ENTERPRISE ARCHITECTURE & DEEP BACKEND TYPES (APSI STANDARDS)
 // ==============================================================================
 

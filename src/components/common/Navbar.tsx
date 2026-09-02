@@ -9,6 +9,7 @@ interface NavbarProps {
   onSelectTab: (tab: NavigationTab) => void;
   onOpenInstallModal: () => void;
   onOpenQuranVaultModal?: () => void;
+  onOpenPrayerAttendanceModal?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,7 +17,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   onSelectTab,
   onOpenInstallModal,
-  onOpenQuranVaultModal
+  onOpenQuranVaultModal,
+  onOpenPrayerAttendanceModal
 }) => {
   const { language, toggleLanguage, t, isRtl } = useLanguage();
 
@@ -51,6 +53,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Stats & Quick Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* ABSENSI SHOLAT 5 WAKTU BUTTON */}
+          {onOpenPrayerAttendanceModal && (
+            <button
+              onClick={onOpenPrayerAttendanceModal}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#06331D] hover:bg-emerald-900 text-amber-300 border-2 border-amber-400/80 rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop"
+              title="Absensi & Jurnal Sholat 5 Waktu"
+            >
+              <span>🕌</span>
+              <span className="hidden sm:inline font-bold">Absen Sholat</span>
+            </button>
+          )}
+
           {/* QURAN VAULT INTEGRITY BADGE */}
           {onOpenQuranVaultModal && (
             <button

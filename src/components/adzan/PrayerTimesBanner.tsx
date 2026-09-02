@@ -34,8 +34,15 @@ import { NeobrutalCard } from '../common/NeobrutalCard';
 import { FullscreenAdzan } from './FullscreenAdzan';
 import { DzikirCounter } from './DzikirCounter';
 import { DOA_SETELAH_ADZAN } from '../../data/dzikirData';
+import { prayerAttendance } from '../../services/prayerAttendanceService';
 
-export const PrayerTimesBanner: React.FC = () => {
+interface PrayerTimesBannerProps {
+  onOpenPrayerAttendanceModal?: () => void;
+}
+
+export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
+  onOpenPrayerAttendanceModal
+}) => {
   const [activeLocation, setActiveLocation] = useState<LocationConfig>(getSavedLocation());
   const [liveApiResponse, setLiveApiResponse] = useState<LivePrayerApiResponse | null>(null);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>(calculatePrayerTimes(new Date(), getSavedLocation()));
@@ -47,6 +54,7 @@ export const PrayerTimesBanner: React.FC = () => {
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const lastAdzanTriggeredRef = useRef<string>('');
+  const attendanceStats = prayerAttendance.getSummaryStats();
 
   // Auto-Adzan State with Persisted Permission
   const [autoAdzanEnabled, setAutoAdzanEnabled] = useState<boolean>(() => {
@@ -293,7 +301,39 @@ export const PrayerTimesBanner: React.FC = () => {
         )}
       </NeobrutalCard>
 
-      {/* 2. AUTO-ADZAN SWITCH WITH USER PERMISSION & SYEKH MARWAN AL-QASSAS PROFILE */}
+      {/* 2. JURNAL & ABSENSI SHOLAT 5 WAKTU CARD */}
+      <div className="bg-gradient-to-r from-[#06331D] via-[#0B4627] to-[#06331D] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-2xl shadow-[2px_2px_0px_0px_#000] shrink-0 text-slate-950">
+            🕌
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="text-sm sm:text-base font-black text-white">
+                Jurnal & Absensi Sholat 5 Waktu
+              </h4>
+              <span className="text-[10px] font-black px-2 py-0.5 rounded bg-emerald-400 text-slate-950 border border-black shadow-xs">
+                {attendanceStats.todayCompleted} / 5 SELESAI ({attendanceStats.percentage}%)
+              </span>
+            </div>
+            <p className="text-xs text-emerald-100 mt-0.5">
+              🔥 Streak Sholat: <strong className="text-amber-300 font-bold">{attendanceStats.streakDays} Hari Rutin</strong> • Pahala: <strong className="text-emerald-300 font-bold">+{attendanceStats.todayXp} XP</strong>
+            </p>
+          </div>
+        </div>
+
+        {onOpenPrayerAttendanceModal && (
+          <button
+            onClick={onOpenPrayerAttendanceModal}
+            className="w-full sm:w-auto px-4 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all shrink-0"
+          >
+            <span>📋</span>
+            <span>Buka Ceklis Absensi Sholat</span>
+          </button>
+        )}
+      </div>
+
+      {/* 3. AUTO-ADZAN SWITCH WITH USER PERMISSION & SYEKH MARWAN AL-QASSAS PROFILE */}
       <div className="bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className={`w-12 h-12 rounded-2xl border-2 border-black flex items-center justify-center text-2xl shadow-[2px_2px_0px_0px_#000] shrink-0 ${

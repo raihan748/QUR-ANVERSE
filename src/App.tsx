@@ -7,8 +7,10 @@ import { Sidebar } from './components/common/Sidebar';
 import { BottomNav } from './components/common/BottomNav';
 import { InstallPwaModal } from './components/common/InstallPwaModal';
 import { QuranVaultModal } from './components/security/QuranVaultModal';
+import { PrayerAttendanceModal } from './components/adzan/PrayerAttendanceModal';
 import { quranVault } from './services/quranVaultService';
 import { masterVaultInduk } from './services/masterVaultIndukService';
+import { prayerAttendance } from './services/prayerAttendanceService';
 import { ScrollToTopButton } from './components/common/ScrollToTopButton';
 import { LandingHeroShowcase } from './components/landing/LandingHeroShowcase';
 import { MushafView } from './components/quran/MushafView';
@@ -27,6 +29,9 @@ export function App() {
   const [userProfile, setUserProfile] = useState<UserProfile>(getLocalProfile());
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isQuranVaultModalOpen, setIsQuranVaultModalOpen] = useState(false);
+  const [isPrayerAttendanceModalOpen, setIsPrayerAttendanceModalOpen] = useState(false);
+  const [duePrayerForAttendance, setDuePrayerForAttendance] = useState<PrayerTime | null>(null);
+  const [dueMinutesPassed, setDueMinutesPassed] = useState<number>(30);
 
   // Initialize Quran Vault 00:00 Midnight Autonomous Reconciliation & Master Vault Induk Online Handshake on boot
   useEffect(() => {
@@ -38,15 +43,33 @@ export function App() {
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>(calculatePrayerTimes());
   const [countdownData, setCountdownData] = useState(getCountdownToNextPrayer(prayerTimes));
 
-  // Live countdown timer for prayer times
+  // Live countdown timer for prayer times & 30-minute Post-Adhan Attendance Auto-Check
   useEffect(() => {
+    const checkAttendancePrompt = (times: PrayerTime[]) => {
+      const checkResult = prayerAttendance.checkShouldShow30MinPopup(times);
+      if (checkResult.shouldShow && checkResult.duePrayer) {
+        setDuePrayerForAttendance(checkResult.duePrayer);
+        setDueMinutesPassed(checkResult.minutesPassed);
+        setIsPrayerAttendanceModalOpen(true);
+      }
+    };
+
+    // Check once after initial boot (1.5s delay for smooth UI entrance)
+    const initialCheckTimer = setTimeout(() => {
+      checkAttendancePrompt(prayerTimes);
+    }, 1500);
+
     const timer = setInterval(() => {
       const times = calculatePrayerTimes();
       setPrayerTimes(times);
       setCountdownData(getCountdownToNextPrayer(times));
-    }, 1000);
+      checkAttendancePrompt(times);
+    }, 30000); // Check every 30s
 
-    return () => clearInterval(timer);
+    return () => {
+      clearTimeout(initialCheckTimer);
+      clearInterval(timer);
+    };
   }, []);
 
   const handleProfileUpdated = (updated: UserProfile) => {
@@ -59,6 +82,11 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleOpenManualAttendance = () => {
+    setDuePrayerForAttendance(null);
+    setIsPrayerAttendanceModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-[#F8F5EE] flex flex-col font-sans selection:bg-[#F59E0B] selection:text-black">
       {/* Top Navbar Header */}
@@ -68,6 +96,7 @@ export function App() {
         onSelectTab={handleSelectTabWithScroll}
         onOpenInstallModal={() => setIsInstallModalOpen(true)}
         onOpenQuranVaultModal={() => setIsQuranVaultModalOpen(true)}
+        onOpenPrayerAttendanceModal={handleOpenManualAttendance}
       />
 
       {/* Main Layout (Dual Panel Desktop + Responsive Mobile) */}
@@ -115,12 +144,17 @@ export function App() {
                 />
               )}
 
-              {activeTab === 'prayer' && <PrayerTimesBanner />}
+              {activeTab === 'prayer' && (
+                <PrayerTimesBanner
+                  onOpenPrayerAttendanceModal={handleOpenManualAttendance}
+                />
+              )}
 
               {activeTab === 'dashboard' && (
                 <DashboardView
                   userProfile={userProfile}
                   onNavigateToMurojaah={() => handleSelectTabWithScroll('murojaah_ai')}
+                  onOpenPrayerAttendanceModal={handleOpenManualAttendance}
                 />
               )}
 
@@ -149,6 +183,22 @@ export function App() {
       <QuranVaultModal
         isOpen={isQuranVaultModalOpen}
         onClose={() => setIsQuranVaultModalOpen(false)}
+      />
+
+      {/* Jurnal & Absensi Sholat 5 Waktu (30-Min Post-Adhan Auto-Popup & Manual) */}
+      <PrayerAttendanceModal
+        isOpen={isPrayerAttendanceModalOpen}
+        onClose={() => setIsPrayerAttendanceModalOpen(false)}
+        prayerTimes={prayerTimes}
+        duePrayer={duePrayerForAttendance}
+        minutesPassed={dueMinutesPassed}
+        onXpAwarded={(xpGained) => {
+          const updated = {
+            ...userProfile,
+            totalXp: (userProfile.totalXp || 0) + xpGained
+          };
+          handleProfileUpdated(updated);
+        }}
       />
     </div>
   );

@@ -17,17 +17,22 @@ import { audioPlayer } from '../../services/audioPlayerService';
 import { TahfidzMasteryAnalytics } from './TahfidzMasteryAnalytics';
 import { DailyTargetWidget } from '../common/DailyTargetWidget';
 
+import { prayerAttendance } from '../../services/prayerAttendanceService';
+
 interface DashboardViewProps {
   userProfile: UserProfile;
   onNavigateToMurojaah: () => void;
+  onOpenPrayerAttendanceModal?: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   userProfile,
-  onNavigateToMurojaah
+  onNavigateToMurojaah,
+  onOpenPrayerAttendanceModal
 }) => {
   const [weakVerses, setWeakVerses] = useState<WeakVerse[]>([]);
   const [badges, setBadges] = useState<AchievementBadge[]>(INITIAL_BADGES);
+  const prayerStats = prayerAttendance.getSummaryStats();
 
   useEffect(() => {
     setWeakVerses(getWeakVerses());
@@ -63,6 +68,38 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       </NeobrutalCard>
+
+      {/* 🕌 JURNAL & ABSENSI SHOLAT 5 WAKTU WIDGET */}
+      <div className="bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500 border-2 border-black flex items-center justify-center text-2xl shadow-[2px_2px_0px_0px_#000] text-white shrink-0">
+            🕌
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="text-sm sm:text-base font-black text-black dark:text-white">
+                Jurnal & Absensi Sholat Fardhu
+              </h4>
+              <span className="text-[10px] font-black px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">
+                {prayerStats.todayCompleted} / 5 SELESAI ({prayerStats.percentage}%)
+              </span>
+            </div>
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+              🔥 Streak Disiplin: <strong className="text-amber-600 dark:text-amber-400 font-bold">{prayerStats.streakDays} Hari</strong> • Total Pahala Hari Ini: <strong className="text-emerald-700 dark:text-emerald-400 font-bold">+{prayerStats.todayXp} XP</strong>
+            </p>
+          </div>
+        </div>
+
+        {onOpenPrayerAttendanceModal && (
+          <button
+            onClick={onOpenPrayerAttendanceModal}
+            className="w-full sm:w-auto px-4 py-2 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition shrink-0"
+          >
+            <span>📋</span>
+            <span>Buka Ceklis Sholat</span>
+          </button>
+        )}
+      </div>
 
       {/* 🎯 TARGET TILAWAH & MUROJA'AH HARI INI */}
       <DailyTargetWidget onStartTarget={() => onNavigateToMurojaah()} />
