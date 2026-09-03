@@ -41,8 +41,10 @@ import {
 import { 
   getMadinahPageLines, 
   getMadinahPageSurahs, 
-  MushafLine 
+  MushafLine,
+  PageSurahRange 
 } from '../../services/madinahPageService';
+import { SurahMeta } from '../../types';
 import { 
   analyzePageTajweedRules, 
   getPageGharibRules, 
@@ -181,8 +183,9 @@ export const PhysicalMushafPageReader: React.FC = () => {
   });
   const dragStartTimeRef = useRef<number>(0);
 
-  // Display Mode: 'scan' | 'layout'
-  const [viewMode, setViewMode] = useState<'scan' | 'layout'>('scan');
+  // Display Mode: 'scan' | 'layout' (Default: 'layout' for authentic real-life 15-line printed mushaf)
+  const [viewMode, setViewMode] = useState<'scan' | 'layout'>('layout');
+  const [showWaqafIbtidaGuides, setShowWaqafIbtidaGuides] = useState<boolean>(true);
   
   // Right Page Lines & Scans
   const [mushafLinesRight, setMushafLinesRight] = useState<MushafPageLine[]>([]);
@@ -677,6 +680,60 @@ export const PhysicalMushafPageReader: React.FC = () => {
     }
   };
 
+  // Helper to detect Lafadz Jalalah (Allah, Lillah, Billah, Wallah, etc.)
+  const isLafadzJalalah = (word: string): boolean => {
+    const clean = word.replace(/[\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]/g, '');
+    return clean.includes('الله') || clean.includes('لله') || clean.includes('فلله') || clean.includes('بالله') || clean.includes('والله') || clean.includes('تلله');
+  };
+
+  // Helper to detect if a token is an Arabic Ayah number (e.g. ١, ٢, ٣...)
+  const isAyahNumberToken = (word: string): boolean => {
+    return /^[\u0660-\u0669\u06F0-\u06F90-9]+$/.test(word.trim());
+  };
+
+  // Helper to detect Waqaf punctuation marks
+  const isWaqafMark = (word: string): boolean => {
+    return /^[ۖۗۘۙۚۛۜ۟۠]$/.test(word.trim()) || ['لا', 'قلى', 'صلى', 'ج', 'م', 'قف'].includes(word.trim());
+  };
+
+  // Handle clicking a line to play its recitation audio
+  const handleLineClick = (line: MushafPageLine, pageNum: number) => {
+    if (!line.verseRange) return;
+    const parts = line.verseRange.split('-');
+    const [sStr, aStr] = parts[0].trim().split(':');
+    const sNo = parseInt(sStr, 10);
+    const aNo = parseInt(aStr, 10);
+    if (!isNaN(sNo) && !isNaN(aNo)) {
+      const queue = buildPagePlaylist();
+      const targetIdx = queue.findIndex((q) => q.surahNumber === sNo && q.ayahNumber === aNo);
+      if (targetIdx !== -1) {
+        isAudioPlayingRef.current = true;
+        setIsAudioActive(true);
+        playQueueAt(targetIdx, queue);
+      } else {
+        const sMeta = SURAH_LIST.find((s) => s.number === sNo) || SURAH_LIST[0];
+        const item: PlayingVerseItem = {
+          surahNumber: sNo,
+          ayahNumber: aNo,
+          surahLatin: sMeta.latinName,
+          pageNumber: pageNum
+        };
+        setCurrentPlayingVerse(item);
+        setIsAudioActive(true);
+        isAudioPlayingRef.current = true;
+        audioPlayer.playAyat(
+          sNo,
+          aNo,
+          () => {
+            setIsAudioActive(false);
+            setCurrentPlayingVerse(null);
+          },
+          activeReciter.id
+        );
+      }
+    }
+  };
+
   // Helper to render individual authentic page with ornate cartouches & borders
   const renderSingleMushafPage = (
     pageNum: number,
@@ -691,43 +748,60 @@ export const PhysicalMushafPageReader: React.FC = () => {
     setScanUrlIndex: React.Dispatch<React.SetStateAction<number>>,
     surahArabic: string,
     juzNum: number,
-    isLeftPage: boolean
+    isLeftPage: boolean,
+    pageSurahsList: PageSurahRange[],
+    primarySurah: SurahMeta
   ) => {
     const isEven = pageNum % 2 === 0;
 
+    // Header Title: e.g. "2. Al-Baqarah: 6 – 16"
+    const firstSurahRange = pageSurahsList && pageSurahsList[0];
+    const headerTitle = firstSurahRange
+      ? `${firstSurahRange.surahNumber}. ${firstSurahRange.surahLatin}: ${firstSurahRange.startAyah}${firstSurahRange.startAyah !== firstSurahRange.endAyah ? ` – ${firstSurahRange.endAyah}` : ''}`
+      : `${primarySurah.number}. ${primarySurah.latinName}`;
+
     return (
       <div 
-        className={`relative flex-1 bg-[#FFFDF7] text-black border-2 border-amber-900/60 rounded-xl p-2.5 sm:p-4 shadow-[inset_0_0_20px_rgba(180,83,9,0.06)] flex flex-col justify-between min-h-[580px] sm:min-h-[760px] select-none ${
-          isEven ? 'border-r-amber-900/20' : 'border-l-amber-900/20'
+        className={`relative flex-1 mushaf-salmon-frame rounded-2xl p-2 sm:p-3.5 shadow-2xl flex flex-col justify-between min-h-[640px] sm:min-h-[820px] select-none ${
+          isEven ? 'border-r-4' : 'border-l-4'
         }`}
       >
-        {/* TOP ORNATE CARTOUCHE HEADER (SURAH • ARABIC PAGE NUM DOME • JUZ) */}
-        <div className="w-full flex items-center justify-between border-b-2 border-amber-800/50 pb-2 mb-2 px-1 text-xs font-bold text-amber-950 font-mono">
-          {/* Outer Header: Surah Cartouche */}
-          <div className="flex-1 text-right">
-            <span className="inline-block px-2.5 py-0.5 bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 border border-amber-800/80 rounded-md font-quran text-xs sm:text-sm font-black text-amber-950 shadow-xs">
+        {/* TOP HEADER: ORNATE CARTOUCHE & JUZ PILL (PERSIS SEPERTI MUSHAF ASLI) */}
+        <div className="w-full flex items-center justify-between pb-2 px-1 text-xs font-bold text-[#541E0A]">
+          {/* Top Left: Surah Title Dome Cartouche */}
+          <div className="flex-1 flex items-center justify-start">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FFFDF9] border-2 border-[#8C3A1E] rounded-full shadow-[1px_1px_0px_0px_#541E0A]">
+              <span className="w-2 h-2 rounded-full bg-[#D92D20] inline-block"></span>
+              <span className="font-sans text-xs sm:text-sm font-extrabold text-[#4A1504]">
+                {headerTitle}
+              </span>
+            </div>
+          </div>
+
+          {/* Center: Arabic Surah Calligraphy / Ayah Count Badge */}
+          <div className="hidden sm:flex px-2 text-center">
+            <span className="font-quran text-sm font-black text-[#541E0A] px-2.5 py-0.5 bg-[#FFF9ED] border border-[#8C3A1E]/50 rounded-md">
               {surahArabic}
             </span>
           </div>
 
-          {/* Center Header: Scalloped Page Number Dome (e.g. ٢٩٣ / ٢٩٤) */}
-          <div className="px-2 text-center">
-            <span className="inline-flex items-center justify-center w-8 h-7 bg-amber-200 border border-amber-900 rounded-t-xl rounded-b-md font-quran text-sm font-black text-amber-950 shadow-xs">
-              {toArabicNumerals(pageNum)}
-            </span>
-          </div>
-
-          {/* Inner Header: Juz Cartouche */}
-          <div className="flex-1 text-left">
-            <span className="inline-block px-2.5 py-0.5 bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 border border-amber-800/80 rounded-md font-quran text-xs sm:text-sm font-black text-amber-950 shadow-xs">
-              {JUZ_ARABIC_NAMES[juzNum] || `الجزء ${toArabicNumerals(juzNum)}`}
-            </span>
+          {/* Top Right: Red Pill Badge JUZ */}
+          <div className="flex-1 flex items-center justify-end">
+            <div className="inline-flex items-center gap-1 px-3 py-1 bg-[#B91C1C] text-white border-2 border-[#541E0A] rounded-full shadow-[1px_1px_0px_0px_#541E0A]">
+              <span className="font-sans text-xs sm:text-sm font-black tracking-wider uppercase">
+                JUZ {juzNum}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* ORNATE DOUBLE ILLUMINATED BORDER FRAME */}
-        <div className="relative flex-1 w-full border-[3px] border-amber-900/60 rounded-lg p-1 sm:p-2 bg-white flex flex-col justify-between shadow-inner overflow-hidden">
-          <div className="absolute inset-1 border border-dashed border-amber-700/30 rounded pointer-events-none z-10"></div>
+        {/* INNER ILLUMINATED BORDER & PARCHMENT CANVAS */}
+        <div className="relative flex-1 w-full border-[3px] border-[#8C3A1E] rounded-xl p-1.5 sm:p-3 bg-[#FFFDF9] flex flex-col justify-between shadow-inner overflow-hidden">
+          {/* Subtle Decorative Golden Corner Tracery */}
+          <div className="absolute top-1 left-1 w-4 h-4 border-t-2 border-l-2 border-[#B45309]/50 pointer-events-none z-10" />
+          <div className="absolute top-1 right-1 w-4 h-4 border-t-2 border-r-2 border-[#B45309]/50 pointer-events-none z-10" />
+          <div className="absolute bottom-1 left-1 w-4 h-4 border-b-2 border-l-2 border-[#B45309]/50 pointer-events-none z-10" />
+          <div className="absolute bottom-1 right-1 w-4 h-4 border-b-2 border-r-2 border-[#B45309]/50 pointer-events-none z-10" />
 
           {/* VIEW MODE 1: PHYSICAL SCANNED MADINAH MUSHAF */}
           {viewMode === 'scan' && (
@@ -770,14 +844,14 @@ export const PhysicalMushafPageReader: React.FC = () => {
             </div>
           )}
 
-          {/* VIEW MODE 2: NATURAL 15-LINE TYPOGRAPHY */}
+          {/* VIEW MODE 2: MUSHAF ASLI 15 BARIS (PADAT & 100% PERSIS REAL LIFE) */}
           {viewMode === 'layout' && (
-            <div className="w-full flex-1 flex flex-col justify-between space-y-1 z-10 select-text px-1 py-1 sm:py-2" dir="rtl">
+            <div className="w-full flex-1 flex flex-col justify-between space-y-0.5 z-10 select-text px-1 sm:px-2 py-1" dir="rtl">
               {isLoading && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/90 z-20 space-y-2 rounded-xl">
-                  <div className="w-8 h-8 border-3 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-xs font-black text-emerald-900">
-                    Memuat Baris Halaman {pageNum}...
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FAF2E6]/95 z-20 space-y-2 rounded-xl">
+                  <div className="w-8 h-8 border-3 border-[#8C3A1E] border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-xs font-black text-[#541E0A]">
+                    Memuat Baris Mushaf Halaman {pageNum}...
                   </p>
                 </div>
               )}
@@ -788,18 +862,26 @@ export const PhysicalMushafPageReader: React.FC = () => {
                     return (
                       <div 
                         key={idx} 
-                        className="my-1 sm:my-1.5 p-1 sm:p-1.5 bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 border-2 border-amber-800/70 rounded-lg text-center shadow-xs"
+                        className="my-1 py-1.5 px-3 bg-gradient-to-r from-[#FDE8C8] via-[#FFF5E5] to-[#FDE8C8] border-2 border-[#8C3A1E] rounded-xl text-center shadow-xs relative overflow-hidden"
                       >
-                        <span className="font-quran text-base sm:text-xl font-black text-amber-950 block">
-                          {line.surahName || surahArabic}
-                        </span>
+                        <div className="flex items-center justify-between px-2">
+                          <span className="text-[10px] sm:text-xs font-bold font-sans text-[#8C3A1E]">
+                            {primarySurah.revelationPlace}
+                          </span>
+                          <span className="font-quran text-lg sm:text-2xl font-black text-[#541E0A] tracking-wide">
+                            {line.surahName || surahArabic}
+                          </span>
+                          <span className="text-[10px] sm:text-xs font-bold font-sans text-[#8C3A1E]">
+                            {toArabicNumerals(primarySurah.ayahCount)} آيات
+                          </span>
+                        </div>
                       </div>
                     );
                   }
 
                   if (line.type === 'basmala') {
                     return (
-                      <div key={idx} className="my-0.5 text-center font-quran text-sm sm:text-lg text-amber-950 font-bold">
+                      <div key={idx} className="my-0.5 text-center font-quran text-base sm:text-xl text-[#3A1407] font-bold tracking-wide">
                         بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                       </div>
                     );
@@ -820,60 +902,112 @@ export const PhysicalMushafPageReader: React.FC = () => {
                     })()
                   );
 
+                  const words = (line.text || '').split(/\s+/).filter(Boolean);
+                  const isShortLine = words.length <= 5;
+
                   return (
                     <div 
                       key={idx}
-                      className={`w-full font-quran text-base sm:text-xl md:text-[21px] font-bold leading-[2.1] sm:leading-[2.4] text-center tracking-normal py-0.5 sm:py-1 px-1 transition-all duration-300 rounded-lg ${
+                      onClick={() => handleLineClick(line, pageNum)}
+                      className={`w-full font-quran text-lg sm:text-[21px] md:text-[23px] font-bold leading-[2.0] sm:leading-[2.2] py-0.5 px-1 transition-all duration-200 cursor-pointer mushaf-line-row ${
+                        isShortLine ? 'text-center' : 'mushaf-text-justified'
+                      } ${
                         isLineActive 
                           ? isAudioPaused
-                            ? 'bg-amber-300/15 border-b-4 border-amber-400/80 shadow-[0_4px_12px_rgba(245,158,11,0.15)] ring-1 ring-amber-400/40'
-                            : 'bg-gradient-to-r from-amber-400/20 via-amber-300/35 to-amber-400/20 border-b-4 border-amber-500 shadow-[0_4px_16px_rgba(245,158,11,0.25)] ring-1 ring-amber-400/60' 
-                          : 'text-emerald-950 dark:text-emerald-300'
+                            ? 'bg-amber-200/35 border-b-2 border-amber-500 shadow-[0_2px_8px_rgba(245,158,11,0.2)]'
+                            : 'bg-gradient-to-r from-amber-300/35 via-amber-200/55 to-amber-300/35 border-b-2 border-[#D97706] shadow-[0_2px_12px_rgba(245,158,11,0.25)]' 
+                          : 'hover:bg-[#FAF0E4]/60'
                       }`}
+                      title={line.verseRange ? `Ayat: ${line.verseRange} (Klik untuk dengarkan audio tilawah)` : undefined}
                     >
-                      {line.text ? (
-                        line.text.split(/\s+/).filter(Boolean).map((w, wIdx, wordsArr) => {
-                          const nextW = wordsArr[wIdx + 1] || '';
-                          const prevW = wordsArr[wIdx - 1] || '';
-                          const isEnd = wIdx === wordsArr.length - 1;
-                          const style = getTajweedColorForWord(w, nextW, prevW, isEnd);
+                      {words.map((w, wIdx, wordsArr) => {
+                        // 1. Check if token is Ayah Rosette Number
+                        if (isAyahNumberToken(w)) {
                           return (
                             <span
                               key={wIdx}
-                              onClick={() => {
-                                if (style.ruleName) {
-                                  setSelectedTajweedWord({ word: w, ruleName: style.ruleName });
-                                }
-                              }}
-                              className={`inline-block mx-0.5 px-0.5 py-0.2 rounded transition-all cursor-pointer select-text hover:scale-105 ${
-                                isLineActive ? 'underline decoration-amber-500 underline-offset-8 decoration-2' : ''
-                              } ${
-                                selectedTajweedWord?.word === w ? 'ring-2 ring-amber-500 bg-amber-100 font-black' : ''
-                              }`}
-                              style={{
-                                color: style.color,
-                                backgroundColor: style.bg !== 'transparent' && selectedTajweedWord?.word !== w ? style.bg : undefined
-                              }}
-                              title={style.ruleName ? `${w} (${style.ruleName})` : w}
+                              className="inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 mx-1.5 my-0.5 rounded-full border border-[#9A3412] bg-gradient-to-br from-[#FEF3C7] via-[#FDE68A] to-[#F59E0B] text-[#7C2D12] font-quran text-xs sm:text-sm font-extrabold shadow-xs align-middle select-none shrink-0"
+                              title={`Akhir Ayat ke-${w}`}
                             >
                               {w}
                             </span>
                           );
-                        })
-                      ) : (
-                        <span className="inline font-quran select-text">{line.text}</span>
-                      )}
+                        }
+
+                        // 2. Check if token is Lafadz Jalalah (Allah) -> Vibrant Red!
+                        if (isLafadzJalalah(w)) {
+                          return (
+                            <span
+                              key={wIdx}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedTajweedWord({ word: w, ruleName: 'Lafadz Jalalah (Allah)' });
+                              }}
+                              className="text-[#D92D20] font-black drop-shadow-[0_0_1px_rgba(217,45,32,0.3)] hover:scale-105 transition-transform inline-block mx-0.5 px-0.5 cursor-pointer"
+                              title="Lafadz Jalalah (الله) - Nama Agung Allah"
+                            >
+                              {w}
+                            </span>
+                          );
+                        }
+
+                        // 3. Check if token is Waqaf mark
+                        if (isWaqafMark(w)) {
+                          return (
+                            <span
+                              key={wIdx}
+                              className="relative inline-flex flex-col items-center justify-center text-[#B45309] font-bold px-0.5 -translate-y-0.5 select-none"
+                              title={`Tanda Waqaf: ${w}`}
+                            >
+                              <span className="text-xs sm:text-sm">{w}</span>
+                              {showWaqafIbtidaGuides && (
+                                <span className="text-[7px] font-sans font-bold text-[#DC2626] leading-none scale-90 -mt-0.5">
+                                  HENTI
+                                </span>
+                              )}
+                            </span>
+                          );
+                        }
+
+                        // 4. Default Word with Tajweed analysis
+                        const nextW = wordsArr[wIdx + 1] || '';
+                        const prevW = wordsArr[wIdx - 1] || '';
+                        const isEnd = wIdx === wordsArr.length - 1;
+                        const style = getTajweedColorForWord(w, nextW, prevW, isEnd);
+
+                        return (
+                          <span
+                            key={wIdx}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (style.ruleName) {
+                                setSelectedTajweedWord({ word: w, ruleName: style.ruleName });
+                              }
+                            }}
+                            className={`inline-block mx-0.5 px-0.5 py-0.2 rounded transition-all cursor-pointer select-text hover:scale-105 ${
+                              selectedTajweedWord?.word === w ? 'ring-2 ring-amber-500 bg-amber-100 font-black' : ''
+                            }`}
+                            style={{
+                              color: style.ruleName ? style.color : '#1C1917',
+                              backgroundColor: style.bg !== 'transparent' && selectedTajweedWord?.word !== w ? style.bg : undefined
+                            }}
+                            title={style.ruleName ? `${w} (${style.ruleName})` : w}
+                          >
+                            {w}
+                          </span>
+                        );
+                      })}
                     </div>
                   );
                 })
               ) : (
                 !isLoading && (
                   <div className="text-center py-8 px-2 space-y-2 font-sans" dir="ltr">
-                    <BookOpen className="w-6 h-6 mx-auto text-amber-900" />
+                    <BookOpen className="w-6 h-6 mx-auto text-[#8C3A1E]" />
                     <p className="text-xs font-bold text-gray-700">Halaman {pageNum}</p>
                     <button
                       onClick={() => setReloadKey((prev) => prev + 1)}
-                      className="px-3 py-1 bg-[#0B4627] text-white rounded-lg text-xs font-bold cursor-pointer"
+                      className="px-3 py-1 bg-[#8C3A1E] text-white rounded-lg text-xs font-bold cursor-pointer"
                     >
                       Muat Baris Ayat
                     </button>
@@ -884,17 +1018,30 @@ export const PhysicalMushafPageReader: React.FC = () => {
           )}
         </div>
 
-        {/* BOTTOM CARTOUCHE: PAGE NUMBER IN ISLAMIC FRAME */}
-        <div className="w-full flex items-center justify-between border-t-2 border-amber-800/50 pt-2 mt-2 px-2 text-xs font-mono font-black text-amber-950">
-          <span className="font-quran text-xs text-amber-900">
-            {isEven ? `الحزب ${toArabicNumerals(Math.ceil(juzNum * 2))}` : `الجزء ${toArabicNumerals(juzNum)}`}
-          </span>
-          <span className="px-3 py-0.5 bg-amber-200 border border-amber-900 rounded-md shadow-xs">
-            {pageNum}
-          </span>
-          <span className="font-quran text-xs text-amber-900">
-            {surahArabic}
-          </span>
+        {/* BOTTOM FOOTER: PAGE NUMBER SCALLOPED DOME & WAQAF-IBTIDA LEGEND */}
+        <div className="w-full flex items-center justify-between pt-2 px-1 text-xs font-mono font-black text-[#541E0A]">
+          {/* Left Footer: Waqaf Legend Badge */}
+          <div className="flex-1 flex items-center justify-start gap-1">
+            <span className="px-2 py-0.5 bg-[#FEE2E2] text-[#991B1B] border border-[#DC2626] rounded-md text-[10px] font-sans font-bold shadow-xs">
+              WAQAF (Henti)
+            </span>
+          </div>
+
+          {/* Center Footer: Scalloped Page Number Dome [ 3 | ٣ ] */}
+          <div className="px-2 text-center">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FFFDF9] border-2 border-[#8C3A1E] rounded-full shadow-[1px_1px_0px_0px_#541E0A]">
+              <span className="font-sans text-xs font-black text-[#7C2D12]">{pageNum}</span>
+              <span className="text-[#8C3A1E]/60">|</span>
+              <span className="font-quran text-sm font-black text-[#7C2D12]">{toArabicNumerals(pageNum)}</span>
+            </div>
+          </div>
+
+          {/* Right Footer: Ibtida Legend Badge */}
+          <div className="flex-1 flex items-center justify-end gap-1">
+            <span className="px-2 py-0.5 bg-[#FEF3C7] text-[#92400E] border border-[#D97706] rounded-md text-[10px] font-sans font-bold shadow-xs">
+              IBTIDA' (Mulai)
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -970,19 +1117,8 @@ export const PhysicalMushafPageReader: React.FC = () => {
               </button>
             </div>
 
-            {/* VIEW MODE: SCAN ASLI VS 15 BARIS TEKS */}
+            {/* VIEW MODE: MUSHAF 15 BARIS ASLI VS SCAN ARSIP */}
             <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_#000]">
-              <button
-                onClick={() => setViewMode('scan')}
-                className={`px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition-all ${
-                  viewMode === 'scan' 
-                    ? 'bg-[#0B4627] text-white shadow-xs' 
-                    : 'text-gray-700 dark:text-gray-300 hover:text-black'
-                }`}
-              >
-                <ImageIcon className="w-3.5 h-3.5 text-[#F59E0B]" />
-                <span>Scan Asli</span>
-              </button>
               <button
                 onClick={() => setViewMode('layout')}
                 className={`px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition-all ${
@@ -990,11 +1126,41 @@ export const PhysicalMushafPageReader: React.FC = () => {
                     ? 'bg-[#0B4627] text-white shadow-xs' 
                     : 'text-gray-700 dark:text-gray-300 hover:text-black'
                 }`}
+                title="Tampilan Mushaf Standar Cetak 15 Baris Asli (Padat & Real Life)"
               >
                 <Layers className="w-3.5 h-3.5 text-[#F59E0B]" />
-                <span>15 Baris</span>
+                <span>15 Baris Asli</span>
+              </button>
+              <button
+                onClick={() => setViewMode('scan')}
+                className={`px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition-all ${
+                  viewMode === 'scan' 
+                    ? 'bg-[#0B4627] text-white shadow-xs' 
+                    : 'text-gray-700 dark:text-gray-300 hover:text-black'
+                }`}
+                title="Tampilan Gambar Scan Dokumen Arsip"
+              >
+                <ImageIcon className="w-3.5 h-3.5 text-[#F59E0B]" />
+                <span>Scan Arsip</span>
               </button>
             </div>
+
+            {/* WAQAF & IBTIDA TOGGLE */}
+            {viewMode === 'layout' && (
+              <button
+                onClick={() => setShowWaqafIbtidaGuides(!showWaqafIbtidaGuides)}
+                className={`px-2.5 py-1.5 border-2 border-black rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all ${
+                  showWaqafIbtidaGuides 
+                    ? 'bg-amber-100 text-amber-950 font-black' 
+                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                }`}
+                title="Tampilkan / Sembunyikan Panduan Waqaf & Ibtida (Henti / Mulai)"
+              >
+                <span className="w-2 h-2 rounded-full bg-[#D92D20]"></span>
+                <span className="hidden sm:inline">Tanda Waqaf</span>
+                <span className="sm:hidden">Waqaf</span>
+              </button>
+            )}
 
             {/* QARI SELECTOR */}
             <div className="relative">
@@ -1228,7 +1394,9 @@ export const PhysicalMushafPageReader: React.FC = () => {
               setScanUrlIndexLeft,
               pageSurahsArabicLabelLeft,
               juzNumberLeft || juzNumberRight,
-              true
+              true,
+              pageSurahsLeft,
+              primarySurahLeft || primarySurahRight
             )
           )}
 
@@ -1246,7 +1414,9 @@ export const PhysicalMushafPageReader: React.FC = () => {
             setScanUrlIndexRight,
             pageSurahsArabicLabelRight,
             juzNumberRight,
-            false
+            false,
+            pageSurahsRight,
+            primarySurahRight
           )}
         </div>
 
