@@ -96,16 +96,33 @@ export const MushafView: React.FC = () => {
     setCurrentPlayingAyat(ayat);
     setIsPlayingAudio(true);
 
-    await audioPlayer.playAyat(ayat.surahNumber, ayat.numberInSurah, () => {
-      // Auto play next ayat in Surah
-      const nextAyat = ayats.find(a => a.numberInSurah === ayat.numberInSurah + 1);
-      if (nextAyat) {
-        handlePlayAyat(nextAyat);
-      } else {
-        setIsPlayingAudio(false);
-        setCurrentPlayingAyat(null);
-      }
-    });
+    const reciterId = audioPlayer.getActiveReciterId();
+
+    if (ayat.numberInSurah === 1 && ayat.surahNumber > 1 && ayat.surahNumber !== 9) {
+      // Play Bismillah first, then play Ayah 1
+      await audioPlayer.playBismillah(async () => {
+        await audioPlayer.playAyat(ayat.surahNumber, 1, () => {
+          const nextAyat = ayats.find(a => a.numberInSurah === ayat.numberInSurah + 1);
+          if (nextAyat) {
+            handlePlayAyat(nextAyat);
+          } else {
+            setIsPlayingAudio(false);
+            setCurrentPlayingAyat(null);
+          }
+        }, reciterId);
+      }, reciterId);
+    } else {
+      await audioPlayer.playAyat(ayat.surahNumber, ayat.numberInSurah, () => {
+        // Auto play next ayat in Surah
+        const nextAyat = ayats.find(a => a.numberInSurah === ayat.numberInSurah + 1);
+        if (nextAyat) {
+          handlePlayAyat(nextAyat);
+        } else {
+          setIsPlayingAudio(false);
+          setCurrentPlayingAyat(null);
+        }
+      }, reciterId);
+    }
   };
 
   const handleToggleBookmark = (ayat: Ayat) => {
@@ -484,8 +501,12 @@ export const MushafView: React.FC = () => {
               audioPlayer.pause();
               setIsPlayingAudio(false);
             } else {
-              audioPlayer.resume();
-              setIsPlayingAudio(true);
+              if (audioPlayer.isPaused()) {
+                audioPlayer.resume();
+                setIsPlayingAudio(true);
+              } else if (currentPlayingAyat) {
+                handlePlayAyat(currentPlayingAyat);
+              }
             }
           }}
           onNextAyat={() => {

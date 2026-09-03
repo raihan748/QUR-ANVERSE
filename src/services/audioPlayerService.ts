@@ -126,21 +126,29 @@ export const RECITERS_LIST: Reciter[] = [
 
 const RECITER_STORAGE_KEY = 'quranverse_selected_reciter_v1';
 
+let currentModuleActiveReciterId: string = 'alafasy';
+
 export function getSavedReciterId(): string {
   try {
-    const saved = localStorage.getItem(RECITER_STORAGE_KEY);
-    if (saved && RECITERS_LIST.some(r => r.id === saved)) {
-      return saved;
+    if (typeof localStorage !== 'undefined') {
+      const saved = localStorage.getItem(RECITER_STORAGE_KEY);
+      if (saved && RECITERS_LIST.some(r => r.id === saved)) {
+        currentModuleActiveReciterId = saved;
+        return saved;
+      }
     }
   } catch {
     // fallback
   }
-  return 'alafasy'; // Default to Kuwait's Syekh Mishary
+  return currentModuleActiveReciterId || 'alafasy'; // Default to Kuwait's Syekh Mishary
 }
 
 export function saveReciterId(id: string): void {
+  currentModuleActiveReciterId = id;
   try {
-    localStorage.setItem(RECITER_STORAGE_KEY, id);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(RECITER_STORAGE_KEY, id);
+    }
   } catch {
     // ignore
   }
@@ -152,7 +160,7 @@ export function formatAyatAudioUrl(
   ayahNumber: number, 
   reciterId?: string
 ): string {
-  const rId = reciterId || getSavedReciterId();
+  const rId = reciterId || currentModuleActiveReciterId || getSavedReciterId();
   const reciter = RECITERS_LIST.find(r => r.id === rId) || RECITERS_LIST[0];
   const sStr = String(Math.max(1, Math.min(114, surahNumber))).padStart(3, '0');
   const aStr = String(Math.max(1, ayahNumber)).padStart(3, '0');
@@ -206,10 +214,27 @@ class AudioPlayerService {
 
   public setActiveReciter(id: string): void {
     if (RECITERS_LIST.some(r => r.id === id)) {
+      const changed = this.activeReciterId !== id;
       this.activeReciterId = id;
       saveReciterId(id);
+      if (changed) {
+        this.preloadedAudio = null;
+        if (this.currentAudio) {
+          try {
+            this.currentAudio.pause();
+            this.currentAudio.src = '';
+            this.currentAudio = null;
+          } catch {}
+        }
+        this.isPlaying = false;
+      }
     }
   }
+
+  public getActiveReciterId(): string {
+    return this.activeReciterId;
+  }
+
 
   private getAudioContext(): AudioContext | null {
     try {
@@ -327,6 +352,33 @@ class AudioPlayerService {
   ): Promise<boolean> {
     const url = formatAyatAudioUrl(surahNumber, ayahNumber, customReciterId || this.activeReciterId);
     return this.playUrl(url, onEnded);
+  }
+
+  // Play Bismillah (Al-Fatihah: 1) with active/custom reciter
+  public async playBismillah(
+    onEnded?: () => void,
+    customReciterId?: string
+  ): Promise<boolean> {
+    const rId = customReciterId || this.activeReciterId;
+    const url = formatAyatAudioUrl(1, 1, rId);
+    return this.playUrl(url, onEnded);
+  }
+
+  // Play specified Ayah recitation with active reciter.
+  // If starting from Ayah 1 of any surah > 1 (except Surah 9 At-Tawbah), automatically play Bismillah first!
+  public async playAyatWithBasmala(
+    surahNumber: number,
+    ayahNumber: number,
+    onEnded?: () => void,
+    customReciterId?: string
+  ): Promise<boolean> {
+    const rId = customReciterId || this.activeReciterId;
+    if (ayahNumber === 1 && surahNumber > 1 && surahNumber !== 9) {
+      return this.playBismillah(() => {
+        this.playAyat(surahNumber, 1, onEnded, rId);
+      }, rId);
+    }
+    return this.playAyat(surahNumber, ayahNumber, onEnded, rId);
   }
 
   // Play Sheikh Live Correction Intervention (Teguran Suara Syekh)

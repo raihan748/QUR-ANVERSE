@@ -69,6 +69,7 @@ export interface PlayingVerseItem {
   ayahNumber: number;
   surahLatin: string;
   pageNumber: number;
+  isBasmala?: boolean;
 }
 
 const toArabicNumerals = (num: number): string => {
@@ -154,6 +155,10 @@ export const PhysicalMushafPageReader: React.FC = () => {
   }, [rightPageNumber, isDualSpread]);
 
   const [activeReciter, setActiveReciter] = useState<Reciter>(audioPlayer.getActiveReciter());
+  const activeReciterRef = useRef<Reciter>(audioPlayer.getActiveReciter());
+  useEffect(() => {
+    activeReciterRef.current = activeReciter;
+  }, [activeReciter]);
   const [isReciterMenuOpen, setIsReciterMenuOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -418,10 +423,38 @@ export const PhysicalMushafPageReader: React.FC = () => {
   const handleSelectReciter = (reciter: Reciter) => {
     audioPlayer.setActiveReciter(reciter.id);
     setActiveReciter(reciter);
+    activeReciterRef.current = reciter;
     setIsReciterMenuOpen(false);
-    if (isAudioActive && currentPlayingVerse && !isAudioPaused) {
-      // Re-trigger current verse with new reciter voice
-      audioPlayer.playAyat(currentPlayingVerse.surahNumber, currentPlayingVerse.ayahNumber, undefined, reciter.id);
+
+    // Stop previous reciter stream and discard any buffered or paused audio
+    audioPlayer.stop();
+
+    if (isAudioActive && currentPlayingVerse) {
+      // Re-trigger current verse immediately with the new reciter voice!
+      isAudioPlayingRef.current = true;
+      setIsAudioPaused(false);
+      const isBas = currentPlayingVerse.isBasmala || currentPlayingVerse.ayahNumber === 0;
+      if (isBas) {
+        audioPlayer.playBismillah(() => {
+          if (isAudioPlayingRef.current) {
+            playQueueAt(currentQueueIdx + 1, pageAudioQueue);
+          }
+        }, reciter.id);
+      } else {
+        audioPlayer.playAyat(
+          currentPlayingVerse.surahNumber,
+          currentPlayingVerse.ayahNumber,
+          () => {
+            if (isAudioPlayingRef.current) {
+              playQueueAt(currentQueueIdx + 1, pageAudioQueue);
+            }
+          },
+          reciter.id
+        );
+      }
+      setToastMessage(`🎙️ Qari berganti ke: ${reciter.name}`);
+    } else {
+      setToastMessage(`🎙️ Qari dipilih: ${reciter.name}`);
     }
   };
 
@@ -431,6 +464,16 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
     // Right Page (Odd) verses
     pageSurahsRight.forEach((s) => {
+      // If surah begins at Ayah 1 on this page, prepend Basmala for surah > 1 and != 9
+      if (s.startAyah === 1 && s.surahNumber > 1 && s.surahNumber !== 9) {
+        list.push({
+          surahNumber: s.surahNumber,
+          ayahNumber: 0,
+          surahLatin: s.surahLatin,
+          pageNumber: rightPageNumber,
+          isBasmala: true
+        });
+      }
       for (let a = s.startAyah; a <= s.endAyah; a++) {
         list.push({
           surahNumber: s.surahNumber,
@@ -444,6 +487,15 @@ export const PhysicalMushafPageReader: React.FC = () => {
     // Left Page (Even) verses if in dual spread mode
     if (isDualSpread && leftPageNumber && pageSurahsLeft.length > 0) {
       pageSurahsLeft.forEach((s) => {
+        if (s.startAyah === 1 && s.surahNumber > 1 && s.surahNumber !== 9) {
+          list.push({
+            surahNumber: s.surahNumber,
+            ayahNumber: 0,
+            surahLatin: s.surahLatin,
+            pageNumber: leftPageNumber,
+            isBasmala: true
+          });
+        }
         for (let a = s.startAyah; a <= s.endAyah; a++) {
           list.push({
             surahNumber: s.surahNumber,
@@ -483,10 +535,26 @@ export const PhysicalMushafPageReader: React.FC = () => {
     setIsAudioActive(true);
     setIsAudioPaused(false);
 
+    const reciterIdToUse = activeReciterRef.current.id;
+
+    if (item.isBasmala || item.ayahNumber === 0) {
+      setToastMessage(`📖 Bismillahir-Rahmanir-Rahim (Pembuka Surat ${item.surahLatin})`);
+      // Preload ayah 1
+      audioPlayer.preloadAyat(item.surahNumber, 1);
+      audioPlayer.playBismillah(() => {
+        if (isAudioPlayingRef.current) {
+          playQueueAt(index + 1, queue);
+        }
+      }, reciterIdToUse);
+      return;
+    }
+
     // Preload next ayah in queue for instant zero-latency transition
     if (index + 1 < queue.length) {
       const nextItem = queue[index + 1];
-      audioPlayer.preloadAyat(nextItem.surahNumber, nextItem.ayahNumber);
+      if (!nextItem.isBasmala && nextItem.ayahNumber > 0) {
+        audioPlayer.preloadAyat(nextItem.surahNumber, nextItem.ayahNumber);
+      }
     }
 
     audioPlayer.playAyat(
@@ -498,9 +566,9 @@ export const PhysicalMushafPageReader: React.FC = () => {
           playQueueAt(index + 1, queue);
         }
       },
-      activeReciter.id
+      reciterIdToUse
     );
-  }, [currentPage, triggerPageTurn, activeReciter.id]);
+  }, [currentPage, triggerPageTurn]);
 
   const handleStopPageAudio = () => {
     isAudioPlayingRef.current = false;
@@ -524,7 +592,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
       setIsAudioPaused(false);
       setPageAudioQueue(queue);
       playQueueAt(0, queue);
-      setToastMessage('▶ Memulai tilawah halaman...');
+      setToastMessage(`▶ Memulai tilawah (${activeReciterRef.current.name})...`);
       return;
     }
 
@@ -544,8 +612,12 @@ export const PhysicalMushafPageReader: React.FC = () => {
       audioPlayer.resume();
     } else if (pageAudioQueue.length > 0) {
       playQueueAt(currentQueueIdx, pageAudioQueue);
+    } else {
+      const queue = buildPagePlaylist();
+      setPageAudioQueue(queue);
+      playQueueAt(0, queue);
     }
-    setToastMessage('▶ Melanjutkan audio tilawah...');
+    setToastMessage(`▶ Melanjutkan tilawah (${activeReciterRef.current.name})...`);
   };
 
   const handleSkipNextAyat = () => {
@@ -696,6 +768,35 @@ export const PhysicalMushafPageReader: React.FC = () => {
     return /^[ۖۗۘۙۚۛۜ۟۠]$/.test(word.trim()) || ['لا', 'قلى', 'صلى', 'ج', 'م', 'قف'].includes(word.trim());
   };
 
+  // Handle clicking Basmala line directly
+  const handleBasmalaClick = (primarySurah: SurahMeta, pageNum: number) => {
+    isAudioPlayingRef.current = true;
+    setIsAudioActive(true);
+    setIsAudioPaused(false);
+    const item: PlayingVerseItem = {
+      surahNumber: primarySurah.number,
+      ayahNumber: 0,
+      surahLatin: primarySurah.latinName,
+      pageNumber: pageNum,
+      isBasmala: true
+    };
+    setCurrentPlayingVerse(item);
+    setToastMessage(`📖 Bismillahir-Rahmanir-Rahim (${activeReciterRef.current.name})`);
+    
+    const queue = buildPagePlaylist();
+    setPageAudioQueue(queue);
+
+    audioPlayer.playBismillah(() => {
+      const ayah1Idx = queue.findIndex(q => q.surahNumber === primarySurah.number && q.ayahNumber === 1);
+      if (ayah1Idx !== -1 && isAudioPlayingRef.current) {
+        playQueueAt(ayah1Idx, queue);
+      } else {
+        setIsAudioActive(false);
+        setCurrentPlayingVerse(null);
+      }
+    }, activeReciterRef.current.id);
+  };
+
   // Handle clicking a line to play its recitation audio
   const handleLineClick = (line: MushafPageLine, pageNum: number) => {
     if (!line.verseRange) return;
@@ -705,10 +806,21 @@ export const PhysicalMushafPageReader: React.FC = () => {
     const aNo = parseInt(aStr, 10);
     if (!isNaN(sNo) && !isNaN(aNo)) {
       const queue = buildPagePlaylist();
-      const targetIdx = queue.findIndex((q) => q.surahNumber === sNo && q.ayahNumber === aNo);
+      setPageAudioQueue(queue);
+
+      // If clicking on Ayah 1 of a surah (>1 and != 9), start with its Basmala
+      let targetIdx = -1;
+      if (aNo === 1 && sNo > 1 && sNo !== 9) {
+        targetIdx = queue.findIndex((q) => q.surahNumber === sNo && (q.isBasmala || q.ayahNumber === 0));
+      }
+      if (targetIdx === -1) {
+        targetIdx = queue.findIndex((q) => q.surahNumber === sNo && q.ayahNumber === aNo);
+      }
+
       if (targetIdx !== -1) {
         isAudioPlayingRef.current = true;
         setIsAudioActive(true);
+        setIsAudioPaused(false);
         playQueueAt(targetIdx, queue);
       } else {
         const sMeta = SURAH_LIST.find((s) => s.number === sNo) || SURAH_LIST[0];
@@ -721,14 +833,14 @@ export const PhysicalMushafPageReader: React.FC = () => {
         setCurrentPlayingVerse(item);
         setIsAudioActive(true);
         isAudioPlayingRef.current = true;
-        audioPlayer.playAyat(
+        audioPlayer.playAyatWithBasmala(
           sNo,
           aNo,
           () => {
             setIsAudioActive(false);
             setCurrentPlayingVerse(null);
           },
-          activeReciter.id
+          activeReciterRef.current.id
         );
       }
     }
@@ -880,8 +992,23 @@ export const PhysicalMushafPageReader: React.FC = () => {
                   }
 
                   if (line.type === 'basmala') {
+                    const isBasmalaActive = Boolean(
+                      isAudioActive &&
+                      currentPlayingVerse &&
+                      currentPlayingVerse.pageNumber === pageNum &&
+                      (currentPlayingVerse.isBasmala || currentPlayingVerse.ayahNumber === 0)
+                    );
                     return (
-                      <div key={idx} className="my-0.5 text-center font-quran text-base sm:text-xl text-[#3A1407] font-bold tracking-wide">
+                      <div 
+                        key={idx} 
+                        onClick={() => handleBasmalaClick(primarySurah, pageNum)}
+                        className={`my-0.5 py-1 px-3 text-center font-quran text-base sm:text-xl font-bold tracking-wide cursor-pointer transition-all rounded-xl border ${
+                          isBasmalaActive
+                            ? 'bg-gradient-to-r from-amber-200 via-amber-100 to-amber-200 text-[#78350F] border-amber-500 shadow-md scale-[1.02]'
+                            : 'text-[#3A1407] border-transparent hover:border-amber-400/60 hover:bg-amber-100/40 hover:scale-[1.01]'
+                        }`}
+                        title="Klik untuk mendengarkan lantunan Bismillah Syekh"
+                      >
                         بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                       </div>
                     );
@@ -1442,11 +1569,13 @@ export const PhysicalMushafPageReader: React.FC = () => {
                     {isAudioPaused ? '⏸ Tilawah Dijeda' : '▶ Sedang Tilawah'}
                   </span>
                   <span className="text-xs sm:text-sm font-black text-amber-200">
-                    QS. {currentPlayingVerse.surahLatin} [{currentPlayingVerse.surahNumber}] : Ayat {currentPlayingVerse.ayahNumber}
+                    {currentPlayingVerse.isBasmala || currentPlayingVerse.ayahNumber === 0
+                      ? `QS. ${currentPlayingVerse.surahLatin} : بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ`
+                      : `QS. ${currentPlayingVerse.surahLatin} [${currentPlayingVerse.surahNumber}] : Ayat ${currentPlayingVerse.ayahNumber}`}
                   </span>
                 </div>
                 <p className="text-[11px] text-emerald-200 font-medium mt-0.5">
-                  Qari: {activeReciter.name} ({activeReciter.country}) • Hal. {currentPlayingVerse.pageNumber}
+                  Qari: {activeReciterRef.current.name} ({activeReciterRef.current.country}) • Hal. {currentPlayingVerse.pageNumber}
                 </p>
               </div>
             </div>

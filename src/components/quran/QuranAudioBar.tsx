@@ -43,9 +43,9 @@ export const QuranAudioBar: React.FC<QuranAudioBarProps> = ({
     setActiveReciter(reciter);
     setIsReciterMenuOpen(false);
 
-    // If currently playing, replay current ayah with new reciter
+    // If currently playing, replay current ayah immediately with the newly selected reciter
     if (isPlaying) {
-      audioPlayer.playAyat(currentAyat.surahNumber, currentAyat.numberInSurah);
+      audioPlayer.playAyat(currentAyat.surahNumber, currentAyat.numberInSurah, undefined, reciter.id);
     }
     if (onReciterChanged) {
       onReciterChanged(reciter);
