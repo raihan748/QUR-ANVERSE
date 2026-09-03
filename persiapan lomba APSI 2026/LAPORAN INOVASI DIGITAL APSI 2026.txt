@@ -1,0 +1,25 @@
+LAPORAN INOVASI DIGITAL APSI 2026
+
+Kategori: Digital Innovation & Creative Intelligence
+Judul Proyek: QURANVERSE: Platform Cerdas Al-Qur'an Terintegrasi AI Acoustic Phonetic Alignment, Ensiklopedia Tajwid Digital 604 Halaman, dan Sistem Kriptografi Quran Vault
+Tim Pengembang: Raihan Muhammad Ikhsan & Andi Azman Awwadi
+Guru Pembimbing: Ustadz Hasballah
+
+1. LATAR BELAKANG MASALAH
+Aktivitas muroja'ah mandiri sering terkendala minimnya umpan balik langsung terhadap kekeliruan makharijul huruf dan tajwid saat belajar tanpa guru. Selain itu, banyak mushaf digital belum mereplikasi visual autentik cetakan Madinah serta rentan terhadap ancaman peretasan maupun manipulasi teks ayat (defacement).
+2. SOLUSI DAN CARA KERJA APLIKASI
+QURANVERSE hadir sebagai platform web dan PWA (Progressive Web App) multifungsi melalui tiga modul inti:
+a. AI Tilawah Studio: Menggunakan Speech Recognition dan Acoustic Phonetic Alignment untuk menganalisis pelafalan suara secara real-time, memberikan evaluasi tajwid per kata, skor akurasi, serta koreksi audio maqam.
+b. Smart Mushaf Reader 604 Halaman: Mereplikasi tata letak autentik Mushaf Madinah dengan 45+ anotasi warna tajwid, fitur multi-qari internasional, dan adzan presisi otomatis.
+c. Quran Vault Engine: Sistem pengamanan berbasis SHA-256 Merkle Root, DOM Mutation Sentinel, dan Deep Immutability Lock untuk memproteksi 6.236 ayat dari manipulasi ilegal melalui pemulihan otomatis (self-healing).
+3. INTEGRASI STEAM DAN NILAI INOVASI
+Proyek ini mengintegrasikan seluruh elemen STEAM secara komprehensif:
+a. Science: Analisis bioakustik artikulasi fonem Arab dan ilmu fonetika tajwid.
+b. Technology: Arsitektur PWA offline-first, Web Audio API, serta active DOM Sentinel.
+c. Engineering: Rekayasa sistem nir-latensi dan self-healing cold storage.
+d. Art: Visual antarmuka Neobrutalisme Islami dan presisi kaligrafi Rasm Utsmani.
+e. Mathematics: Kriptografi hash SHA-256 dan kalkulasi sudut deklinasi matahari untuk jadwal shalat MABIMS.
+
+
+4. MANFAAT DAN DAMPAK
+QURANVERSE menjadi sarana efektif bagi santri dan pelajar dalam meningkatkan mutu tilawah mandiri secara terukur, sekaligus menjadi pelopor perlindungan integritas kesucian data Al-Qur'an digital bagi institusi pendidikan.

@@ -1,0 +1,37 @@
+LEMBAR PERNYATAAN PENGGUNAAN KECERDASAN BUATAN
+(AI DISCLOSURE STATEMENT)
+Kompetisi: APSI 2026 | Kategori: Digital Innovation & Creative Intelligence
+Jenjang: SMP Al-Fityan
+
+I. DATA PROYEK
+Judul Proyek: QURANVERSE: Platform Cerdas Al-Qur'an Terintegrasi AI Acoustic Phonetic Alignment, Ensiklopedia Tajwid Digital 604 Halaman, dan Sistem Kriptografi Quran Vault Anti-Deface
+Ketua Tim: Raihan Muhammad Ikhsan
+Anggota Tim: Andi Azman Awwadi
+Guru Pembimbing: Ustadz Hasballah
+
+II. PERNYATAAN TRANSPARANSI & INTEGRITAS
+Kami menyatakan pemanfaatan Kecerdasan Buatan (AI) dalam proyek QURANVERSE dilakukan secara etis, transparan, dan bertanggung jawab sebagai alat bantu komputasi dengan kendali penuh tetap berada pada tim pengembang (Human-in-the-Loop).
+
+III. RINCIAN PENGGUNAAN AI
+
+1. Fitur Produk (In-App AI Engine): Menggunakan Speech Recognition dan Acoustic Phonetic Alignment untuk analisis audio tilawah real-time. Tim merancang sistem scoring dan verifikasi tajwid mandiri.
+2. Asisten Koding: Menggunakan Google Gemini/LLM untuk optimasi struktur kode program dan algoritma SHA-256. Arsitektur sistem dan implementasi dibuat murni oleh tim.
+
+
+3. Kurasi Data: LLM digunakan untuk pemetaan awal data fonetik tajwid, yang kemudian diverifikasi manual bersama Guru Pembimbing sesuai standar Mushaf Madinah.
+
+
+
+IV. PROPORSI DAN ORISINALITAS
+Pemanfaatan AI difungsikan sebesar 70% untuk efisiensi komputasi algoritma dan penulisan kode. Sisa 30% mencakup ide orisinal, validasi keilmuan, antarmuka (UI/UX), dan penguasaan seluruh sistem merupakan karya mandiri tim pengembang. Proyek bebas dari plagiarisme dan menjaga kerahasiaan data pengguna secara lokal (client-side).
+
+Makassar, 29 Agustus 2026
+
+Ketua Tim:
+Raihan Muhammad Ikhsan
+
+Anggota Tim:
+Andi Azman Awwadi
+
+Guru Pembimbing:
+Ustadz Hasballah
