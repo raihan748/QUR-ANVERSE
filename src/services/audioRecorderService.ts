@@ -10,6 +10,43 @@ export class AudioRecorderService {
   private dataArray: Uint8Array | null = null;
   private recordedBlobUrl: string | null = null;
   private animFrameId: number | null = null;
+  private noiseFloor: number = 18.0;
+  private isCalibrated: boolean = false;
+  private calibrationStartTime: number = 0;
+  private calibrationDurationMs: number = 350;
+  private calibrationSamples: number[] = [];
+  private gateMargin: number = 4.0;
+  private targetCeiling: number = 135.0;
+
+  /**
+   * Pure DSP static calculation for acoustic noise floor gating and normalization.
+   */
+  public static calculateGatedVolume(
+    energy: number,
+    noiseFloor: number = 18.0,
+    gateMargin: number = 4.0,
+    ceiling: number = 135.0
+  ): number {
+    const threshold = noiseFloor + gateMargin;
+    if (energy <= threshold) return 0;
+    const effectiveEnergy = energy - threshold;
+    const dynamicRange = Math.max(20, ceiling - threshold);
+    return Math.min(100, Math.max(0, Math.round((effectiveEnergy / dynamicRange) * 100)));
+  }
+
+  public getNoiseFloor(): number {
+    return Number(this.noiseFloor.toFixed(2));
+  }
+
+  public setNoiseFloor(value: number): void {
+    this.noiseFloor = Math.max(5.0, Math.min(60.0, value));
+  }
+
+  public resetCalibration(): void {
+    this.isCalibrated = false;
+    this.calibrationSamples = [];
+    this.noiseFloor = 18.0;
+  }
 
   public async startRecording(
     onVolumeUpdateOrOptions?: ((volume: number) => void) | {
@@ -71,6 +108,10 @@ export class AudioRecorderService {
         const bufferLength = this.analyser.frequencyBinCount;
         this.dataArray = new Uint8Array(bufferLength);
 
+        this.calibrationStartTime = performance.now();
+        this.calibrationSamples = [];
+        this.isCalibrated = false;
+
         const checkVolume = () => {
           if (!this.analyser || !this.dataArray) return;
           this.analyser.getByteFrequencyData(this.dataArray as any);
@@ -89,9 +130,35 @@ export class AudioRecorderService {
           }
           const avg = sum / (count || 1);
           
-          // Instant responsive decibel curve (0-100)
+          // Instant responsive energy calculation
           const energy = peak * 0.7 + avg * 0.3;
-          const normalizedVol = Math.min(100, Math.max(0, Math.round((energy / 140) * 100)));
+
+          // Adaptive acoustic noise floor calibration
+          const now = performance.now();
+          if (!this.isCalibrated) {
+            if (now - this.calibrationStartTime < this.calibrationDurationMs) {
+              this.calibrationSamples.push(energy);
+            } else {
+              this.isCalibrated = true;
+              if (this.calibrationSamples.length > 0) {
+                const avgNoise = this.calibrationSamples.reduce((a, b) => a + b, 0) / this.calibrationSamples.length;
+                this.noiseFloor = Math.max(10.0, Math.min(45.0, avgNoise * 0.9));
+              }
+            }
+          } else {
+            // Leaky running floor tracking for evolving room noise
+            if (energy < this.noiseFloor * 1.3) {
+              this.noiseFloor = Math.max(8.0, Math.min(50.0, this.noiseFloor * 0.998 + energy * 0.002));
+            }
+          }
+
+          // Dynamic Spectral Gated Volume (0-100)
+          const normalizedVol = AudioRecorderService.calculateGatedVolume(
+            energy,
+            this.noiseFloor,
+            this.gateMargin,
+            this.targetCeiling
+          );
 
           if (onVolumeUpdate) {
             onVolumeUpdate(normalizedVol);

@@ -42,10 +42,13 @@ export * from './qiraat/SanadTransmissionDAG';
 export * from './memory/SuperMemoQuranicEngine';
 export * from './memory/NeuroSpacedRepetitionEngine';
 
-// 10. Gateway Facade
+// 10. Advanced Quranic Research Engines (Chronological, I'rab, Hadith, Multilingual, Asmaul Husna)
+export * from './research';
+
+// 11. Gateway Facade
 export * from './gateway/EnterpriseBackendFacade';
 
-// 11. Compatibility Services
+// 12. Compatibility Services
 export * from './tajwidRuleEngine';
 export * from './quranKnowledgeGraph';
 export * from './cryptographicAuditLedger';

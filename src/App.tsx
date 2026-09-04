@@ -10,6 +10,7 @@ import { QuranVaultModal } from './components/security/QuranVaultModal';
 import { PrayerAttendanceModal } from './components/adzan/PrayerAttendanceModal';
 import { quranVault } from './services/quranVaultService';
 import { masterVaultInduk } from './services/masterVaultIndukService';
+import { healthWatchdog } from './services/healthWatchdogService';
 import { prayerAttendance } from './services/prayerAttendanceService';
 import { ScrollToTopButton } from './components/common/ScrollToTopButton';
 import { LandingHeroShowcase } from './components/landing/LandingHeroShowcase';
@@ -33,8 +34,9 @@ export function App() {
   const [duePrayerForAttendance, setDuePrayerForAttendance] = useState<PrayerTime | null>(null);
   const [dueMinutesPassed, setDueMinutesPassed] = useState<number>(30);
 
-  // Initialize Quran Vault 00:00 Midnight Autonomous Reconciliation & Master Vault Induk Online Handshake on boot
+  // Initialize HealthWatchdog, Quran Vault Midnight Scheduler & Master Vault Induk Online Handshake on boot
   useEffect(() => {
+    healthWatchdog.initiateGuardian();
     quranVault.startMidnightReconciliationScheduler();
     masterVaultInduk.initializeOnlineReconciliationWatcher();
   }, []);
