@@ -12,7 +12,8 @@
     "perf-test": "node scripts/performanceBenchmarkSuite.mjs",
     "stress-test": "node scripts/comprehensiveResearchStressTest.mjs",
     "stress-frontier": "node scripts/frontierHeavyStressTest.mjs",
-    "stress-master": "node scripts/unifiedMasterStressTest.mjs"
+    "stress-master": "node scripts/unifiedMasterStressTest.mjs",
+    "stress-flagship": "npx tsx scripts/murojaahFlagshipStressTest.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

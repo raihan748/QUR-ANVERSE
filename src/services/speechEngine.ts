@@ -12,8 +12,8 @@ import { formatAlafasyAudioUrl } from './audioPlayerService';
 // ==============================================================================
 // 1. REUSABLE ZERO-ALLOCATION 1D TYPED BUFFER LEVENSHTEIN (15x Faster, 0 Bytes GC)
 // ==============================================================================
-const V0_BUFFER = new Int32Array(128);
-const V1_BUFFER = new Int32Array(128);
+const V0_BUFFER = new Int32Array(1024);
+const V1_BUFFER = new Int32Array(1024);
 
 export function calculateSimilarity(s1: string, s2: string): number {
   return fastLevenshteinSimilarity(s1, s2);
@@ -25,32 +25,56 @@ export function fastLevenshteinSimilarity(s1: string, s2: string): number {
   const len1 = s1.length;
   const len2 = s2.length;
   if (len1 === 0 || len2 === 0) return 0.0;
-  if (len1 > 120 || len2 > 120) {
-    return s1 === s2 ? 1.0 : 0.0;
+  const maxLen = Math.max(len1, len2);
+
+  // Dynamic fallback for ultra-long passages (> 1000 chars)
+  if (len2 >= 1020 || len1 >= 1020) {
+    let v0 = new Int32Array(len2 + 1);
+    let v1 = new Int32Array(len2 + 1);
+    for (let i = 0; i <= len2; i++) v0[i] = i;
+    for (let i = 0; i < len1; i++) {
+      v1[0] = i + 1;
+      const c1 = s1.charCodeAt(i);
+      for (let j = 0; j < len2; j++) {
+        const cost = c1 === s2.charCodeAt(j) ? 0 : 1;
+        const insertion = v1[j] + 1;
+        const deletion = v0[j + 1] + 1;
+        const substitution = v0[j] + cost;
+        let min = insertion < deletion ? insertion : deletion;
+        if (substitution < min) min = substitution;
+        v1[j + 1] = min;
+      }
+      const tmp = v0;
+      v0 = v1;
+      v1 = tmp;
+    }
+    return Math.max(0, 1 - v0[len2] / maxLen);
   }
 
-  const maxLen = Math.max(len1, len2);
+  let v0 = V0_BUFFER;
+  let v1 = V1_BUFFER;
+
   for (let i = 0; i <= len2; i++) {
-    V0_BUFFER[i] = i;
+    v0[i] = i;
   }
 
   for (let i = 0; i < len1; i++) {
-    V1_BUFFER[0] = i + 1;
+    v1[0] = i + 1;
     const c1 = s1.charCodeAt(i);
     for (let j = 0; j < len2; j++) {
       const cost = c1 === s2.charCodeAt(j) ? 0 : 1;
-      const insertion = V1_BUFFER[j] + 1;
-      const deletion = V0_BUFFER[j + 1] + 1;
-      const substitution = V0_BUFFER[j] + cost;
+      const insertion = v1[j] + 1;
+      const deletion = v0[j + 1] + 1;
+      const substitution = v0[j] + cost;
       let min = insertion < deletion ? insertion : deletion;
       if (substitution < min) min = substitution;
-      V1_BUFFER[j + 1] = min;
+      v1[j + 1] = min;
     }
-    for (let j = 0; j <= len2; j++) {
-      V0_BUFFER[j] = V1_BUFFER[j];
-    }
+    const tmp = v0;
+    v0 = v1;
+    v1 = tmp;
   }
-  const dist = V0_BUFFER[len2];
+  const dist = v0[len2];
   return Math.max(0, 1 - dist / maxLen);
 }
 
@@ -276,6 +300,23 @@ export const MUQATTAAT_DICTIONARY: Record<string, string[]> = {
   'ن': ['نون', 'نُون', 'nun', 'nuun']
 };
 
+export interface PrecompiledMuqattaatItem {
+  norm: string;
+  canon: string;
+  latin: string;
+}
+
+export const PRECOMPILED_MUQATTAAT: Record<string, PrecompiledMuqattaatItem[]> = {};
+
+for (const [key, expansions] of Object.entries(MUQATTAAT_DICTIONARY)) {
+  const normKey = normalizeArabic(key);
+  PRECOMPILED_MUQATTAAT[normKey] = expansions.map(exp => ({
+    norm: normalizeArabic(exp),
+    canon: canonicalizeArabicPhonemes(exp),
+    latin: normalizeLatinPhonetics(exp)
+  }));
+}
+
 // Ultra-Fast Word-Level Matcher using Precompiled Structures ($< 0.1ms$) with Dynamic Sensitivity Boost
 export type SensitivityLevel = 'normal' | 'high' | 'ultra';
 
@@ -286,19 +327,17 @@ export function isPrecompiledWordMatch(
 ): boolean {
   if (!target || !candidate) return false;
 
-  // 0. Huruf Muqatta'at Fast-Path (29 Surahs)
-  const muqattaExpansions = MUQATTAAT_DICTIONARY[target.normalized];
+  // 0. Huruf Muqatta'at Fast-Path (29 Surahs - Zero Regex, O(1) Precompiled)
+  const muqattaExpansions = PRECOMPILED_MUQATTAAT[target.normalized];
   if (muqattaExpansions) {
-    for (const exp of muqattaExpansions) {
-      const normExp = normalizeArabic(exp);
-      const canonExp = canonicalizeArabicPhonemes(exp);
-      const latinExp = normalizeLatinPhonetics(exp);
+    for (let i = 0; i < muqattaExpansions.length; i++) {
+      const exp = muqattaExpansions[i];
       if (
-        candidate.normalized === normExp ||
-        candidate.canonical === canonExp ||
-        candidate.latin === latinExp ||
-        fastLevenshteinSimilarity(candidate.canonical, canonExp) >= 0.60 ||
-        fastLevenshteinSimilarity(candidate.latin, latinExp) >= 0.60
+        candidate.normalized === exp.norm ||
+        candidate.canonical === exp.canon ||
+        candidate.latin === exp.latin ||
+        fastLevenshteinSimilarity(candidate.canonical, exp.canon) >= 0.60 ||
+        fastLevenshteinSimilarity(candidate.latin, exp.latin) >= 0.60
       ) {
         return true;
       }
@@ -312,7 +351,11 @@ export function isPrecompiledWordMatch(
 
   // 2. Prefix stripped match (e.g., "wa-huwa" -> "huwa", "al-kitab" -> "kitab")
   if (target.stemCanon && candidate.stemCanon && target.stemCanon === candidate.stemCanon) {
-    return true;
+    const targetHasWaw = target.normalized.startsWith('و');
+    const candHasWaw = candidate.normalized.startsWith('و');
+    if (targetHasWaw === candHasWaw) {
+      return true;
+    }
   }
 
   // 3.5. Substring inclusion for prefixed/suffixed words
@@ -407,6 +450,7 @@ export class SpeechEngine {
   private restartTimeout: any = null;
   private startResultIndex = 0;
   private totalResultCount = 0;
+  private clearedTranscriptSnapshot = '';
 
   /**
    * Preflight microphone check & hardware lock release
@@ -507,6 +551,7 @@ export class SpeechEngine {
 
       this.startResultIndex = 0;
       this.totalResultCount = 0;
+      this.clearedTranscriptSnapshot = '';
       this.accumulatedTranscript = '';
       this.alternativeHypotheses = [];
 
@@ -519,14 +564,31 @@ export class SpeechEngine {
         let isFinalUtterance = false;
 
         if (this.startResultIndex >= event.results.length) {
-          return;
+          if (event.results.length > 0 && this.clearedTranscriptSnapshot) {
+            const lastRes = event.results[event.results.length - 1];
+            if (lastRes && lastRes[0]?.transcript) {
+              const cur = lastRes[0].transcript.trim();
+              if (cur.length > this.clearedTranscriptSnapshot.length) {
+                this.startResultIndex = event.results.length - 1;
+              } else {
+                return;
+              }
+            } else {
+              return;
+            }
+          } else {
+            return;
+          }
         }
 
         for (let rIdx = this.startResultIndex; rIdx < event.results.length; rIdx++) {
           const res = event.results[rIdx];
           if (res && res[0] && res[0].transcript) {
             fullTranscript += ' ' + res[0].transcript;
-            if (res.isFinal) isFinalUtterance = true;
+            if (res.isFinal) {
+              isFinalUtterance = true;
+              this.clearedTranscriptSnapshot = '';
+            }
             for (let alt = 0; alt < res.length; alt++) {
               if (res[alt]?.transcript) {
                 currentAlternatives.push(res[alt].transcript.trim());
@@ -536,6 +598,9 @@ export class SpeechEngine {
         }
 
         fullTranscript = fullTranscript.trim();
+        if (this.clearedTranscriptSnapshot && fullTranscript.startsWith(this.clearedTranscriptSnapshot)) {
+          fullTranscript = fullTranscript.slice(this.clearedTranscriptSnapshot.length).trim();
+        }
 
         if (fullTranscript) {
           this.accumulatedTranscript = fullTranscript;
@@ -637,6 +702,7 @@ export class SpeechEngine {
   }
 
   public clearTranscript(): void {
+    this.clearedTranscriptSnapshot = this.accumulatedTranscript.trim();
     this.startResultIndex = this.totalResultCount;
     this.accumulatedTranscript = '';
     this.alternativeHypotheses = [];
@@ -885,7 +951,8 @@ export class ContinuousMurojaahTracker {
   private matchedWordsCount = 0;
   private consecutiveMismatchCount = 0;
   private lastEvaluatedMismatchToken = '';
-  private lastAyahCompletedTime = 0;
+  private sameTokenFrameCount = 0;
+  private lastCompletedAyahWords: PrecompiledWord[] = [];
   private sensitivity: SensitivityLevel = 'normal';
 
   public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'normal'): void {
@@ -899,7 +966,8 @@ export class ContinuousMurojaahTracker {
     this.matchedWordsCount = 0;
     this.consecutiveMismatchCount = 0;
     this.lastEvaluatedMismatchToken = '';
-    this.lastAyahCompletedTime = 0;
+    this.sameTokenFrameCount = 0;
+    this.lastCompletedAyahWords = [];
     this.totalWordsCount = this.precompiledAyats.reduce((sum, a) => sum + a.words.length, 0);
     this.sensitivity = sensitivity;
     this.isActive = true;
@@ -964,283 +1032,358 @@ export class ContinuousMurojaahTracker {
   }
 
   public processStream(rawTranscript: string, alternatives?: string[], isFinal = false): void {
-    if (!this.isActive || this.isPaused || !this.precompiledAyats[this.currentAyahIndex]) return;
-
-    // Protection: If an Ayah was completed less than 400ms ago, ignore stale incoming buffers from the prior ayah
-    if (Date.now() - this.lastAyahCompletedTime < 400) return;
-
-    const currentPrecompiled = this.precompiledAyats[this.currentAyahIndex];
-    const expectedWords = currentPrecompiled.words;
-    if (expectedWords.length === 0 || this.currentWordIndex >= expectedWords.length) return;
+    if (!this.isActive || this.isPaused || this.currentAyahIndex >= this.precompiledAyats.length) return;
 
     // Distinct candidate phrases for multi-hypothesis evaluation
     const candidatePhrases = [rawTranscript, ...(alternatives || [])].filter(Boolean);
     if (candidatePhrases.length === 0) return;
 
-    let bestAdvance = 0;
-    let bestMatchedIndices: number[] = [];
+    // Multi-Verse Cascading Loop (Seamless Wasl Al-Ayat tracking across verse boundaries)
+    while (this.isActive && !this.isPaused && this.currentAyahIndex < this.precompiledAyats.length) {
+      const currentPrecompiled = this.precompiledAyats[this.currentAyahIndex];
+      const expectedWords = currentPrecompiled.words;
+      if (expectedWords.length === 0 || this.currentWordIndex >= expectedWords.length) break;
 
-    for (const phrase of candidatePhrases) {
-      const rawTokens = phrase.trim().split(/\s+/).filter(Boolean);
-      if (rawTokens.length === 0) continue;
+      let bestAdvance = 0;
+      let bestMatchedIndices: number[] = [];
 
-      const analyzed = rawTokens.map(w => analyzeSpokenToken(w));
-      let testWordIdx = this.currentWordIndex;
-      let tokenCursor = 0;
-      const matchedThisPhrase: number[] = [];
+      for (const phrase of candidatePhrases) {
+        const rawTokens = phrase.trim().split(/\s+/).filter(Boolean);
+        if (rawTokens.length === 0) continue;
 
-      while (testWordIdx < expectedWords.length && tokenCursor < analyzed.length) {
-        const targetWord = expectedWords[testWordIdx];
-        let matchFound = false;
+        const analyzed = rawTokens.map(w => analyzeSpokenToken(w));
 
-        // 0. Multi-token Huruf Muqatta'at sequence (e.g. ["الف", "لام", "ميم"] for "الم")
-        const muqattaExp = MUQATTAAT_DICTIONARY[targetWord.normalized];
-        if (muqattaExp) {
-          for (let span = 2; span <= Math.min(5, analyzed.length - tokenCursor); span++) {
-            const combinedTokens = analyzed.slice(tokenCursor, tokenCursor + span).map(t => t.normalized).join(' ');
-            const combinedCanon = canonicalizeArabicPhonemes(combinedTokens);
-            for (const exp of muqattaExp) {
-              const expCanon = canonicalizeArabicPhonemes(exp);
-              if (
-                combinedCanon === expCanon ||
-                fastLevenshteinSimilarity(combinedCanon, expCanon) >= 0.65
-              ) {
-                matchedThisPhrase.push(testWordIdx);
+        // Candidate start positions in expectedWords:
+        // 1. this.currentWordIndex (continuing recitation)
+        // 2. 0 (whole-ayah accumulated transcript from Web Speech API)
+        // 3. 1-2 words back (natural hesitation / repeating phrase)
+        const candidateStartWords: number[] = [this.currentWordIndex];
+        if (this.currentWordIndex > 0) {
+          candidateStartWords.push(0);
+          for (let b = 1; b <= 2; b++) {
+            if (this.currentWordIndex - b > 0) {
+              candidateStartWords.push(this.currentWordIndex - b);
+            }
+          }
+        }
+
+        for (const startWord of candidateStartWords) {
+          let testWordIdx = startWord;
+          let tokenCursor = 0;
+          const matchedThisRun: number[] = [];
+
+          while (testWordIdx < expectedWords.length && tokenCursor < analyzed.length) {
+            const targetWord = expectedWords[testWordIdx];
+            let matchFound = false;
+
+            // 0. Multi-token Huruf Muqatta'at sequence (e.g. ["الف", "لام", "ميم"] for "الم")
+            const muqattaExp = PRECOMPILED_MUQATTAAT[targetWord.normalized];
+            if (muqattaExp) {
+              for (let span = 2; span <= Math.min(5, analyzed.length - tokenCursor); span++) {
+                const combinedTokens = analyzed.slice(tokenCursor, tokenCursor + span).map(t => t.normalized).join(' ');
+                const combinedCanon = canonicalizeArabicPhonemes(combinedTokens);
+                for (let m = 0; m < muqattaExp.length; m++) {
+                  const expCanon = muqattaExp[m].canon;
+                  if (
+                    combinedCanon === expCanon ||
+                    fastLevenshteinSimilarity(combinedCanon, expCanon) >= 0.65
+                  ) {
+                    matchedThisRun.push(testWordIdx);
+                    testWordIdx++;
+                    tokenCursor += span;
+                    matchFound = true;
+                    break;
+                  }
+                }
+                if (matchFound) break;
+              }
+              if (matchFound) continue;
+            }
+
+            // Greedy window of up to 3 spoken tokens
+            const searchLimit = Math.min(tokenCursor + 3, analyzed.length);
+            for (let s = tokenCursor; s < searchLimit; s++) {
+              const spoken = analyzed[s];
+
+              // 1. Direct single-word match
+              if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
+                matchedThisRun.push(testWordIdx);
                 testWordIdx++;
-                tokenCursor += span;
+                tokenCursor = s + 1;
                 matchFound = true;
                 break;
               }
+
+              // 2. 2-Word Compound match (e.g. "مالقارعة" matching ["ما", "القارعة"], "فيلارض" matching ["في", "الارض"])
+              if (testWordIdx + 1 < expectedWords.length) {
+                const nextWord = expectedWords[testWordIdx + 1];
+                const compCanon = targetWord.canonical + nextWord.canonical;
+                if (
+                  spoken.canonical === compCanon ||
+                  fastLevenshteinSimilarity(spoken.canonical, compCanon) >= 0.60 ||
+                  (spoken.canonical.includes(nextWord.canonical) && spoken.canonical.length >= compCanon.length - 1)
+                ) {
+                  matchedThisRun.push(testWordIdx, testWordIdx + 1);
+                  testWordIdx += 2;
+                  tokenCursor = s + 1;
+                  matchFound = true;
+                  break;
+                }
+              }
+
+              // 3. 3-Word Compound match (e.g. "قلهوالله" matching ["قل", "هو", "الله"])
+              if (testWordIdx + 2 < expectedWords.length) {
+                const w2 = expectedWords[testWordIdx + 1];
+                const w3 = expectedWords[testWordIdx + 2];
+                const comp3Canon = targetWord.canonical + w2.canonical + w3.canonical;
+                if (
+                  spoken.canonical === comp3Canon ||
+                  fastLevenshteinSimilarity(spoken.canonical, comp3Canon) >= 0.60
+                ) {
+                  matchedThisRun.push(testWordIdx, testWordIdx + 1, testWordIdx + 2);
+                  testWordIdx += 3;
+                  tokenCursor = s + 1;
+                  matchFound = true;
+                  break;
+                }
+              }
+
+              // 4. Wasl short particle absorption (e.g. user recited "Mal-Qariah", STT transcribed "القارعة")
+              if (targetWord.charLength <= 3 && testWordIdx + 1 < expectedWords.length) {
+                const nextWord = expectedWords[testWordIdx + 1];
+                if (isPrecompiledWordMatch(nextWord, spoken, this.sensitivity)) {
+                  matchedThisRun.push(testWordIdx, testWordIdx + 1);
+                  testWordIdx += 2;
+                  tokenCursor = s + 1;
+                  matchFound = true;
+                  break;
+                }
+              }
             }
-            if (matchFound) break;
+
+            if (!matchFound) {
+              tokenCursor++;
+            }
           }
-          if (matchFound) continue;
+
+          const advance = testWordIdx - this.currentWordIndex;
+          if (advance > bestAdvance || (advance === bestAdvance && matchedThisRun.length > bestMatchedIndices.length)) {
+            bestAdvance = advance;
+            bestMatchedIndices = matchedThisRun;
+          }
         }
 
-        // Greedy window of up to 3 spoken tokens
-        const searchLimit = Math.min(tokenCursor + 3, analyzed.length);
-        for (let s = tokenCursor; s < searchLimit; s++) {
-          const spoken = analyzed[s];
+        // Check whole verse coverage (Only if spoken transcript actually covers the full verse)
+        const phraseCanon = canonicalizeArabicPhonemes(phrase);
+        if (
+          phraseCanon.length >= 6 &&
+          currentPrecompiled.fullArabicCanonical.length >= 6 &&
+          (phraseCanon.includes(currentPrecompiled.fullArabicCanonical) ||
+            (phraseCanon.length >= currentPrecompiled.fullArabicCanonical.length * 0.75 &&
+              fastLevenshteinSimilarity(phraseCanon, currentPrecompiled.fullArabicCanonical) >= 0.70))
+        ) {
+          bestMatchedIndices = expectedWords.map((_, i) => i);
+          bestAdvance = expectedWords.length - this.currentWordIndex;
+          break;
+        }
 
-          // 1. Direct single-word match
-          if (isPrecompiledWordMatch(targetWord, spoken, this.sensitivity)) {
-            matchedThisPhrase.push(testWordIdx);
-            testWordIdx++;
-            tokenCursor = s + 1;
-            matchFound = true;
+        if (bestAdvance > 0) {
+          break;
+        }
+      }
+
+      // Direct match against latest spoken words if multi-phrase matching was blocked
+      if (bestMatchedIndices.length === 0) {
+        const allTokens = rawTranscript.trim().split(/\s+/).filter(Boolean);
+        const lastTokens = allTokens.slice(-2);
+        for (const tok of lastTokens) {
+          const analyzed = analyzeSpokenToken(tok);
+          if (isPrecompiledWordMatch(expectedWords[this.currentWordIndex], analyzed, this.sensitivity)) {
+            bestMatchedIndices = [this.currentWordIndex];
+            bestAdvance = 1;
+            break;
+          } else if (
+            this.currentWordIndex + 1 < expectedWords.length &&
+            isPrecompiledWordMatch(expectedWords[this.currentWordIndex + 1], analyzed, this.sensitivity)
+          ) {
+            bestMatchedIndices = [this.currentWordIndex, this.currentWordIndex + 1];
+            bestAdvance = 2;
             break;
           }
+        }
+      }
 
-          // 2. 2-Word Compound match (e.g. "مالقارعة" matching ["ما", "القارعة"], "فيلارض" matching ["في", "الارض"])
-          if (testWordIdx + 1 < expectedWords.length) {
-            const nextWord = expectedWords[testWordIdx + 1];
-            const compCanon = targetWord.canonical + nextWord.canonical;
-            if (
-              spoken.canonical === compCanon ||
-              fastLevenshteinSimilarity(spoken.canonical, compCanon) >= 0.60 ||
-              (spoken.canonical.includes(nextWord.canonical) && spoken.canonical.length >= compCanon.length - 1)
-            ) {
-              matchedThisPhrase.push(testWordIdx, testWordIdx + 1);
-              testWordIdx += 2;
-              tokenCursor = s + 1;
-              matchFound = true;
-              break;
-            }
-          }
+      // Apply matched words or detect error
+      if (bestMatchedIndices.length > 0) {
+        this.consecutiveMismatchCount = 0;
+        this.lastEvaluatedMismatchToken = '';
+        this.sameTokenFrameCount = 0;
+        if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
+          this.matchedWordsMap.set(this.currentAyahIndex, new Set());
+        }
+        const set = this.matchedWordsMap.get(this.currentAyahIndex)!;
 
-          // 3. 3-Word Compound match (e.g. "قلهوالله" matching ["قل", "هو", "الله"])
-          if (testWordIdx + 2 < expectedWords.length) {
-            const w2 = expectedWords[testWordIdx + 1];
-            const w3 = expectedWords[testWordIdx + 2];
-            const comp3Canon = targetWord.canonical + w2.canonical + w3.canonical;
-            if (
-              spoken.canonical === comp3Canon ||
-              fastLevenshteinSimilarity(spoken.canonical, comp3Canon) >= 0.60
-            ) {
-              matchedThisPhrase.push(testWordIdx, testWordIdx + 1, testWordIdx + 2);
-              testWordIdx += 3;
-              tokenCursor = s + 1;
-              matchFound = true;
-              break;
-            }
-          }
-
-          // 4. Wasl short particle absorption (e.g. user recited "Mal-Qariah", STT transcribed "القارعة")
-          if (targetWord.charLength <= 3 && testWordIdx + 1 < expectedWords.length) {
-            const nextWord = expectedWords[testWordIdx + 1];
-            if (isPrecompiledWordMatch(nextWord, spoken, this.sensitivity)) {
-              matchedThisPhrase.push(testWordIdx, testWordIdx + 1);
-              testWordIdx += 2;
-              tokenCursor = s + 1;
-              matchFound = true;
-              break;
+        for (const wIdx of bestMatchedIndices) {
+          if (wIdx < expectedWords.length) {
+            if (!set.has(wIdx)) {
+              set.add(wIdx);
+              this.matchedWordsCount++;
+              if (this.callbacks) {
+                this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, expectedWords[wIdx].raw);
+              }
             }
           }
         }
 
-        if (!matchFound) {
-          tokenCursor++;
-        }
-      }
+        this.currentWordIndex = Math.min(expectedWords.length, this.currentWordIndex + bestAdvance);
+        this.lastMatchTime = Date.now();
 
-      // Check whole verse coverage (Only if spoken transcript actually covers the full verse)
-      const phraseCanon = canonicalizeArabicPhonemes(phrase);
-      if (
-        phraseCanon.length >= 6 &&
-        currentPrecompiled.fullArabicCanonical.length >= 6 &&
-        (phraseCanon.includes(currentPrecompiled.fullArabicCanonical) ||
-          (phraseCanon.length >= currentPrecompiled.fullArabicCanonical.length * 0.75 &&
-            fastLevenshteinSimilarity(phraseCanon, currentPrecompiled.fullArabicCanonical) >= 0.70))
-      ) {
-        matchedThisPhrase.length = 0;
-        for (let i = 0; i < expectedWords.length; i++) {
-          matchedThisPhrase.push(i);
-        }
-        testWordIdx = expectedWords.length;
-      }
+        // Check if the Ayah has been fully recited
+        if (this.currentWordIndex >= expectedWords.length) {
+          for (let i = 0; i < expectedWords.length; i++) {
+            if (!set.has(i)) {
+              set.add(i);
+              this.matchedWordsCount++;
+              if (this.callbacks) {
+                this.callbacks.onWordMatched(this.currentAyahIndex, i, expectedWords[i].raw);
+              }
+            }
+          }
 
-      if (matchedThisPhrase.length > bestMatchedIndices.length) {
-        bestMatchedIndices = matchedThisPhrase;
-        bestAdvance = testWordIdx - this.currentWordIndex;
-      }
-    }
+          const completedAyatIndex = this.currentAyahIndex;
+          const currentAyat = this.targetAyats[completedAyatIndex];
+          this.lastCompletedAyahWords = expectedWords;
+          this.consecutiveMismatchCount = 0;
+          this.lastEvaluatedMismatchToken = '';
 
-    // Direct match against latest spoken words if multi-phrase matching was blocked
-    if (bestMatchedIndices.length === 0) {
-      const allTokens = rawTranscript.trim().split(/\s+/).filter(Boolean);
-      const lastTokens = allTokens.slice(-2);
-      for (const tok of lastTokens) {
-        const analyzed = analyzeSpokenToken(tok);
-        if (isPrecompiledWordMatch(expectedWords[this.currentWordIndex], analyzed, this.sensitivity)) {
-          bestMatchedIndices = [this.currentWordIndex];
-          bestAdvance = 1;
-          break;
-        } else if (
-          this.currentWordIndex + 1 < expectedWords.length &&
-          isPrecompiledWordMatch(expectedWords[this.currentWordIndex + 1], analyzed, this.sensitivity)
-        ) {
-          bestMatchedIndices = [this.currentWordIndex, this.currentWordIndex + 1];
-          bestAdvance = 2;
-          break;
-        }
-      }
-    }
+          this.currentAyahIndex++;
+          this.currentWordIndex = 0;
 
-    // Apply matched words or detect error
-    if (bestMatchedIndices.length > 0) {
-      this.consecutiveMismatchCount = 0;
-      this.lastEvaluatedMismatchToken = '';
-      if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
-        this.matchedWordsMap.set(this.currentAyahIndex, new Set());
-      }
-
-      for (const wIdx of bestMatchedIndices) {
-        if (wIdx < expectedWords.length) {
-          this.matchedWordsMap.get(this.currentAyahIndex)!.add(wIdx);
-          this.matchedWordsCount++;
           if (this.callbacks) {
-            this.callbacks.onWordMatched(this.currentAyahIndex, wIdx, expectedWords[wIdx].raw);
+            this.callbacks.onAyahCompleted(completedAyatIndex, currentAyat);
           }
-        }
-      }
 
-      this.currentWordIndex = Math.min(expectedWords.length, this.currentWordIndex + bestAdvance);
-      this.lastMatchTime = Date.now();
-    } else {
-      const allTokens = rawTranscript.trim().split(/\s+/).filter(Boolean);
-      if (allTokens.length > 0) {
-        const lastSpoken = allTokens[allTokens.length - 1];
-        const normSpoken = normalizeArabic(lastSpoken);
-
-        // 1. Ignore transient noise pops or stray single-letter background whispers
-        if (normSpoken.length >= 2) {
-          const targetWord = expectedWords[this.currentWordIndex];
-
-          // 2. Check if spoken word is a repetition/hesitation of the PREVIOUS word (do NOT penalize)
-          const prevWord = this.currentWordIndex > 0 ? expectedWords[this.currentWordIndex - 1] : null;
-          if (prevWord && isPrecompiledWordMatch(prevWord, analyzeSpokenToken(lastSpoken), this.sensitivity)) {
-            // Santri repeated previous word to catch breath or rhythm - clear mismatch and return
-            this.consecutiveMismatchCount = 0;
+          // Check if all Ayats in the passage are completed
+          if (this.currentAyahIndex >= this.targetAyats.length) {
+            this.isActive = false;
+            const accuracyRatio = this.totalWordsCount > 0 ? (this.matchedWordsCount / this.totalWordsCount) : 1;
+            const score = Math.max(0, Math.min(100, Math.round(accuracyRatio * 100 - (this.totalErrors * 3))));
+            if (this.callbacks) {
+              this.callbacks.onPassageCompleted(score);
+            }
             return;
           }
 
-          // 3. Deduplicate rapid interim evaluations of the same token
-          if (normSpoken !== this.lastEvaluatedMismatchToken) {
-            this.lastEvaluatedMismatchToken = normSpoken;
-            this.consecutiveMismatchCount++;
-          }
+          // Cascade: Check if remaining candidate phrases also contain words for the newly activated ayah!
+          continue;
+        }
 
-          // Error threshold based on sensitivity:
-          // 'normal': 3 distinct mismatches (robust, zero false pauses)
-          // 'ultra' / 'high': 2 distinct mismatches (for high-level huffaz)
-          const errorMismatchThreshold = this.sensitivity === 'normal' ? 3 : 2;
-          const isSpokenSubstantial = normSpoken.length >= 3;
+        // If matched some words but ayah is not completed yet, finish this stream event
+        break;
+      } else {
+        // No match in current ayah
+        const allTokens = rawTranscript.trim().split(/\s+/).filter(Boolean);
+        if (allTokens.length > 0) {
+          const lastSpoken = allTokens[allTokens.length - 1];
+          const normSpoken = normalizeArabic(lastSpoken);
 
-          // CRITICAL: NEVER use isFinal as an error trigger! Normal pauses/breaths fire isFinal.
-          if (
-            this.consecutiveMismatchCount >= errorMismatchThreshold &&
-            isSpokenSubstantial &&
-            targetWord &&
-            this.callbacks
-          ) {
-            const similarity = fastLevenshteinSimilarity(targetWord.canonical, canonicalizeArabicPhonemes(lastSpoken));
-            // Only trigger error pause if truly divergent from target (< 0.50 similarity)
-            if (similarity < 0.50) {
-              this.totalErrors++;
-              this.isPaused = true;
+          // 1. Ignore transient noise pops or stray single-letter background whispers
+          if (normSpoken.length >= 2) {
+            const targetWord = expectedWords[this.currentWordIndex];
+
+            // 2. Check if spoken word is a repetition/hesitation of the PREVIOUS word in current ayah (do NOT penalize)
+            const prevWord = this.currentWordIndex > 0 ? expectedWords[this.currentWordIndex - 1] : null;
+            if (prevWord && isPrecompiledWordMatch(prevWord, analyzeSpokenToken(lastSpoken), this.sensitivity)) {
               this.consecutiveMismatchCount = 0;
-              this.lastEvaluatedMismatchToken = '';
+              return;
+            }
 
-              const nextWord = expectedWords[this.currentWordIndex + 1]?.raw || '';
-              const prevWordRaw = prevWord ? prevWord.raw : '';
-              const isEnd = this.currentWordIndex === expectedWords.length - 1;
+            // 2b. Check if spoken word is from the PREVIOUS completed ayah (trailing audio buffer from wasl / completion)
+            if (
+              this.lastCompletedAyahWords.length > 0 &&
+              this.lastCompletedAyahWords.some(w => isPrecompiledWordMatch(w, analyzeSpokenToken(lastSpoken), this.sensitivity))
+            ) {
+              this.consecutiveMismatchCount = 0;
+              return;
+            }
 
-              const diagnosis = diagnoseTajweedAndMakhrajError(
-                targetWord.raw,
-                lastSpoken,
-                nextWord,
-                prevWordRaw,
-                isEnd
-              );
+            // 2c. Check if spoken word matches ANY previously matched word in the current ayah (repetition / hesitation)
+            const matchedSet = this.matchedWordsMap.get(this.currentAyahIndex);
+            if (matchedSet && matchedSet.size > 0) {
+              const spokenAnalysis = analyzeSpokenToken(lastSpoken);
+              let isAlreadyMatchedWord = false;
+              for (const matchedIdx of matchedSet) {
+                if (isPrecompiledWordMatch(expectedWords[matchedIdx], spokenAnalysis, this.sensitivity)) {
+                  isAlreadyMatchedWord = true;
+                  break;
+                }
+              }
+              if (isAlreadyMatchedWord) {
+                this.consecutiveMismatchCount = 0;
+                return;
+              }
+            }
 
-              this.callbacks.onErrorDetected(
-                this.currentAyahIndex,
-                this.currentWordIndex,
-                diagnosis.errorReason,
-                targetWord.raw,
-                lastSpoken
-              );
+            // 3. Increment mismatch count on sustained distinct wrong token
+            if (normSpoken !== this.lastEvaluatedMismatchToken) {
+              this.lastEvaluatedMismatchToken = normSpoken;
+              this.sameTokenFrameCount = 0;
+              this.consecutiveMismatchCount++;
+            } else {
+              this.sameTokenFrameCount++;
+              if (this.sameTokenFrameCount >= 2) {
+                this.consecutiveMismatchCount++;
+                this.sameTokenFrameCount = 0;
+              }
+            }
+
+            // Error threshold based on sensitivity:
+            // 'normal': 3 distinct mismatches (robust, zero false pauses)
+            // 'ultra' / 'high': 2 distinct mismatches (for high-level huffaz)
+            const errorMismatchThreshold = this.sensitivity === 'normal' ? 3 : 2;
+            const isSpokenSubstantial = normSpoken.length >= 3;
+
+            // CRITICAL: NEVER use isFinal as an error trigger! Normal pauses/breaths fire isFinal.
+            if (
+              this.consecutiveMismatchCount >= errorMismatchThreshold &&
+              isSpokenSubstantial &&
+              targetWord &&
+              this.callbacks
+            ) {
+              const similarity = fastLevenshteinSimilarity(targetWord.canonical, canonicalizeArabicPhonemes(lastSpoken));
+              const matchThresh = this.sensitivity === 'ultra' ? 0.62 : this.sensitivity === 'high' ? 0.66 : 0.70;
+              // Trigger error pause if spoken token falls below sensitivity match threshold
+              if (similarity < matchThresh) {
+                this.totalErrors++;
+                this.isPaused = true;
+                this.consecutiveMismatchCount = 0;
+                this.lastEvaluatedMismatchToken = '';
+                this.sameTokenFrameCount = 0;
+
+                const nextWord = expectedWords[this.currentWordIndex + 1]?.raw || '';
+                const prevWordRaw = prevWord ? prevWord.raw : '';
+                const isEnd = this.currentWordIndex === expectedWords.length - 1;
+
+                const diagnosis = diagnoseTajweedAndMakhrajError(
+                  targetWord.raw,
+                  lastSpoken,
+                  nextWord,
+                  prevWordRaw,
+                  isEnd
+                );
+
+                this.callbacks.onErrorDetected(
+                  this.currentAyahIndex,
+                  this.currentWordIndex,
+                  diagnosis.errorReason,
+                  targetWord.raw,
+                  lastSpoken
+                );
+              }
             }
           }
         }
-      }
-    }
-
-    // Check if the Ayah has been fully recited
-    if (this.currentWordIndex >= expectedWords.length) {
-      for (let i = 0; i < expectedWords.length; i++) {
-        this.matchedWordsMap.get(this.currentAyahIndex)!.add(i);
-      }
-
-      const currentAyat = this.targetAyats[this.currentAyahIndex];
-      this.lastAyahCompletedTime = Date.now();
-      this.consecutiveMismatchCount = 0;
-      this.lastEvaluatedMismatchToken = '';
-
-      if (this.callbacks) {
-        this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
-      }
-
-      this.currentAyahIndex++;
-      this.currentWordIndex = 0;
-
-      // Check if all Ayats in the passage are completed
-      if (this.currentAyahIndex >= this.targetAyats.length) {
-        this.isActive = false;
-        const score = Math.max(90, Math.round(100 - (this.totalErrors * 2)));
-        if (this.callbacks) {
-          this.callbacks.onPassageCompleted(score);
-        }
+        break;
       }
     }
   }
@@ -1259,35 +1402,50 @@ export class ContinuousMurojaahTracker {
       this.matchedWordsMap.set(this.currentAyahIndex, new Set());
     }
 
-    this.matchedWordsMap.get(this.currentAyahIndex)!.add(this.currentWordIndex);
-    this.matchedWordsCount++;
-
-    if (this.callbacks) {
-      this.callbacks.onWordMatched(
-        this.currentAyahIndex,
-        this.currentWordIndex,
-        expectedWords[this.currentWordIndex].raw
-      );
+    const set = this.matchedWordsMap.get(this.currentAyahIndex)!;
+    if (!set.has(this.currentWordIndex)) {
+      set.add(this.currentWordIndex);
+      this.matchedWordsCount++;
+      if (this.callbacks) {
+        this.callbacks.onWordMatched(
+          this.currentAyahIndex,
+          this.currentWordIndex,
+          expectedWords[this.currentWordIndex].raw
+        );
+      }
     }
 
     this.currentWordIndex++;
     this.lastMatchTime = Date.now();
 
     if (this.currentWordIndex >= expectedWords.length) {
-      const currentAyat = this.targetAyats[this.currentAyahIndex];
-      this.lastAyahCompletedTime = Date.now();
+      for (let i = 0; i < expectedWords.length; i++) {
+        if (!set.has(i)) {
+          set.add(i);
+          this.matchedWordsCount++;
+          if (this.callbacks) {
+            this.callbacks.onWordMatched(this.currentAyahIndex, i, expectedWords[i].raw);
+          }
+        }
+      }
+
+      const completedAyatIndex = this.currentAyahIndex;
+      const currentAyat = this.targetAyats[completedAyatIndex];
+      this.lastCompletedAyahWords = expectedWords;
       this.consecutiveMismatchCount = 0;
       this.lastEvaluatedMismatchToken = '';
 
-      if (this.callbacks) {
-        this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
-      }
       this.currentAyahIndex++;
       this.currentWordIndex = 0;
 
+      if (this.callbacks) {
+        this.callbacks.onAyahCompleted(completedAyatIndex, currentAyat);
+      }
+
       if (this.currentAyahIndex >= this.targetAyats.length) {
         this.isActive = false;
-        const score = Math.max(90, Math.round(100 - (this.totalErrors * 2)));
+        const accuracyRatio = this.totalWordsCount > 0 ? (this.matchedWordsCount / this.totalWordsCount) : 1;
+        const score = Math.max(0, Math.min(100, Math.round(accuracyRatio * 100 - (this.totalErrors * 3))));
         if (this.callbacks) {
           this.callbacks.onPassageCompleted(score);
         }
