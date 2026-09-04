@@ -25,7 +25,7 @@ import { Ayat, SimaiLevel, UserProfile, EvaluationResult } from '../../types';
 import { simaiQueue, ALL_JUZ_29_SURAHS, ALL_JUZ_30_SURAHS } from '../../data/quranData';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
-import { speechEngine } from '../../services/speechEngine';
+import { speechEngine, SpeechEngine } from '../../services/speechEngine';
 import { audioRecorder } from '../../services/audioRecorderService';
 import { addXpAndCheckStreak } from '../../services/offlineStorage';
 import { useLanguage } from '../../context/LanguageContext';
@@ -120,6 +120,8 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
     setEvaluation(null);
     setSpokenTranscript('');
 
+    await SpeechEngine.requestMicrophonePermission();
+
     speechEngine.setLanguage(speechLanguage);
     const started = speechEngine.startListening({
       language: speechLanguage,
@@ -133,12 +135,39 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
       },
       onError: (err) => {
         console.warn('Speech engine:', err);
+        if (typeof err === 'string') {
+          setIsRecording(false);
+          setMicVolume(0);
+          setEvaluation({
+            accuracyScore: 0,
+            isPassed: false,
+            recognizedText: '',
+            expectedArabic: challengeData.next.arabicText,
+            expectedLatin: challengeData.next.transliteration || '',
+            wordEvaluations: [],
+            aiAdabPraise: '⚠️ Kendala Mikrofon',
+            aiCorrectionNote: `${err}. Santri dapat beralih menggunakan Mode Susun Potongan Ayat di bawah (100% Offline)!`,
+            syekhAudioUrl: ''
+          });
+        }
       }
     });
 
     if (started) {
       setIsRecording(true);
       setMicVolume(30);
+    } else {
+      setEvaluation({
+        accuracyScore: 0,
+        isPassed: false,
+        recognizedText: '',
+        expectedArabic: challengeData.next.arabicText,
+        expectedLatin: challengeData.next.transliteration || '',
+        wordEvaluations: [],
+        aiAdabPraise: '⚠️ Izin Mikrofon Diperlukan',
+        aiCorrectionNote: 'Fitur Dikte Suara memerlukan izin mikrofon browser. Anda juga dapat menggunakan Mode Susun Potongan Ayat di bawah secara 100% Offline!',
+        syekhAudioUrl: ''
+      });
     }
   };
 

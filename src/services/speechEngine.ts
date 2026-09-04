@@ -401,12 +401,35 @@ export class SpeechEngine {
   private recognition: any = null;
   private isListening = false;
   private currentLanguage: ArabicDialect = 'ar-SA';
-  private sensitivity: SensitivityLevel = 'ultra';
+  private sensitivity: SensitivityLevel = 'normal';
   private accumulatedTranscript = '';
   private alternativeHypotheses: string[] = [];
   private restartTimeout: any = null;
   private startResultIndex = 0;
   private totalResultCount = 0;
+
+  /**
+   * Preflight microphone check & hardware lock release
+   * Ensures browser/OS permits mic access without lingering stream locking
+   */
+  public static async requestMicrophonePermission(): Promise<boolean> {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) return true;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
+      // Immediately stop all tracks to release hardware lock for SpeechRecognition
+      stream.getTracks().forEach((track) => track.stop());
+      return true;
+    } catch (e) {
+      console.warn('[SpeechEngine] Microphone permission preflight:', e);
+      return false;
+    }
+  }
 
   constructor() {
     this.initRecognition();
@@ -528,12 +551,26 @@ export class SpeechEngine {
 
       this.recognition.onerror = (e: any) => {
         if (e.error === 'no-speech') {
-          // Normal silence, keep listening
+          // Normal pause in recitation / breathing - keep listening silently
+          return;
+        }
+        if (e.error === 'aborted') {
+          // Normal manual pause or restart
           return;
         }
         if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
           this.isListening = false;
-          options.onError?.('Akses mikrofon ditolak oleh browser. Silakan izinkan akses mic di pengaturan.');
+          options.onError?.('Akses mikrofon belum diizinkan. Silakan izinkan akses mikrofon di pengaturan browser Anda.');
+          return;
+        }
+        if (e.error === 'audio-capture') {
+          this.isListening = false;
+          options.onError?.('Mikrofon tidak terdeteksi atau sedang dipakai aplikasi lain. Pastikan mikrofon aktif dan tidak terkunci.');
+          return;
+        }
+        if (e.error === 'network') {
+          this.isListening = false;
+          options.onError?.('Pengenalan suara online memerlukan koneksi internet atau bahasa Arab offline pada perangkat. Mode Sentuh Layar (Manual Tartil) siap digunakan 100% Offline.');
           return;
         }
         console.warn('Speech recognition event warning:', e.error);
@@ -847,6 +884,8 @@ export class ContinuousMurojaahTracker {
   private totalWordsCount = 0;
   private matchedWordsCount = 0;
   private consecutiveMismatchCount = 0;
+  private lastEvaluatedMismatchToken = '';
+  private lastAyahCompletedTime = 0;
   private sensitivity: SensitivityLevel = 'normal';
 
   public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'normal'): void {
@@ -859,6 +898,8 @@ export class ContinuousMurojaahTracker {
     this.totalErrors = 0;
     this.matchedWordsCount = 0;
     this.consecutiveMismatchCount = 0;
+    this.lastEvaluatedMismatchToken = '';
+    this.lastAyahCompletedTime = 0;
     this.totalWordsCount = this.precompiledAyats.reduce((sum, a) => sum + a.words.length, 0);
     this.sensitivity = sensitivity;
     this.isActive = true;
@@ -924,6 +965,9 @@ export class ContinuousMurojaahTracker {
 
   public processStream(rawTranscript: string, alternatives?: string[], isFinal = false): void {
     if (!this.isActive || this.isPaused || !this.precompiledAyats[this.currentAyahIndex]) return;
+
+    // Protection: If an Ayah was completed less than 400ms ago, ignore stale incoming buffers from the prior ayah
+    if (Date.now() - this.lastAyahCompletedTime < 400) return;
 
     const currentPrecompiled = this.precompiledAyats[this.currentAyahIndex];
     const expectedWords = currentPrecompiled.words;
@@ -1085,6 +1129,7 @@ export class ContinuousMurojaahTracker {
     // Apply matched words or detect error
     if (bestMatchedIndices.length > 0) {
       this.consecutiveMismatchCount = 0;
+      this.lastEvaluatedMismatchToken = '';
       if (!this.matchedWordsMap.has(this.currentAyahIndex)) {
         this.matchedWordsMap.set(this.currentAyahIndex, new Set());
       }
@@ -1107,35 +1152,54 @@ export class ContinuousMurojaahTracker {
         const lastSpoken = allTokens[allTokens.length - 1];
         const normSpoken = normalizeArabic(lastSpoken);
 
-        // Ignore transient noise pops or stray single-letter background whispers
+        // 1. Ignore transient noise pops or stray single-letter background whispers
         if (normSpoken.length >= 2) {
-          this.consecutiveMismatchCount++;
           const targetWord = expectedWords[this.currentWordIndex];
 
-          const errorMismatchThreshold = this.sensitivity === 'normal' ? 3 : 2;
-          const isSpokenSubstantial = normSpoken.length >= 3 || isFinal;
+          // 2. Check if spoken word is a repetition/hesitation of the PREVIOUS word (do NOT penalize)
+          const prevWord = this.currentWordIndex > 0 ? expectedWords[this.currentWordIndex - 1] : null;
+          if (prevWord && isPrecompiledWordMatch(prevWord, analyzeSpokenToken(lastSpoken), this.sensitivity)) {
+            // Santri repeated previous word to catch breath or rhythm - clear mismatch and return
+            this.consecutiveMismatchCount = 0;
+            return;
+          }
 
+          // 3. Deduplicate rapid interim evaluations of the same token
+          if (normSpoken !== this.lastEvaluatedMismatchToken) {
+            this.lastEvaluatedMismatchToken = normSpoken;
+            this.consecutiveMismatchCount++;
+          }
+
+          // Error threshold based on sensitivity:
+          // 'normal': 3 distinct mismatches (robust, zero false pauses)
+          // 'ultra' / 'high': 2 distinct mismatches (for high-level huffaz)
+          const errorMismatchThreshold = this.sensitivity === 'normal' ? 3 : 2;
+          const isSpokenSubstantial = normSpoken.length >= 3;
+
+          // CRITICAL: NEVER use isFinal as an error trigger! Normal pauses/breaths fire isFinal.
           if (
-            (isFinal || this.consecutiveMismatchCount >= errorMismatchThreshold) &&
+            this.consecutiveMismatchCount >= errorMismatchThreshold &&
             isSpokenSubstantial &&
             targetWord &&
             this.callbacks
           ) {
             const similarity = fastLevenshteinSimilarity(targetWord.canonical, canonicalizeArabicPhonemes(lastSpoken));
-            // Only trigger error pause if truly divergent from target (< 0.55 similarity)
-            if (similarity < 0.55) {
+            // Only trigger error pause if truly divergent from target (< 0.50 similarity)
+            if (similarity < 0.50) {
               this.totalErrors++;
               this.isPaused = true;
+              this.consecutiveMismatchCount = 0;
+              this.lastEvaluatedMismatchToken = '';
 
               const nextWord = expectedWords[this.currentWordIndex + 1]?.raw || '';
-              const prevWord = this.currentWordIndex > 0 ? expectedWords[this.currentWordIndex - 1]?.raw : '';
+              const prevWordRaw = prevWord ? prevWord.raw : '';
               const isEnd = this.currentWordIndex === expectedWords.length - 1;
 
               const diagnosis = diagnoseTajweedAndMakhrajError(
                 targetWord.raw,
                 lastSpoken,
                 nextWord,
-                prevWord,
+                prevWordRaw,
                 isEnd
               );
 
@@ -1159,6 +1223,10 @@ export class ContinuousMurojaahTracker {
       }
 
       const currentAyat = this.targetAyats[this.currentAyahIndex];
+      this.lastAyahCompletedTime = Date.now();
+      this.consecutiveMismatchCount = 0;
+      this.lastEvaluatedMismatchToken = '';
+
       if (this.callbacks) {
         this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
       }
@@ -1207,6 +1275,10 @@ export class ContinuousMurojaahTracker {
 
     if (this.currentWordIndex >= expectedWords.length) {
       const currentAyat = this.targetAyats[this.currentAyahIndex];
+      this.lastAyahCompletedTime = Date.now();
+      this.consecutiveMismatchCount = 0;
+      this.lastEvaluatedMismatchToken = '';
+
       if (this.callbacks) {
         this.callbacks.onAyahCompleted(this.currentAyahIndex, currentAyat);
       }
@@ -1227,6 +1299,8 @@ export class ContinuousMurojaahTracker {
   public resumeAfterCorrection(): void {
     if (!this.isActive) return;
     this.isPaused = false;
+    this.consecutiveMismatchCount = 0;
+    this.lastEvaluatedMismatchToken = '';
     this.lastMatchTime = Date.now();
   }
 }

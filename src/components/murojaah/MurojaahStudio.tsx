@@ -41,7 +41,7 @@ import {
   getRandomAyatFromAvailable 
 } from '../../data/quranData';
 import { NeobrutalCard } from '../common/NeobrutalCard';
-import { speechEngine, continuousTracker, ArabicDialect, normalizeArabic } from '../../services/speechEngine';
+import { speechEngine, continuousTracker, SpeechEngine, ArabicDialect, normalizeArabic } from '../../services/speechEngine';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { audioRecorder } from '../../services/audioRecorderService';
 import { recordWeakVerse, resolveWeakVerse, addXpAndCheckStreak } from '../../services/offlineStorage';
@@ -273,6 +273,9 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         console.warn('Mic status warning:', err);
         if (typeof err === 'string') {
           setSheikhTeguranMessage(err);
+          if (err.includes('dipakai') || err.includes('terkunci') || err.includes('audio-capture')) {
+            audioRecorder.stopRecording();
+          }
         }
       }
     });
@@ -385,13 +388,16 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       }
     }, micSensitivity);
 
-    // 2. Start Web Audio API decibel metering (60 FPS, 0 delay)
+    // 2. Preflight microphone permission & ensure audio hardware is unblocked
+    await SpeechEngine.requestMicrophonePermission();
+
+    // 3. Start Web Audio API decibel metering (60 FPS, 0 delay)
     audioRecorder.startRecording({
       onVolumeUpdate: (volume) => setMicVolume(volume),
       boostGain: true
     });
 
-    // 3. Start Speech Recognition with 100% Dedicated Microphone Access
+    // 4. Start Speech Recognition with 100% Dedicated Microphone Access
     speechEngine.setLanguage(speechLanguage);
     speechEngine.setSensitivity(micSensitivity);
     const started = speechEngine.startListening({
@@ -409,6 +415,10 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         console.warn('Mic status warning:', err);
         if (typeof err === 'string') {
           setSheikhTeguranMessage(err);
+          // If microphone contention occurs on mobile Android, stop decibel recorder so SpeechRecognition gets exclusive access
+          if (err.includes('dipakai') || err.includes('terkunci') || err.includes('audio-capture')) {
+            audioRecorder.stopRecording();
+          }
         }
       }
     });

@@ -29,7 +29,7 @@ import { Ayat, ChallengeMode, UserProfile } from '../../types';
 import { getRandomJuz29And30ChallengeWithOptions } from '../../data/quranData';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { audioPlayer } from '../../services/audioPlayerService';
-import { speechEngine } from '../../services/speechEngine';
+import { speechEngine, SpeechEngine } from '../../services/speechEngine';
 import { audioRecorder } from '../../services/audioRecorderService';
 import { addXpAndCheckStreak } from '../../services/offlineStorage';
 import { useLanguage } from '../../context/LanguageContext';
@@ -176,6 +176,9 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
     setSpokenTranscript('');
     setRecordedVoiceUrl(null);
 
+    // Preflight microphone permission & ensure audio hardware is unblocked
+    await SpeechEngine.requestMicrophonePermission();
+
     // Dedicated Speech Recognition
     speechEngine.setLanguage(speechLanguage);
     const started = speechEngine.startListening({
@@ -188,13 +191,30 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
         setSpokenTranscript(text);
         setMicVolume(Math.min(95, 60 + Math.round(Math.random() * 35)));
       },
-      onError: (err) => console.warn('Mic speech warn:', err)
+      onError: (err) => {
+        console.warn('Mic speech warn:', err);
+        if (typeof err === 'string') {
+          setIsRecording(false);
+          setMicVolume(0);
+          setLastResult({
+            isCorrect: false,
+            accuracy: 0,
+            praise: `⚠️ ${err} (Silakan beralih ke Mode Pilihan Ganda / Mode Tulis 100% Offline)`
+          });
+        }
+      }
     });
 
     if (started) {
       setIsRecording(true);
       setMicVolume(30);
       if (mode === 'timer' && !isTimerRunning) setIsTimerRunning(true);
+    } else {
+      setLastResult({
+        isCorrect: false,
+        accuracy: 0,
+        praise: '⚠️ Izin mikrofon diperlukan. Anda juga dapat menggunakan Mode Pilihan Ganda 100% Offline!'
+      });
     }
   };
 
