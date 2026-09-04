@@ -45,10 +45,13 @@ export * from './memory/NeuroSpacedRepetitionEngine';
 // 10. Advanced Quranic Research Engines (Chronological, I'rab, Hadith, Multilingual, Asmaul Husna)
 export * from './research';
 
-// 11. Gateway Facade
+// 11. Frontier AI & Acoustic Breakthrough Engines (3D Vocal Tract, Breath, P2P Mesh, Circadian, TinyML)
+export * from './frontier';
+
+// 12. Gateway Facade
 export * from './gateway/EnterpriseBackendFacade';
 
-// 12. Compatibility Services
+// 13. Compatibility Services
 export * from './tajwidRuleEngine';
 export * from './quranKnowledgeGraph';
 export * from './cryptographicAuditLedger';

@@ -10,7 +10,9 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "perf-test": "node scripts/performanceBenchmarkSuite.mjs",
-    "stress-test": "node scripts/comprehensiveResearchStressTest.mjs"
+    "stress-test": "node scripts/comprehensiveResearchStressTest.mjs",
+    "stress-frontier": "node scripts/frontierHeavyStressTest.mjs",
+    "stress-master": "node scripts/unifiedMasterStressTest.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
