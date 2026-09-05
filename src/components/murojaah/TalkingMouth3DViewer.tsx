@@ -225,24 +225,20 @@ export const TalkingMouth3DViewer: React.FC<TalkingMouth3DViewerProps> = ({
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [isSlowMotion, setIsSlowMotion] = useState<boolean>(false);
   const [currentProgress, setCurrentProgress] = useState<number>(0); // 0.0 to 1.0
-  const [activePhonemeIndex, setActivePhonemeIndex] = useState<number>(0);
 
   const frontCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const sagittalCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number>(Date.now());
 
   // Parse Arabic word into sequential phonemes
   const parsedPhonemes = useMemo<ParsedPhoneme[]>(() => {
     if (!targetWord) return [];
 
-    // Strip common Quranic marks while keeping base letters
     const rawChars = Array.from(targetWord);
     const phonemes: ParsedPhoneme[] = [];
 
     for (let i = 0; i < rawChars.length; i++) {
       const char = rawChars[i];
-      // Normalize letters
       let norm = char;
       if (['أ', 'إ', 'آ'].includes(char)) norm = 'ء';
       if (char === 'ة') norm = 'ه';
@@ -250,21 +246,29 @@ export const TalkingMouth3DViewer: React.FC<TalkingMouth3DViewerProps> = ({
 
       if (ARABIC_PHONEME_COORDS[norm]) {
         const info = ARABIC_PHONEME_COORDS[norm];
-        // Check next char for Shaddah (doubled duration)
         const isShaddah = i + 1 < rawChars.length && rawChars[i + 1] === '\u0651';
+        const hasDammah = (i + 1 < rawChars.length && rawChars[i + 1] === '\u064F') || (i + 2 < rawChars.length && rawChars[i + 2] === '\u064F');
+        const hasFathah = (i + 1 < rawChars.length && rawChars[i + 1] === '\u064E') || (i + 2 < rawChars.length && rawChars[i + 2] === '\u064E');
+
+        const adjustedCoords: ArticulatoryCoordinates = { ...info.coords };
+        if (hasDammah) {
+          adjustedCoords.lipRounding = Math.min(0.95, adjustedCoords.lipRounding + 0.35);
+        } else if (hasFathah) {
+          adjustedCoords.jawOpening = Math.min(0.85, adjustedCoords.jawOpening + 0.18);
+        }
+
         phonemes.push({
           letter: char,
           name: info.name,
           region: info.region,
           durationMs: isShaddah ? 400 : 220,
-          coords: info.coords,
+          coords: adjustedCoords,
           description: info.description
         });
       }
     }
 
     if (phonemes.length === 0) {
-      // Fallback: default Ain
       phonemes.push({
         letter: targetWord.charAt(0) || 'ع',
         name: 'Makhraj Huruf',
@@ -283,10 +287,21 @@ export const TalkingMouth3DViewer: React.FC<TalkingMouth3DViewerProps> = ({
     return parsedPhonemes.reduce((acc, p) => acc + p.durationMs, 0);
   }, [parsedPhonemes]);
 
-  // Interpolate current coordinates based on progress (0.0 - 1.0)
-  const currentCoords = useMemo<ArticulatoryCoordinates>(() => {
+  // Interpolate current coordinates & derive active phoneme index without state churn
+  const { currentCoords, activePhonemeIndex } = useMemo(() => {
     if (parsedPhonemes.length === 0) {
-      return { jawOpening: 0.3, tongueRootRetraction: 0, tongueDorsumElevation: 0, tongueBladeElevation: 0, lateralTongueContact: 0, lipRounding: 0, velumState: 'CLOSED' };
+      return {
+        currentCoords: {
+          jawOpening: 0.3,
+          tongueRootRetraction: 0,
+          tongueDorsumElevation: 0,
+          tongueBladeElevation: 0,
+          lateralTongueContact: 0,
+          lipRounding: 0,
+          velumState: 'CLOSED' as const
+        },
+        activePhonemeIndex: 0
+      };
     }
 
     const elapsedMs = currentProgress * totalDurationMs;
@@ -304,28 +319,28 @@ export const TalkingMouth3DViewer: React.FC<TalkingMouth3DViewerProps> = ({
       accumulatedMs += p.durationMs;
     }
 
-    if (currIdx !== activePhonemeIndex) {
-      setActivePhonemeIndex(currIdx);
-    }
-
     const currentP = parsedPhonemes[currIdx];
     const nextP = parsedPhonemes[(currIdx + 1) % parsedPhonemes.length];
 
-    // Hermite smooth step interpolation
+    // Hermite smooth-step interpolation for organic anatomical movement
     const t = localRatio * localRatio * (3 - 2 * localRatio);
-
     const lerp = (a: number, b: number) => a + (b - a) * t;
 
     return {
-      jawOpening: lerp(currentP.coords.jawOpening, nextP.coords.jawOpening),
-      tongueRootRetraction: lerp(currentP.coords.tongueRootRetraction, nextP.coords.tongueRootRetraction),
-      tongueDorsumElevation: lerp(currentP.coords.tongueDorsumElevation, nextP.coords.tongueDorsumElevation),
-      tongueBladeElevation: lerp(currentP.coords.tongueBladeElevation, nextP.coords.tongueBladeElevation),
-      lateralTongueContact: lerp(currentP.coords.lateralTongueContact, nextP.coords.lateralTongueContact),
-      lipRounding: lerp(currentP.coords.lipRounding, nextP.coords.lipRounding),
-      velumState: currentP.coords.velumState
+      currentCoords: {
+        jawOpening: lerp(currentP.coords.jawOpening, nextP.coords.jawOpening),
+        tongueRootRetraction: lerp(currentP.coords.tongueRootRetraction, nextP.coords.tongueRootRetraction),
+        tongueDorsumElevation: lerp(currentP.coords.tongueDorsumElevation, nextP.coords.tongueDorsumElevation),
+        tongueBladeElevation: lerp(currentP.coords.tongueBladeElevation, nextP.coords.tongueBladeElevation),
+        lateralTongueContact: lerp(currentP.coords.lateralTongueContact, nextP.coords.lateralTongueContact),
+        lipRounding: lerp(currentP.coords.lipRounding, nextP.coords.lipRounding),
+        velumState: currentP.coords.velumState
+      },
+      activePhonemeIndex: currIdx
     };
-  }, [currentProgress, parsedPhonemes, totalDurationMs, activePhonemeIndex]);
+  }, [currentProgress, parsedPhonemes, totalDurationMs]);
+
+  const activePhoneme = parsedPhonemes[activePhonemeIndex] || parsedPhonemes[0];
 
   // Main 60 FPS animation loop
   useEffect(() => {
@@ -618,7 +633,7 @@ export const TalkingMouth3DViewer: React.FC<TalkingMouth3DViewerProps> = ({
 
   }, [currentCoords]);
 
-  const activePhoneme = parsedPhonemes[activePhonemeIndex] || parsedPhonemes[0];
+  const safeBreath = Math.max(0, Math.min(100, Math.round(breathRemainingPercent || 0)));
 
   return (
     <div className="bg-[#111827] text-white border-2 border-red-500 rounded-2xl p-4 shadow-[4px_4px_0px_0px_#000] space-y-3 font-sans">
@@ -704,9 +719,8 @@ export const TalkingMouth3DViewer: React.FC<TalkingMouth3DViewerProps> = ({
                 <button
                   key={`${p.letter}-${idx}`}
                   onClick={() => {
-                    setActivePhonemeIndex(idx);
                     const accum = parsedPhonemes.slice(0, idx).reduce((a, b) => a + b.durationMs, 0);
-                    setCurrentProgress(accum / totalDurationMs);
+                    setCurrentProgress(accum / Math.max(1, totalDurationMs));
                     setIsPlaying(false);
                   }}
                   className={`w-9 h-9 rounded-xl font-quran text-lg font-bold flex items-center justify-center border-2 transition-all cursor-pointer ${
@@ -778,12 +792,12 @@ export const TalkingMouth3DViewer: React.FC<TalkingMouth3DViewerProps> = ({
           <div className="w-20 bg-gray-800 rounded-full h-2 overflow-hidden border border-gray-700">
             <div
               className={`h-full transition-all duration-300 ${
-                breathRemainingPercent > 40 ? 'bg-emerald-400' : 'bg-red-400'
+                safeBreath > 40 ? 'bg-emerald-400' : 'bg-red-400'
               }`}
-              style={{ width: `${breathRemainingPercent}%` }}
+              style={{ width: `${safeBreath}%` }}
             />
           </div>
-          <span className="font-bold text-white">{breathRemainingPercent}%</span>
+          <span className="font-bold text-white">{safeBreath}%</span>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Search, Book, Layers, Sparkles, Headphones, ChevronDown, Check, Clock } from 'lucide-react';
 import { SURAH_LIST, JUZ_MAP, getSurahsInJuz } from '../../data/quranData';
 import { SurahMeta } from '../../types';
@@ -24,32 +24,36 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
   const [activeReciter, setActiveReciter] = useState<Reciter>(audioPlayer.getActiveReciter());
   const [isReciterMenuOpen, setIsReciterMenuOpen] = useState(false);
 
-  // Filter Surahs
-  const filteredSurahs = SURAH_LIST.filter((s) => {
+  // Filter Surahs with memoization
+  const filteredSurahs = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
-    const matchQuery =
-      !query ||
-      s.latinName.toLowerCase().includes(query) ||
-      s.meaning.toLowerCase().includes(query) ||
-      s.name.includes(query) ||
-      String(s.number) === query;
+    return SURAH_LIST.filter((s) => {
+      const matchQuery =
+        !query ||
+        s.latinName.toLowerCase().includes(query) ||
+        s.meaning.toLowerCase().includes(query) ||
+        s.name.includes(query) ||
+        String(s.number) === query;
 
-    let matchJuz = true;
-    if (selectedJuz) {
-      matchJuz = JUZ_MAP[selectedJuz]?.surahNumbers.includes(s.number) || false;
-    }
+      let matchJuz = true;
+      if (selectedJuz) {
+        matchJuz = JUZ_MAP[selectedJuz]?.surahNumbers.includes(s.number) || false;
+      }
 
-    return matchQuery && matchJuz;
-  });
+      return matchQuery && matchJuz;
+    });
+  }, [searchQuery, selectedJuz]);
 
-  const displaySurahs = [...filteredSurahs].sort((a, b) => {
-    if (activeFilter === 'nuzul') {
-      const orderA = ChronologicalWahyuEngine.getChronologicalOrderOfSurah(a.number);
-      const orderB = ChronologicalWahyuEngine.getChronologicalOrderOfSurah(b.number);
-      return orderA - orderB;
-    }
-    return a.number - b.number;
-  });
+  const displaySurahs = useMemo(() => {
+    return [...filteredSurahs].sort((a, b) => {
+      if (activeFilter === 'nuzul') {
+        const orderA = ChronologicalWahyuEngine.getChronologicalOrderOfSurah(a.number);
+        const orderB = ChronologicalWahyuEngine.getChronologicalOrderOfSurah(b.number);
+        return orderA - orderB;
+      }
+      return a.number - b.number;
+    });
+  }, [filteredSurahs, activeFilter]);
 
   const handleSelectReciter = (reciter: Reciter) => {
     audioPlayer.setActiveReciter(reciter.id);
@@ -228,7 +232,7 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
 
       {/* Surahs Chips List */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-        {displaySurahs.map((surah) => {
+        {displaySurahs.map((surah: SurahMeta) => {
           const isSelected = surah.number === selectedSurahNumber;
           const juzDisplay = surah.juzList ? surah.juzList.join(', ') : surah.juzStart;
           const nuzulOrder = ChronologicalWahyuEngine.getChronologicalOrderOfSurah(surah.number);
