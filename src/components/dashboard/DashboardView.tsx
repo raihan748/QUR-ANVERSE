@@ -32,10 +32,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 }) => {
   const [weakVerses, setWeakVerses] = useState<WeakVerse[]>([]);
   const [badges, setBadges] = useState<AchievementBadge[]>(INITIAL_BADGES);
-  const prayerStats = prayerAttendance.getSummaryStats();
+  const [prayerStats, setPrayerStats] = useState(() => prayerAttendance.getSummaryStats());
+  const [todayAttendance, setTodayAttendance] = useState(() => prayerAttendance.getTodayAttendance());
 
   useEffect(() => {
     setWeakVerses(getWeakVerses());
+
+    const handleAttendanceUpdated = () => {
+      setPrayerStats(prayerAttendance.getSummaryStats());
+      setTodayAttendance(prayerAttendance.getTodayAttendance());
+    };
+    window.addEventListener('qv_prayer_attendance_updated', handleAttendanceUpdated);
+    return () => {
+      window.removeEventListener('qv_prayer_attendance_updated', handleAttendanceUpdated);
+    };
   }, []);
 
   const handleResolveWeak = (v: WeakVerse) => {
@@ -87,6 +97,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
               🔥 Streak Disiplin: <strong className="text-amber-600 dark:text-amber-400 font-bold">{prayerStats.streakDays} Hari</strong> • Total Pahala Hari Ini: <strong className="text-emerald-700 dark:text-emerald-400 font-bold">+{prayerStats.todayXp} XP</strong>
             </p>
+            {/* Quick 5-Prayer Check Status Badges */}
+            <div className="flex items-center gap-1.5 flex-wrap mt-2">
+              {(['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'] as const).map((pId) => {
+                const rec = todayAttendance.records[pId];
+                const isDone = rec && rec.status !== 'belum';
+                const label = pId.charAt(0).toUpperCase() + pId.slice(1);
+                return (
+                  <span
+                    key={pId}
+                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border flex items-center gap-1 transition-all ${
+                      isDone
+                        ? 'bg-emerald-500 text-slate-950 border-emerald-600 shadow-xs'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-300 dark:border-gray-700'
+                    }`}
+                  >
+                    <span>{isDone ? '✓' : '○'}</span>
+                    <span>{label}</span>
+                  </span>
+                );
+              })}
+            </div>
           </div>
         </div>
 

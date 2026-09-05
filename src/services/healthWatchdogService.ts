@@ -59,7 +59,15 @@ export class HealthWatchdogService {
       streakDays: 1,
       lastActiveDate: new Date().toISOString().split('T')[0]
     }),
-    'quranverse_memorization_progress': () => ({})
+    'quranverse_memorization_progress': () => ({}),
+    'qv_prayer_attendance_today_v1': () => ({
+      date: new Date().toISOString().split('T')[0],
+      records: {},
+      completedCount: 0,
+      totalXpEarned: 0
+    }),
+    'qv_prayer_attendance_history_v1': () => ({}),
+    'qv_prayer_snooze_dismiss_v1': () => ({})
   };
 
   private constructor() {}

@@ -54,7 +54,19 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const lastAdzanTriggeredRef = useRef<string>('');
-  const attendanceStats = prayerAttendance.getSummaryStats();
+  const [attendanceStats, setAttendanceStats] = useState(() => prayerAttendance.getSummaryStats());
+  const [todayAttendance, setTodayAttendance] = useState(() => prayerAttendance.getTodayAttendance());
+
+  useEffect(() => {
+    const handleAttendanceUpdated = () => {
+      setAttendanceStats(prayerAttendance.getSummaryStats());
+      setTodayAttendance(prayerAttendance.getTodayAttendance());
+    };
+    window.addEventListener('qv_prayer_attendance_updated', handleAttendanceUpdated);
+    return () => {
+      window.removeEventListener('qv_prayer_attendance_updated', handleAttendanceUpdated);
+    };
+  }, []);
 
   // Auto-Adzan State with Persisted Permission
   const [autoAdzanEnabled, setAutoAdzanEnabled] = useState<boolean>(() => {
@@ -302,8 +314,8 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
       </NeobrutalCard>
 
       {/* 2. JURNAL & ABSENSI SHOLAT 5 WAKTU CARD */}
-      <div className="bg-gradient-to-r from-[#06331D] via-[#0B4627] to-[#06331D] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
+      <div className="bg-gradient-to-r from-[#06331D] via-[#0B4627] to-[#06331D] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-2xl shadow-[2px_2px_0px_0px_#000] shrink-0 text-slate-950">
             🕌
           </div>
@@ -319,13 +331,34 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
             <p className="text-xs text-emerald-100 mt-0.5">
               🔥 Streak Sholat: <strong className="text-amber-300 font-bold">{attendanceStats.streakDays} Hari Rutin</strong> • Pahala: <strong className="text-emerald-300 font-bold">+{attendanceStats.todayXp} XP</strong>
             </p>
+            {/* Quick 5-Prayer Check Status Badges */}
+            <div className="flex items-center gap-1.5 flex-wrap mt-2">
+              {(['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'] as const).map((pId) => {
+                const rec = todayAttendance.records[pId];
+                const isDone = rec && rec.status !== 'belum';
+                const label = pId.charAt(0).toUpperCase() + pId.slice(1);
+                return (
+                  <span
+                    key={pId}
+                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border flex items-center gap-1 transition-all ${
+                      isDone
+                        ? 'bg-emerald-500 text-slate-950 border-emerald-300 shadow-xs'
+                        : 'bg-black/30 text-emerald-300/60 border-emerald-900/40'
+                    }`}
+                  >
+                    <span>{isDone ? '✓' : '○'}</span>
+                    <span>{label}</span>
+                  </span>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {onOpenPrayerAttendanceModal && (
           <button
             onClick={onOpenPrayerAttendanceModal}
-            className="w-full sm:w-auto px-4 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all shrink-0"
+            className="w-full md:w-auto px-4 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all shrink-0"
           >
             <span>📋</span>
             <span>Buka Ceklis Absensi Sholat</span>

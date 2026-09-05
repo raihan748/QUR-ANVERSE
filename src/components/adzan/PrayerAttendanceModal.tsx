@@ -67,6 +67,15 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
     }
   };
 
+  const handleTogglePrayer = (prayerId: 'subuh' | 'dzuhur' | 'ashar' | 'maghrib' | 'isya') => {
+    const current = attendance.records[prayerId];
+    if (current && current.status !== 'belum') {
+      handleSelectStatus(prayerId, 'belum');
+    } else {
+      handleSelectStatus(prayerId, 'tepat_waktu');
+    }
+  };
+
   const handleSnooze = () => {
     if (duePrayer) {
       prayerAttendance.dismissPopupForNow(duePrayer.id, 15);
@@ -82,6 +91,9 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
 
   const completedCount = attendance.completedCount || 0;
   const progressPercent = Math.round((completedCount / 5) * 100);
+
+  const dueRecord = duePrayer ? attendance.records[duePrayer.id as 'subuh' | 'dzuhur' | 'ashar' | 'maghrib' | 'isya'] : null;
+  const isDuePrayerCompleted = dueRecord && dueRecord.status !== 'belum';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
@@ -120,8 +132,13 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
           </div>
 
           <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition"
+            onClick={() => {
+              if (duePrayer && isDuePrayerCompleted) {
+                prayerAttendance.dismissPopupForNow(duePrayer.id, 24 * 60);
+              }
+              onClose();
+            }}
+            className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
           >
             ✕
           </button>
@@ -132,17 +149,56 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
 
           {/* Alert Banner if Triggered by 30-Minute Post-Adhan */}
           {duePrayer && (
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/60 via-amber-900/40 to-slate-900 border border-amber-500/40 flex items-start gap-3 shadow-lg">
-              <span className="text-2xl animate-pulse">⏰</span>
-              <div>
-                <h4 className="text-sm sm:text-base font-bold text-amber-300">
-                  Peringatan Waktu Sholat {duePrayer.name} (+{minutesPassed} Menit)
-                </h4>
-                <p className="text-xs sm:text-sm text-slate-300 mt-0.5 leading-relaxed">
-                  Sudah lebih dari <span className="text-amber-300 font-semibold">{minutesPassed} menit</span> sejak Adzan <span className="font-bold text-white">{duePrayer.name}</span> berkumandang. Sudahkah antum menunaikan sholat {duePrayer.name}?
-                </p>
+            isDuePrayerCompleted ? (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-emerald-900/60 to-slate-900 border border-emerald-500/60 flex items-start gap-3 shadow-lg">
+                <span className="text-2xl">✅</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-sm sm:text-base font-black text-emerald-300">
+                      Alhamdulillah! Sholat {duePrayer.name} Telah Tercatat Selesai
+                    </h4>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/30 text-emerald-300 border border-emerald-500/40">
+                      {dueRecord?.status === 'jamaah_masjid' ? '🕌 Berjamaah (+50 XP)' : dueRecord?.status === 'tepat_waktu' ? '⏰ Awal Waktu (+30 XP)' : '🏠 Munfarid (+20 XP)'}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
+                    Catatan absensi sholat antum telah tersimpan aman di database lokal. Pengingat 30 menit untuk sholat ini dinonaktifkan untuk hari ini.
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/60 via-amber-900/40 to-slate-900 border border-amber-500/40 flex items-start gap-3 shadow-lg">
+                <span className="text-2xl animate-pulse">⏰</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-sm sm:text-base font-bold text-amber-300">
+                      Peringatan Waktu Sholat {duePrayer.name} (+{minutesPassed} Menit)
+                    </h4>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/30 text-amber-300 border border-amber-500/40">
+                      Perlu Diabsen
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-300 mt-0.5 leading-relaxed">
+                    Sudah lebih dari <span className="text-amber-300 font-semibold">{minutesPassed} menit</span> sejak Adzan <span className="font-bold text-white">{duePrayer.name}</span> berkumandang. Sudahkah antum menunaikan sholat {duePrayer.name}?
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <button
+                      onClick={() => handleSelectStatus(duePrayer.id as any, 'tepat_waktu')}
+                      className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition cursor-pointer"
+                    >
+                      <span>✓</span>
+                      <span>Saya Sudah Sholat {duePrayer.name}</span>
+                    </button>
+                    <button
+                      onClick={handleSnooze}
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer"
+                    >
+                      Ingatkan 15 Mnt Lagi
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )
           )}
 
           {/* Daily Progress & Streak Header */}
@@ -215,54 +271,75 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
               const scheduleTime = getPrayerScheduleTime(pId);
               const record = attendance.records[pId];
               const currentStatus: PrayerAttendanceStatus = record ? record.status : 'belum';
+              const isCompleted = currentStatus !== 'belum';
               const isDueNow = duePrayer && duePrayer.id === pId;
 
               return (
                 <div
                   key={pId}
                   className={`p-3.5 sm:p-4 rounded-2xl border transition-all ${
-                    isDueNow && currentStatus === 'belum'
+                    isDueNow && !isCompleted
                       ? 'bg-amber-950/30 border-amber-500/60 shadow-lg shadow-amber-950/40 ring-2 ring-amber-500/30'
-                      : currentStatus !== 'belum'
-                      ? 'bg-slate-900/90 border-emerald-500/30'
+                      : isCompleted
+                      ? 'bg-emerald-950/20 border-emerald-500/40 shadow-sm shadow-emerald-950/20'
                       : 'bg-slate-900/60 border-slate-800'
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     
-                    {/* Left Info: Icon, Name, Arabic & Time */}
+                    {/* Left Info with Tactile Checkbox */}
                     <div className="flex items-center gap-3">
+                      {/* Tactile One-Tap Checkbox Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePrayer(pId)}
+                        className={`w-9 h-9 rounded-xl border-2 flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                          isCompleted
+                            ? 'bg-emerald-500 border-emerald-300 text-slate-950 shadow-md shadow-emerald-500/30 scale-105'
+                            : 'bg-slate-800/80 border-slate-600 text-transparent hover:border-emerald-400 hover:text-emerald-400/40'
+                        }`}
+                        title={isCompleted ? 'Batalkan centang (ubah ke belum)' : 'Centang sudah sholat'}
+                      >
+                        <span className="text-base font-black leading-none">✓</span>
+                      </button>
+
                       <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xl shrink-0">
                         {meta.icon}
                       </div>
+
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-white text-base sm:text-lg">{meta.name}</span>
                           <span className="font-arabic text-slate-400 text-sm">{meta.arabic}</span>
-                          {isDueNow && currentStatus === 'belum' && (
+                          {isCompleted ? (
+                            <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                              <span>✓</span>
+                              <span>SELESAI</span>
+                            </span>
+                          ) : isDueNow ? (
                             <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase rounded bg-amber-500 text-slate-950 animate-pulse">
                               Waktunya Absen
                             </span>
-                          )}
+                          ) : null}
                         </div>
                         <div className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
                           <span>Waktu: <strong className="text-slate-200">{scheduleTime}</strong></span>
-                          {record && record.status !== 'belum' && (
+                          {isCompleted && record && (
                             <>
                               <span>•</span>
-                              <span className="text-emerald-400 font-medium">+{record.xpAwarded} XP</span>
+                              <span className="text-emerald-400 font-bold">+{record.xpAwarded} XP</span>
                             </>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Right Action Options: Buttons */}
+                    {/* Right Action Options: Category Buttons */}
                     <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 w-full sm:w-auto">
                       {/* Option 1: Berjamaah */}
                       <button
                         onClick={() => handleSelectStatus(pId, 'jamaah_masjid')}
-                        className={`px-2.5 py-2 sm:py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                        className={`px-2.5 py-2 sm:py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
                           currentStatus === 'jamaah_masjid'
                             ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30 ring-2 ring-emerald-300'
                             : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
@@ -271,12 +348,13 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                       >
                         <span>🕌</span>
                         <span>Berjamaah</span>
+                        <span className="text-[10px] opacity-75">+50</span>
                       </button>
 
                       {/* Option 2: Tepat Waktu */}
                       <button
                         onClick={() => handleSelectStatus(pId, 'tepat_waktu')}
-                        className={`px-2.5 py-2 sm:py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                        className={`px-2.5 py-2 sm:py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
                           currentStatus === 'tepat_waktu'
                             ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/30 ring-2 ring-sky-300'
                             : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
@@ -285,12 +363,13 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                       >
                         <span>⏰</span>
                         <span>Awal Waktu</span>
+                        <span className="text-[10px] opacity-75">+30</span>
                       </button>
 
                       {/* Option 3: Munfarid */}
                       <button
                         onClick={() => handleSelectStatus(pId, 'munfarid')}
-                        className={`px-2.5 py-2 sm:py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                        className={`px-2.5 py-2 sm:py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
                           currentStatus === 'munfarid'
                             ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30 ring-2 ring-amber-300'
                             : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
@@ -299,12 +378,13 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                       >
                         <span>🏠</span>
                         <span>Munfarid</span>
+                        <span className="text-[10px] opacity-75">+20</span>
                       </button>
 
                       {/* Option 4: Belum */}
                       <button
                         onClick={() => handleSelectStatus(pId, 'belum')}
-                        className={`px-2.5 py-2 sm:py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                        className={`px-2 py-2 sm:py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition cursor-pointer ${
                           currentStatus === 'belum'
                             ? 'bg-slate-800 text-slate-400 border border-slate-700'
                             : 'bg-slate-800/40 hover:bg-slate-800 text-slate-500 hover:text-slate-400'
@@ -340,18 +420,23 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            {duePrayer && (
+            {duePrayer && !isDuePrayerCompleted && (
               <button
                 onClick={handleSnooze}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs sm:text-sm font-bold transition"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs sm:text-sm font-bold transition cursor-pointer"
               >
                 🕒 Ingatkan 15 Mnt Lagi
               </button>
             )}
 
             <button
-              onClick={onClose}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-emerald-950 transition flex items-center justify-center gap-2"
+              onClick={() => {
+                if (duePrayer && isDuePrayerCompleted) {
+                  prayerAttendance.dismissPopupForNow(duePrayer.id, 24 * 60);
+                }
+                onClose();
+              }}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-emerald-950 transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>✅ Simpan & Tutup</span>
             </button>

@@ -193,7 +193,10 @@ export function App() {
       {/* Jurnal & Absensi Sholat 5 Waktu (30-Min Post-Adhan Auto-Popup & Manual) */}
       <PrayerAttendanceModal
         isOpen={isPrayerAttendanceModalOpen}
-        onClose={() => setIsPrayerAttendanceModalOpen(false)}
+        onClose={() => {
+          setIsPrayerAttendanceModalOpen(false);
+          setDuePrayerForAttendance(null);
+        }}
         prayerTimes={prayerTimes}
         duePrayer={duePrayerForAttendance}
         minutesPassed={dueMinutesPassed}

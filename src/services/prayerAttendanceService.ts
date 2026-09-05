@@ -12,6 +12,7 @@ import { safeJsonParse, safeJsonStringify } from './securityHardening';
 
 const STORAGE_KEYS = {
   ATTENDANCE_HISTORY: 'qv_prayer_attendance_history_v1',
+  TODAY_ATTENDANCE: 'qv_prayer_attendance_today_v1',
   SNOOZE_TIMESTAMP: 'qv_prayer_snooze_dismiss_v1'
 };
 
@@ -40,6 +41,7 @@ export const PRAYER_DISPLAY_META: Record<string, { name: string; arabic: string;
 
 export class PrayerAttendanceService {
   private static instance: PrayerAttendanceService;
+  private inMemoryCache: Record<string, DailyPrayerAttendance> = {};
 
   public static getInstance(): PrayerAttendanceService {
     if (!PrayerAttendanceService.instance) {
@@ -57,17 +59,47 @@ export class PrayerAttendanceService {
   }
 
   /**
-   * Mengambil riwayat absensi sholat untuk hari ini
+   * Broadcasts attendance changes to all UI subscribers via CustomEvent
+   */
+  public notifyUpdate(data: DailyPrayerAttendance): void {
+    if (typeof window !== 'undefined') {
+      try {
+        window.dispatchEvent(new CustomEvent('qv_prayer_attendance_updated', { detail: data }));
+      } catch {}
+    }
+  }
+
+  /**
+   * Mengambil riwayat absensi sholat untuk hari ini dengan multi-tier fallback (Memory -> Today Key -> History Key)
    */
   public getTodayAttendance(): DailyPrayerAttendance {
     const today = this.getTodayDateString();
-    const history = this.getAllHistory();
 
+    // 1. Check in-memory cache first
+    if (this.inMemoryCache[today]) {
+      return this.inMemoryCache[today];
+    }
+
+    // 2. Check dedicated today storage key
+    try {
+      const todayRaw = localStorage.getItem(STORAGE_KEYS.TODAY_ATTENDANCE);
+      if (todayRaw) {
+        const parsedToday = safeJsonParse<DailyPrayerAttendance | null>(todayRaw, null);
+        if (parsedToday && parsedToday.date === today) {
+          this.inMemoryCache[today] = parsedToday;
+          return parsedToday;
+        }
+      }
+    } catch {}
+
+    // 3. Check full history storage
+    const history = this.getAllHistory();
     if (history[today]) {
+      this.inMemoryCache[today] = history[today];
       return history[today];
     }
 
-    // Default template untuk hari baru
+    // 4. Default template untuk hari baru
     const initial: DailyPrayerAttendance = {
       date: today,
       records: {},
@@ -75,17 +107,27 @@ export class PrayerAttendanceService {
       totalXpEarned: 0
     };
 
+    this.inMemoryCache[today] = initial;
     return initial;
   }
 
   /**
-   * Menyimpan data absensi hari ini ke localStorage
+   * Menyimpan data absensi hari ini ke seluruh layer persistensi (Memory + Today Storage + History Storage)
    */
   public saveTodayAttendance(attendance: DailyPrayerAttendance): void {
     try {
+      this.inMemoryCache[attendance.date] = attendance;
+
+      // Save to dedicated today key
+      localStorage.setItem(STORAGE_KEYS.TODAY_ATTENDANCE, safeJsonStringify(attendance));
+
+      // Save to master history ledger
       const history = this.getAllHistory();
       history[attendance.date] = attendance;
       localStorage.setItem(STORAGE_KEYS.ATTENDANCE_HISTORY, safeJsonStringify(history));
+
+      // Broadcast update to all components
+      this.notifyUpdate(attendance);
     } catch (e) {
       console.warn('Gagal menyimpan riwayat absensi sholat:', e);
     }
@@ -137,6 +179,11 @@ export class PrayerAttendanceService {
     todayData.completedCount = completedCount;
     todayData.totalXpEarned = totalXp;
 
+    // Auto-dismiss reminder for this prayer for 24 hours so it never pesters the user again today!
+    if (status !== 'belum') {
+      this.dismissPopupForNow(prayerId, 24 * 60);
+    }
+
     this.saveTodayAttendance(todayData);
 
     return {
@@ -158,17 +205,6 @@ export class PrayerAttendanceService {
     const now = new Date();
     const todayAttendance = this.getTodayAttendance();
 
-    // Periksa apakah pengguna sedang men-snooze pop-up
-    try {
-      const snoozeRaw = localStorage.getItem(STORAGE_KEYS.SNOOZE_TIMESTAMP);
-      if (snoozeRaw) {
-        const snoozeData = safeJsonParse<{ prayerId: string; until: number } | null>(snoozeRaw, null);
-        if (snoozeData && now.getTime() < snoozeData.until) {
-          return { shouldShow: false, duePrayer: null, minutesPassed: 0 };
-        }
-      }
-    } catch {}
-
     // Filter hanya 5 sholat fardhu
     const fardhuPrayers = prayerTimes.filter((p) =>
       FARDHU_PRAYER_IDS.includes(p.id as any)
@@ -177,7 +213,36 @@ export class PrayerAttendanceService {
     // Cari sholat yang sudah masuk waktu >= 30 menit yang lalu dan belum diabsen
     for (let i = 0; i < fardhuPrayers.length; i++) {
       const p = fardhuPrayers[i];
-      const pTime = new Date(p.timeDate);
+      
+      // 1. Cek apakah sholat ini sudah diabsen hari ini. JIKA SUDAH, JANGAN PERNAH TAMPILKAN POPUP!
+      const record = todayAttendance.records[p.id as 'subuh' | 'dzuhur' | 'ashar' | 'maghrib' | 'isya'];
+      const isAlreadyAttended = record && record.status !== 'belum';
+      if (isAlreadyAttended) {
+        continue;
+      }
+
+      // 2. Periksa apakah pengguna sedang men-snooze pop-up untuk sholat ini
+      try {
+        const snoozeRaw = localStorage.getItem(STORAGE_KEYS.SNOOZE_TIMESTAMP);
+        if (snoozeRaw) {
+          const snoozeData = safeJsonParse<{ prayerId?: string; until: number } | null>(snoozeRaw, null);
+          if (snoozeData && now.getTime() < snoozeData.until) {
+            if (!snoozeData.prayerId || snoozeData.prayerId === p.id) {
+              continue; // Di-snooze, lewati sholat ini
+            }
+          }
+        }
+      } catch {}
+
+      // 3. Parse waktu sholat secara aman
+      let pTime: Date;
+      if (p.timeDate instanceof Date && !isNaN(p.timeDate.getTime())) {
+        pTime = p.timeDate;
+      } else {
+        const [hStr, mStr] = (p.timeStr || '00:00').split(':');
+        pTime = new Date();
+        pTime.setHours(Number(hStr) || 0, Number(mStr) || 0, 0, 0);
+      }
 
       // Hitung selisih menit sejak adzan berkumandang
       const diffMs = now.getTime() - pTime.getTime();
@@ -186,13 +251,21 @@ export class PrayerAttendanceService {
       // Jika waktu adzan sudah lewat minimal 30 menit
       if (diffMinutes >= 30) {
         const nextPrayer = fardhuPrayers[i + 1];
-        const isStillInWindow = !nextPrayer || now.getTime() < new Date(nextPrayer.timeDate).getTime();
+        let isStillInWindow = true;
 
-        // Pastikan masih dalam jendela sholat tersebut dan belum diabsen hari ini
-        const record = todayAttendance.records[p.id as 'subuh' | 'dzuhur' | 'ashar' | 'maghrib' | 'isya'];
-        const isAlreadyAttended = record && record.status !== 'belum';
+        if (nextPrayer) {
+          let nextTime: Date;
+          if (nextPrayer.timeDate instanceof Date && !isNaN(nextPrayer.timeDate.getTime())) {
+            nextTime = nextPrayer.timeDate;
+          } else {
+            const [nhStr, nmStr] = (nextPrayer.timeStr || '00:00').split(':');
+            nextTime = new Date();
+            nextTime.setHours(Number(nhStr) || 0, Number(nmStr) || 0, 0, 0);
+          }
+          isStillInWindow = now.getTime() < nextTime.getTime();
+        }
 
-        if (isStillInWindow && !isAlreadyAttended) {
+        if (isStillInWindow) {
           return {
             shouldShow: true,
             duePrayer: p,
@@ -209,7 +282,7 @@ export class PrayerAttendanceService {
   /**
    * Menunda / Snooze Pop-up agar tidak mengganggu terus-menerus
    */
-  public dismissPopupForNow(prayerId: string, snoozeMinutes: number = 15): void {
+  public dismissPopupForNow(prayerId?: string, snoozeMinutes: number = 30): void {
     try {
       const until = Date.now() + snoozeMinutes * 60 * 1000;
       localStorage.setItem(
