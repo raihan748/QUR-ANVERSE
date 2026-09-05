@@ -171,6 +171,10 @@ export class QuranHadithCrossGraph {
     };
   }
 
+  public static getCorrelationsForAyah(surahNumber: number, ayahNumber: number): AyahHadithCorrelatedView {
+    return this.getHadithsForAyah(surahNumber, ayahNumber);
+  }
+
   public static getAllRegisteredHadiths(): HadithNode[] {
     return Array.from(this.HADITH_NODES.values());
   }

@@ -55,6 +55,7 @@ import {
 import { DailyTargetWidget } from '../common/DailyTargetWidget';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTajweedColorForWord } from '../../services/quranTajweedGharibService';
+import { TalkingMouth3DViewer } from './TalkingMouth3DViewer';
 
 interface MurojaahStudioProps {
   userProfile: UserProfile;
@@ -787,6 +788,24 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                         <strong>📖 Panduan Pelafalan yang Benar:</strong> Bunyikan huruf dengan makhraj yang fasih dan perhatikan kaidah {errTajweed.ruleName || 'harakat'} sebelum melanjutkan muroja'ah.
                       </div>
                     </div>
+
+                    {/* 3D Talking Mouth & Anatomical Viseme Animation */}
+                    <TalkingMouth3DViewer
+                      targetWord={errorWordState.targetWord}
+                      spokenWord={errorWordState.spokenWord}
+                      mistakeReason={errorWordState.reason}
+                      isSheikhSpeaking={isSheikhSpeaking}
+                      onPlayAudio={() => {
+                        setIsSheikhSpeaking(true);
+                        audioPlayer.playSheikhIntervention(
+                          ayat.surahNumber,
+                          ayat.numberInSurah,
+                          activeReciter.id,
+                          () => setIsSheikhSpeaking(false)
+                        );
+                      }}
+                      breathRemainingPercent={85}
+                    />
 
                     <div className="flex flex-wrap gap-2 pt-1">
                       <button

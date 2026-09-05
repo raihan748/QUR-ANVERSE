@@ -8,6 +8,9 @@
 import { Ayat, EvaluationResult } from '../types';
 import { getTajweedColorForWord } from './quranTajweedGharibService';
 import { formatAlafasyAudioUrl } from './audioPlayerService';
+import { MFCCFeatureExtractor } from './backend/dsp/MFCCFeatureExtractor';
+import { AcousticPhoneticAlignmentEngine } from './backend/dsp/AcousticPhoneticAlignmentEngine';
+import { TinyMLAudioClassifierEngine, TinyMLInferenceResult } from './backend/frontier/TinyMLAudioClassifierEngine';
 
 // ==============================================================================
 // 1. REUSABLE ZERO-ALLOCATION 1D TYPED BUFFER LEVENSHTEIN (15x Faster, 0 Bytes GC)
@@ -451,6 +454,23 @@ export class SpeechEngine {
   private startResultIndex = 0;
   private totalResultCount = 0;
   private clearedTranscriptSnapshot = '';
+  private mfccExtractor: MFCCFeatureExtractor = new MFCCFeatureExtractor(16000, 26, 13);
+  private lastAudioClassification: TinyMLInferenceResult | null = null;
+
+  public evaluateAcousticMFCC(pcmSamples: Float32Array): TinyMLInferenceResult {
+    const mfcc = this.mfccExtractor.extractWindowMFCC(pcmSamples, Date.now());
+    const result = TinyMLAudioClassifierEngine.classifyMFCCFrame(mfcc.coefficients);
+    this.lastAudioClassification = result;
+    return result;
+  }
+
+  public evaluateAcousticDTW(userFrames: any[], targetLetter: string) {
+    return AcousticPhoneticAlignmentEngine.computeDTW(userFrames, targetLetter);
+  }
+
+  public getLastAudioClassification(): TinyMLInferenceResult | null {
+    return this.lastAudioClassification;
+  }
 
   /**
    * Preflight microphone check & hardware lock release
@@ -806,6 +826,16 @@ export class SpeechEngine {
     } else {
       aiAdabPraise = 'Bismillah, jangan putus asa! Terus latih lisan antum melafalkan ayat suci Al-Qur\'an.';
       aiCorrectionNote = 'Lafal belum cocok dengan ayat yang diuji. Simak dan tirukan lantunan tartil Syekh di bawah!';
+    }
+
+    // ⚡ On-Device TinyML & MFCC Acoustic Spectral Verification
+    if (options && typeof options === 'object' && 'audioFeatures' in options && options.audioFeatures && options.audioFeatures.length > 0) {
+      try {
+        const classification = this.evaluateAcousticMFCC(options.audioFeatures);
+        if (classification.predictedClass !== 'FASIH_ACCURATE' && classification.confidenceScore > 0.85) {
+          aiCorrectionNote += ` 🔍 [TinyML Akustik]: ${classification.recommendationNote}`;
+        }
+      } catch {}
     }
 
     const syekhAudioUrl = formatAlafasyAudioUrl(expectedAyat.surahNumber, expectedAyat.numberInSurah);

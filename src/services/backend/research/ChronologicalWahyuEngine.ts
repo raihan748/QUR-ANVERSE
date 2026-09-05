@@ -95,6 +95,60 @@ export class ChronologicalWahyuEngine {
       sababSummary: 'Turun setelah kemenangan pembebasan kota Makkah (Fathu Makkah). Ibnu Abbas menafsirkan surah ini sebagai isyarat telah tuntasnya tugas risalah dan dekatnya ajal Rasulullah ﷺ.',
       sanadNarrator: 'Shahih al-Bukhari no. 4970 (dari Ibnu Abbas r.a.)',
       historicalEra: 'LATE_MADINAH'
+    },
+    {
+      surahNumber: 112,
+      ayahStart: 1,
+      ayahEnd: 4,
+      title: 'Jawaban atas Pertanyaan Kaum Musyrikin: "Sifatkanlah Tuhanmu"',
+      sababSummary: 'Kaum musyrikin Quraisy berkata kepada Rasulullah ﷺ: "Wahai Muhammad, sebutkan nasab Tuhanmu kepada kami!". Maka Allah menurunkan Surah Al-Ikhlas menegaskan keesaan mutlak-Nya tanpa anak dan sekutu.',
+      sanadNarrator: 'Sunan at-Tirmidzi no. 3364 & Musnad Ahmad (dari Ubay bin Ka\'ab r.a.)',
+      historicalEra: 'EARLY_MAKKAH'
+    },
+    {
+      surahNumber: 108,
+      ayahStart: 1,
+      ayahEnd: 3,
+      title: 'Hiburan Ilahi atas Wafatnya Putra Nabi ﷺ & Ejekan Al-\'Ash bin Wa\'il',
+      sababSummary: 'Ketika putra Rasulullah ﷺ wafat, Al-\'Ash bin Wa\'il mengejek dengan menyebut Nabi sebagai "abtar" (terputus keturunannya). Allah menurunkan Surah Al-Kautsar menegaskan musuhnyalah yang sesungguhnya terputus.',
+      sanadNarrator: 'Shahih Muslim no. 400 (dari Anas bin Malik r.a.)',
+      historicalEra: 'EARLY_MAKKAH'
+    },
+    {
+      surahNumber: 109,
+      ayahStart: 1,
+      ayahEnd: 6,
+      title: 'Tawaran Kompromi Ibadah Bergantian oleh Tokoh Musyrikin Quraisy',
+      sababSummary: 'Tokoh-tokoh Quraisy (Al-Walid bin Mughirah, Al-\'Ash bin Wa\'il) menawarkan: "Sembahlah tuhan kami setahun, kami akan menyembah Tuhanmu setahun". Allah menurunkan Surah Al-Kafirun sebagai pemutus kompromi akidah.',
+      sanadNarrator: 'Tafsir ath-Thabari & As-Suyuthi (Lubabun Nuqul, dari Ibnu Abbas r.a.)',
+      historicalEra: 'MID_MAKKAH'
+    },
+    {
+      surahNumber: 113,
+      ayahStart: 1,
+      ayahEnd: 5,
+      title: 'Perlindungan dari Sihir Labid bin Al-A\'sham (Al-Mu\'awwidzatain)',
+      sababSummary: 'Rasulullah ﷺ terkena pengaruh sihir yang dibuat oleh seorang Yahudi bernama Labid bin Al-A\'sham dengan sebelas ikatan tali. Malaikat Jibril membacakan Surah Al-Falaq dan An-Nas hingga semua ikatan terlepas dan beliau sembuh.',
+      sanadNarrator: 'Shahih al-Bukhari no. 5763 & Muslim no. 2189 (dari Ummul Mu\'minin Aisyah r.a.)',
+      historicalEra: 'EARLY_MADINAH'
+    },
+    {
+      surahNumber: 18,
+      ayahStart: 23,
+      ayahEnd: 24,
+      title: 'Teguran untuk Senantiasa Mengucapkan "Insya Allah"',
+      sababSummary: 'Kaum Quraisy menanyakan 3 hal (Ashabul Kahfi, Dzulqarnain, dan Ruh). Nabi ﷺ menjawab: "Besok akan kuberi tahu", tanpa mengucap "Insya Allah". Wahyu tertahan 15 hari sebagai pelajaran adab hingga turun ayat ini.',
+      sanadNarrator: 'Tafsir Ibnu Katsir & As-Suyuthi (Lubabun Nuqul, dari Ibnu Abbas r.a.)',
+      historicalEra: 'MID_MAKKAH'
+    },
+    {
+      surahNumber: 5,
+      ayahStart: 3,
+      ayahEnd: 3,
+      title: 'Penyempurnaan Syariat Islam pada Hari Arafah saat Haji Wada\'',
+      sababSummary: '"Pada hari ini telah Kusempurnakan untukmu agamamu...". Ayat ini turun di Padang Arafah pada hari Jumat saat pelaksanaan Haji Wada\'. Sahabat Umar bin Khattab menangis menyadari ini pertanda tugas Nabi telah tuntas.',
+      sanadNarrator: 'Shahih al-Bukhari no. 45 & Muslim no. 3017 (dari Umar bin Khattab r.a.)',
+      historicalEra: 'LATE_MADINAH'
     }
   ];
 

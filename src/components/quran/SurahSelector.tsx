@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Book, Layers, Sparkles, Headphones, ChevronDown, Check } from 'lucide-react';
+import { Search, Book, Layers, Sparkles, Headphones, ChevronDown, Check, Clock } from 'lucide-react';
 import { SURAH_LIST, JUZ_MAP, getSurahsInJuz } from '../../data/quranData';
 import { SurahMeta } from '../../types';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { useLanguage } from '../../context/LanguageContext';
+import { ChronologicalWahyuEngine } from '../../services/backend/research/ChronologicalWahyuEngine';
 
 interface SurahSelectorProps {
   selectedSurahNumber: number;
@@ -18,7 +19,7 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
 }) => {
   const { language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'surah' | 'juz'>('surah');
+  const [activeFilter, setActiveFilter] = useState<'surah' | 'nuzul' | 'juz'>('surah');
   const [selectedJuz, setSelectedJuz] = useState<number | null>(null);
   const [activeReciter, setActiveReciter] = useState<Reciter>(audioPlayer.getActiveReciter());
   const [isReciterMenuOpen, setIsReciterMenuOpen] = useState(false);
@@ -39,6 +40,15 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
     }
 
     return matchQuery && matchJuz;
+  });
+
+  const displaySurahs = [...filteredSurahs].sort((a, b) => {
+    if (activeFilter === 'nuzul') {
+      const orderA = ChronologicalWahyuEngine.getChronologicalOrderOfSurah(a.number);
+      const orderB = ChronologicalWahyuEngine.getChronologicalOrderOfSurah(b.number);
+      return orderA - orderB;
+    }
+    return a.number - b.number;
   });
 
   const handleSelectReciter = (reciter: Reciter) => {
@@ -78,14 +88,14 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
 
         {/* Action Controls Group */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Tab Filter: 114 Surat vs 30 Juz */}
+          {/* Tab Filter: 114 Surat vs Urutan Nuzul vs 30 Juz */}
           <div className="flex border-2 border-black rounded-xl overflow-hidden bg-[#E5E7EB] p-0.5 gap-0.5">
             <button
               onClick={() => {
                 setActiveFilter('surah');
                 setSelectedJuz(null);
               }}
-              className={`px-3 py-1.5 text-xs font-extrabold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-2.5 py-1.5 text-xs font-extrabold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeFilter === 'surah' && !selectedJuz
                   ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
                   : 'text-gray-700 hover:text-black'
@@ -96,10 +106,25 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
             </button>
             <button
               onClick={() => {
+                setActiveFilter('nuzul');
+                setSelectedJuz(null);
+              }}
+              className={`px-2.5 py-1.5 text-xs font-extrabold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeFilter === 'nuzul' && !selectedJuz
+                  ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
+                  : 'text-gray-700 hover:text-black'
+              }`}
+              title="Urutan Berdasarkan Kronologi Penurunan Wahyu"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>{language === 'ar' ? 'ترتيب النزول' : 'Urutan Nuzul'}</span>
+            </button>
+            <button
+              onClick={() => {
                 setActiveFilter('juz');
                 if (!selectedJuz) setSelectedJuz(1);
               }}
-              className={`px-3 py-1.5 text-xs font-extrabold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-2.5 py-1.5 text-xs font-extrabold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                 activeFilter === 'juz' || selectedJuz !== null
                   ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
                   : 'text-gray-700 hover:text-black'
@@ -203,9 +228,10 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
 
       {/* Surahs Chips List */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-        {filteredSurahs.map((surah) => {
+        {displaySurahs.map((surah) => {
           const isSelected = surah.number === selectedSurahNumber;
           const juzDisplay = surah.juzList ? surah.juzList.join(', ') : surah.juzStart;
+          const nuzulOrder = ChronologicalWahyuEngine.getChronologicalOrderOfSurah(surah.number);
 
           return (
             <button
@@ -219,16 +245,26 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
             >
               <div className="flex items-center gap-2">
                 <span
-                  className={`w-5 h-5 rounded border border-black text-[10px] font-black flex items-center justify-center ${
+                  className={`w-6 h-6 rounded-lg border border-black text-[10px] font-black flex items-center justify-center font-mono ${
                     isSelected ? 'bg-[#F59E0B] text-black' : 'bg-gray-100 text-gray-800'
                   }`}
+                  title={activeFilter === 'nuzul' ? `Urutan Wahyu #${nuzulOrder}` : `Nomor Surah #${surah.number}`}
                 >
-                  {surah.number}
+                  {activeFilter === 'nuzul' ? `#${nuzulOrder}` : surah.number}
                 </span>
                 <div>
-                  <span className="font-extrabold text-xs whitespace-nowrap block">{surah.latinName}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-extrabold text-xs whitespace-nowrap block">{surah.latinName}</span>
+                    {activeFilter === 'nuzul' && (
+                      <span className={`text-[8px] px-1 py-0.2 rounded font-bold uppercase border ${
+                        isSelected ? 'bg-black/20 text-amber-300 border-amber-300/40' : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                      }`}>
+                        {surah.revelationPlace}
+                      </span>
+                    )}
+                  </div>
                   <span className={`text-[9px] font-bold block ${isSelected ? 'text-emerald-200' : 'text-gray-500'}`}>
-                    Juz {juzDisplay} • {surah.ayahCount} Ayat
+                    {activeFilter === 'nuzul' ? `Surah #${surah.number} • ` : ''}Juz {juzDisplay} • {surah.ayahCount} Ayat
                   </span>
                 </div>
                 <span className={`font-quran text-sm font-bold pl-1 ${isSelected ? 'text-[#F59E0B]' : 'text-emerald-800'}`}>

@@ -99,6 +99,15 @@ export class ZeroKnowledgeProofEngine {
   }
 
   /**
+   * Convenience helper: builds tree from leaves and generates inclusion proof for leafIndex.
+   */
+  public static generateProofOfInclusion(leaves: string[], leafIndex: number): ZKPProofOfInclusion {
+    const { treeLayers } = this.buildMerkleTree(leaves);
+    const safeIdx = Math.min(Math.max(0, leafIndex), leaves.length - 1);
+    return this.generateInclusionProof(safeIdx, treeLayers);
+  }
+
+  /**
    * Verifies inclusion proof against the known Root Hash without loading full dataset.
    */
   public static verifyProof(leafHash: string, rootHash: string, proofPath: MerkleProofStep[]): boolean {

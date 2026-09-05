@@ -29,6 +29,7 @@ import { speechEngine, SpeechEngine } from '../../services/speechEngine';
 import { audioRecorder } from '../../services/audioRecorderService';
 import { addXpAndCheckStreak } from '../../services/offlineStorage';
 import { useLanguage } from '../../context/LanguageContext';
+import { HalaqahMeshRoomView } from './HalaqahMeshRoomView';
 
 interface SimaiTutupMataProps {
   userProfile: UserProfile;
@@ -40,6 +41,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
   onProfileUpdated
 }) => {
   const { language, t } = useLanguage();
+  const [halaqahMode, setHalaqahMode] = useState<'mandiri' | 'mesh'>('mandiri');
   const [level, setLevel] = useState<SimaiLevel>('hafidz');
   const [juzFilter, setJuzFilter] = useState<29 | 30 | 'all'>('all');
   const [speechLanguage, setSpeechLanguage] = useState<'ar-SA' | 'ar-KW' | 'id-ID'>('ar-SA');
@@ -217,15 +219,45 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
   };
 
   return (
-    <div className="space-y-4 pb-24 max-w-4xl mx-auto">
-      {/* Header Level & Scope Selector */}
-      <NeobrutalCard variant="dark" className="p-4 sm:p-5 border-2 border-black shadow-[3px_3px_0px_0px_#0B4627]">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
-                <EyeOff className="w-3.5 h-3.5" /> Mode Simai Tutup Mata
-              </span>
+    <div className="space-y-6 pb-24 max-w-4xl mx-auto">
+      {/* Mode Switcher: Simai Mandiri vs Majelis Halaqah Mesh P2P */}
+      <div className="flex bg-[#E5E7EB] p-1 border-3 border-black rounded-2xl gap-1 shadow-[4px_4px_0px_0px_#111827]">
+        <button
+          onClick={() => setHalaqahMode('mandiri')}
+          className={`flex-1 py-2.5 px-4 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+            halaqahMode === 'mandiri'
+              ? 'bg-[#0B4627] text-[#F59E0B] shadow-[2px_2px_0px_0px_#000]'
+              : 'text-gray-700 hover:text-black'
+          }`}
+        >
+          <EyeOff className="w-4 h-4" />
+          <span>Simai Mandiri (Tutup Mata)</span>
+        </button>
+        <button
+          onClick={() => setHalaqahMode('mesh')}
+          className={`flex-1 py-2.5 px-4 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+            halaqahMode === 'mesh'
+              ? 'bg-[#0B4627] text-[#F59E0B] shadow-[2px_2px_0px_0px_#000]'
+              : 'text-gray-700 hover:text-black'
+          }`}
+        >
+          <Radio className="w-4 h-4" />
+          <span>Majelis Halaqah Mesh P2P (Zero-Internet)</span>
+        </button>
+      </div>
+
+      {halaqahMode === 'mesh' ? (
+        <HalaqahMeshRoomView userProfile={userProfile} />
+      ) : (
+        <div className="space-y-4">
+          {/* Header Level & Scope Selector */}
+          <NeobrutalCard variant="dark" className="p-4 sm:p-5 border-2 border-black shadow-[3px_3px_0px_0px_#0B4627]">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
+                    <EyeOff className="w-3.5 h-3.5" /> Mode Simai Tutup Mata
+                  </span>
               <span className="px-2 py-0.5 text-xs font-bold bg-[#10B981] text-black rounded border border-black">
                 48 Surat (Semua Juz 29 & 30)
               </span>
@@ -643,7 +675,9 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
             </div>
           </div>
         )}
-      </div>
+        </div>
+        </div>
+      )}
     </div>
   );
 };

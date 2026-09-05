@@ -7,7 +7,32 @@ export type NavigationTab =
   | 'prayer' 
   | 'dashboard' 
   | 'download'
-  | 'frontier_research';
+  | 'asbabun_nuzul';
+
+export interface HalaqahParticipant {
+  id: string;
+  name: string;
+  role: 'USTADZ_COORDINATOR' | 'SANTRI_PEER';
+  latencyMs: number;
+  lastSeenMs: number;
+  roomCode: string;
+  activeSurah?: number;
+  activeAyah?: number;
+}
+
+export interface TalkingMouthViseme {
+  letter: string;
+  name: string;
+  jawOpening: number;            // 0.0 (closed) to 1.0 (open)
+  lipRounding: number;           // 0.0 (unrounded) to 1.0 (rounded / dhommah)
+  lipPucker: number;             // 0.0 to 1.0 (waw / pucker)
+  tongueHeight: number;          // 0.0 to 1.0
+  tongueElevation: 'NONE' | 'TIP_DENTAL' | 'MID_PALATAL' | 'BACK_VELAR';
+  pharyngealConstriction: number; // 0.0 to 1.0 ('Ain / Halq)
+  dentalContact: boolean;
+  makhrajRegion: 'HALQ' | 'LISAN' | 'SYAFATAIN' | 'KHAISYUM' | 'JAUF';
+  description: string;
+}
 
 export interface SurahMeta {
   number: number;

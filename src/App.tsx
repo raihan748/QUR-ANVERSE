@@ -22,7 +22,7 @@ import { SambungAyatGame } from './components/challenge/SambungAyatGame';
 import { PrayerTimesBanner } from './components/adzan/PrayerTimesBanner';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { DownloadCenter } from './components/offline/DownloadCenter';
-import { FrontierResearchHub } from './components/research/FrontierResearchHub';
+import { AsbabunNuzulView } from './components/asbabun_nuzul/AsbabunNuzulView';
 
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
@@ -163,7 +163,12 @@ export function App() {
 
               {activeTab === 'download' && <DownloadCenter />}
 
-              {activeTab === 'frontier_research' && <FrontierResearchHub />}
+              {activeTab === 'asbabun_nuzul' && (
+                <AsbabunNuzulView
+                  onNavigateToMushaf={(surah, ayah) => handleSelectTabWithScroll('mushaf')}
+                  onNavigateToMurojaah={(surah, ayah) => handleSelectTabWithScroll('murojaah_ai')}
+                />
+              )}
             </div>
           </ErrorBoundary>
         </main>

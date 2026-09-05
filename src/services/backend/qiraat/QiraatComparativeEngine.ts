@@ -264,6 +264,10 @@ export class QiraatComparativeEngine {
     return this.VARIANTS_STORE.filter((v) => v.surah === surah && v.ayah === ayah);
   }
 
+  public static getVariantsForAyah(surah: number, ayah: number): QiraatVariantEntry[] {
+    return this.getVariantsForAyat(surah, ayah);
+  }
+
   public static getAllVariants(): QiraatVariantEntry[] {
     return [...this.VARIANTS_STORE];
   }

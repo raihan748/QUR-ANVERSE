@@ -11,7 +11,8 @@ import {
   MapPin,
   Sparkles,
   Zap,
-  Cpu
+  Cpu,
+  ScrollText
 } from 'lucide-react';
 import { NavigationTab, PrayerTime } from '../../types';
 import { NeobrutalCard } from './NeobrutalCard';
@@ -100,13 +101,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       color: 'bg-[#0B4627]'
     },
     {
-      id: 'frontier_research' as NavigationTab,
-      label: language === 'ar' ? 'مركز ١٦ محرك ذكي' : '16 Engine & Watchdog',
-      sublabel: language === 'ar' ? 'المراقبة ونماذج الذكاء' : 'Frontier AI, Riset & Guardian',
-      icon: Cpu,
-      badge: '16 AI Flagship',
-      color: 'bg-[#7C3AED]',
-      isPrimary: true
+      id: 'asbabun_nuzul' as NavigationTab,
+      label: language === 'ar' ? 'أسباب النزول وتاريخ الوحي' : 'Asbabun Nuzul',
+      sublabel: language === 'ar' ? 'سياق الآيات وتاريخ التنزيل' : 'Histori & Konteks Wahyu',
+      icon: ScrollText,
+      badge: language === 'ar' ? 'تاريخي' : 'Konteks',
+      color: 'bg-[#D97706]'
     }
   ];
 
