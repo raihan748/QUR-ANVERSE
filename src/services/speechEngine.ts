@@ -831,6 +831,14 @@ export interface TajweedDiagnosticResult {
   errorReason: string;
 }
 
+// Pre-compiled Tajweed and Phonetic Regular Expressions for Microsecond Ingestion Latency
+const RE_IDGHAM_BILA = /(?:نْ|ن|[ًٌٍ])\s*[لر]/;
+const RE_IDGHAM_BI = /(?:نْ|ن|[ًٌٍ])\s*[ينمو]/;
+const RE_IQLAB = /(?:نْ|ن|[ًٌٍ]|ۢ)\s*ب/;
+const RE_IKHFA = /(?:نْ|ن|[ًٌٍ])\s*[تثجدذزسشصضطظفقك]/;
+const RE_QALQALAH = /[قطبدج][\u0652]/;
+const RE_GHUNNAH = /[نم][\u0651]/;
+
 /**
  * High-Precision Linguistic Diagnostic Engine:
  * Meneliti hukum tajwid & makhraj huruf pada kata target vs lafadz yang diucapkan santri.
@@ -875,12 +883,12 @@ export function diagnoseTajweedAndMakhrajError(
   }
 
   // 2. Detect Specific Tajweed Violations
-  const hasIdghamBilaghunnah = ruleName.includes('Idgham Bilaghunnah') || /(?:نْ|ن|[ًٌٍ])\s*[لر]/.test(targetWord);
-  const hasIdghamBighunnah = ruleName.includes('Idgham Bighunnah') || /(?:نْ|ن|[ًٌٍ])\s*[ينمو]/.test(targetWord);
-  const hasIqlab = ruleName.includes('Iqlab') || /(?:نْ|ن|[ًٌٍ]|ۢ)\s*ب/.test(targetWord) || targetWord.includes('ۢ');
-  const hasIkhfa = ruleName.includes('Ikhfa') || /(?:نْ|ن|[ًٌٍ])\s*[تثجدذزسشصضطظفقك]/.test(targetWord);
-  const hasQalqalah = ruleName.includes('Qalqalah') || /[قطبدج][\u0652]/.test(targetWord);
-  const hasGhunnah = ruleName.includes('Ghunnah') || /[نم][\u0651]/.test(targetWord);
+  const hasIdghamBilaghunnah = ruleName.includes('Idgham Bilaghunnah') || RE_IDGHAM_BILA.test(targetWord);
+  const hasIdghamBighunnah = ruleName.includes('Idgham Bighunnah') || RE_IDGHAM_BI.test(targetWord);
+  const hasIqlab = ruleName.includes('Iqlab') || RE_IQLAB.test(targetWord) || targetWord.includes('ۢ');
+  const hasIkhfa = ruleName.includes('Ikhfa') || RE_IKHFA.test(targetWord);
+  const hasQalqalah = ruleName.includes('Qalqalah') || RE_QALQALAH.test(targetWord);
+  const hasGhunnah = ruleName.includes('Ghunnah') || RE_GHUNNAH.test(targetWord);
 
   let determinedRule = ruleName;
 
@@ -1324,7 +1332,67 @@ export class ContinuousMurojaahTracker {
               }
             }
 
-            // 3. Increment mismatch count on sustained distinct wrong token
+            // 3. MULTI-WORD MISMATCH DETECTION (e.g. reciting completely wrong verse or surah):
+            // If user has uttered 2 or more words, and NONE of them match ANY word in the target passage!
+            if (allTokens.length >= 2 && targetWord && this.callbacks) {
+              let anyTokenMatched = false;
+              for (const token of allTokens) {
+                const tokAnalysis = analyzeSpokenToken(token);
+                for (let w = 0; w < expectedWords.length; w++) {
+                  if (isPrecompiledWordMatch(expectedWords[w], tokAnalysis, this.sensitivity)) {
+                    anyTokenMatched = true;
+                    break;
+                  }
+                }
+                if (anyTokenMatched) break;
+              }
+
+              // Also check next ayah opener in case of fast recitation
+              if (!anyTokenMatched && this.precompiledAyats[this.currentAyahIndex + 1]) {
+                const nextWords = this.precompiledAyats[this.currentAyahIndex + 1].words.slice(0, 3);
+                for (const token of allTokens) {
+                  const tokAnalysis = analyzeSpokenToken(token);
+                  if (nextWords.some(w => isPrecompiledWordMatch(w, tokAnalysis, this.sensitivity))) {
+                    anyTokenMatched = true;
+                    break;
+                  }
+                }
+              }
+
+              if (!anyTokenMatched) {
+                // Total verse mismatch detected! Trigger Sheikh audio correction immediately!
+                this.totalErrors++;
+                this.isPaused = true;
+                this.consecutiveMismatchCount = 0;
+                this.lastEvaluatedMismatchToken = '';
+                this.sameTokenFrameCount = 0;
+
+                const nextWord = expectedWords[this.currentWordIndex + 1]?.raw || '';
+                const prevWordRaw = prevWord ? prevWord.raw : '';
+                const isEnd = this.currentWordIndex === expectedWords.length - 1;
+
+                const diagnosis = diagnoseTajweedAndMakhrajError(
+                  targetWord.raw,
+                  lastSpoken,
+                  nextWord,
+                  prevWordRaw,
+                  isEnd
+                );
+
+                const wrongVerseReason = `Lafal atau ayat yang dibaca (« ${rawTranscript.trim()} ») tidak cocok dengan target hafalan: « ${targetWord.raw} ». Simak teguran suara Syekh berikut.`;
+
+                this.callbacks.onErrorDetected(
+                  this.currentAyahIndex,
+                  this.currentWordIndex,
+                  wrongVerseReason,
+                  targetWord.raw,
+                  lastSpoken
+                );
+                return;
+              }
+            }
+
+            // 4. Increment mismatch count on sustained distinct wrong token
             if (normSpoken !== this.lastEvaluatedMismatchToken) {
               this.lastEvaluatedMismatchToken = normSpoken;
               this.sameTokenFrameCount = 0;
@@ -1338,12 +1406,11 @@ export class ContinuousMurojaahTracker {
             }
 
             // Error threshold based on sensitivity:
-            // 'normal': 3 distinct mismatches (robust, zero false pauses)
-            // 'ultra' / 'high': 2 distinct mismatches (for high-level huffaz)
-            const errorMismatchThreshold = this.sensitivity === 'normal' ? 3 : 2;
-            const isSpokenSubstantial = normSpoken.length >= 3;
+            // 'normal': 2 distinct mismatches
+            // 'ultra' / 'high': 2 distinct mismatches
+            const errorMismatchThreshold = 2;
+            const isSpokenSubstantial = normSpoken.length >= 2;
 
-            // CRITICAL: NEVER use isFinal as an error trigger! Normal pauses/breaths fire isFinal.
             if (
               this.consecutiveMismatchCount >= errorMismatchThreshold &&
               isSpokenSubstantial &&

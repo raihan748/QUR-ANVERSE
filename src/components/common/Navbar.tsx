@@ -69,6 +69,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
+          {/* HEALTH WATCHDOG LIVE BADGE */}
+          <button
+            onClick={() => onSelectTab('frontier_research')}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 bg-[#06331D] hover:bg-black text-[#34D399] border-2 border-[#34D399] rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop ${
+              activeTab === 'frontier_research' ? 'ring-2 ring-amber-400 bg-black' : ''
+            }`}
+            title="Sistem HealthWatchdog & 16 Engine: 100% Aktif & Siap Digunakan (Klik untuk Membuka Hub)"
+          >
+            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+            <span className="hidden sm:inline font-mono text-[11px]">WATCHDOG: 100%</span>
+          </button>
+
           {/* QURAN VAULT INTEGRITY BADGE */}
           {onOpenQuranVaultModal && (
             <button

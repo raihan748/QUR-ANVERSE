@@ -10,7 +10,8 @@ import {
   Clock, 
   MapPin,
   Sparkles,
-  Zap
+  Zap,
+  Cpu
 } from 'lucide-react';
 import { NavigationTab, PrayerTime } from '../../types';
 import { NeobrutalCard } from './NeobrutalCard';
@@ -97,6 +98,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: DownloadCloud,
       badge: language === 'ar' ? 'بدون شبكة' : 'Offline',
       color: 'bg-[#0B4627]'
+    },
+    {
+      id: 'frontier_research' as NavigationTab,
+      label: language === 'ar' ? 'مركز ١٦ محرك ذكي' : '16 Engine & Watchdog',
+      sublabel: language === 'ar' ? 'المراقبة ونماذج الذكاء' : 'Frontier AI, Riset & Guardian',
+      icon: Cpu,
+      badge: '16 AI Flagship',
+      color: 'bg-[#7C3AED]',
+      isPrimary: true
     }
   ];
 

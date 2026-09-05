@@ -6,7 +6,8 @@ export type NavigationTab =
   | 'challenge' 
   | 'prayer' 
   | 'dashboard' 
-  | 'download';
+  | 'download'
+  | 'frontier_research';
 
 export interface SurahMeta {
   number: number;

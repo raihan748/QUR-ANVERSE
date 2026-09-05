@@ -332,6 +332,10 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         const targetAyat = passageAyats[ayahIdx];
         if (!targetAyat) return;
 
+        // 🛑 HALT MIC IMMEDIATELY: Stop speech recognition & recording so the Sheikh's voice from speakers isn't picked up!
+        speechEngine.stopListening();
+        audioRecorder.stopRecording();
+
         // 🚨 1. Set error word state & informative tajweed warning
         setErrorWordState({
           ayahIdx,
@@ -340,15 +344,19 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           targetWord: targetWord || '',
           spokenWord: spokenWord || ''
         });
-        setSheikhTeguranMessage(`🚨 Teguran Otomatis Syekh: ${reason}`);
+        setSheikhTeguranMessage(`🚨 Teguran Syekh ${activeReciter.name}: ${reason}`);
 
-        // 🔊 2. Play authentic Sheikh voice intervention automatically
+        // 🔊 2. Play authentic Sheikh voice intervention automatically (Teguran Suara Langsung)
         setIsSheikhSpeaking(true);
         audioPlayer.playSheikhIntervention(
           targetAyat.surahNumber,
           targetAyat.numberInSurah,
           activeReciter.id,
-          () => setIsSheikhSpeaking(false)
+          () => {
+            setIsSheikhSpeaking(false);
+            // 🔄 Auto-resume listening after Sheikh finishes so the santri can repeat the verse/word!
+            handleRetryCurrentWord();
+          }
         );
 
         // Record weak verse for spaced repetition

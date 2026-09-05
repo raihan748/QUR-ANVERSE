@@ -22,6 +22,7 @@ import { SambungAyatGame } from './components/challenge/SambungAyatGame';
 import { PrayerTimesBanner } from './components/adzan/PrayerTimesBanner';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { DownloadCenter } from './components/offline/DownloadCenter';
+import { FrontierResearchHub } from './components/research/FrontierResearchHub';
 
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
@@ -161,6 +162,8 @@ export function App() {
               )}
 
               {activeTab === 'download' && <DownloadCenter />}
+
+              {activeTab === 'frontier_research' && <FrontierResearchHub />}
             </div>
           </ErrorBoundary>
         </main>
