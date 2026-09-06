@@ -11,6 +11,7 @@ import { formatAlafasyAudioUrl } from './audioPlayerService';
 import { MFCCFeatureExtractor } from './backend/dsp/MFCCFeatureExtractor';
 import { AcousticPhoneticAlignmentEngine } from './backend/dsp/AcousticPhoneticAlignmentEngine';
 import { TinyMLAudioClassifierEngine, TinyMLInferenceResult } from './backend/frontier/TinyMLAudioClassifierEngine';
+import { breathOptimizer } from './backend/frontier/BreathEconomyOptimizer';
 
 // ==============================================================================
 // 1. REUSABLE ZERO-ALLOCATION 1D TYPED BUFFER LEVENSHTEIN (15x Faster, 0 Bytes GC)
@@ -992,8 +993,83 @@ export class ContinuousMurojaahTracker {
   private sameTokenFrameCount = 0;
   private lastCompletedAyahWords: PrecompiledWord[] = [];
   private sensitivity: SensitivityLevel = 'normal';
+  private pendingInterventionTimeout: ReturnType<typeof setTimeout> | null = null;
+  private pendingErrorPayload: {
+    ayahIdx: number;
+    wordIdx: number;
+    reason: string;
+    targetWord: string;
+    spokenWord: string;
+  } | null = null;
+
+  public cancelPendingIntervention(): void {
+    if (this.pendingInterventionTimeout) {
+      clearTimeout(this.pendingInterventionTimeout);
+      this.pendingInterventionTimeout = null;
+    }
+    this.pendingErrorPayload = null;
+  }
+
+  private scheduleAdaptiveIntervention(
+    ayahIdx: number,
+    wordIdx: number,
+    reason: string,
+    targetWord: string,
+    spokenWord: string
+  ): void {
+    // If an intervention is already pending for this exact word, let the existing countdown proceed
+    if (
+      this.pendingInterventionTimeout && 
+      this.pendingErrorPayload && 
+      this.pendingErrorPayload.wordIdx === wordIdx && 
+      this.pendingErrorPayload.ayahIdx === ayahIdx
+    ) {
+      return;
+    }
+
+    this.cancelPendingIntervention();
+
+    this.pendingErrorPayload = {
+      ayahIdx,
+      wordIdx,
+      reason,
+      targetWord,
+      spokenWord
+    };
+
+    // 🌬️ ADAPTIVE BREATH-AWARE TIMING:
+    // Tailor intervention delay to student's personal breathing cadence & pause window
+    const baseDelay = breathOptimizer.getAdaptiveInterventionDelayMs();
+    const breathBonus = breathOptimizer.isInhaling() ? 450 : 0;
+    const adaptiveDelay = Math.max(750, Math.min(2800, baseDelay + breathBonus));
+
+    this.pendingInterventionTimeout = setTimeout(() => {
+      this.pendingInterventionTimeout = null;
+      if (!this.isActive || this.isPaused || !this.pendingErrorPayload) return;
+
+      const payload = this.pendingErrorPayload;
+      this.pendingErrorPayload = null;
+
+      this.totalErrors++;
+      this.isPaused = true;
+      this.consecutiveMismatchCount = 0;
+      this.lastEvaluatedMismatchToken = '';
+      this.sameTokenFrameCount = 0;
+
+      if (this.callbacks) {
+        this.callbacks.onErrorDetected(
+          payload.ayahIdx,
+          payload.wordIdx,
+          payload.reason,
+          payload.targetWord,
+          payload.spokenWord
+        );
+      }
+    }, adaptiveDelay);
+  }
 
   public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'normal'): void {
+    this.cancelPendingIntervention();
     this.targetAyats = ayats;
     this.precompiledAyats = ayats.map(a => precompileAyat(a));
     this.callbacks = callbacks;
@@ -1022,11 +1098,13 @@ export class ContinuousMurojaahTracker {
   }
 
   public stop(): void {
+    this.cancelPendingIntervention();
     this.isActive = false;
     this.isPaused = false;
   }
 
   public pause(): void {
+    this.cancelPendingIntervention();
     this.isPaused = true;
   }
 
@@ -1253,6 +1331,7 @@ export class ContinuousMurojaahTracker {
 
       // Apply matched words or detect error
       if (bestMatchedIndices.length > 0) {
+        this.cancelPendingIntervention();
         this.consecutiveMismatchCount = 0;
         this.lastEvaluatedMismatchToken = '';
         this.sameTokenFrameCount = 0;
@@ -1390,13 +1469,6 @@ export class ContinuousMurojaahTracker {
               }
 
               if (!anyTokenMatched && (allTokens.length >= 2 || isFinal)) {
-                // Total verse mismatch detected or single wrong utterance completed! Trigger Sheikh audio correction immediately!
-                this.totalErrors++;
-                this.isPaused = true;
-                this.consecutiveMismatchCount = 0;
-                this.lastEvaluatedMismatchToken = '';
-                this.sameTokenFrameCount = 0;
-
                 const nextWord = expectedWords[this.currentWordIndex + 1]?.raw || '';
                 const prevWordRaw = prevWord ? prevWord.raw : '';
                 const isEnd = this.currentWordIndex === expectedWords.length - 1;
@@ -1411,7 +1483,8 @@ export class ContinuousMurojaahTracker {
 
                 const wrongVerseReason = diagnosis.errorReason || `Lafal yang dibaca (« ${rawTranscript.trim()} ») tidak cocok dengan target hafalan: « ${targetWord.raw} ». Simak teguran suara Syekh berikut.`;
 
-                this.callbacks.onErrorDetected(
+                // 🌬️ Adaptive gating: give grace period for breathing/istidrak before Sheikh voice intervenes
+                this.scheduleAdaptiveIntervention(
                   this.currentAyahIndex,
                   this.currentWordIndex,
                   wrongVerseReason,
@@ -1450,12 +1523,6 @@ export class ContinuousMurojaahTracker {
               const matchThresh = this.sensitivity === 'ultra' ? 0.62 : this.sensitivity === 'high' ? 0.66 : 0.70;
               // Trigger error pause if spoken token falls below sensitivity match threshold
               if (similarity < matchThresh) {
-                this.totalErrors++;
-                this.isPaused = true;
-                this.consecutiveMismatchCount = 0;
-                this.lastEvaluatedMismatchToken = '';
-                this.sameTokenFrameCount = 0;
-
                 const nextWord = expectedWords[this.currentWordIndex + 1]?.raw || '';
                 const prevWordRaw = prevWord ? prevWord.raw : '';
                 const isEnd = this.currentWordIndex === expectedWords.length - 1;
@@ -1468,7 +1535,8 @@ export class ContinuousMurojaahTracker {
                   isEnd
                 );
 
-                this.callbacks.onErrorDetected(
+                // 🌬️ Adaptive gating: give grace period for breathing/istidrak before Sheikh voice intervenes
+                this.scheduleAdaptiveIntervention(
                   this.currentAyahIndex,
                   this.currentWordIndex,
                   diagnosis.errorReason,
@@ -1552,6 +1620,7 @@ export class ContinuousMurojaahTracker {
   }
 
   public resumeAfterCorrection(): void {
+    this.cancelPendingIntervention();
     if (!this.isActive) return;
     this.isPaused = false;
     this.consecutiveMismatchCount = 0;

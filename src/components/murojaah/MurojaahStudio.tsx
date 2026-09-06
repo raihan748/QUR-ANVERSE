@@ -56,6 +56,7 @@ import { DailyTargetWidget } from '../common/DailyTargetWidget';
 import { useLanguage } from '../../context/LanguageContext';
 import { getTajweedColorForWord } from '../../services/quranTajweedGharibService';
 import { TalkingMouth3DViewer } from './TalkingMouth3DViewer';
+import { breathOptimizer, BreathStateSnapshot } from '../../services/backend/frontier/BreathEconomyOptimizer';
 
 interface MurojaahStudioProps {
   userProfile: UserProfile;
@@ -156,6 +157,27 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   const [sessionCompleted, setSessionCompleted] = useState(false);
   const [finalScore, setFinalScore] = useState<number | null>(null);
 
+  // Adaptive Breath Economy & Pacing Profiler State
+  const [breathSnapshot, setBreathSnapshot] = useState<BreathStateSnapshot | null>(null);
+
+  // Initialize and load individual student's adaptive breathing profile
+  useEffect(() => {
+    const prof = breathOptimizer.loadProfileFromStorage(userProfile?.id || 'active_santri');
+    setBreathSnapshot({
+      remainingBreathPercent: 100,
+      continuousPhonationMs: 0,
+      isExhaustionImminent: false,
+      isInhaling: false,
+      currentPauseMs: 0,
+      recommendedStopWordIndex: null,
+      ibtidaWordIndex: null,
+      advisoryNote: 'Cadangan nafas prima. Teruskan tilawah.',
+      userPace: prof.recitationPace,
+      averageInhaleMs: prof.averageInhaleMs,
+      learnedSamplesCount: prof.totalSamples
+    });
+  }, [userProfile?.id]);
+
   // Filter & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [isSurahPickerOpen, setIsSurahPickerOpen] = useState(false);
@@ -252,7 +274,16 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
     // 1. Start real-time Web Audio API decibel metering (60 FPS, 0 delay)
     audioRecorder.startRecording({
-      onVolumeUpdate: (volume) => setMicVolume(volume),
+      onVolumeUpdate: (volume) => {
+        setMicVolume(volume);
+        const snapshot = breathOptimizer.updateBreathTelemetry(
+          volume,
+          Date.now(),
+          continuousTracker.getStatus().currentWordIndex,
+          []
+        );
+        setBreathSnapshot(snapshot);
+      },
       boostGain: true
     });
 
@@ -295,7 +326,16 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
     // 1. Start real-time Web Audio API decibel metering (60 FPS, 0 delay)
     audioRecorder.startRecording({
-      onVolumeUpdate: (volume) => setMicVolume(volume),
+      onVolumeUpdate: (volume) => {
+        setMicVolume(volume);
+        const snapshot = breathOptimizer.updateBreathTelemetry(
+          volume,
+          Date.now(),
+          continuousTracker.getStatus().currentWordIndex,
+          []
+        );
+        setBreathSnapshot(snapshot);
+      },
       boostGain: true
     });
 
@@ -441,7 +481,16 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
     // 3. Start Web Audio API decibel metering (60 FPS, 0 delay)
     audioRecorder.startRecording({
-      onVolumeUpdate: (volume) => setMicVolume(volume),
+      onVolumeUpdate: (volume) => {
+        setMicVolume(volume);
+        const snapshot = breathOptimizer.updateBreathTelemetry(
+          volume,
+          Date.now(),
+          continuousTracker.getStatus().currentWordIndex,
+          []
+        );
+        setBreathSnapshot(snapshot);
+      },
       boostGain: true
     });
 
@@ -843,7 +892,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                           () => setIsSheikhSpeaking(false)
                         );
                       }}
-                      breathRemainingPercent={85}
+                      breathRemainingPercent={breathSnapshot?.remainingBreathPercent ?? 85}
                     />
 
                     <div className="flex flex-wrap gap-2 pt-1">
@@ -885,14 +934,26 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
                 return (
                   <div className="my-3 p-3.5 bg-gradient-to-r from-[#022C22] via-[#064E3B] to-[#022C22] text-white rounded-2xl border-3 border-[#F59E0B] shadow-[4px_4px_0px_0px_#000] space-y-3">
-                    <div className="flex items-center justify-between text-[11px] font-black border-b border-emerald-700/60 pb-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-black border-b border-emerald-700/60 pb-1.5">
                       <span className="flex items-center gap-2 text-amber-300">
                         <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
                         🎙️ HASIL DIKTE SUARA & KOREKSI TAJWID REAL-TIME:
                       </span>
-                      <div className="flex items-center gap-1.5 font-mono text-[10px] bg-black/40 px-2 py-0.5 rounded-md border border-emerald-500">
-                        <Activity className="w-3 h-3 text-[#F59E0B] animate-pulse" />
-                        <span>VU: {micVolume} dB</span>
+                      <div className="flex items-center gap-2">
+                        {breathSnapshot?.isInhaling ? (
+                          <span className="flex items-center gap-1.5 px-2 py-0.5 bg-sky-500/30 text-sky-200 border border-sky-400/80 rounded-lg font-sans text-[10px] animate-pulse shadow-sm">
+                            <span>🌬️ Sedang Tarik Nafas (Tanaffus)...</span>
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-950/80 text-emerald-300 border border-emerald-600/70 rounded-lg font-sans text-[10px]" title="Sistem beradaptasi dengan ritme jeda nafas unik santri">
+                            <span>Ritme Nafas: <b className="text-amber-300 uppercase">{breathSnapshot?.userPace || 'TADWIR'}</b> (~{((breathSnapshot?.averageInhaleMs || 1400) / 1000).toFixed(1)}s)</span>
+                          </span>
+                        )}
+                        <div className="flex items-center gap-1.5 font-mono text-[10px] bg-black/40 px-2 py-0.5 rounded-md border border-emerald-500">
+                          <Activity className="w-3 h-3 text-[#F59E0B] animate-pulse" />
+                          <span>VU: {micVolume} dB</span>
+                          <span className="text-emerald-300 border-l border-emerald-700 pl-1.5">🌬️ {breathSnapshot?.remainingBreathPercent ?? 100}%</span>
+                        </div>
                       </div>
                     </div>
 
