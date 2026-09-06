@@ -286,6 +286,46 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
     }
   };
 
+  // Resume listening after Sheikh voice recitation finishes WITHOUT wiping the error card
+  const handleResumeListeningAfterSheikh = () => {
+    setIsSheikhSpeaking(false);
+    setLiveTranscript('');
+    speechEngine.clearTranscript();
+    continuousTracker.resumeAfterCorrection();
+
+    // 1. Start real-time Web Audio API decibel metering (60 FPS, 0 delay)
+    audioRecorder.startRecording({
+      onVolumeUpdate: (volume) => setMicVolume(volume),
+      boostGain: true
+    });
+
+    // 2. Resume speech recognition with error card PRESERVED so santri can read tajweed notes & repeat
+    speechEngine.setLanguage(speechLanguage);
+    speechEngine.setSensitivity(micSensitivity);
+    const started = speechEngine.startListening({
+      language: speechLanguage,
+      sensitivity: micSensitivity,
+      onInterimResult: (text, alts) => {
+        setLiveTranscript(text);
+        continuousTracker.processStream(text, alts, false);
+      },
+      onFinalResult: (text, alts) => {
+        setLiveTranscript(text);
+        continuousTracker.processStream(text, alts, true);
+      },
+      onError: (err) => {
+        console.warn('Mic status warning:', err);
+        if (typeof err === 'string' && (err.includes('dipakai') || err.includes('terkunci') || err.includes('audio-capture'))) {
+          audioRecorder.stopRecording();
+        }
+      }
+    });
+
+    if (started) {
+      setIsRecording(true);
+    }
+  };
+
   // Start Real-Time Continuous Muroja'ah Session
   const handleStartContinuousMurojaah = async () => {
     if (passageAyats.length === 0) return;
@@ -354,9 +394,8 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           targetAyat.numberInSurah,
           activeReciter.id,
           () => {
-            setIsSheikhSpeaking(false);
-            // 🔄 Auto-resume listening after Sheikh finishes so the santri can repeat the verse/word!
-            handleRetryCurrentWord();
+            // 🔄 Auto-resume listening after Sheikh finishes so the santri can repeat the verse/word without losing error card!
+            handleResumeListeningAfterSheikh();
           }
         );
 

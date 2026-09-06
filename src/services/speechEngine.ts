@@ -1325,8 +1325,8 @@ export class ContinuousMurojaahTracker {
           const lastSpoken = allTokens[allTokens.length - 1];
           const normSpoken = normalizeArabic(lastSpoken);
 
-          // 1. Ignore transient noise pops or stray single-letter background whispers
-          if (normSpoken.length >= 2) {
+          // 1. Ignore transient noise pops or stray single-letter background whispers (support both Arabic & transliterated/spoken tokens)
+          if (normSpoken.length >= 2 || lastSpoken.trim().length >= 2) {
             const targetWord = expectedWords[this.currentWordIndex];
 
             // 2. Check if spoken word is a repetition/hesitation of the PREVIOUS word in current ayah (do NOT penalize)
@@ -1362,9 +1362,9 @@ export class ContinuousMurojaahTracker {
               }
             }
 
-            // 3. MULTI-WORD MISMATCH DETECTION (e.g. reciting completely wrong verse or surah):
-            // If user has uttered 2 or more words, and NONE of them match ANY word in the target passage!
-            if (allTokens.length >= 2 && targetWord && this.callbacks) {
+            // 3. MULTI-WORD OR COMPLETE VERSE MISMATCH DETECTION:
+            // If user has uttered words, and NONE of them match ANY word in the target passage!
+            if (targetWord && this.callbacks) {
               let anyTokenMatched = false;
               for (const token of allTokens) {
                 const tokAnalysis = analyzeSpokenToken(token);
@@ -1389,8 +1389,8 @@ export class ContinuousMurojaahTracker {
                 }
               }
 
-              if (!anyTokenMatched) {
-                // Total verse mismatch detected! Trigger Sheikh audio correction immediately!
+              if (!anyTokenMatched && (allTokens.length >= 2 || isFinal)) {
+                // Total verse mismatch detected or single wrong utterance completed! Trigger Sheikh audio correction immediately!
                 this.totalErrors++;
                 this.isPaused = true;
                 this.consecutiveMismatchCount = 0;
@@ -1409,7 +1409,7 @@ export class ContinuousMurojaahTracker {
                   isEnd
                 );
 
-                const wrongVerseReason = `Lafal atau ayat yang dibaca (« ${rawTranscript.trim()} ») tidak cocok dengan target hafalan: « ${targetWord.raw} ». Simak teguran suara Syekh berikut.`;
+                const wrongVerseReason = diagnosis.errorReason || `Lafal yang dibaca (« ${rawTranscript.trim()} ») tidak cocok dengan target hafalan: « ${targetWord.raw} ». Simak teguran suara Syekh berikut.`;
 
                 this.callbacks.onErrorDetected(
                   this.currentAyahIndex,
@@ -1423,8 +1423,9 @@ export class ContinuousMurojaahTracker {
             }
 
             // 4. Increment mismatch count on sustained distinct wrong token
-            if (normSpoken !== this.lastEvaluatedMismatchToken) {
-              this.lastEvaluatedMismatchToken = normSpoken;
+            const trackingToken = normSpoken || lastSpoken.trim();
+            if (trackingToken !== this.lastEvaluatedMismatchToken) {
+              this.lastEvaluatedMismatchToken = trackingToken;
               this.sameTokenFrameCount = 0;
               this.consecutiveMismatchCount++;
             } else {
@@ -1435,14 +1436,12 @@ export class ContinuousMurojaahTracker {
               }
             }
 
-            // Error threshold based on sensitivity:
-            // 'normal': 2 distinct mismatches
-            // 'ultra' / 'high': 2 distinct mismatches
-            const errorMismatchThreshold = 2;
-            const isSpokenSubstantial = normSpoken.length >= 2;
+            // Error threshold: if isFinal is true (utterance finished) or sensitivity threshold met
+            const errorMismatchThreshold = isFinal ? 1 : (this.sensitivity === 'ultra' ? 1 : 2);
+            const isSpokenSubstantial = normSpoken.length >= 2 || lastSpoken.trim().length >= 2;
 
             if (
-              this.consecutiveMismatchCount >= errorMismatchThreshold &&
+              (this.consecutiveMismatchCount >= errorMismatchThreshold || isFinal) &&
               isSpokenSubstantial &&
               targetWord &&
               this.callbacks
@@ -1476,6 +1475,7 @@ export class ContinuousMurojaahTracker {
                   targetWord.raw,
                   lastSpoken
                 );
+                return;
               }
             }
           }

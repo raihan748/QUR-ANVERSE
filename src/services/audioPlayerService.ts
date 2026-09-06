@@ -388,17 +388,30 @@ class AudioPlayerService {
     customReciterId?: string,
     onEnded?: () => void
   ): Promise<boolean> {
-    // 1. Play subtle correction cue tone
-    this.playCorrectionPromptSound();
+    // 1. Play audible, attention-grabbing dual-tone alarm chime immediately via Web Audio API (0ms latency)
+    this.playAlarmTeguranSound();
 
-    // 2. Play authentic Sheikh voice recitation after cue
+    // 2. Play authentic Sheikh voice recitation after the warning chime
     return new Promise((resolve) => {
       setTimeout(async () => {
-        const success = await this.playAyat(surahNumber, ayahNumber, () => {
+        try {
+          const success = await this.playAyat(
+            surahNumber, 
+            ayahNumber, 
+            () => {
+              if (onEnded) onEnded();
+            }, 
+            customReciterId
+          );
+          if (!success && onEnded) {
+            onEnded();
+          }
+          resolve(success);
+        } catch {
           if (onEnded) onEnded();
-        }, customReciterId);
-        resolve(success);
-      }, 350);
+          resolve(false);
+        }
+      }, 400);
     });
   }
 
