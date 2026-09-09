@@ -68,11 +68,13 @@ export function App() {
   // Live countdown timer for prayer times & 30-minute Post-Adhan Attendance Auto-Check
   useEffect(() => {
     const checkAttendancePrompt = (times: PrayerTime[]) => {
+      if ((window as any).__qv_is_attendance_open) return;
       const checkResult = prayerAttendance.checkShouldShow30MinPopup(times);
       if (checkResult.shouldShow && checkResult.duePrayer) {
         setDuePrayerForAttendance(checkResult.duePrayer);
         setDueMinutesPassed(checkResult.minutesPassed);
         setIsPrayerAttendanceModalOpen(true);
+        (window as any).__qv_is_attendance_open = true;
       }
     };
 
@@ -107,6 +109,7 @@ export function App() {
   const handleOpenManualAttendance = () => {
     setDuePrayerForAttendance(null);
     setIsPrayerAttendanceModalOpen(true);
+    (window as any).__qv_is_attendance_open = true;
   };
 
   return (
@@ -225,8 +228,13 @@ export function App() {
       <PrayerAttendanceModal
         isOpen={isPrayerAttendanceModalOpen}
         onClose={() => {
+          if (duePrayerForAttendance) {
+            prayerAttendance.dismissPopupForNow(duePrayerForAttendance.id, 60);
+          }
+          prayerAttendance.setGeneralCooldown(15);
           setIsPrayerAttendanceModalOpen(false);
           setDuePrayerForAttendance(null);
+          (window as any).__qv_is_attendance_open = false;
         }}
         prayerTimes={prayerTimes}
         duePrayer={duePrayerForAttendance}

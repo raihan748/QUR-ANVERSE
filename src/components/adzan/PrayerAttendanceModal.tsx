@@ -76,10 +76,20 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
     }
   };
 
+  const handleCloseModal = () => {
+    if (duePrayer) {
+      // Jika sudah sholat -> matikan 24 jam; jika belum selesai/ditutup -> snooze 60 menit agar tidak pop-up setiap 30 detik!
+      prayerAttendance.dismissPopupForNow(duePrayer.id, isDuePrayerCompleted ? 24 * 60 : 60);
+    }
+    prayerAttendance.setGeneralCooldown(15);
+    onClose();
+  };
+
   const handleSnooze = () => {
     if (duePrayer) {
       prayerAttendance.dismissPopupForNow(duePrayer.id, 15);
     }
+    prayerAttendance.setGeneralCooldown(15);
     onClose();
   };
 
@@ -132,13 +142,9 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
           </div>
 
           <button
-            onClick={() => {
-              if (duePrayer && isDuePrayerCompleted) {
-                prayerAttendance.dismissPopupForNow(duePrayer.id, 24 * 60);
-              }
-              onClose();
-            }}
+            onClick={handleCloseModal}
             className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+            title="Tutup Jurnal Absensi"
           >
             ✕
           </button>
@@ -164,6 +170,38 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                   <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
                     Catatan absensi sholat antum telah tersimpan aman di database lokal. Pengingat 30 menit untuk sholat ini dinonaktifkan untuk hari ini.
                   </p>
+                </div>
+              </div>
+            ) : dueRecord?.status === 'belum' ? (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-600 flex items-start gap-3 shadow-lg">
+                <span className="text-2xl">📝</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-sm sm:text-base font-bold text-slate-200">
+                      Catatan Tersimpan: Antum Menandai Belum Sholat {duePrayer.name}
+                    </h4>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-slate-300 border border-slate-600">
+                      Disnooze 60 Menit
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
+                    Pilihan antum telah tersimpan aman di sistem. Pengingat sholat {duePrayer.name} ditunda selama 60 menit agar tidak mengganggu. Segerakan sholat ketika antum sudah luang.
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <button
+                      onClick={() => handleSelectStatus(duePrayer.id as any, 'tepat_waktu')}
+                      className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition cursor-pointer"
+                    >
+                      <span>✓</span>
+                      <span>Sekarang Sudah Sholat {duePrayer.name}</span>
+                    </button>
+                    <button
+                      onClick={handleCloseModal}
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer"
+                    >
+                      Tutup Pengingat
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -316,6 +354,11 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                               <span>✓</span>
                               <span>SELESAI</span>
                             </span>
+                          ) : currentStatus === 'belum' && record ? (
+                            <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1">
+                              <span>⭕</span>
+                              <span>DITANDAI BELUM</span>
+                            </span>
                           ) : isDueNow ? (
                             <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase rounded bg-amber-500 text-slate-950 animate-pulse">
                               Waktunya Absen
@@ -430,12 +473,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
             )}
 
             <button
-              onClick={() => {
-                if (duePrayer && isDuePrayerCompleted) {
-                  prayerAttendance.dismissPopupForNow(duePrayer.id, 24 * 60);
-                }
-                onClose();
-              }}
+              onClick={handleCloseModal}
               className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-emerald-950 transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>✅ Simpan & Tutup</span>

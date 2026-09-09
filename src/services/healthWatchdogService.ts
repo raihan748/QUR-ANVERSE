@@ -53,21 +53,29 @@ export class HealthWatchdogService {
       updatedAt: Date.now()
     }),
     'quranverse_bookmarks': () => ([]),
-    'quranverse_daily_target': () => ({
-      targetAyatCount: 10,
-      completedToday: 0,
-      streakDays: 1,
-      lastActiveDate: new Date().toISOString().split('T')[0]
-    }),
+    'quranverse_daily_target': () => {
+      const now = new Date();
+      const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      return {
+        targetAyatCount: 10,
+        completedToday: 0,
+        streakDays: 1,
+        lastActiveDate: localDate
+      };
+    },
     'quranverse_memorization_progress': () => ({}),
-    'qv_prayer_attendance_today_v1': () => ({
-      date: new Date().toISOString().split('T')[0],
-      records: {},
-      completedCount: 0,
-      totalXpEarned: 0
-    }),
+    'qv_prayer_attendance_today_v1': () => {
+      const now = new Date();
+      const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      return {
+        date: localDate,
+        records: {},
+        completedCount: 0,
+        totalXpEarned: 0
+      };
+    },
     'qv_prayer_attendance_history_v1': () => ({}),
-    'qv_prayer_snooze_dismiss_v1': () => ({})
+    'qv_prayer_snooze_dismiss_v1': () => ({ generalUntil: 0, prayers: {} })
   };
 
   private constructor() {}
