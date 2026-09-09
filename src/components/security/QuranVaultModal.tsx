@@ -27,6 +27,7 @@ export const QuranVaultModal: React.FC<QuranVaultModalProps> = ({ isOpen, onClos
   const [isAuditing, setIsAuditing] = useState(false);
   const [auditProgress, setAuditProgress] = useState(100);
   const [activeTab, setActiveTab] = useState<'overview' | 'layers' | 'incidents'>('overview');
+  const [simulationResult, setSimulationResult] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -205,6 +206,44 @@ export const QuranVaultModal: React.FC<QuranVaultModalProps> = ({ isOpen, onClos
                 <RefreshCw className={`w-4 h-4 ${isAuditing ? 'animate-spin' : ''}`} />
                 <span>{isAuditing ? 'Sedang Mengaudit Kriptografi...' : 'Jalankan Audit Kriptografi Integritas Sekarang'}</span>
               </button>
+
+              {/* LIVE JURY PENETRATION DEMO */}
+              <div className="pt-2 border-t-2 border-dashed border-gray-300 dark:border-gray-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Live Demo Juri: Uji Penetrasi & Self-Healing
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500">
+                    Otonom Real-Time
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const res = quranVault.simulateTamperAttack(1, 1);
+                    setVaultStatus(quranVault.runFullVaultAudit());
+                    setSimulationResult(res.message);
+                  }}
+                  className="w-full py-2.5 bg-gradient-to-r from-red-600 via-amber-600 to-red-600 hover:from-red-500 hover:to-amber-500 text-white border-2 border-black rounded-xl font-black text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all"
+                >
+                  <ShieldAlert className="w-4 h-4 text-white" />
+                  <span>⚡ Simulasi Serangan: Ubah 1 Harakat QS. Al-Fatihah: 1</span>
+                </button>
+                {simulationResult && (
+                  <div className="p-3 bg-red-50 dark:bg-red-950/60 border-2 border-red-500 rounded-xl text-xs space-y-1 animate-in fade-in">
+                    <div className="font-black text-red-900 dark:text-red-200 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                      <span>Respon Kriptografi Master Vault Induk:</span>
+                    </div>
+                    <p className="text-gray-700 dark:text-gray-200 leading-relaxed font-mono text-[11px]">
+                      {simulationResult}
+                    </p>
+                    <div className="pt-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                      ✓ Insiden tercatat di tab "Log Insiden". Buka tab Log Insiden untuk melihat bukti forensik!
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

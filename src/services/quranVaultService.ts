@@ -501,7 +501,40 @@ class QuranVaultEngine {
   public getMasterMerkleRoot(): string {
     return this.masterMerkleRoot;
   }
+
+  /**
+   * ⚡ LIVE JURY DEMO: Simulates a real-time malicious deface attempt on an Ayah
+   * Alters a harakat (kasrah -> dhammah), verifies hash mismatch, records incident, and self-heals from Cold Storage!
+   */
+  public simulateTamperAttack(surahNumber: number = 1, ayahNumber: number = 1): VerificationResult & { message: string; originalText: string; tamperedText: string } {
+    const key = `${surahNumber}:${ayahNumber}`;
+    const pristine = this.coldStorageVault.get(key);
+    const originalText = pristine ? pristine.arabicText : 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';
+    // Alter harakat kasrah on Mim to dhammah (الرَّحِيمِ -> الرَّحِيمُ)
+    const tamperedText = originalText.includes('ٱلرَّحِيمِ') 
+      ? originalText.replace('ٱلرَّحِيمِ', 'ٱلرَّحِيمُ')
+      : originalText.replace(/[\u0650]/u, '\u064F');
+
+    const result = this.verifyAyahIntegrity(surahNumber, ayahNumber, tamperedText);
+
+    if (typeof window !== 'undefined') {
+      try {
+        window.dispatchEvent(new CustomEvent('qv_vault_incident_detected', { detail: result }));
+      } catch {}
+    }
+
+    return {
+      ...result,
+      originalText,
+      tamperedText,
+      message: `🚨 Percobaan manipulasi Surah ${surahNumber}:${ayahNumber} terdeteksi! Hash berubah dari ${result.expectedHash.slice(0, 16)}... menjadi ${result.actualHash.slice(0, 16)}... Teks suci asli berhasil dipulihkan secara otomatis dari Cold Storage Vault.`
+    };
+  }
 }
 
 export const quranVault = QuranVaultEngine.getInstance();
+
+if (typeof window !== 'undefined') {
+  (window as any).quranVault = quranVault;
+}
 
