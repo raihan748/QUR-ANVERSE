@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { NavigationTab, UserProfile, PrayerTime } from './types';
 import { getLocalProfile, saveLocalProfile } from './services/offlineStorage';
 import { calculatePrayerTimes, getCountdownToNextPrayer } from './services/prayerTimeEngine';
@@ -13,15 +13,17 @@ import { healthWatchdog } from './services/healthWatchdogService';
 import { prayerAttendance } from './services/prayerAttendanceService';
 import { ScrollToTopButton } from './components/common/ScrollToTopButton';
 import { LandingHeroShowcase } from './components/landing/LandingHeroShowcase';
-import { MushafView } from './components/quran/MushafView';
-import { TilawahStudio } from './components/tilawah/TilawahStudio';
 import { MurojaahStudio } from './components/murojaah/MurojaahStudio';
-import { SimaiTutupMata } from './components/simai/SimaiTutupMata';
-import { SambungAyatGame } from './components/challenge/SambungAyatGame';
-import { PrayerTimesBanner } from './components/adzan/PrayerTimesBanner';
-import { DashboardView } from './components/dashboard/DashboardView';
-import { DownloadCenter } from './components/offline/DownloadCenter';
-import { AsbabunNuzulView } from './components/asbabun_nuzul/AsbabunNuzulView';
+
+// Lazy-loaded tabs for instantaneous page boot and optimal performance
+const MushafView = lazy(() => import('./components/quran/MushafView').then(m => ({ default: m.MushafView })));
+const TilawahStudio = lazy(() => import('./components/tilawah/TilawahStudio').then(m => ({ default: m.TilawahStudio })));
+const SimaiTutupMata = lazy(() => import('./components/simai/SimaiTutupMata').then(m => ({ default: m.SimaiTutupMata })));
+const SambungAyatGame = lazy(() => import('./components/challenge/SambungAyatGame').then(m => ({ default: m.SambungAyatGame })));
+const PrayerTimesBanner = lazy(() => import('./components/adzan/PrayerTimesBanner').then(m => ({ default: m.PrayerTimesBanner })));
+const DashboardView = lazy(() => import('./components/dashboard/DashboardView').then(m => ({ default: m.DashboardView })));
+const DownloadCenter = lazy(() => import('./components/offline/DownloadCenter').then(m => ({ default: m.DownloadCenter })));
+const AsbabunNuzulView = lazy(() => import('./components/asbabun_nuzul/AsbabunNuzulView').then(m => ({ default: m.AsbabunNuzulView })));
 
 import { FullscreenAdzan } from './components/adzan/FullscreenAdzan';
 import { adzanGlobalService, GlobalAdzanTriggerPayload } from './services/adzanGlobalService';
@@ -135,60 +137,67 @@ export function App() {
         <main className="flex-1 p-4 sm:p-6 lg:p-7 min-w-0">
           {/* Dynamic Tab View Container with Error Boundary & Smooth Transitions */}
           <ErrorBoundary>
-            <div key={activeTab} className="animate-fade-up">
-              {activeTab === 'mushaf' && <MushafView />}
+            <Suspense fallback={
+              <div className="flex flex-col items-center justify-center min-h-[400px] p-12 text-center">
+                <div className="w-10 h-10 border-4 border-[#0B4627] border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="font-bold text-gray-700 text-sm">Memuat modul QUR'ANVERSE...</p>
+              </div>
+            }>
+              <div key={activeTab} className="animate-fade-up">
+                {activeTab === 'mushaf' && <MushafView />}
 
-              {activeTab === 'tilawah' && (
-                <TilawahStudio
-                  userProfile={userProfile}
-                  onProfileUpdated={handleProfileUpdated}
-                />
-              )}
+                {activeTab === 'tilawah' && (
+                  <TilawahStudio
+                    userProfile={userProfile}
+                    onProfileUpdated={handleProfileUpdated}
+                  />
+                )}
 
-              {activeTab === 'murojaah_ai' && (
-                <MurojaahStudio
-                  userProfile={userProfile}
-                  onProfileUpdated={handleProfileUpdated}
-                />
-              )}
+                {activeTab === 'murojaah_ai' && (
+                  <MurojaahStudio
+                    userProfile={userProfile}
+                    onProfileUpdated={handleProfileUpdated}
+                  />
+                )}
 
-              {activeTab === 'simai' && (
-                <SimaiTutupMata
-                  userProfile={userProfile}
-                  onProfileUpdated={handleProfileUpdated}
-                />
-              )}
+                {activeTab === 'simai' && (
+                  <SimaiTutupMata
+                    userProfile={userProfile}
+                    onProfileUpdated={handleProfileUpdated}
+                  />
+                )}
 
-              {activeTab === 'challenge' && (
-                <SambungAyatGame
-                  userProfile={userProfile}
-                  onProfileUpdated={handleProfileUpdated}
-                />
-              )}
+                {activeTab === 'challenge' && (
+                  <SambungAyatGame
+                    userProfile={userProfile}
+                    onProfileUpdated={handleProfileUpdated}
+                  />
+                )}
 
-              {activeTab === 'prayer' && (
-                <PrayerTimesBanner
-                  onOpenPrayerAttendanceModal={handleOpenManualAttendance}
-                />
-              )}
+                {activeTab === 'prayer' && (
+                  <PrayerTimesBanner
+                    onOpenPrayerAttendanceModal={handleOpenManualAttendance}
+                  />
+                )}
 
-              {activeTab === 'dashboard' && (
-                <DashboardView
-                  userProfile={userProfile}
-                  onNavigateToMurojaah={() => handleSelectTabWithScroll('murojaah_ai')}
-                  onOpenPrayerAttendanceModal={handleOpenManualAttendance}
-                />
-              )}
+                {activeTab === 'dashboard' && (
+                  <DashboardView
+                    userProfile={userProfile}
+                    onNavigateToMurojaah={() => handleSelectTabWithScroll('murojaah_ai')}
+                    onOpenPrayerAttendanceModal={handleOpenManualAttendance}
+                  />
+                )}
 
-              {activeTab === 'download' && <DownloadCenter />}
+                {activeTab === 'download' && <DownloadCenter />}
 
-              {activeTab === 'asbabun_nuzul' && (
-                <AsbabunNuzulView
-                  onNavigateToMushaf={(surah, ayah) => handleSelectTabWithScroll('mushaf')}
-                  onNavigateToMurojaah={(surah, ayah) => handleSelectTabWithScroll('murojaah_ai')}
-                />
-              )}
-            </div>
+                {activeTab === 'asbabun_nuzul' && (
+                  <AsbabunNuzulView
+                    onNavigateToMushaf={(surah, ayah) => handleSelectTabWithScroll('mushaf')}
+                    onNavigateToMurojaah={(surah, ayah) => handleSelectTabWithScroll('murojaah_ai')}
+                  />
+                )}
+              </div>
+            </Suspense>
           </ErrorBoundary>
         </main>
       </div>
