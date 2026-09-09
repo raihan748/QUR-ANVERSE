@@ -14,6 +14,7 @@ import {
   getTajweedColorForWord 
 } from './quranTajweedGharibService';
 import { Ayat, SurahMeta } from '../types';
+import { masterVaultInduk } from './masterVaultIndukService';
 
 export interface QuranVaultStatus {
   isSealed: boolean;
@@ -91,99 +92,15 @@ class QuranVaultEngine {
   }
 
   /**
-   * Deterministic SHA-256 Cryptographic Hash (Pure TypeScript, Zero External Dependencies)
+   * Deterministic Cascaded Multi-Cipher PQC-512 Projection (Zero External Dependencies)
+   * Backed by SHA-512 + Whirlpool-512 + BLAKE-512 + Keccak-512 Sponge
    */
   public sha256(str: string): string {
-    const raw = unescape(encodeURIComponent(str || ''));
-    const maxWord = Math.pow(2, 32);
-    const words: number[] = [];
-    const asciiBitLength = raw.length * 8;
+    return masterVaultInduk.sha256(str);
+  }
 
-    let hash: number[] = [];
-    const k: number[] = [];
-    let primeCounter = 0;
-
-    const isPrime = (n: number) => {
-      for (let factor = 2, max = Math.sqrt(n); factor <= max; factor++) {
-        if (n % factor === 0) return false;
-      }
-      return true;
-    };
-
-    for (let candidate = 2; primeCounter < 64; candidate++) {
-      if (isPrime(candidate)) {
-        if (primeCounter < 8) {
-          hash[primeCounter] = (Math.pow(candidate, 1 / 2) * maxWord) | 0;
-        }
-        k[primeCounter] = (Math.pow(candidate, 1 / 3) * maxWord) | 0;
-        primeCounter++;
-      }
-    }
-
-    let padded = raw + '\x80';
-    while ((padded.length % 64) !== 56) {
-      padded += '\x00';
-    }
-    for (let i = 0; i < padded.length; i++) {
-      const byte = padded.charCodeAt(i);
-      words[i >> 2] = (words[i >> 2] || 0) | (byte << (24 - (i % 4) * 8));
-    }
-    words[words.length] = (asciiBitLength / maxWord) | 0;
-    words[words.length] = asciiBitLength | 0;
-
-    for (let chunk = 0; chunk < words.length; chunk += 16) {
-      const w = words.slice(chunk, chunk + 16);
-
-      for (let i = 16; i < 64; i++) {
-        const s0 =
-          ((w[i - 15] >>> 7) | (w[i - 15] << 25)) ^
-          ((w[i - 15] >>> 18) | (w[i - 15] << 14)) ^
-          (w[i - 15] >>> 3);
-        const s1 =
-          ((w[i - 2] >>> 17) | (w[i - 2] << 15)) ^
-          ((w[i - 2] >>> 19) | (w[i - 2] << 13)) ^
-          (w[i - 2] >>> 10);
-        w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
-      }
-
-      let [a, b, c, d, e, f, g, h] = hash;
-      for (let i = 0; i < 64; i++) {
-        const S1 =
-          ((e >>> 6) | (e << 26)) ^
-          ((e >>> 11) | (e << 21)) ^
-          ((e >>> 25) | (e << 7));
-        const ch = (e & f) ^ (~e & g);
-        const temp1 = (h + S1 + ch + k[i] + w[i]) | 0;
-        const S0 =
-          ((a >>> 2) | (a << 30)) ^
-          ((a >>> 13) | (a << 19)) ^
-          ((a >>> 22) | (a << 10));
-        const maj = (a & b) ^ (a & c) ^ (b & c);
-        const temp2 = (S0 + maj) | 0;
-
-        h = g;
-        g = f;
-        f = e;
-        e = (d + temp1) | 0;
-        d = c;
-        c = b;
-        b = a;
-        a = (temp1 + temp2) | 0;
-      }
-
-      hash[0] = (hash[0] + a) | 0;
-      hash[1] = (hash[1] + b) | 0;
-      hash[2] = (hash[2] + c) | 0;
-      hash[3] = (hash[3] + d) | 0;
-      hash[4] = (hash[4] + e) | 0;
-      hash[5] = (hash[5] + f) | 0;
-      hash[6] = (hash[6] + g) | 0;
-      hash[7] = (hash[7] + h) | 0;
-    }
-
-    return hash
-      .map((val) => ('00000000' + (val >>> 0).toString(16)).slice(-8))
-      .join('');
+  public cascadedPqc512(str: string): string {
+    return masterVaultInduk.cascadedPqc512(str);
   }
 
   /**
@@ -262,7 +179,7 @@ class QuranVaultEngine {
     // 4. Register & Hash all 49 Gharib Dictionary Entries
     const gharibHashes: string[] = [];
     Object.entries(GHARIB_DICTIONARY).forEach(([page, items]) => {
-      items.forEach((g: GharibItem) => {
+      ((items as any) || []).forEach((g: GharibItem) => {
         const payload = `${page}:${g.id}:${g.surahNumber}:${g.ayahNumber}:${g.word}:${g.caraBaca}`;
         const hash = this.sha256(payload);
         this.gharibHashRegister.set(g.id, hash);

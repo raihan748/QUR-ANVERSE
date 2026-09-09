@@ -61,6 +61,34 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Support HTTP Range requests for cached audio files (Offline audio seek & playback)
+  if (request.headers.has('range')) {
+    event.respondWith(
+      caches.match(request, { ignoreSearch: true }).then((cachedResponse) => {
+        if (!cachedResponse) return fetch(request);
+        return cachedResponse.arrayBuffer().then((buffer) => {
+          const rangeHeader = request.headers.get('range');
+          const bytesMatch = rangeHeader ? rangeHeader.match(/bytes=(\d+)-(\d+)?/) : null;
+          if (!bytesMatch) return cachedResponse;
+          const start = parseInt(bytesMatch[1], 10);
+          const end = bytesMatch[2] ? parseInt(bytesMatch[2], 10) : buffer.byteLength - 1;
+          const sliced = buffer.slice(start, end + 1);
+          return new Response(sliced, {
+            status: 206,
+            statusText: 'Partial Content',
+            headers: {
+              ...cachedResponse.headers,
+              'Content-Range': `bytes ${start}-${end}/${buffer.byteLength}`,
+              'Content-Length': `${sliced.byteLength}`,
+              'Content-Type': cachedResponse.headers.get('Content-Type') || 'audio/mpeg'
+            }
+          });
+        });
+      }).catch(() => fetch(request))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {

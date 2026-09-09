@@ -86,38 +86,72 @@ export function fastLevenshteinSimilarity(s1: string, s2: string): number {
 // 2. QURANIC ARABIC NORMALIZER & DEEP ACOUSTIC PHONETIC CANONICALIZER
 // ==============================================================================
 
+export const UTSMANI_TO_IMLAI_EQUIVALENCES: Record<string, string> = {
+  'الصلوة': 'الصلاة',
+  'صلوة': 'صلاة',
+  'الزكوة': 'الزكاة',
+  'زكوة': 'زكاة',
+  'الحيوة': 'الحياة',
+  'حيوة': 'حياة',
+  'النجوة': 'النجاة',
+  'الغدوة': 'الغداة',
+  'مشكوة': 'مشكاة',
+  'الربوا': 'الربا',
+  'ربوا': 'ربا',
+  'ابرهيم': 'ابراهيم',
+  'اسمعيل': 'اسماعيل',
+  'اسحق': 'اسحاق',
+  'هرون': 'هارون',
+  'سليمن': 'سليمان',
+  'سموت': 'سماوات',
+  'السموت': 'السماوات'
+};
+
 export function normalizeArabic(text: string): string {
   if (!text || typeof text !== 'string') return '';
-  return text
+  let processed = text
     // 1. Strip Zero-Width Characters, Non-Joiners, and Hidden Formatting
     .replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00AD\u200C\u200D]/g, '')
     // 2. Strip all Quranic Waqf / Stop / Sajdah / Rub El Hizb / Sub-vowel Marks
     .replace(/[\u06D6-\u06ED\u08D4-\u08E1\u08E3-\u08FF\u0610-\u061A\u06DC\u06DF\u06E0\u06E2\u06E3\u06E5\u06E6\u06E7\u06E8]/g, '')
-    // 3. Strip all Tashkeel / Harakat (Fatha, Damma, Kasra, Sukun, Shaddah, Tanween, Maddah)
-    .replace(/[\u064B-\u065F\u0670\u0653~]/g, '')
-    // 4. Strip Tatweel / Kashida
+    // 3. Acoustic & Orthographic Carrier Transform: Waw/Ya with Dagger Alif -> Alif
+    .replace(/[\u0648]\u0670/g, 'ا')
+    .replace(/[\u064A\u0649]\u0670/g, 'ا')
+    // 4. Transform Dagger Alif (Khanjariyah \u0670) to standard Alif (ا)
+    // Ensures Quranic "مَٰلِكِ" -> "مالك", "ٱلصِّرَٰطَ" -> "الصراط", "سَمَٰوَٰتٍ" -> "سماوات"
+    .replace(/\u0670/g, 'ا')
+    // 5. Strip all Tashkeel / Harakat (Fatha, Damma, Kasra, Sukun, Shaddah, Tanween, Maddah)
+    .replace(/[\u064B-\u065F\u0653~]/g, '')
+    // 6. Strip Tatweel / Kashida
     .replace(/\u0640/g, '')
-    // 5. Normalize Alif variants (إ, أ, آ, ٱ, ٲ, ٳ, ٵ, ا) -> ا
-    .replace(/[\u0622\u0623\u0625\u0671\u0672\u0673\u0675\u0670]/g, 'ا')
-    // 6. Normalize Taa Marbutah (ة, ۃ) -> ه
+    // 7. Normalize Alif variants (إ, أ, آ, ٱ, ٲ, ٳ, ٵ, ا) -> ا
+    .replace(/[\u0622\u0623\u0625\u0671\u0672\u0673\u0675]/g, 'ا')
+    // 8. Normalize Taa Marbutah (ة, ۃ) -> ه
     .replace(/[\u0629\u06C0\u06D5]/g, 'ه')
-    // 7. Normalize Yaa / Alif Maqsurah / Dagger Yaa (ى, ي, ۍ, ۑ, ے, etc.) -> ي
+    // 9. Normalize Yaa / Alif Maqsurah / Dagger Yaa (ى, ي, ۍ, ۑ, ے, etc.) -> ي
     .replace(/[\u0649\u064A\u06D0\u06D1\u06CC\u06D2\u06D3]/g, 'ي')
-    // 8. Normalize Waw forms (ؤ, ۄ, ۅ, و) -> و
+    // 10. Normalize Waw forms (ؤ, ۄ, ۅ, و) -> و
     .replace(/[\u0624\u06C4\u06C5\u06C6\u06C7\u06C8]/g, 'و')
-    // 9. Normalize Standalone / Carrier Hamzah (ء, ئ)
+    // 11. Normalize Standalone / Carrier Hamzah (ء, ئ)
     .replace(/[\u0621\u0626]/g, '')
-    // 10. Normalize Kaf / Gaf variations (ك, ک, ڪ, گ) -> ك
+    // 12. Normalize Kaf / Gaf variations (ك, ک, ڪ, گ) -> ك
     .replace(/[\u06A9\u06AA\u06AF]/g, 'ك')
-    // 11. Normalize Ha / Pe / Che variants
+    // 13. Normalize Ha / Pe / Che variants
     .replace(/[\u06BE\u06C1\u06C2\u06C3]/g, 'ه')
     .replace(/\u067E/g, 'ب')
     .replace(/\u0686/g, 'ج')
     .replace(/\u0698/g, 'ز')
-    // 12. Strip non-Arabic letters
+    // 14. Strip non-Arabic letters
     .replace(/[^\u0621-\u064A\s]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
+
+  // 15. Apply Uthmani to Modern Imla'i equivalence dictionary
+  if (UTSMANI_TO_IMLAI_EQUIVALENCES[processed]) {
+    processed = UTSMANI_TO_IMLAI_EQUIVALENCES[processed];
+  }
+
+  return processed;
 }
 
 /**
@@ -131,17 +165,30 @@ export function canonicalizeArabicPhonemes(text: string): string {
   return clean
     // 1. Unify all Alif / Hamzah / Wasl variants -> ا
     .replace(/[أإآٱٲٳٵءئؤ]/g, 'ا')
-    // 2. Acoustic sibilant merger (ص, ث -> س)
+    // 2. Unify internal long vowels / dagger alif omissions (e.g. رحمن <-> رحمان, ملك <-> مالك, الصرط <-> الصراط)
+    .replace(/رحمان/g, 'رحمن')
+    .replace(/مالك/g, 'ملك')
+    .replace(/صراط/g, 'صرط')
+    .replace(/ابراهيم/g, 'ابرهيم')
+    .replace(/اسماعيل/g, 'اسمعيل')
+    .replace(/اسحاق/g, 'اسحق')
+    .replace(/هارون/g, 'هرون')
+    .replace(/سليمان/g, 'سليمن')
+    .replace(/داوود/g, 'داود')
+    .replace(/سماوات/g, 'سموت')
+    // 3. Acoustic sibilant merger (ص, ث -> س)
     .replace(/[صث]/g, 'س')
-    // 3. Acoustic coronal / emphatic merger (ض, ظ, ذ -> د)
+    // 4. Acoustic coronal / emphatic merger (ض, ظ, ذ -> د)
     .replace(/[ضظذ]/g, 'د')
-    // 4. Acoustic dental stop merger (ط -> ت)
+    // 5. Acoustic dental stop merger (ط -> ت)
     .replace(/[ط]/g, 'ت')
-    // 5. Ta Marbutah & Ha merger (ة -> ه)
+    // 6. Acoustic uvular / velar stop merger (ق -> ك) - STT frequently transcribes Qaf as Kaf
+    .replace(/[ق]/g, 'ك')
+    // 7. Ta Marbutah & Ha merger (ة -> ه)
     .replace(/[ة]/g, 'ه')
-    // 6. Ya / Alif Maqsurah merger (ى -> ي)
+    // 8. Ya / Alif Maqsurah merger (ى -> ي)
     .replace(/[ى]/g, 'ي')
-    // 7. Strip repeated adjacent letters (e.g. ll -> l, dd -> d)
+    // 9. Strip repeated adjacent letters (e.g. ll -> l, dd -> d)
     .replace(/(.)\1+/g, '$1')
     .replace(/\s+/g, '')
     .trim();
@@ -149,15 +196,25 @@ export function canonicalizeArabicPhonemes(text: string): string {
 
 export function stripArabicPrefixes(word: string): string {
   let clean = normalizeArabic(word);
-  if (clean.length <= 2) return clean;
-
-  // Strip Alif-Lam (ال)
-  if (clean.startsWith('ال') && clean.length > 2) {
-    clean = clean.substring(2);
-  }
-  // Strip Waw / Fa / Ba / Lam / Kaf conjunctions (و, ف, ب, ل, ك)
-  if ((clean.startsWith('و') || clean.startsWith('ف') || clean.startsWith('ب') || clean.startsWith('ل') || clean.startsWith('ك')) && clean.length > 2) {
-    clean = clean.substring(1);
+  let changed = true;
+  // Iteratively strip composite proclitic prefixes (e.g., "وبالحق" -> "بالحق" -> "الحق" -> "حق")
+  while (changed && clean.length > 2) {
+    changed = false;
+    // Strip Alif-Lam (ال)
+    if (clean.startsWith('ال') && clean.length > 3) {
+      clean = clean.substring(2);
+      changed = true;
+      continue;
+    }
+    // Strip Waw / Fa / Ba / Lam / Kaf / Seen conjunctions (و, ف, ب, ل, ك, س)
+    if (
+      (clean.startsWith('و') || clean.startsWith('ف') || clean.startsWith('ب') || clean.startsWith('ل') || clean.startsWith('ك') || clean.startsWith('س')) &&
+      clean.length > 2
+    ) {
+      clean = clean.substring(1);
+      changed = true;
+      continue;
+    }
   }
   return clean;
 }
@@ -282,7 +339,7 @@ export function analyzeSpokenToken(raw: string): SpokenTokenAnalysis {
   const canon = canonicalizeArabicPhonemes(raw);
   const stem = stripArabicPrefixes(norm);
   const stemCanon = canonicalizeArabicPhonemes(stem);
-  const latin = normalizeLatinPhonetics(raw);
+  const latin = arabicToPhoneticLatin(raw) || normalizeLatinPhonetics(raw);
   return { raw, normalized: norm, canonical: canon, stemCanon, latin };
 }
 
@@ -353,16 +410,30 @@ export function isPrecompiledWordMatch(
     return true;
   }
 
-  // 2. Prefix stripped match (e.g., "wa-huwa" -> "huwa", "al-kitab" -> "kitab")
-  if (target.stemCanon && candidate.stemCanon && target.stemCanon === candidate.stemCanon) {
-    const targetHasWaw = target.normalized.startsWith('و');
-    const candHasWaw = candidate.normalized.startsWith('و');
-    if (targetHasWaw === candHasWaw) {
+  // 2. Direct or Consonant-Skeleton Latin Phonetic Match
+  if (target.latinPhonetic && candidate.latin) {
+    if (target.latinPhonetic === candidate.latin) {
+      return true;
+    }
+    const tSkel = target.latinPhonetic.replace(/[aeiou]/g, '');
+    const cSkel = candidate.latin.replace(/[aeiou]/g, '');
+    if (tSkel && cSkel && (tSkel === cSkel || fastLevenshteinSimilarity(tSkel, cSkel) >= 0.70)) {
       return true;
     }
   }
 
-  // 3.5. Substring inclusion for prefixed/suffixed words
+  // 3. Prefix & Stem Match (e.g., "wa-huwa" -> "huwa", "al-kitab" -> "kitab", "bil-haqq" -> "haqq")
+  if (target.stemCanon && candidate.stemCanon) {
+    if (
+      target.stemCanon === candidate.stemCanon ||
+      target.stemCanon === candidate.canonical ||
+      target.canonical === candidate.stemCanon
+    ) {
+      return true;
+    }
+  }
+
+  // 4. Substring inclusion for prefixed/suffixed words
   if (target.canonical.length >= 3 && candidate.canonical.length >= 3) {
     if (target.canonical.includes(candidate.canonical) || candidate.canonical.includes(target.canonical)) {
       if (Math.abs(target.canonical.length - candidate.canonical.length) <= 2) {
@@ -371,12 +442,12 @@ export function isPrecompiledWordMatch(
     }
   }
 
-  // 4. Short words (length <= 3): Strict to prevent false matching random background noise
-  if (target.charLength <= 3 || candidate.canonical.length <= 3) {
+  // 5. Short words (length <= 3): Guarded against random noise when both are Arabic canonical forms
+  if (candidate.canonical.length > 0 && (target.charLength <= 3 || candidate.canonical.length <= 3)) {
     const diff = Math.abs(target.charLength - candidate.canonical.length);
-    if (diff > 1) return false;
+    if (diff > 2) return false;
 
-    const shortThresh = sensitivity === 'ultra' ? 0.68 : sensitivity === 'high' ? 0.74 : 0.78;
+    const shortThresh = sensitivity === 'ultra' ? 0.64 : sensitivity === 'high' ? 0.68 : 0.72;
     return (
       fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= shortThresh ||
       (target.stemCanon && candidate.stemCanon && fastLevenshteinSimilarity(target.stemCanon, candidate.stemCanon) >= shortThresh) ||
@@ -384,9 +455,9 @@ export function isPrecompiledWordMatch(
     );
   }
 
-  // 5. Medium / Long Words (length >= 4)
-  const canonThresh = sensitivity === 'ultra' ? 0.62 : sensitivity === 'high' ? 0.66 : 0.70;
-  const latinThresh = sensitivity === 'ultra' ? 0.60 : sensitivity === 'high' ? 0.64 : 0.68;
+  // 6. Medium / Long Words (length >= 4)
+  const canonThresh = sensitivity === 'ultra' ? 0.58 : sensitivity === 'high' ? 0.62 : 0.66;
+  const latinThresh = sensitivity === 'ultra' ? 0.56 : sensitivity === 'high' ? 0.60 : 0.64;
 
   if (fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= canonThresh) {
     return true;
@@ -413,8 +484,8 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string, sensi
   const sCanon = canonicalizeArabicPhonemes(candidateSpoken);
   if (tCanon === sCanon) return true;
 
-  const tLatin = arabicToPhoneticLatin(targetArabic);
-  const sLatin = normalizeLatinPhonetics(candidateSpoken);
+  const tLatin = arabicToPhoneticLatin(targetArabic) || normalizeLatinPhonetics(targetArabic);
+  const sLatin = arabicToPhoneticLatin(candidateSpoken) || normalizeLatinPhonetics(candidateSpoken);
   if (tLatin === sLatin) return true;
 
   if (tCanon.length >= 3 && sCanon.length >= 3) {
@@ -423,8 +494,8 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string, sensi
     }
   }
 
-  const canonThresh = sensitivity === 'ultra' ? 0.60 : sensitivity === 'high' ? 0.68 : 0.75;
-  const latinThresh = sensitivity === 'ultra' ? 0.58 : sensitivity === 'high' ? 0.65 : 0.72;
+  const canonThresh = sensitivity === 'ultra' ? 0.58 : sensitivity === 'high' ? 0.64 : 0.70;
+  const latinThresh = sensitivity === 'ultra' ? 0.56 : sensitivity === 'high' ? 0.62 : 0.68;
 
   return fastLevenshteinSimilarity(tCanon, sCanon) >= canonThresh || fastLevenshteinSimilarity(tLatin, sLatin) >= latinThresh;
 }
@@ -1468,7 +1539,7 @@ export class ContinuousMurojaahTracker {
                 }
               }
 
-              if (!anyTokenMatched && (allTokens.length >= 2 || isFinal)) {
+              if (!anyTokenMatched && (isFinal || this.consecutiveMismatchCount >= 4)) {
                 const nextWord = expectedWords[this.currentWordIndex + 1]?.raw || '';
                 const prevWordRaw = prevWord ? prevWord.raw : '';
                 const isEnd = this.currentWordIndex === expectedWords.length - 1;
@@ -1509,8 +1580,8 @@ export class ContinuousMurojaahTracker {
               }
             }
 
-            // Error threshold: if isFinal is true (utterance finished) or sensitivity threshold met
-            const errorMismatchThreshold = isFinal ? 1 : (this.sensitivity === 'ultra' ? 1 : 2);
+            // Error threshold: if isFinal is true (utterance finished) or sustained frames
+            const errorMismatchThreshold = isFinal ? 1 : (this.sensitivity === 'ultra' ? 2 : 3);
             const isSpokenSubstantial = normSpoken.length >= 2 || lastSpoken.trim().length >= 2;
 
             if (
@@ -1519,10 +1590,10 @@ export class ContinuousMurojaahTracker {
               targetWord &&
               this.callbacks
             ) {
-              const similarity = fastLevenshteinSimilarity(targetWord.canonical, canonicalizeArabicPhonemes(lastSpoken));
-              const matchThresh = this.sensitivity === 'ultra' ? 0.62 : this.sensitivity === 'high' ? 0.66 : 0.70;
-              // Trigger error pause if spoken token falls below sensitivity match threshold
-              if (similarity < matchThresh) {
+              const spokenAnalysis = analyzeSpokenToken(lastSpoken);
+              const isMatch = isPrecompiledWordMatch(targetWord, spokenAnalysis, this.sensitivity);
+              // Trigger error pause only if spoken token truly does not match target word under Guided ASR
+              if (!isMatch) {
                 const nextWord = expectedWords[this.currentWordIndex + 1]?.raw || '';
                 const prevWordRaw = prevWord ? prevWord.raw : '';
                 const isEnd = this.currentWordIndex === expectedWords.length - 1;

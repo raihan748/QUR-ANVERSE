@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, X, Sparkles, BookOpen, Clock, Heart } from 'lucide-react';
+import { Volume2, VolumeX, X, Sparkles, BookOpen, Clock, Heart, Download } from 'lucide-react';
 import { PrayerTime } from '../../types';
 import { ADZAN_MARWAN_ALQASSAS_URL, audioPlayer } from '../../services/audioPlayerService';
 import { DOA_SETELAH_ADZAN } from '../../data/dzikirData';
@@ -79,6 +79,19 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Download Audio Adzan MP3 */}
+          <a
+            href={ADZAN_MARWAN_ALQASSAS_URL}
+            download="adzan-madinah-syekh-marwan-al-qassas.mp3"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-3 bg-emerald-950/80 hover:bg-emerald-900 border-2 border-[#F59E0B] rounded-2xl cursor-pointer text-[#F59E0B] flex items-center gap-2 text-xs font-bold transition-all shadow-[2px_2px_0px_0px_#000]"
+            title="Download Audio Adzan Madinah (17.5 MB)"
+          >
+            <Download className="w-5 h-5" />
+            <span className="hidden sm:inline">Unduh MP3</span>
+          </a>
+
           <button
             onClick={toggleAudio}
             className="p-3 bg-black/60 hover:bg-black border-2 border-[#F59E0B] rounded-2xl cursor-pointer text-[#F59E0B]"
@@ -112,7 +125,7 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
           </p>
           <div className="mt-3 inline-block px-4 py-1.5 bg-black/50 border border-amber-400/40 rounded-xl">
             <p className="text-xs text-amber-300 font-bold">
-              Muadzin: Syekh Muhammad Marwan Al-Qassas (الشيخ محمد مروان قصاص)
+              Muadzin: Syekh Muhammad Marwan Al-Qassas (الشيخ محمد مروan قصاص)
             </p>
             <p className="text-[11px] text-emerald-200">
               Masjid Nabawi, Madinah Al-Munawwarah 🇸🇦
@@ -128,14 +141,25 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
           </span>
         </div>
 
-        {/* Toggle Doa Setelah Adzan */}
-        <div className="pt-2">
+        {/* Toggle Doa Setelah Adzan & Quick Download Action */}
+        <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={() => setShowDoa(!showDoa)}
             className="px-5 py-2.5 bg-[#FFFDF7] text-black font-extrabold text-xs rounded-xl border-2 border-black neo-button cursor-pointer"
           >
             {showDoa ? 'Sembunyikan Doa' : '📖 Baca Doa Setelah Adzan'}
           </button>
+
+          <a
+            href={ADZAN_MARWAN_ALQASSAS_URL}
+            download="adzan-madinah-syekh-marwan-al-qassas.mp3"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-extrabold text-xs rounded-xl border-2 border-black neo-button cursor-pointer inline-flex items-center gap-1.5"
+          >
+            <Download className="w-4 h-4" />
+            <span>Unduh Audio Adzan (17.5 MB)</span>
+          </a>
         </div>
 
         {/* Doa Setelah Adzan Card */}

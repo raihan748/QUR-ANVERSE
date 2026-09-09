@@ -15,9 +15,11 @@ import {
   Navigation,
   Loader2,
   ChevronDown,
-  Check
+  Check,
+  Download
 } from 'lucide-react';
 import { PrayerTime } from '../../types';
+import { ADZAN_MARWAN_ALQASSAS_URL } from '../../services/audioPlayerService';
 import { 
   fetchLiveInternetPrayerTimes, 
   buildPrayerTimesList, 
@@ -31,7 +33,7 @@ import {
   LivePrayerApiResponse 
 } from '../../services/prayerTimeEngine';
 import { NeobrutalCard } from '../common/NeobrutalCard';
-import { FullscreenAdzan } from './FullscreenAdzan';
+import { adzanGlobalService } from '../../services/adzanGlobalService';
 import { DzikirCounter } from './DzikirCounter';
 import { DOA_SETELAH_ADZAN } from '../../data/dzikirData';
 import { prayerAttendance } from '../../services/prayerAttendanceService';
@@ -47,8 +49,6 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
   const [liveApiResponse, setLiveApiResponse] = useState<LivePrayerApiResponse | null>(null);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>(calculatePrayerTimes(new Date(), getSavedLocation()));
   const [countdownData, setCountdownData] = useState(getCountdownToNextPrayer(prayerTimes));
-  const [isFullscreenAdzanOpen, setIsFullscreenAdzanOpen] = useState(false);
-  const [adzanPrayerName, setAdzanPrayerName] = useState('Dzuhur');
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
   const [isGpsLoading, setIsGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
@@ -116,32 +116,20 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
         setCountdownData(countdown);
 
         // Trigger automatic fullscreen Adzan if seconds reach 0 AND auto-adzan is enabled
-        if (countdown.secondsRemaining === 0 && autoAdzanEnabled && !isFullscreenAdzanOpen) {
+        if (countdown.secondsRemaining === 0 && autoAdzanEnabled) {
           const prayerName = countdown.nextPrayer?.name || 'Shalat';
           const triggerKey = `${prayerName}_${new Date().toDateString()}_${new Date().getHours()}`;
           
           if (lastAdzanTriggeredRef.current !== triggerKey) {
             lastAdzanTriggeredRef.current = triggerKey;
-            setAdzanPrayerName(prayerName);
-            setIsFullscreenAdzanOpen(true);
-
-            // Send Web / Mobile Push Notification
-            if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-              try {
-                new Notification(`🕌 Waktu Shalat ${prayerName} Telah Tiba!`, {
-                  body: `Lantunan Adzan: Syekh Muhammad Marwan Al-Qassas (Muadzin Masjid Nabawi Madinah).`,
-                  icon: '/favicon.svg',
-                  badge: '/icon-192.svg'
-                });
-              } catch {}
-            }
+            adzanGlobalService.triggerManual(prayerName);
           }
         }
       }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [liveApiResponse, isFullscreenAdzanOpen, autoAdzanEnabled]);
+  }, [liveApiResponse, autoAdzanEnabled]);
 
   // Toggle Auto-Adzan & Request User Permission
   const handleToggleAutoAdzan = async () => {
@@ -173,9 +161,7 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
     }
 
     setAutoAdzanEnabled(nextState);
-    try {
-      localStorage.setItem('quranverse_auto_adzan_enabled_v1', String(nextState));
-    } catch {}
+    adzanGlobalService.setEnabled(nextState);
   };
 
   // Handle City Change
@@ -202,8 +188,7 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
   };
 
   const handleTestAdzan = (name: string) => {
-    setAdzanPrayerName(name);
-    setIsFullscreenAdzanOpen(true);
+    adzanGlobalService.triggerManual(name);
   };
 
   return (
@@ -239,13 +224,27 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
             </p>
           </div>
 
-          <button
-            onClick={() => handleTestAdzan(countdownData.nextPrayer?.name || 'Dzuhur')}
-            className="px-4 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl neo-button cursor-pointer font-black text-xs flex items-center gap-2 shrink-0 shadow-[2px_2px_0px_0px_#000]"
-          >
-            <Play className="w-4 h-4 fill-black" />
-            <span>Simulasi Adzan Layar Penuh</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <a
+              href={ADZAN_MARWAN_ALQASSAS_URL}
+              download="adzan-madinah-syekh-marwan-al-qassas.mp3"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2.5 bg-emerald-950/90 hover:bg-emerald-900 text-[#F59E0B] border-2 border-[#F59E0B] rounded-xl neo-button cursor-pointer font-black text-xs flex items-center gap-2 shrink-0 shadow-[2px_2px_0px_0px_#000]"
+              title="Download File Audio Adzan Madinah (17.5 MB)"
+            >
+              <Download className="w-4 h-4" />
+              <span>Unduh Audio Adzan</span>
+            </a>
+
+            <button
+              onClick={() => handleTestAdzan(countdownData.nextPrayer?.name || 'Dzuhur')}
+              className="px-4 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl neo-button cursor-pointer font-black text-xs flex items-center gap-2 shrink-0 shadow-[2px_2px_0px_0px_#000]"
+            >
+              <Play className="w-4 h-4 fill-black" />
+              <span>Simulasi Adzan Layar Penuh</span>
+            </button>
+          </div>
         </div>
 
         {/* Location Selector Bar */}
@@ -468,13 +467,6 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
 
       {/* 5. TASBIH DIGITAL & DZIKIR */}
       <DzikirCounter />
-
-      {/* 6. FULLSCREEN ADZAN MODAL */}
-      <FullscreenAdzan
-        isOpen={isFullscreenAdzanOpen}
-        onClose={() => setIsFullscreenAdzanOpen(false)}
-        prayerName={adzanPrayerName}
-      />
     </div>
   );
 };
