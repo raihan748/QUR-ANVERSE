@@ -51,6 +51,9 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({ isOpen, onClos
     if (outcome === 'accepted') {
       setIsInstalled(true);
       setDeferredPrompt(null);
+      try {
+        localStorage.setItem('qv_full_packet_active', 'true');
+      } catch {}
     }
   };
 
@@ -97,6 +100,10 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({ isOpen, onClos
             <div className="flex items-start gap-2.5 text-xs font-semibold text-gray-800">
               <CheckCircle2 className="w-4 h-4 text-[#0B4627] shrink-0 mt-0.5" />
               <span>Murojaah & Baca Al-Qur'an 100% Offline kapan saja.</span>
+            </div>
+            <div className="flex items-start gap-2.5 text-xs font-bold text-[#0B4627] bg-[#ECFDF5] p-2 rounded-lg border border-[#10B981]">
+              <CheckCircle2 className="w-4 h-4 text-[#0B4627] shrink-0 mt-0.5" />
+              <span>Full Packet Included: Seluruh 30 Juz & Audio langsung aktif otomatis tanpa perlu download terpisah.</span>
             </div>
           </div>
 
