@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Download, ShieldCheck, Languages } from 'lucide-react';
+import { Sparkles, Download, Languages } from 'lucide-react';
 import { UserProfile, NavigationTab } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -8,7 +8,6 @@ interface NavbarProps {
   activeTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
   onOpenInstallModal: () => void;
-  onOpenQuranVaultModal?: () => void;
   onOpenPrayerAttendanceModal?: () => void;
 }
 
@@ -17,7 +16,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   onSelectTab,
   onOpenInstallModal,
-  onOpenQuranVaultModal,
   onOpenPrayerAttendanceModal
 }) => {
   const { language, toggleLanguage, t, isRtl } = useLanguage();
@@ -66,18 +64,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <span>🕌</span>
               <span className="hidden sm:inline font-bold">Absen Sholat</span>
-            </button>
-          )}
-
-          {/* QURAN VAULT INTEGRITY BADGE */}
-          {onOpenQuranVaultModal && (
-            <button
-              onClick={onOpenQuranVaultModal}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#06331D] hover:bg-black text-[#10B981] border-2 border-[#10B981] rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop"
-              title="Quran Vault: Pengamanan Kriptografi & Anti-Deface Aktif"
-            >
-              <ShieldCheck className="w-4 h-4 text-[#10B981]" />
-              <span className="hidden md:inline font-mono text-[11px]">VAULT: LOCKED</span>
             </button>
           )}
 

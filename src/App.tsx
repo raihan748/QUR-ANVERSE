@@ -6,7 +6,6 @@ import { Navbar } from './components/common/Navbar';
 import { Sidebar } from './components/common/Sidebar';
 import { BottomNav } from './components/common/BottomNav';
 import { InstallPwaModal } from './components/common/InstallPwaModal';
-import { QuranVaultModal } from './components/security/QuranVaultModal';
 import { PrayerAttendanceModal } from './components/adzan/PrayerAttendanceModal';
 import { quranVault } from './services/quranVaultService';
 import { masterVaultInduk } from './services/masterVaultIndukService';
@@ -32,7 +31,6 @@ export function App() {
   const [activeTab, setActiveTab] = useState<NavigationTab>('murojaah_ai');
   const [userProfile, setUserProfile] = useState<UserProfile>(getLocalProfile());
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
-  const [isQuranVaultModalOpen, setIsQuranVaultModalOpen] = useState(false);
   const [isPrayerAttendanceModalOpen, setIsPrayerAttendanceModalOpen] = useState(false);
   const [duePrayerForAttendance, setDuePrayerForAttendance] = useState<PrayerTime | null>(null);
   const [dueMinutesPassed, setDueMinutesPassed] = useState<number>(30);
@@ -120,7 +118,6 @@ export function App() {
         activeTab={activeTab}
         onSelectTab={handleSelectTabWithScroll}
         onOpenInstallModal={() => setIsInstallModalOpen(true)}
-        onOpenQuranVaultModal={() => setIsQuranVaultModalOpen(true)}
         onOpenPrayerAttendanceModal={handleOpenManualAttendance}
       />
 
@@ -216,12 +213,6 @@ export function App() {
       <InstallPwaModal
         isOpen={isInstallModalOpen}
         onClose={() => setIsInstallModalOpen(false)}
-      />
-
-      {/* Quran Vault Security & Anti-Deface Center */}
-      <QuranVaultModal
-        isOpen={isQuranVaultModalOpen}
-        onClose={() => setIsQuranVaultModalOpen(false)}
       />
 
       {/* Jurnal & Absensi Sholat 5 Waktu (30-Min Post-Adhan Auto-Popup & Manual) */}
