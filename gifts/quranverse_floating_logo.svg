@@ -1,0 +1,318 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#0F5A34"/>
+      <stop offset="45%" stop-color="#063820"/>
+      <stop offset="85%" stop-color="#021E11"/>
+      <stop offset="100%" stop-color="#01130A"/>
+    </radialGradient>
+
+    <radialGradient id="goldAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#10B981" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="50%" stop-color="#0B4627"/>
+      <stop offset="100%" stop-color="#042F1A"/>
+    </linearGradient>
+
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <filter id="hardShadow" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="8" dy="8" stdDeviation="0" flood-color="#000000" flood-opacity="1"/>
+    </filter>
+
+    <filter id="goldGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feComponentTransfer in="blur" result="boost">
+        <feFuncA type="linear" slope="1.8"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode in="boost"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Animations via CSS -->
+    <style>
+      @keyframes floatUpAndDown {
+        0%, 100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-28px);
+        }
+      }
+
+      @keyframes shadowPulse {
+        0%, 100% {
+          transform: scale(1);
+          opacity: 0.7;
+        }
+        50% {
+          transform: scale(0.82);
+          opacity: 0.35;
+        }
+      }
+
+      @keyframes rotateClockwise {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      @keyframes rotateCounterClockwise {
+        0% { transform: rotate(360deg); }
+        100% { transform: rotate(0deg); }
+      }
+
+      @keyframes pulseGlow {
+        0%, 100% {
+          opacity: 0.35;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.75;
+          transform: scale(1.08);
+        }
+      }
+
+      @keyframes particleFloat1 {
+        0% { transform: translate(0, 0); opacity: 0; }
+        50% { opacity: 0.9; }
+        100% { transform: translate(-30px, -90px); opacity: 0; }
+      }
+
+      @keyframes particleFloat2 {
+        0% { transform: translate(0, 0); opacity: 0; }
+        50% { opacity: 0.85; }
+        100% { transform: translate(40px, -110px); opacity: 0; }
+      }
+
+      @keyframes starTwinkle {
+        0%, 100% { opacity: 0.3; transform: scale(0.85); }
+        50% { opacity: 1; transform: scale(1.2); }
+      }
+
+      .floating-logo-group {
+        animation: floatUpAndDown 4.5s ease-in-out infinite;
+        transform-origin: 960px 480px;
+      }
+
+      .shadow-pod {
+        animation: shadowPulse 4.5s ease-in-out infinite;
+        transform-origin: 960px 780px;
+      }
+
+      .rotating-mandala-outer {
+        animation: rotateClockwise 60s linear infinite;
+        transform-origin: 960px 480px;
+      }
+
+      .rotating-mandala-inner {
+        animation: rotateCounterClockwise 45s linear infinite;
+        transform-origin: 960px 480px;
+      }
+
+      .aura-pulse {
+        animation: pulseGlow 4s ease-in-out infinite;
+        transform-origin: 960px 480px;
+      }
+
+      .twinkle-star {
+        animation: starTwinkle 3s ease-in-out infinite;
+      }
+    </style>
+  </defs>
+
+  <!-- 1. LUXURIOUS DEEP EMERALD BACKGROUND -->
+  <rect width="1920" height="1080" fill="url(#bgGlow)"/>
+
+  <!-- Islamic Geometric Background Grid Pattern -->
+  <g opacity="0.07" stroke="#10B981" stroke-width="1.5" fill="none">
+    <!-- Repetitive Hexagonal / Octagonal Star Lattice -->
+    <pattern id="islamicGrid" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 120 60 L 60 120 L 0 60 Z"/>
+      <circle cx="60" cy="60" r="42"/>
+      <rect x="25" y="25" width="70" height="70"/>
+      <rect x="25" y="25" width="70" height="70" transform="rotate(45 60 60)"/>
+    </pattern>
+    <rect width="1920" height="1080" fill="url(#islamicGrid)"/>
+  </g>
+
+  <!-- 2. FOUR LUXURIOUS ORNAMENTAL ISLAMIC CORNERS -->
+  <g fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity="0.85">
+    <!-- Top-Left Corner -->
+    <g transform="translate(60, 60)">
+      <path d="M 0 120 L 0 0 L 120 0"/>
+      <path d="M 12 100 L 12 12 L 100 12" stroke-width="2"/>
+      <circle cx="28" cy="28" r="8" fill="#F59E0B"/>
+      <!-- Arabesque floral arc -->
+      <path d="M 0 50 Q 50 50 50 0" stroke-width="2.5"/>
+      <path d="M 0 85 Q 85 85 85 0" stroke-width="1.5" stroke-dasharray="4 4"/>
+    </g>
+
+    <!-- Top-Right Corner -->
+    <g transform="translate(1860, 60) scale(-1, 1)">
+      <path d="M 0 120 L 0 0 L 120 0"/>
+      <path d="M 12 100 L 12 12 L 100 12" stroke-width="2"/>
+      <circle cx="28" cy="28" r="8" fill="#F59E0B"/>
+      <path d="M 0 50 Q 50 50 50 0" stroke-width="2.5"/>
+      <path d="M 0 85 Q 85 85 85 0" stroke-width="1.5" stroke-dasharray="4 4"/>
+    </g>
+
+    <!-- Bottom-Left Corner -->
+    <g transform="translate(60, 1020) scale(1, -1)">
+      <path d="M 0 120 L 0 0 L 120 0"/>
+      <path d="M 12 100 L 12 12 L 100 12" stroke-width="2"/>
+      <circle cx="28" cy="28" r="8" fill="#F59E0B"/>
+      <path d="M 0 50 Q 50 50 50 0" stroke-width="2.5"/>
+      <path d="M 0 85 Q 85 85 85 0" stroke-width="1.5" stroke-dasharray="4 4"/>
+    </g>
+
+    <!-- Bottom-Right Corner -->
+    <g transform="translate(1860, 1020) scale(-1, -1)">
+      <path d="M 0 120 L 0 0 L 120 0"/>
+      <path d="M 12 100 L 12 12 L 100 12" stroke-width="2"/>
+      <circle cx="28" cy="28" r="8" fill="#F59E0B"/>
+      <path d="M 0 50 Q 50 50 50 0" stroke-width="2.5"/>
+      <path d="M 0 85 Q 85 85 85 0" stroke-width="1.5" stroke-dasharray="4 4"/>
+    </g>
+  </g>
+
+  <!-- 3. ROTATING SACRED GEOMETRIC MANDALAS (CENTRAL ORNAMENTS) -->
+  <!-- Outer Aura Glow -->
+  <circle cx="960" cy="480" r="440" fill="url(#goldAura)" class="aura-pulse"/>
+
+  <!-- Outer Rotating Islamic Geometry Ring -->
+  <g class="rotating-mandala-outer" opacity="0.35" stroke="#F59E0B" fill="none">
+    <circle cx="960" cy="480" r="400" stroke-width="3" stroke-dasharray="8 12"/>
+    <circle cx="960" cy="480" r="375" stroke-width="1.5"/>
+    <!-- 8-point stars repeated around circle -->
+    <g transform="translate(960, 480)">
+      <rect x="-350" y="-350" width="700" height="700" rx="40" stroke-width="2"/>
+      <rect x="-350" y="-350" width="700" height="700" rx="40" transform="rotate(45)" stroke-width="2"/>
+      <rect x="-350" y="-350" width="700" height="700" rx="40" transform="rotate(22.5)" stroke-width="1" stroke-dasharray="5 5"/>
+      <rect x="-350" y="-350" width="700" height="700" rx="40" transform="rotate(67.5)" stroke-width="1" stroke-dasharray="5 5"/>
+    </g>
+  </g>
+
+  <!-- Inner Counter-Rotating Islamic Geometry Ring -->
+  <g class="rotating-mandala-inner" opacity="0.4" stroke="#10B981" fill="none">
+    <circle cx="960" cy="480" r="300" stroke-width="2.5"/>
+    <circle cx="960" cy="480" r="285" stroke-width="1" stroke-dasharray="6 8"/>
+    <g transform="translate(960, 480)">
+      <polygon points="0,-270 190,-190 270,0 190,190 0,270 -190,190 -270,0 -190,-190" stroke-width="2"/>
+      <polygon points="0,-270 190,-190 270,0 190,190 0,270 -190,190 -270,0 -190,-190" transform="rotate(22.5)" stroke-width="1.5" stroke="#F59E0B"/>
+    </g>
+  </g>
+
+  <!-- 4. FLOATING SPARKS & STARS PARTICLES -->
+  <g fill="#FDE68A" opacity="0.8">
+    <polygon points="340,240 345,252 357,257 345,262 340,274 335,262 323,257 335,252" class="twinkle-star"/>
+    <polygon points="1580,280 1585,292 1597,297 1585,302 1580,314 1575,302 1563,297 1575,292" class="twinkle-star" style="animation-delay: 1.2s;"/>
+    <polygon points="420,720 424,730 434,734 424,738 420,748 416,738 406,734 416,730" class="twinkle-star" style="animation-delay: 0.6s;"/>
+    <polygon points="1510,750 1515,762 1527,767 1515,772 1510,784 1505,772 1493,767 1505,762" class="twinkle-star" style="animation-delay: 1.8s;"/>
+    <circle cx="580" cy="380" r="3" fill="#10B981" class="twinkle-star" style="animation-delay: 0.8s;"/>
+    <circle cx="1380" cy="360" r="3.5" fill="#F59E0B" class="twinkle-star" style="animation-delay: 1.4s;"/>
+    <circle cx="680" cy="620" r="2.5" fill="#FDE68A" class="twinkle-star" style="animation-delay: 2.1s;"/>
+    <circle cx="1260" cy="630" r="3" fill="#10B981" class="twinkle-star" style="animation-delay: 0.4s;"/>
+  </g>
+
+  <!-- 5. FLOATING SHADOW BENEATH LOGO -->
+  <ellipse cx="960" cy="785" rx="260" ry="32" fill="#000000" class="shadow-pod" filter="url(#softGlow)"/>
+
+  <!-- 6. FLOATING LOGO MAIN GROUP -->
+  <g class="floating-logo-group">
+    <!-- Ornate Golden/Emerald Shield Container (Neobrutalism) -->
+    <g transform="translate(960, 470)">
+      <!-- Hard Shadow Behind Shield -->
+      <rect x="-240" y="-240" width="480" height="480" rx="90" fill="#000000" transform="translate(14, 14)"/>
+
+      <!-- Main Shield Card in Deep Royal Emerald -->
+      <rect x="-240" y="-240" width="480" height="480" rx="90" fill="#063820" stroke="#000000" stroke-width="14"/>
+
+      <!-- Gold Metallic Inner Border -->
+      <rect x="-220" y="-220" width="440" height="440" rx="76" fill="none" stroke="url(#goldGrad)" stroke-width="8" stroke-dasharray="16 12"/>
+
+      <!-- Inner Glow Ring -->
+      <rect x="-204" y="-204" width="408" height="408" rx="64" fill="none" stroke="#10B981" stroke-width="2.5" opacity="0.6"/>
+
+      <!-- Islamic 8-Point Geometric Star Watermark Inside Shield -->
+      <g fill="#F59E0B" opacity="0.16">
+        <rect x="-140" y="-140" width="280" height="280" rx="28"/>
+        <rect x="-140" y="-140" width="280" height="280" rx="28" transform="rotate(45)"/>
+      </g>
+
+      <!-- Holy Mushaf / Open Qur'an Emblem -->
+      <g transform="translate(0, -20)">
+        <!-- Hard Neobrutal Black Shadow -->
+        <path d="M -160 30 C -100 5, -25 5, 0 32 C 25 5, 100 5, 160 30 L 160 145 C 100 120, 25 120, 0 150 C -25 120, -100 120, -160 145 Z" fill="#000000" transform="translate(10, 10)"/>
+
+        <!-- Left Page (Ivory White #FFFDF7) -->
+        <path d="M -160 30 C -100 5, -25 5, 0 32 L 0 150 C -25 120, -100 120, -160 145 Z" fill="#FFFDF7" stroke="#000000" stroke-width="9"/>
+
+        <!-- Right Page (Amber Gold #F59E0B) -->
+        <path d="M 0 32 C 25 5, 100 5, 160 30 L 160 145 C 100 120, 25 120, 0 150 Z" fill="#F59E0B" stroke="#000000" stroke-width="9"/>
+
+        <!-- Center Crimson Ribbon Bookmark -->
+        <path d="M 0 32 L 0 178 L 13 160 L 26 178 L 26 36" fill="#EF4444" stroke="#000000" stroke-width="6"/>
+
+        <!-- Left Page Verse Lines -->
+        <line x1="-135" y1="62" x2="-25" y2="62" stroke="#111827" stroke-width="5.5" stroke-linecap="round"/>
+        <line x1="-135" y1="88" x2="-25" y2="88" stroke="#111827" stroke-width="5.5" stroke-linecap="round"/>
+        <line x1="-135" y1="114" x2="-45" y2="114" stroke="#111827" stroke-width="5.5" stroke-linecap="round"/>
+
+        <!-- Right Page Verse Lines -->
+        <line x1="25" y1="62" x2="135" y2="62" stroke="#111827" stroke-width="5.5" stroke-linecap="round"/>
+        <line x1="25" y1="88" x2="135" y2="88" stroke="#111827" stroke-width="5.5" stroke-linecap="round"/>
+        <line x1="45" y1="114" x2="135" y2="114" stroke="#111827" stroke-width="5.5" stroke-linecap="round"/>
+
+        <!-- Glowing Emerald AI Neural Orb On Top -->
+        <g transform="translate(0, -45)">
+          <circle cx="0" cy="0" r="38" fill="#10B981" stroke="#000000" stroke-width="8" filter="url(#goldGlow)"/>
+          <!-- Sound / Makhraj Waveform in Center -->
+          <path d="M -16 0 L -10 -11 L -5 11 L 0 -16 L 5 16 L 10 -11 L 16 0" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </g>
+      </g>
+
+      <!-- Typography: QURANVERSE (Bold Neobrutal Display Font) -->
+      <g transform="translate(0, 180)">
+        <!-- Black Drop Stroke -->
+        <text x="0" y="0" font-family="'Plus Jakarta Sans', 'Outfit', sans-serif" font-weight="900" font-size="46" fill="#F59E0B" text-anchor="middle" stroke="#000000" stroke-width="9" letter-spacing="4">
+          QURANVERSE
+        </text>
+        <text x="0" y="0" font-family="'Plus Jakarta Sans', 'Outfit', sans-serif" font-weight="900" font-size="46" fill="#F59E0B" text-anchor="middle" letter-spacing="4">
+          QURANVERSE
+        </text>
+      </g>
+    </g>
+  </g>
+
+  <!-- 7. PRESENTATION SLOGAN & METADATA FOOTER (ELEGANT PRESENTATION READY) -->
+  <g transform="translate(960, 940)">
+    <!-- Pill Badge: AI Guru Ngaji Pribadi -->
+    <rect x="-240" y="-35" width="480" height="54" rx="27" fill="#063820" stroke="#F59E0B" stroke-width="3" filter="url(#hardShadow)"/>
+    <text x="0" y="1" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="20" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">
+      AI GURU NGAJI &amp; MUROJA'AH REAL-TIME
+    </text>
+
+    <!-- Subtitle: Standar Kemenag RI & Rasm Utsmani -->
+    <text x="0" y="55" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="14" fill="#A7F3D0" text-anchor="middle" letter-spacing="3" opacity="0.9">
+      STANDAR KEMENAG RI • 30 JUZ RASM UTSMANI • 100% BEBAS API KEY
+    </text>
+  </g>
+</svg>
