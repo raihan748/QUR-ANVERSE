@@ -7,7 +7,8 @@ export type NavigationTab =
   | 'prayer' 
   | 'dashboard' 
   | 'download'
-  | 'asbabun_nuzul';
+  | 'asbabun_nuzul'
+  | 'dzikir';
 
 export interface HalaqahParticipant {
   id: string;

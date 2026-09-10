@@ -67,6 +67,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
+          {/* AL-MATSURAT QUICK ACCESS BUTTON */}
+          <button
+            onClick={() => onSelectTab('dzikir')}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop border-2 border-black ${
+              activeTab === 'dzikir'
+                ? 'bg-[#F59E0B] text-black'
+                : 'bg-[#06331D] hover:bg-emerald-900 text-emerald-200 border-emerald-500/80'
+            }`}
+            title="Dzikir Al-Ma'tsurat Pagi & Petang"
+          >
+            <span>📿</span>
+            <span className="hidden sm:inline font-bold">
+              {language === 'ar' ? 'المأثورات' : 'Al-Ma\'tsurat'}
+            </span>
+          </button>
+
           {/* BILINGUAL LANGUAGE SWITCHER (ID <-> AR - KUWAIT) */}
           <button
             onClick={toggleLanguage}

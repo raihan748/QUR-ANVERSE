@@ -24,6 +24,7 @@ const PrayerTimesBanner = lazy(() => import('./components/adzan/PrayerTimesBanne
 const DashboardView = lazy(() => import('./components/dashboard/DashboardView').then(m => ({ default: m.DashboardView })));
 const DownloadCenter = lazy(() => import('./components/offline/DownloadCenter').then(m => ({ default: m.DownloadCenter })));
 const AsbabunNuzulView = lazy(() => import('./components/asbabun_nuzul/AsbabunNuzulView').then(m => ({ default: m.AsbabunNuzulView })));
+const AlMatsuratView = lazy(() => import('./components/dzikir/AlMatsuratView').then(m => ({ default: m.AlMatsuratView })));
 
 import { FullscreenAdzan } from './components/adzan/FullscreenAdzan';
 import { adzanGlobalService, GlobalAdzanTriggerPayload } from './services/adzanGlobalService';
@@ -196,6 +197,8 @@ export function App() {
                     onNavigateToMurojaah={(surah, ayah) => handleSelectTabWithScroll('murojaah_ai')}
                   />
                 )}
+
+                {activeTab === 'dzikir' && <AlMatsuratView />}
               </div>
             </Suspense>
           </ErrorBoundary>

@@ -35,6 +35,8 @@ export const translations = {
     nav_dashboardSub: 'Analisis & Progres',
     nav_download: 'Download Offline',
     nav_downloadSub: '100% Bebas Kuota',
+    nav_dzikir: 'Dzikir Al-Ma\'tsurat',
+    nav_dzikirSub: 'Pagi & Petang (Hasan Al-Banna)',
 
     // Hero Section
     heroTitle: 'AI Guru Ngaji Interaktif untuk',
@@ -122,6 +124,8 @@ export const translations = {
     nav_dashboardSub: 'تحليل الأداء ونقاط التثبيت',
     nav_download: 'التحميل دون إنترنت',
     nav_downloadSub: 'استخدام كامل بدون شبكة ١٠٠٪',
+    nav_dzikir: 'أذكار المأثورات',
+    nav_dzikirSub: 'أذكار الصباح والمساء (حسن البنا)',
 
     // Hero Section
     heroTitle: 'المعلم القرآني الذكي التفاعلي لـ',

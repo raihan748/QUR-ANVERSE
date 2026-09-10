@@ -12,7 +12,8 @@ import {
   Sparkles,
   Zap,
   Cpu,
-  ScrollText
+  ScrollText,
+  SunMoon
 } from 'lucide-react';
 import { NavigationTab, PrayerTime } from '../../types';
 import { NeobrutalCard } from './NeobrutalCard';
@@ -84,6 +85,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: Compass,
       badge: language === 'ar' ? 'أذان تلقائي' : 'Auto Adzan',
       color: 'bg-[#059669]'
+    },
+    {
+      id: 'dzikir' as NavigationTab,
+      label: t.nav_dzikir,
+      sublabel: t.nav_dzikirSub,
+      icon: SunMoon,
+      badge: language === 'ar' ? 'صوت + تسبيح' : 'Audio + Tasbih',
+      color: 'bg-[#0B4627]',
+      isPrimary: true
     },
     {
       id: 'dashboard' as NavigationTab,
