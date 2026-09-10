@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Sun, 
   Moon, 
@@ -134,6 +134,188 @@ export const AlMatsuratView: React.FC = () => {
   const progressPercent = filteredItems.length > 0 
     ? Math.round((completedCount / filteredItems.length) * 100) 
     : 0;
+
+  // 7. Calculate timeline for full audio synchronization
+  const timelineMap = useMemo(() => {
+    const totalDuration = audioState.duration > 0
+      ? audioState.duration
+      : (selectedTime === 'morning' ? 511.88 : 1508.38);
+
+    const weights = filteredItems.map((item) => {
+      const words = item.arabic.trim().split(/\s+/).length;
+      const effectiveRepeats = item.targetCount > 10 ? 3 : item.targetCount;
+      return words * effectiveRepeats;
+    });
+
+    const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+
+    let currentSec = 0;
+    return filteredItems.map((item, idx) => {
+      const itemDuration = (weights[idx] / totalWeight) * totalDuration;
+      const start = currentSec;
+      const end = currentSec + itemDuration;
+      currentSec = end;
+      return {
+        id: item.id,
+        start,
+        end,
+        duration: itemDuration,
+        effectiveRepeats: item.targetCount > 10 ? 3 : item.targetCount
+      };
+    });
+  }, [filteredItems, audioState.duration, selectedTime]);
+
+  // 8. Determine active card ID and active word progress
+  const activeSync = useMemo(() => {
+    // If not playing and at 0, no active recitation
+    if (!audioState.isPlaying && audioState.currentTime === 0) {
+      return { activeItemId: null, progressInItem: 0, effectiveRepeats: 1 };
+    }
+
+    if (audioState.playbackType === 'item' && audioState.activeItemId) {
+      const dur = audioState.duration || 1;
+      const progress = Math.min(1, Math.max(0, audioState.currentTime / dur));
+      return {
+        activeItemId: audioState.activeItemId,
+        progressInItem: progress,
+        effectiveRepeats: 1
+      };
+    }
+
+    if (audioState.playbackType === 'full') {
+      const curr = audioState.currentTime;
+      const activeEntry = timelineMap.find((entry) => curr >= entry.start && curr < entry.end);
+      if (activeEntry) {
+        const itemProg = Math.min(1, Math.max(0, (curr - activeEntry.start) / (activeEntry.duration || 1)));
+        return {
+          activeItemId: activeEntry.id,
+          progressInItem: itemProg,
+          effectiveRepeats: activeEntry.effectiveRepeats
+        };
+      }
+      if (curr >= (timelineMap[timelineMap.length - 1]?.end || 0) && timelineMap.length > 0) {
+        return {
+          activeItemId: timelineMap[timelineMap.length - 1].id,
+          progressInItem: 1,
+          effectiveRepeats: 1
+        };
+      }
+    }
+
+    return { activeItemId: null, progressInItem: 0, effectiveRepeats: 1 };
+  }, [audioState, timelineMap]);
+
+  // 9. Auto-scroll to active card during continuous recitation
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const lastScrolledItemId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (audioState.playbackType === 'full' && audioState.isPlaying && activeSync.activeItemId) {
+      if (lastScrolledItemId.current !== activeSync.activeItemId) {
+        lastScrolledItemId.current = activeSync.activeItemId;
+        const targetEl = cardRefs.current[activeSync.activeItemId];
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+  }, [activeSync.activeItemId, audioState.playbackType, audioState.isPlaying]);
+
+  // 10. Helper to render Arabic text with word-by-word underline
+  const renderUnderlinedArabic = (text: string, isCardActive: boolean) => {
+    const tokens = text.split(/(\s+)/);
+    const actualWordsCount = tokens.filter((t) => t.trim().length > 0).length;
+
+    if (!isCardActive || actualWordsCount === 0 || !audioState.isPlaying) {
+      return text;
+    }
+
+    const repProgress = (activeSync.progressInItem * activeSync.effectiveRepeats) % 1;
+    const currentActiveWordIdx = Math.min(
+      actualWordsCount - 1,
+      Math.floor(repProgress * actualWordsCount)
+    );
+
+    let wordCounter = 0;
+    return tokens.map((token, index) => {
+      if (token.trim().length === 0) {
+        return <React.Fragment key={index}>{token}</React.Fragment>;
+      }
+      const isWordActive = wordCounter === currentActiveWordIdx;
+      wordCounter++;
+
+      return (
+        <span
+          key={index}
+          className={`transition-all duration-150 inline-block ${
+            isWordActive
+              ? 'underline decoration-[#0B4627] decoration-4 underline-offset-8 font-black text-[#06331D] bg-[#FDE68A] rounded px-1.5 shadow-xs scale-105'
+              : ''
+          }`}
+          style={
+            isWordActive
+              ? {
+                  textDecorationLine: 'underline',
+                  textDecorationColor: '#0B4627',
+                  textDecorationThickness: '4px',
+                  textUnderlineOffset: '8px'
+                }
+              : undefined
+          }
+        >
+          {token}
+        </span>
+      );
+    });
+  };
+
+  // 11. Helper to render Latin transliteration with word-by-word underline
+  const renderUnderlinedLatin = (text: string, isCardActive: boolean) => {
+    const tokens = text.split(/(\s+)/);
+    const actualWordsCount = tokens.filter((t) => t.trim().length > 0).length;
+
+    if (!isCardActive || actualWordsCount === 0 || !audioState.isPlaying) {
+      return text;
+    }
+
+    const repProgress = (activeSync.progressInItem * activeSync.effectiveRepeats) % 1;
+    const currentActiveWordIdx = Math.min(
+      actualWordsCount - 1,
+      Math.floor(repProgress * actualWordsCount)
+    );
+
+    let wordCounter = 0;
+    return tokens.map((token, index) => {
+      if (token.trim().length === 0) {
+        return <React.Fragment key={index}>{token}</React.Fragment>;
+      }
+      const isWordActive = wordCounter === currentActiveWordIdx;
+      wordCounter++;
+
+      return (
+        <span
+          key={index}
+          className={`transition-all duration-150 inline-block ${
+            isWordActive
+              ? 'underline decoration-[#D97706] decoration-2 underline-offset-4 font-bold text-amber-950 bg-amber-200/90 rounded px-1'
+              : ''
+          }`}
+          style={
+            isWordActive
+              ? {
+                  textDecorationLine: 'underline',
+                  textDecorationColor: '#D97706',
+                  textDecorationThickness: '2px',
+                  textUnderlineOffset: '4px'
+                }
+              : undefined
+          }
+        >
+          {token}
+        </span>
+      );
+    });
+  };
 
   // Tasbih increment handler
   const handleIncrement = (item: MatsuratItem) => {
@@ -341,7 +523,7 @@ export const AlMatsuratView: React.FC = () => {
               )}
             </div>
             <p className="text-xs text-emerald-200 truncate">
-              Qari: {MATSURAT_META.fullAudioMorning.reciter} • Audio Otomatis Berganti Sesuai Waktu
+              Qari: {MATSURAT_META.fullAudioMorning.reciter} • Sinkronisasi Kata & Underline Aktif ✨
             </p>
           </div>
         </div>
@@ -475,18 +657,28 @@ export const AlMatsuratView: React.FC = () => {
           // Per-item audio
           const itemAudio = (!isMorning && item.audioUrlEvening) ? item.audioUrlEvening : item.audioUrl;
           const isPlayingThisItem = audioState.playbackType === 'item' && audioState.activeItemId === item.id && audioState.isPlaying;
+          const isCardActive = activeSync.activeItemId === item.id && (audioState.isPlaying || audioState.currentTime > 0);
 
           return (
             <div
               key={item.id}
-              className={`rounded-2xl border-3 border-black transition-all bg-white shadow-[4px_4px_0px_0px_#000] overflow-hidden ${
-                isDone ? 'ring-2 ring-emerald-500 bg-emerald-50/40' : ''
+              ref={(el) => { cardRefs.current[item.id] = el; }}
+              className={`rounded-2xl border-3 transition-all bg-white overflow-hidden ${
+                isCardActive
+                  ? 'border-[#0B4627] ring-4 ring-[#10B981]/40 shadow-[6px_6px_0px_0px_#0B4627] bg-[#FBFDF9]'
+                  : isDone
+                  ? 'border-black ring-2 ring-emerald-500 bg-emerald-50/40 shadow-[4px_4px_0px_0px_#000]'
+                  : 'border-black shadow-[4px_4px_0px_0px_#000]'
               }`}
             >
               {/* Card Header */}
-              <div className="px-4 py-3 bg-[#FFFDF7] border-b-2 border-black flex flex-wrap items-center justify-between gap-2">
+              <div className={`px-4 py-3 border-b-2 border-black flex flex-wrap items-center justify-between gap-2 transition-colors ${
+                isCardActive ? 'bg-emerald-50/80' : 'bg-[#FFFDF7]'
+              }`}>
                 <div className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-[#0B4627] text-white border border-black flex items-center justify-center font-black text-xs">
+                  <span className={`w-7 h-7 rounded-lg border border-black flex items-center justify-center font-black text-xs text-white ${
+                    isCardActive ? 'bg-[#10B981]' : 'bg-[#0B4627]'
+                  }`}>
                     {index + 1}
                   </span>
                   <h2 className="font-extrabold text-sm sm:text-base text-gray-900">
@@ -495,6 +687,12 @@ export const AlMatsuratView: React.FC = () => {
                   {item.variant === 'kubra' && (
                     <span className="text-[10px] font-extrabold px-2 py-0.5 bg-purple-100 text-purple-900 border border-purple-400 rounded-md">
                       Khusus Kubra
+                    </span>
+                  )}
+                  {isCardActive && audioState.isPlaying && (
+                    <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0B4627] text-white text-[11px] font-black animate-pulse shadow-xs">
+                      <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
+                      <span>🎙️ Sedang Dibaca Qari</span>
                     </span>
                   )}
                 </div>
@@ -534,22 +732,22 @@ export const AlMatsuratView: React.FC = () => {
 
               {/* Card Body */}
               <div className="p-4 sm:p-5 space-y-4">
-                {/* Arabic Text */}
+                {/* Arabic Text with Synchronized Underline */}
                 <div 
                   className="font-quran leading-loose text-right text-gray-900 tracking-wide select-text py-2"
-                  style={{ fontSize: `${fontSize}px`, lineHeight: `${fontSize * 1.8}px` }}
+                  style={{ fontSize: `${fontSize}px`, lineHeight: `${fontSize * 1.9}px` }}
                   dir="rtl"
                 >
-                  {arabicText}
+                  {renderUnderlinedArabic(arabicText, isCardActive)}
                 </div>
 
-                {/* Transliteration */}
+                {/* Transliteration with Synchronized Underline */}
                 {showTransliteration && (
                   <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-300/80 text-xs sm:text-sm font-medium text-amber-950 leading-relaxed italic">
                     <span className="font-bold not-italic block text-[10px] text-amber-800 uppercase tracking-wider mb-0.5">
                       Transliterasi Latin:
                     </span>
-                    {transliterationText}
+                    {renderUnderlinedLatin(transliterationText, isCardActive)}
                   </div>
                 )}
 
