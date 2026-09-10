@@ -37,11 +37,13 @@ export interface MatsuratItem {
 export interface MatsuratMeta {
   fullAudioMorning: {
     url: string;
+    fallbackUrl?: string;
     reciter: string;
     title: string;
   };
   fullAudioEvening: {
     url: string;
+    fallbackUrl?: string;
     reciter: string;
     title: string;
   };
@@ -49,12 +51,14 @@ export interface MatsuratMeta {
 
 export const MATSURAT_META: MatsuratMeta = {
   fullAudioMorning: {
-    url: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3',
+    url: '/audio/almatsurat/Al-Matsurat-Pagi.mp3',
+    fallbackUrl: 'https://archive.org/download/al-matsurat-kubro-shugro-pagi-dan-petang/Al%20Matsurat%20Sughra%20Pagi%20.mp3',
     reciter: 'Syekh Mishary Rashid Al-Afasy',
     title: 'Al-Ma\'tsurat Wazhifah Pagi (Ash-Shabah)'
   },
   fullAudioEvening: {
-    url: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Petang.mp3',
+    url: '/audio/almatsurat/Al-Matsurat-Petang.mp3',
+    fallbackUrl: 'https://archive.org/download/al-matsurat-kubro-shugro-pagi-dan-petang/Al%20Matsurat%20Sughro%20Sore%20Petang.mp3',
     reciter: 'Syekh Mishary Rashid Al-Afasy',
     title: 'Al-Ma\'tsurat Wazhifah Petang (Al-Masaa\')'
   }
@@ -73,7 +77,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Aku berlindung kepada Allah dari godaan setan yang terkutuk. Dengan menyebut nama Allah Yang Maha Pengasih lagi Maha Penyayang. Segala puji bagi Allah, Tuhan semesta alam. Maha Pemurah lagi Maha Penyayang. Pemilik hari pembalasan. Hanya kepada Engkaulah kami menyembah dan hanya kepada Engkaulah kami memohon pertolongan. Tunjukilah kami jalan yang lurus, (yaitu) jalan orang-orang yang telah Engkau beri nikmat kepada mereka; bukan (jalan) mereka yang dimurkai dan bukan (pula jalan) mereka yang sesat.',
     fadhilah: 'Surah pembuka Al-Qur\'an (Ummul Kitab) dan penawar (asy-Syifa) atas segala penyakit dan kegelisahan hati.',
     source: 'QS. Al-Fatihah: 1-7',
-    audioUrl: 'https://everyayah.com/data/Alafasy_128kbps/001001.mp3'
+    audioUrl: 'https://server8.mp3quran.net/afs/001.mp3'
   },
   {
     id: 'baqarah_awal',
@@ -143,7 +147,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Katakanlah: Dialah Allah, Yang Maha Esa. Allah adalah Tuhan yang bergantung kepada-Nya segala sesuatu. Dia tiada beranak dan tidak pula diperanakkan, dan tidak ada seorang pun yang setara dengan Dia.',
     fadhilah: 'Membaca Al-Ikhlas dan Mu\'awwidzatain (Al-Falaq & An-Nas) sebanyak 3x di pagi dan sore hari akan mencukupkanmu dari segala sesuatu.',
     source: 'QS. Al-Ikhlas: 1-4 (HR. Abu Dawud, At-Tirmidzi)',
-    audioUrl: 'https://everyayah.com/data/Alafasy_128kbps/112001.mp3'
+    audioUrl: 'https://server8.mp3quran.net/afs/112.mp3'
   },
   {
     id: 'al_falaq',
@@ -157,7 +161,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Katakanlah: "Aku berlindung kepada Tuhan Yang Menguasai subuh, dari kejahatan makhluk-Nya, dan dari kejahatan malam apabila telah gelap gulita, dan dari kejahatan wanita-wanita tukang sihir yang menghembus pada buhul-buhul, dan dari kejahatan pendengki bila ia dengki."',
     fadhilah: 'Perlindungan mutlak dari sihir, hasad, dan marabahaya malam hari.',
     source: 'QS. Al-Falaq: 1-5 (HR. Abu Dawud, At-Tirmidzi)',
-    audioUrl: 'https://everyayah.com/data/Alafasy_128kbps/113001.mp3'
+    audioUrl: 'https://server8.mp3quran.net/afs/113.mp3'
   },
   {
     id: 'an_nas',
@@ -171,7 +175,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Katakanlah: "Aku berlindung kepada Tuhan (yang memelihara dan menguasai) manusia. Raja manusia. Sembahan manusia. Dari kejahatan (bisikan) setan yang biasa bersembunyi, yang membisikkan (kejahatan) ke dalam dada manusia, dari (golongan) jin dan manusia."',
     fadhilah: 'Benteng pertahanan diri dari bisikan was-was iblis dan jin.',
     source: 'QS. An-Nas: 1-6 (HR. Abu Dawud, At-Tirmidzi)',
-    audioUrl: 'https://everyayah.com/data/Alafasy_128kbps/114001.mp3'
+    audioUrl: 'https://server8.mp3quran.net/afs/114.mp3'
   },
   {
     id: 'mulku_lillah',
@@ -188,8 +192,8 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translationEvening: 'Kami telah memasuki waktu petang dan kerajaan milik Allah, segala puji bagi Allah. Tidak ada Tuhan selain Allah semata, tidak ada sekutu bagi-Nya. Milik-Nya kerajaan dan milik-Nya segala pujian, dan Dia Maha Kuasa atas segala sesuatu. Wahai Tuhanku, aku memohon kepada-Mu kebaikan malam ini dan kebaikan setelahnya. Dan aku berlindung kepada-Mu dari keburukan malam ini dan keburukan setelahnya. Wahai Tuhanku, aku berlindung kepada-Mu dari kemalasan dan keburukan di masa tua. Wahai Tuhanku, aku berlindung kepada-Mu dari siksa neraka dan siksa kubur.',
     fadhilah: 'Pengakuan tauhid dan permohonan tulus agar dihindarkan dari godaan malas, siksa kubur, dan siksa neraka.',
     source: 'HR. Muslim no. 2723',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3',
-    audioUrlEvening: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Petang.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3',
+    audioUrlEvening: '/audio/almatsurat/Al-Matsurat-Petang.mp3'
   },
   {
     id: 'khair_yaum',
@@ -206,8 +210,8 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translationEvening: 'Ya Allah, sesungguhnya aku memohon kepada-Mu kebaikan malam ini: kemenangannya, pertolongannya, cahayanya, keberkahannya, dan petunjuknya. Dan aku berlindung kepada-Mu dari keburukan yang ada di dalamnya dan keburukan sesudahnya.',
     fadhilah: 'Meraih keberkahan penuh, kemenangan hidup, cahaya hidayah dan perlindungan dari keburukan sepanjang hari/malam.',
     source: 'HR. Abu Dawud no. 5084',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3',
-    audioUrlEvening: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Petang.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3',
+    audioUrlEvening: '/audio/almatsurat/Al-Matsurat-Petang.mp3'
   },
   {
     id: 'bika_ashbahna',
@@ -224,8 +228,8 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translationEvening: 'Ya Allah, dengan rahmat dan pertolongan-Mu kami memasuki waktu petang, dan dengan rahmat dan pertolongan-Mu kami memasuki waktu pagi. Dengan rahmat dan kehendak-Mu kami hidup dan dengan rahmat dan kehendak-Mu kami mati. Dan kepada-Mulah tempat kembali.',
     fadhilah: 'Kepasrahan total atas hidup, mati, dan kebangkitan semata-mata karena kekuasaan Allah Rabbul Izzati.',
     source: 'HR. Tirmidzi no. 3391 (Hasan Shahih)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3',
-    audioUrlEvening: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Petang.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3',
+    audioUrlEvening: '/audio/almatsurat/Al-Matsurat-Petang.mp3'
   },
   {
     id: 'sayyidul_istighfar',
@@ -239,7 +243,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Ya Allah, Engkaulah Tuhanku, tiada Tuhan yang berhak disembah selain Engkau. Engkaulah yang menciptakan aku dan aku adalah hamba-Mu. Aku akan setia pada perjanjianku dengan-Mu semampuku. Aku berlindung kepada-Mu dari keburukan yang telah kuperbuat. Aku mengakui nikmat-Mu kepadaku dan aku mengakui dosaku kepada-Mu, maka ampunilah aku. Karena sesungguhnya tidak ada yang dapat mengampuni dosa-dosa selain Engkau.',
     fadhilah: 'Barangsiapa membacanya di petang hari lalu meninggal di malamnya, ia masuk surga. Begitu pula bila membacanya di pagi hari lalu meninggal di siangnya.',
     source: 'HR. Bukhari no. 6306',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'afiyah',
@@ -253,7 +257,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Ya Allah, berilah kesehatan pada badanku. Ya Allah, berilah kesehatan pada pendengaranku. Ya Allah, berilah kesehatan pada penglihatanku. Tiada Tuhan selain Engkau. Ya Allah, sesungguhnya aku berlindung kepada-Mu dari kekafiran dan kemiskinan. Ya Allah, sesungguhnya aku berlindung kepada-Mu dari siksa kubur. Tiada Tuhan selain Engkau.',
     fadhilah: 'Memelihara nikmat kesehatan fisik panca indera dan melindungi iman dari kemiskinan serta azab kubur.',
     source: 'HR. Abu Dawud no. 5090 (Hasan)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'afwa_wal_afiyah',
@@ -267,7 +271,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Ya Allah, sesungguhnya aku memohon ampunan dan keselamatan di dunia dan akhirat. Ya Allah, sesungguhnya aku memohon ampunan dan keselamatan dalam agamaku, duniaku, keluargaku, dan hartaku. Ya Allah, tutupilah aib-aibku dan tenteramkanlah kekhawatiranku. Ya Allah, jagalah aku dari depan, dari belakang, dari kanan, dari kiri, dan dari atasku. Dan aku berlindung dengan keagungan-Mu agar tidak disergap (dibinasakan) dari bawahku.',
     fadhilah: 'Rasulullah SAW tidak pernah meninggalkan doa penjagaan dari enam arah penjuru ini di setiap pagi dan petang.',
     source: 'HR. Abu Dawud no. 5074 & Ibnu Majah (Shahih)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'hammi_wal_hazan',
@@ -281,7 +285,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Ya Allah, sesungguhnya aku berlindung kepada-Mu dari rasa sedih dan gelisah, aku berlindung kepada-Mu dari kelemahan dan kemalasan, aku berlindung kepada-Mu dari sifat pengecut dan kikir, dan aku berlindung kepada-Mu dari lilitan utang serta kesewenang-wenangan manusia.',
     fadhilah: 'Doa agung penawar depresi mental, pelepas kesedihan, dan pembuka pintu kemandirian rezeki.',
     source: 'HR. Abu Dawud no. 1555 (Shahih)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'bismillahilladzi',
@@ -295,7 +299,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Dengan nama Allah yang bersama nama-Nya tidak ada sesuatu pun di bumi maupun di langit yang dapat membahayakan, dan Dia Maha Mendengar lagi Maha Mengetahui.',
     fadhilah: 'Tidak ada marabahaya atau racun yang dapat mencelakai orang yang membacanya 3x setiap pagi dan petang.',
     source: 'HR. Abu Dawud & Tirmidzi no. 3388 (Hasan Shahih)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'radhitu_billah',
@@ -309,7 +313,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Aku rela Allah sebagai Tuhanku, Islam sebagai agamaku, dan Nabi Muhammad shallallahu \'alaihi wa sallam sebagai nabi dan rasul.',
     fadhilah: 'Merupakan hak atas Allah untuk meridhai siapa saja yang mengucapkannya 3x di setiap pagi dan petang.',
     source: 'HR. Abu Dawud no. 5072 & Tirmidzi (Hasan)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'fitrah_islam',
@@ -326,8 +330,8 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translationEvening: 'Kami berpetang hari di atas fitrah Islam, di atas kalimat ikhlas (tauhid), di atas agama nabi kami Muhammad shallallahu \'alaihi wa sallam, dan di atas millah bapak kami Ibrahim yang lurus lagi berserah diri, dan dia bukanlah termasuk orang-orang musyrik.',
     fadhilah: 'Menjaga identitas akidah lurus di atas fitrah para nabi dan memurnikan tauhid setiap hari.',
     source: 'HR. Ahmad no. 15360 (Shahih)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3',
-    audioUrlEvening: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Petang.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3',
+    audioUrlEvening: '/audio/almatsurat/Al-Matsurat-Petang.mp3'
   },
   {
     id: 'subhanallah_adada',
@@ -341,7 +345,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Maha Suci Allah dan segala puji bagi-Nya, sebanyak bilangan makhluk-Nya, sebesar keridhaan diri-Nya, seberat timbangan \'Arsy-Nya, dan sebanyak tinta kalimat-kalimat-Nya.',
     fadhilah: 'Pahalanya melipatgandakan seluruh dzikir sepanjang hari di sisi Allah SWT.',
     source: 'HR. Muslim no. 2726',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'syirik_protection',
@@ -355,7 +359,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Ya Allah, sesungguhnya kami berlindung kepada-Mu dari menyekutukan-Mu dengan sesuatu yang kami ketahui, dan kami memohon ampunan kepada-Mu terhadap apa yang tidak kami ketahui.',
     fadhilah: 'Menghilangkan bahaya syirik kecil (riya\') yang lebih samar daripada rayapan semut hitam di atas batu hitam.',
     source: 'HR. Ahmad no. 19606 (Shahih Lighairihi)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'audzu_bikalimatillah',
@@ -369,7 +373,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Aku berlindung dengan kalimat-kalimat Allah yang sempurna dari kejahatan apa yang telah Dia ciptakan.',
     fadhilah: 'Terhindar dari sengatan berbisa, racun, dan kejahatan makhluk di muka bumi.',
     source: 'HR. Muslim no. 2709',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'hasbiyallah',
@@ -383,7 +387,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Cukuplah Allah bagiku; tidak ada Tuhan selain Dia. Hanya kepada-Nya aku bertawakkal, dan Dia adalah Tuhan yang memiliki \'Arsy yang agung.',
     fadhilah: 'Barangsiapa membacanya 7x di pagi dan petang, Allah akan mencukupkan baginya urusan dunia dan akhirat yang membuatnya gundah.',
     source: 'HR. Abu Dawud no. 5081 (Mauquf Hasan)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'shalawat',
@@ -397,7 +401,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Ya Allah, limpahkanlah rahmat kepada junjungan kami Nabi Muhammad dan kepada keluarga Nabi Muhammad, sebagaimana Engkau telah melimpahkan rahmat kepada Nabi Ibrahim dan kepada keluarga Nabi Ibrahim. Dan berkahilah Nabi Muhammad dan keluarga Nabi Muhammad, sebagaimana Engkau telah memberkahi Nabi Ibrahim dan keluarga Nabi Ibrahim. Di seantero alam semesta sesungguhnya Engkau Maha Terpuji lagi Maha Mulia.',
     fadhilah: 'Barangsiapa bershalawat kepadaku 10x di pagi hari dan 10x di petang hari, ia akan meraih syafaatku pada hari kiamat.',
     source: 'HR. At-Thabrani (Sanad Jayyid)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'tasbih_tahmid_tahlil',
@@ -411,7 +415,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Maha Suci Allah, segala puji bagi Allah, tiada Tuhan selain Allah, dan Allah Maha Besar.',
     fadhilah: 'Kalimat yang paling dicintai Allah, menggugurkan dosa laksana dedaunan gugur dari pohonnya.',
     source: 'HR. Muslim no. 2137',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'tahlil_wahdahu',
@@ -425,7 +429,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Tidak ada Tuhan selain Allah semata, tidak ada sekutu bagi-Nya. Milik-Nya segenap kerajaan dan milik-Nya segala pujian, dan Dia Maha Kuasa atas segala sesuatu.',
     fadhilah: 'Pahalanya seperti memerdekakan empat hamba sahaya dari keturunan Nabi Ismail.',
     source: 'HR. Bukhari no. 6404 & Muslim no. 2693',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'istighfar_100',
@@ -439,7 +443,7 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Aku memohon ampun kepada Allah Yang Maha Agung, tiada Tuhan selain Dia Yang Maha Hidup lagi Maha Berdiri Sendiri, dan aku bertaubat kepada-Nya.',
     fadhilah: 'Diampuni dosanya walaupun ia pernah lari dari medan perang, serta membukakan pintu rezeki dari arah yang tidak disangka-sangka.',
     source: 'HR. Abu Dawud no. 1517 & Tirmidzi (Shahih)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   },
   {
     id: 'doa_rabithah',
@@ -453,6 +457,6 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     translation: 'Ya Allah, sesungguhnya Engkau mengetahui bahwa hati-hati ini telah berkumpul di atas cinta kepada-Mu, telah bertemu di atas ketaatan kepada-Mu, telah bersatu di atas dakwah-Mu, dan telah berjanji setia untuk membela syariat-Mu. Maka kukuhkanlah ya Allah ikatannya, abadikanlah kasih sayangnya, tunjukilah jalan-jalannya, penuhilah ia dengan cahaya-Mu yang tidak pernah padam, lapangkanlah dadanya dengan limpahan iman kepada-Mu dan indahnya tawakkal kepada-Mu, hidupkanlah ia dengan ma\'rifah kepada-Mu, dan matikanlah ia di atas syahid di jalan-Mu. Sesungguhnya Engkaulah sebaik-baik Pelindung dan sebaik-baik Penolong. Ya Allah kabulkanlah, dan limpahkanlah shalawat serta salam kepada junjungan kami Nabi Muhammad, beserta keluarga dan para sahabatnya.',
     fadhilah: 'Doa penutup wazhifah Al-Ma\'tsurat yang menyatukan jiwa-jiwa beriman dalam ukhuwah islamiyah dan komitmen dakwah yang kokoh.',
     source: 'Doa Ma\'tsur Khusus Hasan Al-Banna (Wazhifah Kubra)',
-    audioUrl: 'https://ia801503.us.archive.org/15/items/Al-matsuratPagiDanPetang/Al-matsurat%20Pagi.mp3'
+    audioUrl: '/audio/almatsurat/Al-Matsurat-Pagi.mp3'
   }
 ];

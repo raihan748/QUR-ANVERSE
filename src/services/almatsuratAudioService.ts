@@ -91,11 +91,29 @@ class AlMatsuratAudioService {
       });
 
       this.audio.addEventListener('error', (e) => {
-        console.warn('Al-Matsurat Audio Load Note:', e);
+        console.warn('Al-Matsurat Audio Load Event:', e);
+        const currentSrc = this.audio?.src || '';
+        const targetMeta = this.state.activeTime === 'morning' ? MATSURAT_META.fullAudioMorning : MATSURAT_META.fullAudioEvening;
+
+        // If local audio fails to load, fallback to remote streaming archive URL
+        if (targetMeta.fallbackUrl && !currentSrc.includes('archive.org') && this.audio) {
+          console.info('Switching to remote fallback audio stream:', targetMeta.fallbackUrl);
+          this.audio.src = targetMeta.fallbackUrl;
+          this.audio.play().catch((err) => {
+            console.warn('Fallback play note:', err);
+            this.updateState({
+              isPlaying: false,
+              isLoading: false,
+              error: 'Gagal memutar audio Al-Ma\'tsurat.'
+            });
+          });
+          return;
+        }
+
         this.updateState({
           isPlaying: false,
           isLoading: false,
-          error: 'Gagal memuat streaming audio. Memeriksa cache offline...'
+          error: 'Gagal memuat streaming audio.'
         });
       });
     }
@@ -139,7 +157,7 @@ class AlMatsuratAudioService {
     }
 
     // If paused on this audio, resume
-    if (this.state.playbackType === 'full' && this.state.activeTime === time && !this.state.isPlaying && this.audio.src.includes('Al-matsurat')) {
+    if (this.state.playbackType === 'full' && this.state.activeTime === time && !this.state.isPlaying && this.audio.src) {
       try {
         await this.audio.play();
         return;
@@ -161,14 +179,22 @@ class AlMatsuratAudioService {
       this.audio.playbackRate = this.state.playbackRate;
       this.audio.volume = this.state.volume;
       await this.audio.play();
-      // Cache audio for offline use in background
       this.cacheAudioInBackground(targetMeta.url);
     } catch (err) {
-      console.warn('Playback error:', err);
+      console.warn('Initial playback attempt failed, trying fallback...', err);
+      if (targetMeta.fallbackUrl) {
+        try {
+          this.audio.src = targetMeta.fallbackUrl;
+          await this.audio.play();
+          return;
+        } catch (err2) {
+          console.error('Fallback also failed:', err2);
+        }
+      }
       this.updateState({
         isPlaying: false,
         isLoading: false,
-        error: 'Tidak dapat memutar audio. Pastikan terhubung internet untuk pemutaran pertama.'
+        error: 'Tidak dapat memutar audio. Silakan periksa koneksi internet.'
       });
     }
   }
@@ -184,6 +210,16 @@ class AlMatsuratAudioService {
     if (this.state.playbackType === 'item' && this.state.activeItemId === itemId && this.state.isPlaying) {
       this.audio.pause();
       return;
+    }
+
+    // If paused on this item, resume
+    if (this.state.playbackType === 'item' && this.state.activeItemId === itemId && !this.state.isPlaying && this.audio.src) {
+      try {
+        await this.audio.play();
+        return;
+      } catch (err) {
+        console.error('Resume error:', err);
+      }
     }
 
     this.updateState({
