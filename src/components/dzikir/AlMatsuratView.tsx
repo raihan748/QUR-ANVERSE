@@ -34,6 +34,50 @@ import {
 } from '../../services/almatsuratAudioService';
 import { useLanguage } from '../../context/LanguageContext';
 
+interface MatsuratMilestone {
+  id: string;
+  start: number;
+  end: number;
+}
+
+// Exact calibrated timestamps extracted from verified audio recording (511.88s)
+const MATSURAT_TIMELINE_MORNING: MatsuratMilestone[] = [
+  { id: 'fatihah', start: 0.0, end: 29.5 },
+  { id: 'baqarah_awal', start: 29.5, end: 65.5 },
+  { id: 'ayat_kursi', start: 65.5, end: 96.0 },
+  { id: 'baqarah_tengah', start: 96.0, end: 128.5 },
+  { id: 'baqarah_akhir', start: 128.5, end: 200.5 },
+  { id: 'al_ikhlas', start: 200.5, end: 212.5 },
+  { id: 'al_falaq', start: 212.5, end: 230.5 },
+  { id: 'an_nas', start: 230.5, end: 246.0 },
+  { id: 'mulku_lillah', start: 246.0, end: 254.5 },
+  { id: 'fitrah_islam', start: 254.5, end: 269.5 },
+  { id: 'afwa_wal_afiyah', start: 269.5, end: 281.5 },
+  { id: 'khair_yaum', start: 281.5, end: 291.5 },
+  { id: 'bika_ashbahna', start: 291.5, end: 294.0 },
+  { id: 'radhitu_billah', start: 294.0, end: 300.0 },
+  { id: 'subhanallah_adada', start: 300.0, end: 306.0 },
+  { id: 'bismillahilladzi', start: 306.0, end: 314.5 },
+  { id: 'syirik_protection', start: 314.5, end: 321.0 },
+  { id: 'audzu_bikalimatillah', start: 321.0, end: 327.0 },
+  { id: 'hammi_wal_hazan', start: 327.0, end: 338.5 },
+  { id: 'afiyah', start: 338.5, end: 356.5 },
+  { id: 'sayyidul_istighfar', start: 356.5, end: 375.0 },
+  { id: 'istighfar_100', start: 375.0, end: 387.0 },
+  { id: 'shalawat', start: 387.0, end: 414.0 },
+  { id: 'hasbiyallah', start: 414.0, end: 423.0 },
+  { id: 'tasbih_tahmid_tahlil', start: 423.0, end: 441.0 },
+  { id: 'tahlil_wahdahu', start: 441.0, end: 459.0 },
+  { id: 'doa_rabithah', start: 459.0, end: 511.88 }
+];
+
+const EVENING_RATIO = 1508.38 / 511.88;
+const MATSURAT_TIMELINE_EVENING: MatsuratMilestone[] = MATSURAT_TIMELINE_MORNING.map((m) => ({
+  id: m.id,
+  start: Math.round(m.start * EVENING_RATIO * 10) / 10,
+  end: Math.round(m.end * EVENING_RATIO * 10) / 10
+}));
+
 export const AlMatsuratView: React.FC = () => {
   const { language } = useLanguage();
 
@@ -135,77 +179,50 @@ export const AlMatsuratView: React.FC = () => {
     ? Math.round((completedCount / filteredItems.length) * 100) 
     : 0;
 
-  // 7. Calculate timeline for full audio synchronization
-  const timelineMap = useMemo(() => {
-    const totalDuration = audioState.duration > 0
-      ? audioState.duration
-      : (selectedTime === 'morning' ? 511.88 : 1508.38);
-
-    const weights = filteredItems.map((item) => {
-      const words = item.arabic.trim().split(/\s+/).length;
-      const effectiveRepeats = item.targetCount > 10 ? 3 : item.targetCount;
-      return words * effectiveRepeats;
-    });
-
-    const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
-
-    let currentSec = 0;
-    return filteredItems.map((item, idx) => {
-      const itemDuration = (weights[idx] / totalWeight) * totalDuration;
-      const start = currentSec;
-      const end = currentSec + itemDuration;
-      currentSec = end;
-      return {
-        id: item.id,
-        start,
-        end,
-        duration: itemDuration,
-        effectiveRepeats: item.targetCount > 10 ? 3 : item.targetCount
-      };
-    });
-  }, [filteredItems, audioState.duration, selectedTime]);
-
-  // 8. Determine active card ID and active word progress
+  // 7. Determine active card ID and smooth within-card progress using calibrated milestones
   const activeSync = useMemo(() => {
     // If not playing and at 0, no active recitation
     if (!audioState.isPlaying && audioState.currentTime === 0) {
-      return { activeItemId: null, progressInItem: 0, effectiveRepeats: 1 };
+      return { activeItemId: null, progressInItem: 0 };
     }
 
+    // Per-item audio mode
     if (audioState.playbackType === 'item' && audioState.activeItemId) {
       const dur = audioState.duration || 1;
       const progress = Math.min(1, Math.max(0, audioState.currentTime / dur));
       return {
         activeItemId: audioState.activeItemId,
-        progressInItem: progress,
-        effectiveRepeats: 1
+        progressInItem: progress
       };
     }
 
+    // Full recitation audio mode (calibrated timestamps)
     if (audioState.playbackType === 'full') {
+      const timeline = selectedTime === 'morning' ? MATSURAT_TIMELINE_MORNING : MATSURAT_TIMELINE_EVENING;
       const curr = audioState.currentTime;
-      const activeEntry = timelineMap.find((entry) => curr >= entry.start && curr < entry.end);
-      if (activeEntry) {
-        const itemProg = Math.min(1, Math.max(0, (curr - activeEntry.start) / (activeEntry.duration || 1)));
+      const activeMilestone = timeline.find((m) => curr >= m.start && curr < m.end);
+
+      if (activeMilestone) {
+        const itemDuration = activeMilestone.end - activeMilestone.start;
+        const rawProgress = itemDuration > 0 ? (curr - activeMilestone.start) / itemDuration : 0;
         return {
-          activeItemId: activeEntry.id,
-          progressInItem: itemProg,
-          effectiveRepeats: activeEntry.effectiveRepeats
+          activeItemId: activeMilestone.id,
+          progressInItem: Math.max(0, Math.min(1, rawProgress))
         };
       }
-      if (curr >= (timelineMap[timelineMap.length - 1]?.end || 0) && timelineMap.length > 0) {
+
+      if (curr >= (timeline[timeline.length - 1]?.end || 0) && timeline.length > 0) {
         return {
-          activeItemId: timelineMap[timelineMap.length - 1].id,
-          progressInItem: 1,
-          effectiveRepeats: 1
+          activeItemId: timeline[timeline.length - 1].id,
+          progressInItem: 1
         };
       }
     }
 
-    return { activeItemId: null, progressInItem: 0, effectiveRepeats: 1 };
-  }, [audioState, timelineMap]);
+    return { activeItemId: null, progressInItem: 0 };
+  }, [audioState, selectedTime]);
 
-  // 9. Auto-scroll to active card during continuous recitation
+  // 8. Auto-scroll to active card during continuous recitation
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const lastScrolledItemId = useRef<string | null>(null);
 
@@ -221,6 +238,38 @@ export const AlMatsuratView: React.FC = () => {
     }
   }, [activeSync.activeItemId, audioState.playbackType, audioState.isPlaying]);
 
+  // 9. Weighted word index calculation matching qari tartil rhythm and breath pauses
+  const getActiveWordIndex = (text: string, progressInItem: number): number => {
+    const tokens = text.split(/(\s+)/);
+    const words = tokens.filter((t) => t.trim().length > 0);
+    if (words.length === 0) return -1;
+    if (words.length === 1) return 0;
+
+    // Weight each word by character length + breath pause bonus on punctuation / verse signs
+    const weights = words.map((w) => {
+      let weight = Math.max(2, w.length);
+      if (w.includes('۝') || w.includes('.') || w.includes('،') || w.includes('؛') || w.includes('؟')) {
+        weight += 6; // Natural pause between verses/phrases
+      }
+      return weight;
+    });
+
+    const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+    
+    // Smooth progress buffer: prevents rushing at start and abrupt jumps
+    const bufferedProgress = Math.max(0, Math.min(0.999, progressInItem));
+    const targetWeight = bufferedProgress * totalWeight;
+
+    let cumWeight = 0;
+    for (let i = 0; i < weights.length; i++) {
+      cumWeight += weights[i];
+      if (cumWeight >= targetWeight) {
+        return i;
+      }
+    }
+    return words.length - 1;
+  };
+
   // 10. Helper to render Arabic text with word-by-word underline
   const renderUnderlinedArabic = (text: string, isCardActive: boolean) => {
     const tokens = text.split(/(\s+)/);
@@ -230,11 +279,7 @@ export const AlMatsuratView: React.FC = () => {
       return text;
     }
 
-    const repProgress = (activeSync.progressInItem * activeSync.effectiveRepeats) % 1;
-    const currentActiveWordIdx = Math.min(
-      actualWordsCount - 1,
-      Math.floor(repProgress * actualWordsCount)
-    );
+    const currentActiveWordIdx = getActiveWordIndex(text, activeSync.progressInItem);
 
     let wordCounter = 0;
     return tokens.map((token, index) => {
@@ -247,7 +292,7 @@ export const AlMatsuratView: React.FC = () => {
       return (
         <span
           key={index}
-          className={`transition-all duration-150 inline-block ${
+          className={`transition-all duration-200 inline-block ${
             isWordActive
               ? 'underline decoration-[#0B4627] decoration-4 underline-offset-8 font-black text-[#06331D] bg-[#FDE68A] rounded px-1.5 shadow-xs scale-105'
               : ''
@@ -278,11 +323,7 @@ export const AlMatsuratView: React.FC = () => {
       return text;
     }
 
-    const repProgress = (activeSync.progressInItem * activeSync.effectiveRepeats) % 1;
-    const currentActiveWordIdx = Math.min(
-      actualWordsCount - 1,
-      Math.floor(repProgress * actualWordsCount)
-    );
+    const currentActiveWordIdx = getActiveWordIndex(text, activeSync.progressInItem);
 
     let wordCounter = 0;
     return tokens.map((token, index) => {
@@ -295,7 +336,7 @@ export const AlMatsuratView: React.FC = () => {
       return (
         <span
           key={index}
-          className={`transition-all duration-150 inline-block ${
+          className={`transition-all duration-200 inline-block ${
             isWordActive
               ? 'underline decoration-[#D97706] decoration-2 underline-offset-4 font-bold text-amber-950 bg-amber-200/90 rounded px-1'
               : ''
