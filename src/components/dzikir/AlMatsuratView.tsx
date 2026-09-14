@@ -245,11 +245,21 @@ export const AlMatsuratView: React.FC = () => {
     if (words.length === 0) return -1;
     if (words.length === 1) return 0;
 
-    // Weight each word by character length + breath pause bonus on punctuation / verse signs
+    // Weight each word by character length + breath pause bonus on punctuation / verse signs + madd length
     const weights = words.map((w) => {
-      let weight = Math.max(2, w.length);
+      let weight = Math.max(3, w.length);
+
+      // Muqatha'ah letters (Alif Lam Mim, etc.) have 6+6 harakat madd (~4.5s)
+      if (w.includes('الم') || w.includes('الٓمٓ') || w.toLowerCase().includes('alif-laaam-miiim')) {
+        weight += 28;
+      }
+      // Prolonged madd in transliteration (aaa, iii, uuu)
+      if (w.includes('aaa') || w.includes('iii') || w.includes('uuu')) {
+        weight += 8;
+      }
+      // Natural pause between verses/phrases (waqaf)
       if (w.includes('۝') || w.includes('.') || w.includes('،') || w.includes('؛') || w.includes('؟')) {
-        weight += 6; // Natural pause between verses/phrases
+        weight += 10;
       }
       return weight;
     });

@@ -87,8 +87,8 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     variant: 'kubra',
     targetCount: 1,
     arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n\nالم ۝ ذَٰلِكَ الْكِتَابُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ ۝ الَّذِينَ يُؤْمِنُونَ بِالْغَيْبِ وَيُقِيمُونَ الصَّلَاةَ وَمِمَّا رَزَقْنَاهُمْ يُنفِقُونَ ۝ وَالَّذِينَ يُؤْمِنُونَ بِمَا أُنزِلَ إِلَيْكَ وَمَا أُنزِلَ مِن قَبْلِكَ وَبِالْآخِرَةِ هُمْ يُوقِنُونَ ۝ أُولَٰئِكَ عَلَىٰ هُدًى مِّن رَّبِّهِمْ ۖ وَأُولَٰئِكَ هُمُ الْمُفْلِحُونَ ۝',
-    transliteration: 'Alif-Laaam-Miiim. Dzaalikal kitaabu laa rayba fiihi hudal lil-muttaqiin. Alladziina yu\'minuuna bil-ghaybi wa yuqiimuunash-shalaata wa mimmaa razaqnaahum yunfiquun. Walladziina yu\'minuuna bimaa unzila ilayka wa maa unzila min qablika wa bil-aakhirati hum yuuqinuun. Ulaaa-ika \'alaa hudam mir rabbihim wa ulaaa-ika humul muflihuun.',
-    translation: 'Alif Lam Mim. Kitab (Al-Qur\'an) ini tidak ada keraguan padanya; petunjuk bagi mereka yang bertakwa, (yaitu) mereka yang beriman kepada yang gaib, melaksanakan salat, dan menginfakkan sebagian rezeki yang Kami berikan kepada mereka, dan mereka yang beriman kepada (Al-Qur\'an) yang diturunkan kepadamu (Muhammad) dan (kitab-kitab) yang telah diturunkan sebelum engkau, serta mereka yakin akan adanya akhirat. Merekalah yang mendapat petunjuk dari Tuhannya, dan mereka itulah orang-orang yang beruntung.',
+    transliteration: 'Bismillaahir-rahmaanir-rahiim. Alif-Laaam-Miiim. Dzaalikal kitaabu laa rayba fiihi hudal lil-muttaqiin. Alladziina yu\'minuuna bil-ghaybi wa yuqiimuunash-shalaata wa mimmaa razaqnaahum yunfiquun. Walladziina yu\'minuuna bimaa unzila ilayka wa maa unzila min qablika wa bil-aakhirati hum yuuqinuun. Ulaaa-ika \'alaa hudam mir rabbihim wa ulaaa-ika humul muflihuun.',
+    translation: 'Dengan menyebut nama Allah Yang Maha Pengasih lagi Maha Penyayang. Alif Lam Mim. Kitab (Al-Qur\'an) ini tidak ada keraguan padanya; petunjuk bagi mereka yang bertakwa, (yaitu) mereka yang beriman kepada yang gaib, melaksanakan salat, dan menginfakkan sebagian rezeki yang Kami berikan kepada mereka, dan mereka yang beriman kepada (Al-Qur\'an) yang diturunkan kepadamu (Muhammad) dan (kitab-kitab) yang telah diturunkan sebelum engkau, serta mereka yakin akan adanya akhirat. Merekalah yang mendapat petunjuk dari Tuhannya, dan mereka itulah orang-orang yang beruntung.',
     fadhilah: 'Membaca 5 ayat pertama surah Al-Baqarah di pagi dan sore hari menjauhkan rumah dan jiwa dari gangguan setan.',
     source: 'QS. Al-Baqarah: 1-5 (HR. Ad-Darimi & Thabrani)',
     audioUrl: 'https://everyayah.com/data/Alafasy_128kbps/002001.mp3'
@@ -143,8 +143,8 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     variant: 'sughra',
     targetCount: 3,
     arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n\nقُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ ۝',
-    transliteration: 'Qul huwallaahu ahad. Allaahush-shamad. Lam yalid wa lam yuulad. Wa lam yakul lahuu kufuwan ahad.',
-    translation: 'Katakanlah: Dialah Allah, Yang Maha Esa. Allah adalah Tuhan yang bergantung kepada-Nya segala sesuatu. Dia tiada beranak dan tidak pula diperanakkan, dan tidak ada seorang pun yang setara dengan Dia.',
+    transliteration: 'Bismillaahir-rahmaanir-rahiim. Qul huwallaahu ahad. Allaahush-shamad. Lam yalid wa lam yuulad. Wa lam yakul lahuu kufuwan ahad.',
+    translation: 'Dengan menyebut nama Allah Yang Maha Pengasih lagi Maha Penyayang. Katakanlah: Dialah Allah, Yang Maha Esa. Allah adalah Tuhan yang bergantung kepada-Nya segala sesuatu. Dia tiada beranak dan tidak pula diperanakkan, dan tidak ada seorang pun yang setara dengan Dia.',
     fadhilah: 'Membaca Al-Ikhlas dan Mu\'awwidzatain (Al-Falaq & An-Nas) sebanyak 3x di pagi dan sore hari akan mencukupkanmu dari segala sesuatu.',
     source: 'QS. Al-Ikhlas: 1-4 (HR. Abu Dawud, At-Tirmidzi)',
     audioUrl: 'https://server8.mp3quran.net/afs/112.mp3'
@@ -157,8 +157,8 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     variant: 'sughra',
     targetCount: 3,
     arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n\nقُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ ۝',
-    transliteration: 'Qul a\'uudzu birabbil falaq. Min syarri maa khalaq. Wa min syarri ghaasiqin idzaa waqab. Wa min syarrin-naffaatsaati fil \'uqad. Wa min syarri haasidin idzaa hasad.',
-    translation: 'Katakanlah: "Aku berlindung kepada Tuhan Yang Menguasai subuh, dari kejahatan makhluk-Nya, dan dari kejahatan malam apabila telah gelap gulita, dan dari kejahatan wanita-wanita tukang sihir yang menghembus pada buhul-buhul, dan dari kejahatan pendengki bila ia dengki."',
+    transliteration: 'Bismillaahir-rahmaanir-rahiim. Qul a\'uudzu birabbil falaq. Min syarri maa khalaq. Wa min syarri ghaasiqin idzaa waqab. Wa min syarrin-naffaatsaati fil \'uqad. Wa min syarri haasidin idzaa hasad.',
+    translation: 'Dengan menyebut nama Allah Yang Maha Pengasih lagi Maha Penyayang. Katakanlah: "Aku berlindung kepada Tuhan Yang Menguasai subuh, dari kejahatan makhluk-Nya, dan dari kejahatan malam apabila telah gelap gulita, dan dari kejahatan wanita-wanita tukang sihir yang menghembus pada buhul-buhul, dan dari kejahatan pendengki bila ia dengki."',
     fadhilah: 'Perlindungan mutlak dari sihir, hasad, dan marabahaya malam hari.',
     source: 'QS. Al-Falaq: 1-5 (HR. Abu Dawud, At-Tirmidzi)',
     audioUrl: 'https://server8.mp3quran.net/afs/113.mp3'
@@ -171,8 +171,8 @@ export const AL_MATSURAT_ITEMS: MatsuratItem[] = [
     variant: 'sughra',
     targetCount: 3,
     arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n\nقُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ ۝',
-    transliteration: 'Qul a\'uudzu birabbin-naas. Malikin-naas. Ilaahin-naas. Min syarril waswaasil khannaas. Alladzii yuwaswisu fii shuduurin-naas. Minal jinnati wan-naas.',
-    translation: 'Katakanlah: "Aku berlindung kepada Tuhan (yang memelihara dan menguasai) manusia. Raja manusia. Sembahan manusia. Dari kejahatan (bisikan) setan yang biasa bersembunyi, yang membisikkan (kejahatan) ke dalam dada manusia, dari (golongan) jin dan manusia."',
+    transliteration: 'Bismillaahir-rahmaanir-rahiim. Qul a\'uudzu birabbin-naas. Malikin-naas. Ilaahin-naas. Min syarril waswaasil khannaas. Alladzii yuwaswisu fii shuduurin-naas. Minal jinnati wan-naas.',
+    translation: 'Dengan menyebut nama Allah Yang Maha Pengasih lagi Maha Penyayang. Katakanlah: "Aku berlindung kepada Tuhan (yang memelihara dan menguasai) manusia. Raja manusia. Sembahan manusia. Dari kejahatan (bisikan) setan yang biasa bersembunyi, yang membisikkan (kejahatan) ke dalam dada manusia, dari (golongan) jin dan manusia."',
     fadhilah: 'Benteng pertahanan diri dari bisikan was-was iblis dan jin.',
     source: 'QS. An-Nas: 1-6 (HR. Abu Dawud, At-Tirmidzi)',
     audioUrl: 'https://server8.mp3quran.net/afs/114.mp3'
