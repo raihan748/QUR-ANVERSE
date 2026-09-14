@@ -23,6 +23,7 @@ type AudioStateListener = (state: MatsuratAudioState) => void;
 class AlMatsuratAudioService {
   private audio: HTMLAudioElement | null = null;
   private listeners: Set<AudioStateListener> = new Set();
+  private segmentEnd: number | null = null;
   private state: MatsuratAudioState = {
     isPlaying: false,
     playbackType: 'none',
@@ -68,6 +69,18 @@ class AlMatsuratAudioService {
 
       this.audio.addEventListener('timeupdate', () => {
         if (this.audio) {
+          // Check if playing a segment and reached end of segment
+          if (this.segmentEnd !== null && this.audio.currentTime >= this.segmentEnd) {
+            this.audio.pause();
+            this.segmentEnd = null;
+            this.updateState({
+              isPlaying: false,
+              playbackType: 'none',
+              activeItemId: null
+            });
+            return;
+          }
+
           this.updateState({
             currentTime: this.audio.currentTime,
             duration: this.audio.duration || 0
@@ -82,6 +95,7 @@ class AlMatsuratAudioService {
       });
 
       this.audio.addEventListener('ended', () => {
+        this.segmentEnd = null;
         this.updateState({
           isPlaying: false,
           playbackType: 'none',
@@ -144,20 +158,30 @@ class AlMatsuratAudioService {
   /**
    * Play full continuous Al-Ma'tsurat recitation based on morning vs evening
    */
-  public async playFull(time: MatsuratTime): Promise<void> {
+  public async playFull(time: MatsuratTime, startFromSec?: number): Promise<void> {
     this.initAudioElement();
     if (!this.audio) return;
+    this.segmentEnd = null;
 
     const targetMeta = time === 'morning' ? MATSURAT_META.fullAudioMorning : MATSURAT_META.fullAudioEvening;
 
-    // If already playing this full audio, toggle pause
-    if (this.state.playbackType === 'full' && this.state.activeTime === time && this.state.isPlaying) {
+    // If startFromSec provided and already active on this audio, seek & play
+    if (this.state.playbackType === 'full' && this.state.activeTime === time && typeof startFromSec === 'number') {
+      this.audio.currentTime = startFromSec;
+      if (!this.state.isPlaying) {
+        await this.audio.play();
+      }
+      return;
+    }
+
+    // If already playing this full audio (toggle pause)
+    if (this.state.playbackType === 'full' && this.state.activeTime === time && this.state.isPlaying && typeof startFromSec === 'undefined') {
       this.audio.pause();
       return;
     }
 
     // If paused on this audio, resume
-    if (this.state.playbackType === 'full' && this.state.activeTime === time && !this.state.isPlaying && this.audio.src) {
+    if (this.state.playbackType === 'full' && this.state.activeTime === time && !this.state.isPlaying && this.audio.src && typeof startFromSec === 'undefined') {
       try {
         await this.audio.play();
         return;
@@ -175,16 +199,29 @@ class AlMatsuratAudioService {
     });
 
     try {
-      this.audio.src = targetMeta.url;
+      const currentSrc = this.audio.src || '';
+      const isSameSrc = currentSrc.includes(targetMeta.url) || (targetMeta.fallbackUrl ? currentSrc.includes(targetMeta.fallbackUrl) : false);
+
+      if (!isSameSrc) {
+        this.audio.src = targetMeta.url;
+        this.audio.load();
+      }
+
+      if (typeof startFromSec === 'number') {
+        this.audio.currentTime = startFromSec;
+      }
       this.audio.playbackRate = this.state.playbackRate;
       this.audio.volume = this.state.volume;
       await this.audio.play();
       this.cacheAudioInBackground(targetMeta.url);
     } catch (err) {
       console.warn('Initial playback attempt failed, trying fallback...', err);
-      if (targetMeta.fallbackUrl) {
+      if (targetMeta.fallbackUrl && this.audio) {
         try {
           this.audio.src = targetMeta.fallbackUrl;
+          if (typeof startFromSec === 'number') {
+            this.audio.currentTime = startFromSec;
+          }
           await this.audio.play();
           return;
         } catch (err2) {
@@ -200,19 +237,99 @@ class AlMatsuratAudioService {
   }
 
   /**
-   * Play individual doa / ayah audio clip
+   * Play an individual doa / ayah segment from the master audio with millisecond precision
    */
-  public async playItem(itemId: string, time: MatsuratTime, audioUrl: string): Promise<void> {
+  public async playSegment(
+    itemId: string,
+    time: MatsuratTime,
+    startTime: number,
+    endTime: number
+  ): Promise<void> {
     this.initAudioElement();
-    if (!this.audio || !audioUrl) return;
+    if (!this.audio) return;
 
-    // If already playing this item, toggle pause
+    const targetMeta = time === 'morning' ? MATSURAT_META.fullAudioMorning : MATSURAT_META.fullAudioEvening;
+
+    // If already playing this item segment, toggle pause
     if (this.state.playbackType === 'item' && this.state.activeItemId === itemId && this.state.isPlaying) {
       this.audio.pause();
       return;
     }
 
-    // If paused on this item, resume
+    // If paused on this segment, resume
+    if (this.state.playbackType === 'item' && this.state.activeItemId === itemId && !this.state.isPlaying) {
+      try {
+        this.segmentEnd = endTime;
+        await this.audio.play();
+        return;
+      } catch (err) {
+        console.error('Resume error:', err);
+      }
+    }
+
+    this.segmentEnd = endTime;
+    this.updateState({
+      playbackType: 'item',
+      activeTime: time,
+      activeItemId: itemId,
+      isLoading: true,
+      error: null
+    });
+
+    try {
+      const currentSrc = this.audio.src || '';
+      const isSameSrc = currentSrc.includes(targetMeta.url) || (targetMeta.fallbackUrl ? currentSrc.includes(targetMeta.fallbackUrl) : false);
+
+      if (!isSameSrc) {
+        this.audio.src = targetMeta.url;
+        await new Promise<void>((resolve) => {
+          if (!this.audio) return resolve();
+          const onLoaded = () => {
+            this.audio?.removeEventListener('loadedmetadata', onLoaded);
+            resolve();
+          };
+          this.audio.addEventListener('loadedmetadata', onLoaded);
+          this.audio.load();
+        });
+      }
+
+      this.audio.currentTime = startTime;
+      this.audio.playbackRate = this.state.playbackRate;
+      this.audio.volume = this.state.volume;
+      await this.audio.play();
+      this.cacheAudioInBackground(targetMeta.url);
+    } catch (err) {
+      console.warn('Segment playback error:', err);
+      if (targetMeta.fallbackUrl && this.audio) {
+        try {
+          this.audio.src = targetMeta.fallbackUrl;
+          this.audio.currentTime = startTime;
+          await this.audio.play();
+          return;
+        } catch (err2) {
+          console.error('Segment fallback also failed:', err2);
+        }
+      }
+      this.updateState({
+        isPlaying: false,
+        isLoading: false,
+        error: 'Tidak dapat memutar audio doa.'
+      });
+    }
+  }
+
+  /**
+   * Legacy playItem support (falls back to URL if provided)
+   */
+  public async playItem(itemId: string, time: MatsuratTime, audioUrl: string): Promise<void> {
+    this.initAudioElement();
+    if (!this.audio || !audioUrl) return;
+
+    if (this.state.playbackType === 'item' && this.state.activeItemId === itemId && this.state.isPlaying) {
+      this.audio.pause();
+      return;
+    }
+
     if (this.state.playbackType === 'item' && this.state.activeItemId === itemId && !this.state.isPlaying && this.audio.src) {
       try {
         await this.audio.play();
@@ -222,6 +339,7 @@ class AlMatsuratAudioService {
       }
     }
 
+    this.segmentEnd = null;
     this.updateState({
       playbackType: 'item',
       activeTime: time,

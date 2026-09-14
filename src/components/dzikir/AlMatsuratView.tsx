@@ -38,45 +38,70 @@ interface MatsuratMilestone {
   id: string;
   start: number;
   end: number;
+  repeats?: number;
 }
 
 // Exact calibrated timestamps extracted from verified audio recording (511.88s)
 const MATSURAT_TIMELINE_MORNING: MatsuratMilestone[] = [
-  { id: 'fatihah', start: 0.0, end: 29.5 },
-  { id: 'baqarah_awal', start: 29.5, end: 65.5 },
-  { id: 'ayat_kursi', start: 65.5, end: 96.0 },
-  { id: 'baqarah_tengah', start: 96.0, end: 128.5 },
-  { id: 'baqarah_akhir', start: 128.5, end: 200.5 },
-  { id: 'al_ikhlas', start: 200.5, end: 212.5 },
-  { id: 'al_falaq', start: 212.5, end: 230.5 },
-  { id: 'an_nas', start: 230.5, end: 246.0 },
-  { id: 'mulku_lillah', start: 246.0, end: 254.5 },
-  { id: 'fitrah_islam', start: 254.5, end: 269.5 },
-  { id: 'afwa_wal_afiyah', start: 269.5, end: 281.5 },
-  { id: 'khair_yaum', start: 281.5, end: 291.5 },
-  { id: 'bika_ashbahna', start: 291.5, end: 294.0 },
-  { id: 'radhitu_billah', start: 294.0, end: 300.0 },
-  { id: 'subhanallah_adada', start: 300.0, end: 306.0 },
-  { id: 'bismillahilladzi', start: 306.0, end: 314.5 },
-  { id: 'syirik_protection', start: 314.5, end: 321.0 },
-  { id: 'audzu_bikalimatillah', start: 321.0, end: 327.0 },
-  { id: 'hammi_wal_hazan', start: 327.0, end: 338.5 },
-  { id: 'afiyah', start: 338.5, end: 356.5 },
-  { id: 'sayyidul_istighfar', start: 356.5, end: 375.0 },
-  { id: 'istighfar_100', start: 375.0, end: 387.0 },
-  { id: 'shalawat', start: 387.0, end: 414.0 },
-  { id: 'hasbiyallah', start: 414.0, end: 423.0 },
-  { id: 'tasbih_tahmid_tahlil', start: 423.0, end: 441.0 },
-  { id: 'tahlil_wahdahu', start: 441.0, end: 459.0 },
-  { id: 'doa_rabithah', start: 459.0, end: 511.88 }
+  { id: 'fatihah', start: 0.0, end: 29.5, repeats: 1 },
+  { id: 'baqarah_awal', start: 29.5, end: 65.5, repeats: 1 },
+  { id: 'ayat_kursi', start: 65.5, end: 96.0, repeats: 1 },
+  { id: 'baqarah_tengah', start: 96.0, end: 128.5, repeats: 1 },
+  { id: 'baqarah_akhir', start: 128.5, end: 200.5, repeats: 1 },
+  { id: 'al_ikhlas', start: 200.5, end: 212.5, repeats: 1 },
+  { id: 'al_falaq', start: 212.5, end: 230.5, repeats: 1 },
+  { id: 'an_nas', start: 230.5, end: 246.0, repeats: 1 },
+  { id: 'mulku_lillah', start: 246.0, end: 254.5, repeats: 1 },
+  { id: 'fitrah_islam', start: 254.5, end: 269.5, repeats: 1 },
+  { id: 'afwa_wal_afiyah', start: 269.5, end: 281.5, repeats: 1 },
+  { id: 'khair_yaum', start: 281.5, end: 291.5, repeats: 1 },
+  { id: 'bika_ashbahna', start: 291.5, end: 294.0, repeats: 1 },
+  { id: 'radhitu_billah', start: 294.0, end: 300.0, repeats: 1 },
+  { id: 'subhanallah_adada', start: 300.0, end: 306.0, repeats: 1 },
+  { id: 'bismillahilladzi', start: 306.0, end: 314.5, repeats: 1 },
+  { id: 'syirik_protection', start: 314.5, end: 321.0, repeats: 1 },
+  { id: 'audzu_bikalimatillah', start: 321.0, end: 327.0, repeats: 1 },
+  { id: 'hammi_wal_hazan', start: 327.0, end: 338.5, repeats: 1 },
+  { id: 'afiyah', start: 338.5, end: 356.5, repeats: 1 },
+  { id: 'sayyidul_istighfar', start: 356.5, end: 375.0, repeats: 1 },
+  { id: 'istighfar_100', start: 375.0, end: 387.0, repeats: 1 },
+  { id: 'shalawat', start: 387.0, end: 414.0, repeats: 1 },
+  { id: 'hasbiyallah', start: 414.0, end: 423.0, repeats: 1 },
+  { id: 'tasbih_tahmid_tahlil', start: 423.0, end: 441.0, repeats: 1 },
+  { id: 'tahlil_wahdahu', start: 441.0, end: 459.0, repeats: 1 },
+  { id: 'doa_rabithah', start: 459.0, end: 511.88, repeats: 1 }
 ];
 
-const EVENING_RATIO = 1508.38 / 511.88;
-const MATSURAT_TIMELINE_EVENING: MatsuratMilestone[] = MATSURAT_TIMELINE_MORNING.map((m) => ({
-  id: m.id,
-  start: Math.round(m.start * EVENING_RATIO * 10) / 10,
-  end: Math.round(m.end * EVENING_RATIO * 10) / 10
-}));
+// Exact calibrated timestamps for Evening Recitation (1508.38s) with authentic sunnah repetitions
+const MATSURAT_TIMELINE_EVENING: MatsuratMilestone[] = [
+  { id: 'fatihah', start: 0.0, end: 38.2, repeats: 1 },
+  { id: 'baqarah_awal', start: 38.2, end: 99.1, repeats: 1 },
+  { id: 'ayat_kursi', start: 99.1, end: 151.4, repeats: 1 },
+  { id: 'baqarah_tengah', start: 151.4, end: 209.2, repeats: 1 },
+  { id: 'baqarah_akhir', start: 209.2, end: 275.2, repeats: 1 },
+  { id: 'al_ikhlas', start: 275.2, end: 343.1, repeats: 3 },
+  { id: 'al_falaq', start: 343.1, end: 404.0, repeats: 3 },
+  { id: 'an_nas', start: 404.0, end: 451.0, repeats: 3 },
+  { id: 'mulku_lillah', start: 451.0, end: 505.3, repeats: 1 },
+  { id: 'fitrah_islam', start: 505.3, end: 532.9, repeats: 1 },
+  { id: 'afwa_wal_afiyah', start: 532.9, end: 605.0, repeats: 1 },
+  { id: 'khair_yaum', start: 605.0, end: 640.2, repeats: 1 },
+  { id: 'bika_ashbahna', start: 640.2, end: 659.1, repeats: 1 },
+  { id: 'radhitu_billah', start: 659.1, end: 734.4, repeats: 3 },
+  { id: 'subhanallah_adada', start: 734.4, end: 777.8, repeats: 3 },
+  { id: 'bismillahilladzi', start: 777.8, end: 889.3, repeats: 3 },
+  { id: 'syirik_protection', start: 889.3, end: 914.0, repeats: 3 },
+  { id: 'audzu_bikalimatillah', start: 914.0, end: 966.8, repeats: 3 },
+  { id: 'hammi_wal_hazan', start: 966.8, end: 988.4, repeats: 3 },
+  { id: 'afiyah', start: 988.4, end: 1069.4, repeats: 3 },
+  { id: 'sayyidul_istighfar', start: 1069.4, end: 1141.3, repeats: 3 },
+  { id: 'istighfar_100', start: 1141.3, end: 1179.1, repeats: 1 },
+  { id: 'shalawat', start: 1179.1, end: 1265.3, repeats: 10 },
+  { id: 'hasbiyallah', start: 1265.3, end: 1309.2, repeats: 7 },
+  { id: 'tasbih_tahmid_tahlil', start: 1309.2, end: 1330.5, repeats: 1 },
+  { id: 'tahlil_wahdahu', start: 1330.5, end: 1399.8, repeats: 10 },
+  { id: 'doa_rabithah', start: 1399.8, end: 1489.2, repeats: 1 }
+];
 
 export const AlMatsuratView: React.FC = () => {
   const { language } = useLanguage();
@@ -186,8 +211,23 @@ export const AlMatsuratView: React.FC = () => {
       return { activeItemId: null, progressInItem: 0 };
     }
 
+    const timeline = selectedTime === 'morning' ? MATSURAT_TIMELINE_MORNING : MATSURAT_TIMELINE_EVENING;
+
     // Per-item audio mode
     if (audioState.playbackType === 'item' && audioState.activeItemId) {
+      const activeMilestone = timeline.find((m) => m.id === audioState.activeItemId);
+      if (activeMilestone) {
+        const itemDuration = activeMilestone.end - activeMilestone.start;
+        const rawProgress = itemDuration > 0 ? (audioState.currentTime - activeMilestone.start) / itemDuration : 0;
+        const repeats = activeMilestone.repeats || 1;
+        const clampedProgress = Math.max(0, Math.min(1, rawProgress));
+        const effectiveProgress = repeats > 1 ? (clampedProgress * repeats) % 1 : clampedProgress;
+        return {
+          activeItemId: audioState.activeItemId,
+          progressInItem: effectiveProgress
+        };
+      }
+
       const dur = audioState.duration || 1;
       const progress = Math.min(1, Math.max(0, audioState.currentTime / dur));
       return {
@@ -198,16 +238,18 @@ export const AlMatsuratView: React.FC = () => {
 
     // Full recitation audio mode (calibrated timestamps)
     if (audioState.playbackType === 'full') {
-      const timeline = selectedTime === 'morning' ? MATSURAT_TIMELINE_MORNING : MATSURAT_TIMELINE_EVENING;
       const curr = audioState.currentTime;
       const activeMilestone = timeline.find((m) => curr >= m.start && curr < m.end);
 
       if (activeMilestone) {
         const itemDuration = activeMilestone.end - activeMilestone.start;
         const rawProgress = itemDuration > 0 ? (curr - activeMilestone.start) / itemDuration : 0;
+        const repeats = activeMilestone.repeats || 1;
+        const clampedProgress = Math.max(0, Math.min(1, rawProgress));
+        const effectiveProgress = repeats > 1 ? (clampedProgress * repeats) % 1 : clampedProgress;
         return {
           activeItemId: activeMilestone.id,
-          progressInItem: Math.max(0, Math.min(1, rawProgress))
+          progressInItem: effectiveProgress
         };
       }
 
@@ -280,29 +322,84 @@ export const AlMatsuratView: React.FC = () => {
     return words.length - 1;
   };
 
-  // 10. Helper to render Arabic text with word-by-word underline
-  const renderUnderlinedArabic = (text: string, isCardActive: boolean) => {
+  // Interactive seek directly to a clicked word in the recitation
+  const handleSeekToWord = (itemId: string, wordIdx: number, text: string) => {
+    const timeline = selectedTime === 'morning' ? MATSURAT_TIMELINE_MORNING : MATSURAT_TIMELINE_EVENING;
+    const milestone = timeline.find((m) => m.id === itemId);
+    if (!milestone) return;
+
+    const tokens = text.split(/(\s+)/);
+    const words = tokens.filter((t) => t.trim().length > 0);
+    if (words.length === 0) return;
+
+    const weights = words.map((w) => {
+      let weight = Math.max(3, w.length);
+      if (w.includes('الم') || w.includes('الٓمٓ') || w.toLowerCase().includes('alif-laaam-miiim')) weight += 28;
+      if (w.includes('aaa') || w.includes('iii') || w.includes('uuu')) weight += 8;
+      if (w.includes('۝') || w.includes('.') || w.includes('،') || w.includes('؛') || w.includes('؟')) weight += 10;
+      return weight;
+    });
+
+    const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+    let targetCumWeight = 0;
+    for (let i = 0; i < wordIdx; i++) {
+      targetCumWeight += weights[i];
+    }
+    const relativePos = targetCumWeight / totalWeight;
+    const itemDuration = milestone.end - milestone.start;
+    const targetSec = milestone.start + relativePos * itemDuration;
+
+    almatsuratAudioService.playFull(selectedTime, targetSec);
+  };
+
+  // Play individual item segment with millisecond precision (100% offline)
+  const handlePlayItemAudio = (itemId: string) => {
+    const timeline = selectedTime === 'morning' ? MATSURAT_TIMELINE_MORNING : MATSURAT_TIMELINE_EVENING;
+    const milestone = timeline.find((m) => m.id === itemId);
+    if (milestone) {
+      almatsuratAudioService.playSegment(itemId, selectedTime, milestone.start, milestone.end);
+    }
+  };
+
+  // Start continuous full recitation from this item onwards
+  const handlePlayFromHere = (itemId: string) => {
+    const timeline = selectedTime === 'morning' ? MATSURAT_TIMELINE_MORNING : MATSURAT_TIMELINE_EVENING;
+    const milestone = timeline.find((m) => m.id === itemId);
+    if (milestone) {
+      almatsuratAudioService.playFull(selectedTime, milestone.start);
+    }
+  };
+
+  // 10. Helper to render Arabic text with word-by-word underline & click-to-seek
+  const renderUnderlinedArabic = (text: string, isCardActive: boolean, itemId: string) => {
     const tokens = text.split(/(\s+)/);
     const actualWordsCount = tokens.filter((t) => t.trim().length > 0).length;
 
-    if (!isCardActive || actualWordsCount === 0 || !audioState.isPlaying) {
+    if (actualWordsCount === 0) {
       return text;
     }
 
-    const currentActiveWordIdx = getActiveWordIndex(text, activeSync.progressInItem);
+    const currentActiveWordIdx = (isCardActive && audioState.isPlaying)
+      ? getActiveWordIndex(text, activeSync.progressInItem)
+      : -1;
 
     let wordCounter = 0;
     return tokens.map((token, index) => {
       if (token.trim().length === 0) {
         return <React.Fragment key={index}>{token}</React.Fragment>;
       }
+      const wordIdx = wordCounter;
       const isWordActive = wordCounter === currentActiveWordIdx;
       wordCounter++;
 
       return (
         <span
           key={index}
-          className={`transition-all duration-200 inline-block ${
+          onClick={(e) => {
+            e.stopPropagation();
+            handleSeekToWord(itemId, wordIdx, text);
+          }}
+          className={`transition-all duration-200 inline-block cursor-pointer hover:bg-amber-100 rounded px-1 ${
             isWordActive
               ? 'underline decoration-[#0B4627] decoration-4 underline-offset-8 font-black text-[#06331D] bg-[#FDE68A] rounded px-1.5 shadow-xs scale-105'
               : ''
@@ -317,6 +414,7 @@ export const AlMatsuratView: React.FC = () => {
                 }
               : undefined
           }
+          title="Klik untuk mendengarkan dari kata ini"
         >
           {token}
         </span>
@@ -324,29 +422,36 @@ export const AlMatsuratView: React.FC = () => {
     });
   };
 
-  // 11. Helper to render Latin transliteration with word-by-word underline
-  const renderUnderlinedLatin = (text: string, isCardActive: boolean) => {
+  // 11. Helper to render Latin transliteration with word-by-word underline & click-to-seek
+  const renderUnderlinedLatin = (text: string, isCardActive: boolean, itemId: string) => {
     const tokens = text.split(/(\s+)/);
     const actualWordsCount = tokens.filter((t) => t.trim().length > 0).length;
 
-    if (!isCardActive || actualWordsCount === 0 || !audioState.isPlaying) {
+    if (actualWordsCount === 0) {
       return text;
     }
 
-    const currentActiveWordIdx = getActiveWordIndex(text, activeSync.progressInItem);
+    const currentActiveWordIdx = (isCardActive && audioState.isPlaying)
+      ? getActiveWordIndex(text, activeSync.progressInItem)
+      : -1;
 
     let wordCounter = 0;
     return tokens.map((token, index) => {
       if (token.trim().length === 0) {
         return <React.Fragment key={index}>{token}</React.Fragment>;
       }
+      const wordIdx = wordCounter;
       const isWordActive = wordCounter === currentActiveWordIdx;
       wordCounter++;
 
       return (
         <span
           key={index}
-          className={`transition-all duration-200 inline-block ${
+          onClick={(e) => {
+            e.stopPropagation();
+            handleSeekToWord(itemId, wordIdx, text);
+          }}
+          className={`transition-all duration-200 inline-block cursor-pointer hover:bg-amber-200/50 rounded px-1 ${
             isWordActive
               ? 'underline decoration-[#D97706] decoration-2 underline-offset-4 font-bold text-amber-950 bg-amber-200/90 rounded px-1'
               : ''
@@ -361,6 +466,7 @@ export const AlMatsuratView: React.FC = () => {
                 }
               : undefined
           }
+          title="Klik untuk mendengarkan dari kata ini"
         >
           {token}
         </span>
@@ -748,31 +854,39 @@ export const AlMatsuratView: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {/* Per-Item Audio Play Button */}
-                  {itemAudio && (
-                    <button
-                      onClick={() => almatsuratAudioService.playItem(item.id, selectedTime, itemAudio)}
-                      className={`px-2 py-1 rounded-lg border border-black text-xs font-black flex items-center gap-1 cursor-pointer transition-all ${
-                        isPlayingThisItem
-                          ? 'bg-[#10B981] text-black shadow-[1px_1px_0px_0px_#000]'
-                          : 'bg-[#FEF3C7] hover:bg-[#FDE68A] text-black shadow-[1px_1px_0px_0px_#000]'
-                      }`}
-                      title={isPlayingThisItem ? 'Jeda Audio' : 'Dengarkan Pelafalan Doa Ini'}
-                    >
-                      {isPlayingThisItem ? (
-                        <>
-                          <Pause className="w-3 h-3 fill-black" />
-                          <span>Jeda</span>
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-3 h-3 fill-black translate-x-0.5" />
-                          <span>Suara</span>
-                        </>
-                      )}
-                    </button>
-                  )}
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  {/* Per-Item Audio Play Button (Precise Segment Talaqqi) */}
+                  <button
+                    onClick={() => handlePlayItemAudio(item.id)}
+                    className={`px-2.5 py-1 rounded-lg border border-black text-xs font-black flex items-center gap-1 cursor-pointer transition-all ${
+                      isPlayingThisItem
+                        ? 'bg-[#10B981] text-black shadow-[1px_1px_0px_0px_#000]'
+                        : 'bg-[#FEF3C7] hover:bg-[#FDE68A] text-black shadow-[1px_1px_0px_0px_#000]'
+                    }`}
+                    title={isPlayingThisItem ? 'Jeda Audio' : 'Dengarkan Pelafalan Doa Ini Saja'}
+                  >
+                    {isPlayingThisItem ? (
+                      <>
+                        <Pause className="w-3 h-3 fill-black" />
+                        <span>Jeda</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-3 h-3 text-black" />
+                        <span>Suara</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Play Continuous Recitation from this Item */}
+                  <button
+                    onClick={() => handlePlayFromHere(item.id)}
+                    className="px-2 py-1 rounded-lg border border-black text-xs font-black flex items-center gap-1 bg-white hover:bg-emerald-50 text-gray-800 shadow-[1px_1px_0px_0px_#000] cursor-pointer"
+                    title="Putar lantunan menerus mulai dari doa ini"
+                  >
+                    <Play className="w-3 h-3 fill-black translate-x-0.5" />
+                    <span className="hidden sm:inline">Mulai Sini</span>
+                  </button>
 
                   {/* Target Count Badge */}
                   <span className="text-xs font-black px-2.5 py-1 bg-amber-100 text-amber-900 border border-black rounded-lg">
@@ -789,7 +903,7 @@ export const AlMatsuratView: React.FC = () => {
                   style={{ fontSize: `${fontSize}px`, lineHeight: `${fontSize * 1.9}px` }}
                   dir="rtl"
                 >
-                  {renderUnderlinedArabic(arabicText, isCardActive)}
+                  {renderUnderlinedArabic(arabicText, isCardActive, item.id)}
                 </div>
 
                 {/* Transliteration with Synchronized Underline */}
@@ -798,7 +912,7 @@ export const AlMatsuratView: React.FC = () => {
                     <span className="font-bold not-italic block text-[10px] text-amber-800 uppercase tracking-wider mb-0.5">
                       Transliterasi Latin:
                     </span>
-                    {renderUnderlinedLatin(transliterationText, isCardActive)}
+                    {renderUnderlinedLatin(transliterationText, isCardActive, item.id)}
                   </div>
                 )}
 
