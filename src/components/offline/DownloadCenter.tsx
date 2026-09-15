@@ -50,7 +50,7 @@ export const DownloadCenter: React.FC = () => {
       id: 'pkg_adzan',
       name: 'Audio Lantunan Adzan Madinah (Syekh Muhammad Marwan Al-Qassas)',
       description: 'Audio resmi muadzin Masjid Nabawi Madinah kualitas studio MP3 untuk azan otomatis offline tanpa internet.',
-      size: '17.5 MB',
+      size: '3.6 MB',
       status: 'idle',
       progress: 0,
       downloadUrl: ADZAN_MARWAN_ALQASSAS_URL,
@@ -136,7 +136,7 @@ export const DownloadCenter: React.FC = () => {
         // Step 1: Pre-cache core shell
         await new Promise((r) => setTimeout(r, 400));
         setFullPacketProgress(35);
-        setFullPacketStatus('Mengunduh Audio Adzan Madinah Syekh Marwan Al-Qassas (17.5 MB)...');
+        setFullPacketStatus('Mengunduh Audio Adzan Madinah Syekh Marwan Al-Qassas (3.6 MB)...');
 
         // Step 2: Download & Cache Adzan Audio
         try {

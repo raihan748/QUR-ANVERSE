@@ -86,7 +86,7 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             className="p-3 bg-emerald-950/80 hover:bg-emerald-900 border-2 border-[#F59E0B] rounded-2xl cursor-pointer text-[#F59E0B] flex items-center gap-2 text-xs font-bold transition-all shadow-[2px_2px_0px_0px_#000]"
-            title="Download Audio Adzan Madinah (17.5 MB)"
+            title="Download Audio Adzan Madinah (3.6 MB)"
           >
             <Download className="w-5 h-5" />
             <span className="hidden sm:inline">Unduh MP3</span>
@@ -158,7 +158,7 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
             className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-extrabold text-xs rounded-xl border-2 border-black neo-button cursor-pointer inline-flex items-center gap-1.5"
           >
             <Download className="w-4 h-4" />
-            <span>Unduh Audio Adzan (17.5 MB)</span>
+            <span>Unduh Audio Adzan (3.6 MB)</span>
           </a>
         </div>
 

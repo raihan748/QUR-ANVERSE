@@ -231,7 +231,7 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2.5 bg-emerald-950/90 hover:bg-emerald-900 text-[#F59E0B] border-2 border-[#F59E0B] rounded-xl neo-button cursor-pointer font-black text-xs flex items-center gap-2 shrink-0 shadow-[2px_2px_0px_0px_#000]"
-              title="Download File Audio Adzan Madinah (17.5 MB)"
+              title="Download File Audio Adzan Madinah (3.6 MB)"
             >
               <Download className="w-4 h-4" />
               <span>Unduh Audio Adzan</span>
