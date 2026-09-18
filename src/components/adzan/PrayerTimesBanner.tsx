@@ -110,27 +110,29 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
   // Update countdown every second & trigger auto-adzan
   useEffect(() => {
     const timer = setInterval(() => {
-      if (liveApiResponse) {
-        const updatedList = buildPrayerTimesList(liveApiResponse.timings, new Date());
-        setPrayerTimes(updatedList);
-        const countdown = getCountdownToNextPrayer(updatedList);
-        setCountdownData(countdown);
+      const timings = liveApiResponse?.timings;
+      const updatedList = timings
+        ? buildPrayerTimesList(timings, new Date())
+        : calculatePrayerTimes(new Date(), activeLocation);
 
-        // Trigger automatic fullscreen Adzan if seconds reach 0 AND auto-adzan is enabled
-        if (countdown.secondsRemaining === 0 && autoAdzanEnabled) {
-          const prayerName = countdown.nextPrayer?.name || 'Shalat';
-          const triggerKey = `${prayerName}_${new Date().toDateString()}_${new Date().getHours()}`;
-          
-          if (lastAdzanTriggeredRef.current !== triggerKey) {
-            lastAdzanTriggeredRef.current = triggerKey;
-            adzanGlobalService.triggerManual(prayerName);
-          }
+      setPrayerTimes(updatedList);
+      const countdown = getCountdownToNextPrayer(updatedList);
+      setCountdownData(countdown);
+
+      // Trigger automatic fullscreen Adzan if seconds reach 0 AND auto-adzan is enabled
+      if (countdown.secondsRemaining === 0 && autoAdzanEnabled) {
+        const prayerName = countdown.nextPrayer?.name || 'Shalat';
+        const triggerKey = `${prayerName}_${new Date().toDateString()}_${new Date().getHours()}`;
+        
+        if (lastAdzanTriggeredRef.current !== triggerKey) {
+          lastAdzanTriggeredRef.current = triggerKey;
+          adzanGlobalService.triggerManual(prayerName);
         }
       }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [liveApiResponse, autoAdzanEnabled]);
+  }, [liveApiResponse, autoAdzanEnabled, activeLocation]);
 
   // Toggle Auto-Adzan & Request User Permission
   const handleToggleAutoAdzan = async () => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { NavigationTab, UserProfile, PrayerTime } from './types';
 import { getLocalProfile, saveLocalProfile } from './services/offlineStorage';
-import { calculatePrayerTimes, getCountdownToNextPrayer } from './services/prayerTimeEngine';
+import { calculatePrayerTimes, getCountdownToNextPrayer, getSavedLocation, fetchLiveInternetPrayerTimes, buildPrayerTimesList, LocationConfig } from './services/prayerTimeEngine';
 import { Navbar } from './components/common/Navbar';
 import { Sidebar } from './components/common/Sidebar';
 import { BottomNav } from './components/common/BottomNav';
@@ -42,6 +42,11 @@ export function App() {
   const [isFullscreenAdzanOpen, setIsFullscreenAdzanOpen] = useState(false);
   const [globalAdzanPrayerName, setGlobalAdzanPrayerName] = useState<string>('Dzuhur');
 
+  // Location and prayer times state (auto-detects city based on local timezone)
+  const [activeLocation, setActiveLocation] = useState<LocationConfig>(() => getSavedLocation());
+  const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>(() => calculatePrayerTimes(new Date(), getSavedLocation()));
+  const [countdownData, setCountdownData] = useState(() => getCountdownToNextPrayer(calculatePrayerTimes(new Date(), getSavedLocation())));
+
   // Initialize HealthWatchdog, Quran Vault Midnight Scheduler, Master Vault Induk Online Handshake & Global On-Time Adzan Daemon on boot
   useEffect(() => {
     healthWatchdog.initiateGuardian();
@@ -65,11 +70,39 @@ export function App() {
     };
   }, []);
 
-  // Prayer times state
-  const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>(calculatePrayerTimes());
-  const [countdownData, setCountdownData] = useState(getCountdownToNextPrayer(prayerTimes));
+  // Fetch live official Kemenag schedule immediately on startup & listen to location changes
+  useEffect(() => {
+    fetchLiveInternetPrayerTimes(activeLocation).then((res) => {
+      if (res?.timings) {
+        const liveList = buildPrayerTimesList(res.timings, new Date());
+        setPrayerTimes(liveList);
+        setCountdownData(getCountdownToNextPrayer(liveList));
+      }
+    }).catch(() => {});
 
-  // Live countdown timer for prayer times & 30-minute Post-Adhan Attendance Auto-Check
+    const handleLocationChanged = (e: Event) => {
+      const customEvent = e as CustomEvent<LocationConfig>;
+      const newLoc = customEvent.detail || getSavedLocation();
+      setActiveLocation(newLoc);
+      const times = calculatePrayerTimes(new Date(), newLoc);
+      setPrayerTimes(times);
+      setCountdownData(getCountdownToNextPrayer(times));
+      fetchLiveInternetPrayerTimes(newLoc).then((res) => {
+        if (res?.timings) {
+          const liveList = buildPrayerTimesList(res.timings, new Date());
+          setPrayerTimes(liveList);
+          setCountdownData(getCountdownToNextPrayer(liveList));
+        }
+      }).catch(() => {});
+    };
+
+    window.addEventListener('qv_prayer_location_changed', handleLocationChanged);
+    return () => {
+      window.removeEventListener('qv_prayer_location_changed', handleLocationChanged);
+    };
+  }, [activeLocation]);
+
+  // Live 1-second countdown ticker for desktop sidebar & 30-minute Post-Adhan Attendance Auto-Check
   useEffect(() => {
     const checkAttendancePrompt = (times: PrayerTime[]) => {
       if ((window as any).__qv_is_attendance_open) return;
@@ -87,18 +120,30 @@ export function App() {
       checkAttendancePrompt(prayerTimes);
     }, 1500);
 
+    let tickCount = 0;
     const timer = setInterval(() => {
-      const times = calculatePrayerTimes();
-      setPrayerTimes(times);
-      setCountdownData(getCountdownToNextPrayer(times));
-      checkAttendancePrompt(times);
-    }, 30000); // Check every 30s
+      tickCount++;
+      const currentCountdown = getCountdownToNextPrayer(prayerTimes);
+      setCountdownData(currentCountdown);
+
+      // When the upcoming prayer arrives (countdown reaches 0), refresh schedule
+      if (currentCountdown.secondsRemaining <= 0) {
+        const newTimes = calculatePrayerTimes(new Date(), activeLocation);
+        setPrayerTimes(newTimes);
+        setCountdownData(getCountdownToNextPrayer(newTimes));
+      }
+
+      // Check attendance prompt every 30 seconds
+      if (tickCount % 30 === 0) {
+        checkAttendancePrompt(prayerTimes);
+      }
+    }, 1000);
 
     return () => {
       clearTimeout(initialCheckTimer);
       clearInterval(timer);
     };
-  }, []);
+  }, [prayerTimes, activeLocation]);
 
   const handleProfileUpdated = (updated: UserProfile) => {
     setUserProfile(updated);
@@ -135,6 +180,7 @@ export function App() {
           onSelectTab={handleSelectTabWithScroll}
           nextPrayer={countdownData.nextPrayer}
           countdownStr={countdownData.formattedCountdown}
+          cityName={activeLocation.city}
         />
 
         {/* Main Content Area with Rich Entrance Animations */}

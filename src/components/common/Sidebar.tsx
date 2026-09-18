@@ -24,13 +24,15 @@ interface SidebarProps {
   onSelectTab: (tab: NavigationTab) => void;
   nextPrayer: PrayerTime | null;
   countdownStr: string;
+  cityName?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onSelectTab,
   nextPrayer,
-  countdownStr
+  countdownStr,
+  cityName
 }) => {
   const { language, t, isRtl } = useLanguage();
 
@@ -186,7 +188,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span>Menuju {nextPrayer?.name || 'Shalat'}</span>
             </div>
             <span className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded border border-emerald-400 font-mono">
-              Makassar
+              {cityName || 'Makassar'}
             </span>
           </div>
 

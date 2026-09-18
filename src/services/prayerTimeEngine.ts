@@ -42,7 +42,7 @@ export interface LivePrayerApiResponse {
   source: 'internet' | 'offline_calculated';
 }
 
-// 1. Get Saved Location or Default
+// 1. Get Saved Location or Auto-Detect Default from Timezone
 export function getSavedLocation(): LocationConfig {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.LOCATION);
@@ -50,12 +50,28 @@ export function getSavedLocation(): LocationConfig {
       return safeJsonParse<LocationConfig>(raw, MAKASSAR_COORDS);
     }
   } catch {}
-  return MAKASSAR_COORDS;
+
+  // Auto-detect best Indonesian city default from user's system timezone offset
+  if (typeof window !== 'undefined') {
+    const tzOffsetHours = -Math.round(new Date().getTimezoneOffset() / 60);
+    if (tzOffsetHours === 7) {
+      // WIB: Jakarta
+      return POPULAR_CITIES.find((c) => c.id === 'jakarta') || POPULAR_CITIES[1];
+    } else if (tzOffsetHours === 9) {
+      // WIT: Jayapura
+      return POPULAR_CITIES.find((c) => c.id === 'jayapura') || POPULAR_CITIES[8];
+    }
+  }
+
+  return MAKASSAR_COORDS; // WITA: Makassar
 }
 
 export function saveLocation(loc: LocationConfig): void {
   try {
     localStorage.setItem(STORAGE_KEYS.LOCATION, safeJsonStringify(loc));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('qv_prayer_location_changed', { detail: loc }));
+    }
   } catch {}
 }
 
@@ -131,54 +147,80 @@ export async function fetchLiveInternetPrayerTimes(
   };
 }
 
-// 3. Fallback High-Precision Astronomical Calculation Engine
+// 3. Fallback High-Precision Astronomical Calculation Engine (Meeus Algorithm calibrated to Kemenag RI)
 export function calculateFallbackAstronomicalTimes(
   baseDate: Date = new Date(),
   coords: LocationConfig = MAKASSAR_COORDS
 ): { timings: Record<string, string> } {
   const date = new Date(baseDate);
   const year = date.getFullYear();
-  const month = date.getMonth();
+  const month = date.getMonth() + 1;
   const day = date.getDate();
 
-  const startOfYear = new Date(year, 0, 0);
-  const diff = date.getTime() - startOfYear.getTime();
-  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+  // Julian Day calculation
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+  const jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
 
-  const delta = 23.45 * Math.sin(((360 / 365) * (dayOfYear - 81) * Math.PI) / 180);
-  const deltaRad = (delta * Math.PI) / 180;
+  const d = jd - 2451545.0; // days since J2000.0
+  let g = (357.529 + 0.98560028 * d) % 360;
+  if (g < 0) g += 360;
+  let q = (280.459 + 0.98564736 * d) % 360;
+  if (q < 0) q += 360;
+  const gRad = (g * Math.PI) / 180;
+
+  let l = (q + 1.915 * Math.sin(gRad) + 0.020 * Math.sin(2 * gRad)) % 360;
+  if (l < 0) l += 360;
+  const lRad = (l * Math.PI) / 180;
+
+  const e = 23.439 - 0.00000036 * d;
+  const eRad = (e * Math.PI) / 180;
+
+  // Sun declination
+  const delta = Math.asin(Math.sin(eRad) * Math.sin(lRad));
+
+  // Right Ascension
+  let raDeg = (Math.atan2(Math.cos(eRad) * Math.sin(lRad), Math.cos(lRad)) * 180) / Math.PI;
+  if (raDeg < 0) raDeg += 360;
+
+  // Equation of Time in minutes
+  let diff = q - raDeg;
+  if (diff > 180) diff -= 360;
+  if (diff < -180) diff += 360;
+  const eqt = diff * 4;
+
   const latRad = (coords.latitude * Math.PI) / 180;
-
-  const b = ((360 / 365) * (dayOfYear - 81) * Math.PI) / 180;
-  const eot = 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
-
-  const longitudeCorrection = (15 * coords.timezone - coords.longitude) * 4;
-  const dzuhurMinutes = 12 * 60 + longitudeCorrection - eot + 3; // +3 min ihtiyat Kemenag
+  const lonDiff = (coords.timezone * 15 - coords.longitude) * 4;
+  const transitMinutes = 12 * 60 + lonDiff - eqt;
+  const dzuhurMinutes = transitMinutes + 2; // +2 min ihtiyat Kemenag standard
 
   const getHourAngleMinutes = (alphaDeg: number): number => {
     const alphaRad = (alphaDeg * Math.PI) / 180;
     const cosHA =
-      (Math.sin(alphaRad) - Math.sin(latRad) * Math.sin(deltaRad)) /
-      (Math.cos(latRad) * Math.cos(deltaRad));
+      (Math.sin(alphaRad) - Math.sin(latRad) * Math.sin(delta)) /
+      (Math.cos(latRad) * Math.cos(delta));
     const clampedCosHA = Math.max(-1, Math.min(1, cosHA));
-    const haDeg = (Math.acos(clampedCosHA) * 180) / Math.PI;
-    return (haDeg / 15) * 60;
+    return ((Math.acos(clampedCosHA) * 180) / Math.PI) * 4;
   };
 
+  // Kemenag RI angles & parameters:
+  // Subuh: -20°, Terbit: -0.833°, Ashar: shadow = object + noon shadow, Maghrib: -0.833°, Isya: -18°
   const subuhMinutes = dzuhurMinutes - getHourAngleMinutes(-20) + 2;
   const imsakMinutes = subuhMinutes - 10;
   const terbitMinutes = dzuhurMinutes - getHourAngleMinutes(-0.833) - 2;
 
-  const tanDiff = Math.tan(Math.abs(latRad - deltaRad));
+  const tanDiff = Math.tan(Math.abs(latRad - delta));
   const asharAltDeg = (Math.atan(1 / (1 + tanDiff)) * 180) / Math.PI;
   const asharMinutes = dzuhurMinutes + getHourAngleMinutes(asharAltDeg) + 2;
 
-  const maghribMinutes = dzuhurMinutes + getHourAngleMinutes(-0.833) + 3;
+  const maghribMinutes = dzuhurMinutes + getHourAngleMinutes(-0.833) + 2;
   const isyaMinutes = dzuhurMinutes + getHourAngleMinutes(-18) + 2;
 
   const formatMin = (m: number) => {
-    const hh = String(Math.floor((m / 60) % 24)).padStart(2, '0');
-    const mm = String(Math.floor(m % 60)).padStart(2, '0');
+    const totalM = Math.round(m);
+    const hh = String(Math.floor((totalM / 60) % 24)).padStart(2, '0');
+    const mm = String(Math.floor(totalM % 60)).padStart(2, '0');
     return `${hh}:${mm}`;
   };
 
@@ -257,8 +299,21 @@ export function buildPrayerTimesList(
   return result;
 }
 
-// 5. Default Synchronous Calculator
+// 5. Default Synchronous Calculator (Cache-First -> Fallback to Astronomical)
 export function calculatePrayerTimes(baseDate: Date = new Date(), location = getSavedLocation()): PrayerTime[] {
+  const dateStr = baseDate.toISOString().split('T')[0];
+  const cacheKey = `${location.id}_${dateStr}`;
+
+  try {
+    const cached = localStorage.getItem(STORAGE_KEYS.CACHE);
+    if (cached) {
+      const parsed = safeJsonParse<{ key: string; data: LivePrayerApiResponse } | null>(cached, null);
+      if (parsed && parsed.key === cacheKey && parsed.data?.timings) {
+        return buildPrayerTimesList(parsed.data.timings, baseDate);
+      }
+    }
+  } catch {}
+
   const fallback = calculateFallbackAstronomicalTimes(baseDate, location);
   return buildPrayerTimesList(fallback.timings, baseDate);
 }
