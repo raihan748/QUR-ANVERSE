@@ -12,6 +12,7 @@ import { masterVaultInduk } from './services/masterVaultIndukService';
 import { healthWatchdog } from './services/healthWatchdogService';
 import { prayerAttendance } from './services/prayerAttendanceService';
 import { ScrollToTopButton } from './components/common/ScrollToTopButton';
+import { QuranBuddyCard } from './components/chat/QuranBuddyCard';
 import { LandingHeroShowcase } from './components/landing/LandingHeroShowcase';
 import { MurojaahStudio } from './components/murojaah/MurojaahStudio';
 
@@ -28,6 +29,7 @@ const AlMatsuratView = lazy(() => import('./components/dzikir/AlMatsuratView').t
 
 import { FullscreenAdzan } from './components/adzan/FullscreenAdzan';
 import { adzanGlobalService, GlobalAdzanTriggerPayload } from './services/adzanGlobalService';
+import { nativeAdzanScheduler } from './services/nativeAdzanScheduler';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 export function App() {
@@ -46,6 +48,7 @@ export function App() {
     quranVault.startMidnightReconciliationScheduler();
     masterVaultInduk.initializeOnlineReconciliationWatcher();
     adzanGlobalService.startDaemon();
+    nativeAdzanScheduler.initializeNativeAdzan();
 
     const handleAdzanTrigger = (e: Event) => {
       const customEvent = e as CustomEvent<GlobalAdzanTriggerPayload>;
@@ -213,6 +216,9 @@ export function App() {
 
       {/* Floating Scroll to Top & Quick Jump Button */}
       <ScrollToTopButton onSelectTab={handleSelectTabWithScroll} />
+
+      {/* Floating Quran Buddy AI Assistant (DeepSeek v4 Pro) in Bottom-Right */}
+      <QuranBuddyCard />
 
       {/* Global Fullscreen Adzan Modal (Accessible anywhere regardless of current tab) */}
       <FullscreenAdzan

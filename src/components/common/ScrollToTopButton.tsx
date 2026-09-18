@@ -32,7 +32,7 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({ onSelectTa
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-20 lg:bottom-6 right-4 z-40 flex flex-col items-end gap-2 animate-pop">
+    <div className="fixed bottom-36 lg:bottom-22 right-4 z-40 flex flex-col items-end gap-2 animate-pop">
       {/* Scroll to Top Button */}
       <button
         onClick={scrollToTop}

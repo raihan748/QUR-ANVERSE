@@ -34,6 +34,7 @@ import {
 } from '../../services/prayerTimeEngine';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { adzanGlobalService } from '../../services/adzanGlobalService';
+import { nativeAdzanScheduler } from '../../services/nativeAdzanScheduler';
 import { DzikirCounter } from './DzikirCounter';
 import { DOA_SETELAH_ADZAN } from '../../data/dzikirData';
 import { prayerAttendance } from '../../services/prayerAttendanceService';
@@ -155,7 +156,11 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
         }
       } catch {}
 
-      setToastMessage('✅ Adzan Otomatis AKTIF: Suara Syekh Muhammad Marwan Al-Qassas akan berkumandang saat waktu shalat tiba.');
+      // 3. Sync Native Android Alarm Scheduler
+      await nativeAdzanScheduler.initializeNativeAdzan();
+      await nativeAdzanScheduler.scheduleUpcomingPrayerAdzans(7);
+
+      setToastMessage('✅ Adzan Otomatis AKTIF: Suara Syekh Muhammad Marwan Al-Qassas akan berkumandang saat waktu shalat tiba (Layar Terkunci & Web).');
     } else {
       setToastMessage('🔕 Adzan Otomatis DINONAKTIFKAN.');
     }
@@ -170,6 +175,7 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
     setActiveLocation(cityConfig);
     setIsCityDropdownOpen(false);
     setGpsError(null);
+    nativeAdzanScheduler.scheduleUpcomingPrayerAdzans(7);
   };
 
   // Handle GPS Auto-Detection
@@ -180,6 +186,7 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
       const gpsLoc = await detectBrowserGPSLocation();
       setActiveLocation(gpsLoc);
       setIsCityDropdownOpen(false);
+      nativeAdzanScheduler.scheduleUpcomingPrayerAdzans(7);
     } catch (err: any) {
       setGpsError(err?.message || 'Gagal mengakses GPS. Pastikan izin lokasi diaktifkan di browser.');
     } finally {
@@ -188,7 +195,7 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
   };
 
   const handleTestAdzan = (name: string) => {
-    adzanGlobalService.triggerManual(name);
+    nativeAdzanScheduler.testAdzanNotificationNow(name);
   };
 
   return (
@@ -234,15 +241,29 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
               title="Download File Audio Adzan Madinah (3.6 MB)"
             >
               <Download className="w-4 h-4" />
-              <span>Unduh Audio Adzan</span>
+              <span>Unduh MP3</span>
             </a>
+
+            <button
+              onClick={handleToggleAutoAdzan}
+              className={`px-3.5 py-2.5 rounded-xl border-2 border-black font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all neo-button ${
+                autoAdzanEnabled
+                  ? 'bg-emerald-300 hover:bg-emerald-200 text-slate-950'
+                  : 'bg-rose-200 hover:bg-rose-300 text-rose-950'
+              }`}
+              title="Aktifkan/Nonaktifkan Adzan otomatis saat masuk waktu shalat (Android background alarm & web alert)"
+            >
+              {autoAdzanEnabled ? <Bell className="w-4 h-4 text-emerald-950" /> : <BellOff className="w-4 h-4 text-rose-800" />}
+              <span>{autoAdzanEnabled ? 'Adzan Auto (Aktif)' : 'Adzan Auto (Mati)'}</span>
+            </button>
 
             <button
               onClick={() => handleTestAdzan(countdownData.nextPrayer?.name || 'Dzuhur')}
               className="px-4 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl neo-button cursor-pointer font-black text-xs flex items-center gap-2 shrink-0 shadow-[2px_2px_0px_0px_#000]"
+              title="Tes bunyi notifikasi & suara adzan sekarang"
             >
               <Play className="w-4 h-4 fill-black" />
-              <span>Simulasi Adzan Layar Penuh</span>
+              <span>Tes Notifikasi & Adzan</span>
             </button>
           </div>
         </div>

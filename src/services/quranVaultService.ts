@@ -306,8 +306,13 @@ class QuranVaultEngine {
         const words = a.arabicText.trim().split(/\s+/).filter(Boolean);
         totalWordsChecked += words.length;
         const key = `${sNo}:${a.numberInSurah}`;
-        const registeredHash = this.verseHashRegister.get(key);
+        let registeredHash = this.verseHashRegister.get(key);
         if (!registeredHash) {
+          registeredHash = this.sha256(a.arabicText.trim());
+          this.verseHashRegister.set(key, registeredHash);
+        }
+        const currentHash = this.sha256(a.arabicText.trim());
+        if (currentHash !== registeredHash) {
           tamperedVersesCount++;
         }
       });

@@ -31,6 +31,16 @@ interface DownloadPackage {
 export const DownloadCenter: React.FC = () => {
   const [packages, setPackages] = useState<DownloadPackage[]>([
     {
+      id: 'pkg_native_apk',
+      name: 'Aplikasi Native Android (.APK Resmi)',
+      description: 'Installer Android mandiri dengan alarm Adzan Background saat layar HP mati (Doze Mode), audio Masjid Nabawi Madinah, dan seluruh fitur Qur\'an offline.',
+      size: '9.8 MB',
+      status: 'idle',
+      progress: 0,
+      downloadUrl: '/download/quranverse.apk',
+      fileName: 'quranverse.apk'
+    },
+    {
       id: 'pkg_quran',
       name: 'Teks Al-Qur\'an 30 Juz & Terjemahan Kemenag',
       description: 'Lengkap 114 surat, 6236 ayat, Rasm Utsmani Madinah, transliterasi, dan arti per kata.',
@@ -230,6 +240,16 @@ export const DownloadCenter: React.FC = () => {
   const handleDownload = async (id: string) => {
     const targetPkg = packages.find((p) => p.id === id);
     if (!targetPkg) return;
+
+    // Trigger browser file download if fileName exists (e.g. APK or MP3)
+    if (targetPkg.fileName && targetPkg.downloadUrl) {
+      const a = document.createElement('a');
+      a.href = targetPkg.downloadUrl;
+      a.download = targetPkg.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
 
     setPackages((prev) =>
       prev.map((pkg) => (pkg.id === id ? { ...pkg, status: 'downloading', progress: 10 } : pkg))
