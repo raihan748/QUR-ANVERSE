@@ -75,11 +75,18 @@ export function saveLocation(loc: LocationConfig): void {
   } catch {}
 }
 
+export function getLocalDateString(date: Date = new Date()): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 // 2. Fetch Live Internet Prayer Schedule from Aladhan API (Kemenag Method 20)
 export async function fetchLiveInternetPrayerTimes(
   location: LocationConfig = getSavedLocation()
 ): Promise<LivePrayerApiResponse> {
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateString();
   const cacheKey = `${location.id}_${todayStr}`;
 
   // Check Cache First
@@ -301,7 +308,7 @@ export function buildPrayerTimesList(
 
 // 5. Default Synchronous Calculator (Cache-First -> Fallback to Astronomical)
 export function calculatePrayerTimes(baseDate: Date = new Date(), location = getSavedLocation()): PrayerTime[] {
-  const dateStr = baseDate.toISOString().split('T')[0];
+  const dateStr = getLocalDateString(baseDate);
   const cacheKey = `${location.id}_${dateStr}`;
 
   try {

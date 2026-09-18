@@ -284,7 +284,10 @@ export function App() {
         isOpen={isPrayerAttendanceModalOpen}
         onClose={() => {
           if (duePrayerForAttendance) {
-            prayerAttendance.dismissPopupForNow(duePrayerForAttendance.id, 60);
+            const today = prayerAttendance.getTodayAttendance();
+            const rec = today.records[duePrayerForAttendance.id as 'subuh' | 'dzuhur' | 'ashar' | 'maghrib' | 'isya'];
+            const isCompletedOrAnswered = !!(rec && rec.status);
+            prayerAttendance.dismissPopupForNow(duePrayerForAttendance.id, isCompletedOrAnswered ? 24 * 60 : 60);
           }
           prayerAttendance.setGeneralCooldown(15);
           setIsPrayerAttendanceModalOpen(false);

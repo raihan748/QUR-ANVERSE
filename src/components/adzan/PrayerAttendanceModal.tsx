@@ -44,7 +44,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
     status: PrayerAttendanceStatus
   ) => {
     const { attendance: updated, diffXp } = prayerAttendance.recordPrayer(prayerId, status);
-    setAttendance({ ...updated });
+    setAttendance({ ...updated, records: { ...updated.records } });
     setStreakDays(prayerAttendance.getPrayerStreak());
 
     if (diffXp > 0) {
@@ -78,7 +78,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
 
   const handleCloseModal = () => {
     if (duePrayer) {
-      // Jika sudah sholat -> matikan 24 jam; jika belum selesai/ditutup -> snooze 60 menit agar tidak pop-up setiap 30 detik!
+      // Jika sudah sholat -> matikan 24 jam; jika belum selesai/ditutup -> snooze 60 menit agar tidak pop-up terus
       prayerAttendance.dismissPopupForNow(duePrayer.id, isDuePrayerCompleted ? 24 * 60 : 60);
     }
     prayerAttendance.setGeneralCooldown(15);
@@ -93,10 +93,9 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
     onClose();
   };
 
-  // Cari waktu sholat hari ini
+  // Cari waktu sholat hari ini dinamis sesuai lokasi pengguna
   const getPrayerScheduleTime = (prayerId: string): string => {
-    const found = prayerTimes.find((p) => p.id === prayerId);
-    return found ? found.timeStr : PRAYER_DISPLAY_META[prayerId]?.defaultTime || '--:--';
+    return prayerAttendance.getPrayerScheduleTime(prayerId, prayerTimes);
   };
 
   const completedCount = attendance.completedCount || 0;

@@ -39,8 +39,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setWeakVerses(getWeakVerses());
 
     const handleAttendanceUpdated = () => {
-      setPrayerStats(prayerAttendance.getSummaryStats());
-      setTodayAttendance(prayerAttendance.getTodayAttendance());
+      const stats = prayerAttendance.getSummaryStats();
+      const today = prayerAttendance.getTodayAttendance();
+      setPrayerStats({ ...stats });
+      setTodayAttendance({ ...today, records: { ...today.records } });
     };
     window.addEventListener('qv_prayer_attendance_updated', handleAttendanceUpdated);
     return () => {
@@ -104,17 +106,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 const isDone = rec && rec.status !== 'belum';
                 const label = pId.charAt(0).toUpperCase() + pId.slice(1);
                 return (
-                  <span
+                  <button
                     key={pId}
-                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border flex items-center gap-1 transition-all ${
+                    type="button"
+                    onClick={onOpenPrayerAttendanceModal}
+                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border flex items-center gap-1 transition-all cursor-pointer hover:scale-105 active:scale-95 ${
                       isDone
                         ? 'bg-emerald-500 text-slate-950 border-emerald-600 shadow-xs'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-300 dark:border-gray-700'
+                        : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 border-gray-300 dark:border-gray-700'
                     }`}
+                    title={`Klik untuk mencatat absensi sholat ${label}`}
                   >
                     <span>{isDone ? '✓' : '○'}</span>
                     <span>{label}</span>
-                  </span>
+                  </button>
                 );
               })}
             </div>

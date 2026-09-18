@@ -60,8 +60,10 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
 
   useEffect(() => {
     const handleAttendanceUpdated = () => {
-      setAttendanceStats(prayerAttendance.getSummaryStats());
-      setTodayAttendance(prayerAttendance.getTodayAttendance());
+      const stats = prayerAttendance.getSummaryStats();
+      const today = prayerAttendance.getTodayAttendance();
+      setAttendanceStats({ ...stats });
+      setTodayAttendance({ ...today, records: { ...today.records } });
     };
     window.addEventListener('qv_prayer_attendance_updated', handleAttendanceUpdated);
     return () => {
@@ -360,17 +362,20 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
                 const isDone = rec && rec.status !== 'belum';
                 const label = pId.charAt(0).toUpperCase() + pId.slice(1);
                 return (
-                  <span
+                  <button
                     key={pId}
-                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border flex items-center gap-1 transition-all ${
+                    type="button"
+                    onClick={onOpenPrayerAttendanceModal}
+                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border flex items-center gap-1 transition-all cursor-pointer hover:scale-105 active:scale-95 ${
                       isDone
                         ? 'bg-emerald-500 text-slate-950 border-emerald-300 shadow-xs'
-                        : 'bg-black/30 text-emerald-300/60 border-emerald-900/40'
+                        : 'bg-black/30 hover:bg-black/50 text-emerald-300/80 border-emerald-900/40'
                     }`}
+                    title={`Klik untuk mencatat absensi sholat ${label}`}
                   >
                     <span>{isDone ? '✓' : '○'}</span>
                     <span>{label}</span>
-                  </span>
+                  </button>
                 );
               })}
             </div>
