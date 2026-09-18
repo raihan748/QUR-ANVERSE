@@ -1,7 +1,7 @@
 {
-  "name": "QURANVERSE - AI Quran & Murojaah",
+  "name": "QURANVERSE - AI Powered Digital Quran",
   "short_name": "QURANVERSE",
-  "description": "The Ultimate Islamic AI Platform untuk Baca Al-Qur'an 30 Juz, Muroja'ah Real-time, Koreksi Tajwid Syekh Misyari, dan Waktu Shalat Makassar.",
+  "description": "AI Powered Digital Quran untuk Baca Al-Qur'an 30 Juz, Muroja'ah Real-time, Koreksi Tajwid, dan Waktu Shalat.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0B4627",
