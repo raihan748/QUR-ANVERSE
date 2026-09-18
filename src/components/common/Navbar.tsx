@@ -83,6 +83,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </button>
 
+          {/* QURAN BUDDY AI ASSISTANT BUTTON */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('qv_open_quran_buddy'))}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#06331D] hover:bg-emerald-900 text-amber-300 border-2 border-amber-400/80 rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop"
+            title="Tanya Quran Buddy (DeepSeek v4 Pro)"
+          >
+            <span>🤖</span>
+            <span className="hidden sm:inline font-bold">Quran Buddy</span>
+          </button>
+
           {/* BILINGUAL LANGUAGE SWITCHER (ID <-> AR - KUWAIT) */}
           <button
             onClick={toggleLanguage}

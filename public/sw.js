@@ -1,6 +1,6 @@
 // QURANVERSE Progressive Web App (PWA) Service Worker
 // Cache-First with Network Fallback for 100% Offline Capability
-const CACHE_NAME = 'quranverse-offline-v2';
+const CACHE_NAME = 'quranverse-offline-v3';
 
 const STATIC_ASSETS = [
   '/',

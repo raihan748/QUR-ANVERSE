@@ -38,10 +38,18 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load chat history and config on mount
+  // Load chat history and config on mount + listen to global open event
   useEffect(() => {
     setMessages(quranBuddyService.loadHistory());
     setConfigForm(quranBuddyService.getConfig());
+
+    const handleGlobalOpen = () => {
+      setIsOpen(true);
+      setIsMinimized(false);
+    };
+
+    window.addEventListener('qv_open_quran_buddy', handleGlobalOpen);
+    return () => window.removeEventListener('qv_open_quran_buddy', handleGlobalOpen);
   }, []);
 
   // Auto scroll to bottom of chat
@@ -127,7 +135,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
   // 1. Minimized / Floating Trigger Button (Saat ditutup)
   if (!isOpen) {
     return (
-      <div className={`fixed bottom-20 lg:bottom-6 right-3 sm:right-4 z-50 ${className}`}>
+      <div className={`fixed bottom-20 lg:bottom-6 right-3 sm:right-4 z-[9999] ${className}`}>
         <button
           onClick={() => {
             setIsOpen(true);
@@ -154,7 +162,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
   // 2. Minimized Header Strip (Collapsed state)
   if (isMinimized) {
     return (
-      <div className={`fixed bottom-20 lg:bottom-6 right-4 z-50 ${className}`}>
+      <div className={`fixed bottom-20 lg:bottom-6 right-4 z-[9999] ${className}`}>
         <div className="flex items-center justify-between w-[280px] sm:w-[320px] px-3.5 py-2.5 bg-[#0B4627] text-white border-3 border-black rounded-2xl shadow-[4px_4px_0px_0px_#000]">
           <div
             onClick={() => setIsMinimized(false)}
@@ -190,7 +198,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
   // 3. Fully Expanded Compact Card
   return (
     <div
-      className={`fixed bottom-20 lg:bottom-6 right-3 sm:right-4 z-50 w-[320px] sm:w-[350px] md:w-[370px] h-[470px] sm:h-[500px] max-h-[78vh] flex flex-col bg-[#FFFDF7] border-3 border-black rounded-2xl shadow-[5px_5px_0px_0px_#000] overflow-hidden animate-pop ${className}`}
+      className={`fixed bottom-20 lg:bottom-6 right-3 sm:right-4 z-[9999] w-[320px] sm:w-[350px] md:w-[370px] h-[470px] sm:h-[500px] max-h-[78vh] flex flex-col bg-[#FFFDF7] border-3 border-black rounded-2xl shadow-[5px_5px_0px_0px_#000] overflow-hidden animate-pop ${className}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#0B4627] text-white border-b-2 border-black select-none">
