@@ -5,16 +5,12 @@ import {
   X,
   Minimize2,
   Trash2,
-  Settings,
   Bot,
-  RotateCcw,
-  Check,
   ChevronDown
 } from 'lucide-react';
 import {
   quranBuddyService,
-  ChatMessage,
-  QuranBuddyConfig
+  ChatMessage
 } from '../../services/quranBuddyService';
 
 interface QuranBuddyCardProps {
@@ -27,21 +23,13 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showSettings, setShowSettings] = useState<boolean>(false);
-
-  // Settings form state
-  const [configForm, setConfigForm] = useState<QuranBuddyConfig>(
-    quranBuddyService.getConfig()
-  );
-  const [savedFeedback, setSavedFeedback] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load chat history and config on mount + listen to global open event
+  // Load chat history on mount + listen to global open event
   useEffect(() => {
     setMessages(quranBuddyService.loadHistory());
-    setConfigForm(quranBuddyService.getConfig());
 
     const handleGlobalOpen = () => {
       setIsOpen(true);
@@ -61,10 +49,10 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
 
   // Focus input when opened
   useEffect(() => {
-    if (isOpen && !isMinimized && !showSettings) {
+    if (isOpen && !isMinimized) {
       setTimeout(() => inputRef.current?.focus(), 150);
     }
-  }, [isOpen, isMinimized, showSettings]);
+  }, [isOpen, isMinimized]);
 
   const handleSendMessage = async (customText?: string) => {
     const textToSend = (customText || inputText).trim();
@@ -95,10 +83,11 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
       setMessages(finalHistory);
       quranBuddyService.saveHistory(finalHistory);
     } catch (err: any) {
+      console.error('[QuranBuddyCard] Error:', err);
       const errorMessage: ChatMessage = {
         id: `msg_err_${Date.now()}`,
         role: 'assistant',
-        content: 'Maaf, terjadi kesalahan saat menghubungi DeepSeek v4 Pro. Silakan periksa kembali API Key dan koneksi internetmu.',
+        content: `⚠️ Maaf, ada kendala: ${err?.message || 'Gagal tersambung ke DeepSeek'}. Coba kirim ulang ya Sahabat Qur'an.`,
         timestamp: Date.now()
       };
       const finalHistory = [...newHistory, errorMessage];
@@ -113,16 +102,6 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
       const reset = quranBuddyService.clearHistory();
       setMessages(reset);
     }
-  };
-
-  const handleSaveConfig = (e: React.FormEvent) => {
-    e.preventDefault();
-    quranBuddyService.updateConfig(configForm);
-    setSavedFeedback(true);
-    setTimeout(() => {
-      setSavedFeedback(false);
-      setShowSettings(false);
-    }, 1200);
   };
 
   const quickPrompts = [
@@ -195,7 +174,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
     );
   }
 
-  // 3. Fully Expanded Compact Card
+  // 3. Fully Expanded Compact Card (Tanpa Menu Setting, Langsung Siap Pakai)
   return (
     <div
       className={`fixed bottom-20 lg:bottom-6 right-3 sm:right-4 z-[9999] w-[320px] sm:w-[350px] md:w-[370px] h-[470px] sm:h-[500px] max-h-[78vh] flex flex-col bg-[#FFFDF7] border-3 border-black rounded-2xl shadow-[5px_5px_0px_0px_#000] overflow-hidden animate-pop ${className}`}
@@ -211,7 +190,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
             <div className="flex items-center gap-1.5">
               <h3 className="font-black text-xs text-amber-300">Quran Buddy</h3>
               <span className="px-1.5 py-0.2 bg-emerald-950 text-emerald-300 text-[9px] font-mono rounded border border-emerald-600">
-                v4 Pro
+                DeepSeek v4 Pro
               </span>
             </div>
             <p className="text-[10px] text-emerald-200 leading-none">Sahabat Belajar Al-Qur'an</p>
@@ -220,31 +199,22 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
 
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setShowSettings(!showSettings)}
-            className={`p-1.5 rounded-lg border border-black/40 hover:bg-emerald-800 transition-colors ${
-              showSettings ? 'bg-amber-400 text-black font-bold' : 'text-emerald-200'
-            }`}
-            title="Pengaturan API Thirty Store"
-          >
-            <Settings className="w-3.5 h-3.5" />
-          </button>
-          <button
             onClick={handleClearHistory}
-            className="p-1.5 text-emerald-200 hover:text-red-300 hover:bg-emerald-800 rounded-lg transition-colors"
+            className="p-1.5 text-emerald-200 hover:text-red-300 hover:bg-emerald-800 rounded-lg transition-colors cursor-pointer"
             title="Reset Percakapan"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setIsMinimized(true)}
-            className="p-1.5 text-emerald-200 hover:text-white hover:bg-emerald-800 rounded-lg transition-colors"
+            className="p-1.5 text-emerald-200 hover:text-white hover:bg-emerald-800 rounded-lg transition-colors cursor-pointer"
             title="Perkecil"
           >
             <Minimize2 className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1.5 text-emerald-200 hover:text-red-400 hover:bg-emerald-800 rounded-lg transition-colors"
+            className="p-1.5 text-emerald-200 hover:text-red-400 hover:bg-emerald-800 rounded-lg transition-colors cursor-pointer"
             title="Tutup"
           >
             <X className="w-4 h-4" />
@@ -252,176 +222,90 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
         </div>
       </div>
 
-      {/* Settings Overlay View */}
-      {showSettings ? (
-        <div className="flex-1 p-3.5 overflow-y-auto bg-amber-50/50 space-y-3 text-xs">
-          <div className="flex items-center justify-between border-b border-gray-300 pb-2">
-            <span className="font-black text-gray-900 flex items-center gap-1.5">
-              <Settings className="w-3.5 h-3.5 text-amber-600" /> Konfigurasi DeepSeek v4
-            </span>
-            <button
-              onClick={() => setShowSettings(false)}
-              className="text-[11px] text-gray-500 hover:text-black font-bold"
+      {/* Chat Messages Area */}
+      <div className="flex-1 p-3 overflow-y-auto space-y-3 bg-[#FFFDF7]">
+        {messages.map((msg) => {
+          const isUser = msg.role === 'user';
+          return (
+            <div
+              key={msg.id}
+              className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
             >
-              Kembali ke Chat
-            </button>
-          </div>
-
-          <form onSubmit={handleSaveConfig} className="space-y-2.5">
-            <div>
-              <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                API Base URL (Thirty Store):
-              </label>
-              <input
-                type="text"
-                value={configForm.baseUrl}
-                onChange={(e) =>
-                  setConfigForm({ ...configForm, baseUrl: e.target.value })
-                }
-                className="w-full p-2 text-xs border-2 border-black rounded-xl bg-white font-mono"
-                placeholder="https://api.thirtystore.com/v1"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                API Key (Bearer Token):
-              </label>
-              <input
-                type="password"
-                value={configForm.apiKey}
-                onChange={(e) =>
-                  setConfigForm({ ...configForm, apiKey: e.target.value })
-                }
-                className="w-full p-2 text-xs border-2 border-black rounded-xl bg-white font-mono"
-                placeholder="sk-ts-..."
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                Model Name:
-              </label>
-              <input
-                type="text"
-                value={configForm.model}
-                onChange={(e) =>
-                  setConfigForm({ ...configForm, model: e.target.value })
-                }
-                className="w-full p-2 text-xs border-2 border-black rounded-xl bg-white font-mono"
-                placeholder="thirty/deepseek-v4-pro"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full py-2 bg-[#0B4627] hover:bg-emerald-900 text-white font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] cursor-pointer flex items-center justify-center gap-1.5 mt-2"
-            >
-              {savedFeedback ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-amber-300" />
-                  <span>Tersimpan!</span>
-                </>
-              ) : (
-                <span>Simpan Pengaturan</span>
-              )}
-            </button>
-          </form>
-
-          <p className="text-[10px] text-gray-500 italic mt-2">
-            Kredensial tersimpan secara privat di penyimpanan lokal HP santri (localStorage) dan tidak pernah dikirim ke pihak lain.
-          </p>
-        </div>
-      ) : (
-        /* Chat Content Area */
-        <>
-          <div className="flex-1 p-3 overflow-y-auto space-y-3 bg-[#FFFDF7]">
-            {messages.map((msg) => {
-              const isUser = msg.role === 'user';
-              return (
-                <div
-                  key={msg.id}
-                  className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
-                >
-                  <div
-                    className={`text-xs leading-relaxed max-w-[88%] p-3 rounded-2xl border-2 border-black ${
-                      isUser
-                        ? 'bg-[#0B4627] text-white rounded-br-sm shadow-[2px_2px_0px_0px_#000]'
-                        : 'bg-white text-gray-900 rounded-bl-sm shadow-[2px_2px_0px_0px_#000] space-y-1'
-                    }`}
-                  >
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
-                  </div>
-                  <span className="text-[9px] text-gray-400 mt-0.5 px-1">
-                    {new Date(msg.timestamp).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
-                </div>
-              );
-            })}
-
-            {isLoading && (
-              <div className="flex items-center gap-2 p-2.5 bg-white border-2 border-black rounded-2xl rounded-bl-sm w-fit shadow-[2px_2px_0px_0px_#000] animate-pulse">
-                <Bot className="w-3.5 h-3.5 text-amber-500 animate-spin" />
-                <span className="text-xs text-gray-600 font-medium">
-                  Quran Buddy sedang berpikir...
-                </span>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Quick Prompts Strip */}
-          {messages.length <= 2 && !isLoading && (
-            <div className="px-2.5 py-1.5 bg-amber-50/70 border-t border-amber-200 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-              {quickPrompts.map((prompt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSendMessage(prompt.replace(/^[^\s]+\s/, ''))}
-                  className="px-2 py-1 text-[10px] bg-white hover:bg-amber-100 text-gray-800 border border-black rounded-lg whitespace-nowrap cursor-pointer shadow-[1px_1px_0px_0px_#000] shrink-0 font-medium"
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Input Footer */}
-          <div className="p-2.5 bg-white border-t-2 border-black">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSendMessage();
-              }}
-              className="flex items-center gap-1.5"
-            >
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder="Tanya arti, tajwid, atau tips Qur'an..."
-                className="flex-1 px-3 py-2 text-xs border-2 border-black rounded-xl bg-gray-50 focus:bg-white focus:outline-none placeholder-gray-400"
-                disabled={isLoading}
-              />
-              <button
-                type="submit"
-                disabled={!inputText.trim() || isLoading}
-                className="p-2 bg-amber-400 hover:bg-amber-500 disabled:opacity-50 text-black border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] cursor-pointer disabled:cursor-not-allowed transition-transform active:translate-x-0.5 active:translate-y-0.5"
-                title="Kirim Pesan"
+              <div
+                className={`text-xs leading-relaxed max-w-[88%] p-3 rounded-2xl border-2 border-black ${
+                  isUser
+                    ? 'bg-[#0B4627] text-white rounded-br-sm shadow-[2px_2px_0px_0px_#000]'
+                    : 'bg-white text-gray-900 rounded-bl-sm shadow-[2px_2px_0px_0px_#000] space-y-1'
+                }`}
               >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
+                <div className="whitespace-pre-wrap">{msg.content}</div>
+              </div>
+              <span className="text-[9px] text-gray-400 mt-0.5 px-1">
+                {new Date(msg.timestamp).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+            </div>
+          );
+        })}
+
+        {/* Typing Loading Bubble */}
+        {isLoading && (
+          <div className="flex items-center gap-2 p-3 bg-white text-gray-800 rounded-2xl border-2 border-black shadow-[2px_2px_0px_0px_#000] w-fit">
+            <span className="text-xs font-bold text-[#0B4627]">Quran Buddy sedang berpikir</span>
+            <div className="flex gap-1 items-center">
+              <span className="w-1.5 h-1.5 bg-[#0B4627] rounded-full animate-bounce [animation-delay:-0.3s]" />
+              <span className="w-1.5 h-1.5 bg-[#0B4627] rounded-full animate-bounce [animation-delay:-0.15s]" />
+              <span className="w-1.5 h-1.5 bg-[#0B4627] rounded-full animate-bounce" />
+            </div>
           </div>
-        </>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Quick Prompts Suggestions (Tampil jika riwayat masih sedikit) */}
+      {messages.length <= 2 && (
+        <div className="px-3 py-1.5 bg-amber-50/70 border-t border-b border-gray-200 flex gap-1.5 overflow-x-auto no-scrollbar">
+          {quickPrompts.map((prompt, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleSendMessage(prompt.replace(/^[^a-zA-Z0-9]+/, '').trim())}
+              className="text-[10px] font-bold whitespace-nowrap px-2.5 py-1 bg-white hover:bg-amber-100 text-gray-800 border border-black rounded-lg transition-colors cursor-pointer shrink-0 shadow-[1px_1px_0px_0px_#000]"
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
       )}
+
+      {/* Input Form Footer */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSendMessage();
+        }}
+        className="p-2.5 bg-white border-t-2 border-black flex items-center gap-2"
+      >
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          placeholder="Tanya tafsir, tajwid, atau tips hafalan..."
+          disabled={isLoading}
+          className="flex-1 px-3 py-2 text-xs border-2 border-black rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 bg-[#F9FAFB] placeholder:text-gray-400 font-medium"
+        />
+        <button
+          type="submit"
+          disabled={!inputText.trim() || isLoading}
+          className="p-2 bg-[#F59E0B] hover:bg-[#D97706] disabled:opacity-50 disabled:hover:bg-[#F59E0B] text-black border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] cursor-pointer transition-all active:translate-x-0.5 active:translate-y-0.5 shrink-0"
+          title="Kirim pesan"
+        >
+          <Send className="w-4 h-4" />
+        </button>
+      </form>
     </div>
   );
 };

@@ -11,20 +11,19 @@ export interface ChatMessage {
   timestamp: number;
 }
 
-export interface QuranBuddyConfig {
-  apiKey: string;
-  baseUrl: string;
-  model: string;
-}
+// Konfigurasi Resmi & Terkunci Thirty Store DeepSeek v4 Pro
+export const THIRTY_STORE_API_KEY = 'sk-ts-VB0BNV245K445QF7ZCRVCN6B7ADS';
+export const THIRTY_STORE_BASE_URL = 'https://api.thirtystore.com/v1';
+export const THIRTY_STORE_MODEL = 'thirty/deepseek-v4-pro';
 
-const DEFAULT_CONFIG: QuranBuddyConfig = {
-  apiKey: import.meta.env.VITE_AI_API_KEY || 'sk-ts-VB0BNV245K445QF7ZCRVCN6B7ADS',
-  baseUrl: import.meta.env.VITE_AI_BASE_URL || 'https://api.thirtystore.com/v1',
-  model: import.meta.env.VITE_AI_MODEL || 'thirty/deepseek-v4-pro'
-};
-
-const STORAGE_KEY_CONFIG = 'qv_quran_buddy_config_v1';
 const STORAGE_KEY_CHAT = 'qv_quran_buddy_chat_history_v1';
+
+// Hapus sisa konfigurasi lama di browser pengguna jika ada
+try {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('qv_quran_buddy_config_v1');
+  }
+} catch {}
 
 const SYSTEM_PROMPT = `Kamu adalah "Quran Buddy", asisten AI sahabat belajar Al-Qur'an di aplikasi QURANVERSE.
 Karaktermu: ramah, santun, hangat, suportif, dan menyejukkan hati santri atau penuntut ilmu (seperti teman halaqah yang berilmu).
@@ -43,35 +42,6 @@ Aturan Respon:
 - Jika pengguna menyapa, sambutlah dengan salam hangat islami (Assalamu'alaikum).`;
 
 class QuranBuddyService {
-  private config: QuranBuddyConfig;
-
-  constructor() {
-    this.config = this.loadConfig();
-  }
-
-  public getConfig(): QuranBuddyConfig {
-    return { ...this.config };
-  }
-
-  public updateConfig(partial: Partial<QuranBuddyConfig>): void {
-    this.config = { ...this.config, ...partial };
-    try {
-      localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(this.config));
-    } catch (e) {
-      console.warn('Gagal menyimpan config Quran Buddy:', e);
-    }
-  }
-
-  private loadConfig(): QuranBuddyConfig {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_CONFIG);
-      if (saved) {
-        return { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
-      }
-    } catch {}
-    return { ...DEFAULT_CONFIG };
-  }
-
   public loadHistory(): ChatMessage[] {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_CHAT);
@@ -112,26 +82,30 @@ class QuranBuddyService {
   }
 
   /**
-   * Kirim pesan ke DeepSeek v4 Pro via Thirty Store API
+   * Kirim pesan langsung ke DeepSeek v4 Pro via Thirty Store API
    */
   public async sendMessage(
     userText: string,
-    history: ChatMessage[]
+    history: ChatMessage[] = []
   ): Promise<string> {
-    const cleanEndpoint = this.config.baseUrl.replace(/\/+$/, '');
-    const url = `${cleanEndpoint}/chat/completions`;
+    const url = `${THIRTY_STORE_BASE_URL}/chat/completions`;
 
     // Siapkan payload messages (System prompt + riwayat percakapan terkini)
     const apiMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
       { role: 'system', content: SYSTEM_PROMPT }
     ];
 
-    // Ambil maksimal 8 percakapan terakhir untuk konteks percakapan
-    const recentHistory = history
-      .filter((m) => m.id !== 'msg_welcome')
-      .slice(-8);
+    // Ambil maksimal 6 riwayat percakapan valid (hindari welcome message dan error message)
+    const validHistory = history.filter(
+      (m) => m.id !== 'msg_welcome' && !m.id.startsWith('msg_err_')
+    );
 
-    for (const msg of recentHistory) {
+    // Ambil konteks percakapan sebelumnya tanpa menduplikasi pesan user saat ini
+    const prevHistory = validHistory.slice(-6);
+    for (const msg of prevHistory) {
+      if (msg === validHistory[validHistory.length - 1] && msg.role === 'user' && msg.content === userText) {
+        continue;
+      }
       apiMessages.push({
         role: msg.role === 'system' ? 'system' : msg.role,
         content: msg.content
@@ -141,57 +115,48 @@ class QuranBuddyService {
     // Tambahkan pesan user saat ini
     apiMessages.push({ role: 'user', content: userText });
 
-    const maxRetries = 2;
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.config.apiKey}`
-          },
-          body: JSON.stringify({
-            model: this.config.model,
-            messages: apiMessages,
-            temperature: 0.7,
-            max_tokens: 1024
-          })
-        });
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${THIRTY_STORE_API_KEY}`,
+          'x-api-key': THIRTY_STORE_API_KEY
+        },
+        body: JSON.stringify({
+          model: THIRTY_STORE_MODEL,
+          messages: apiMessages,
+          temperature: 0.7,
+          max_tokens: 1024
+        })
+      });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.warn(`Quran Buddy Attempt ${attempt} HTTP ${response.status}:`, errorText.slice(0, 100));
-          if (attempt < maxRetries && (response.status >= 500 || response.status === 429)) {
-            // Wait 1.2s before retry
-            await new Promise((resolve) => setTimeout(resolve, 1200));
-            continue;
-          }
-          throw new Error(`Status ${response.status}: ${errorText.slice(0, 100)}`);
-        }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[QuranBuddy] Thirty Store Error Status:', response.status, errorText);
+        throw new Error(`API Thirty Store (${response.status}): ${errorText.slice(0, 120)}`);
+      }
 
-        const data = await response.json();
-        const replyContent = data.choices?.[0]?.message?.content;
+      const data = await response.json();
+      const replyContent = data.choices?.[0]?.message?.content;
 
-        if (!replyContent) {
-          throw new Error('Format respon API kosong atau tidak sesuai.');
-        }
+      if (!replyContent) {
+        throw new Error('Format respon API kosong atau tidak sesuai.');
+      }
 
-        return replyContent.trim();
-      } catch (err: any) {
-        if (attempt < maxRetries) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          continue;
-        }
-        console.warn('Gagal koneksi ke DeepSeek Thirty Store, beralih ke local fallback:', err);
+      return replyContent.trim();
+    } catch (err: any) {
+      console.warn('[QuranBuddy] Gagal koneksi Thirty Store:', err);
+      // Jika perangkat offline di mode pesawat
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
         return this.generateOfflineFallback(userText);
       }
+      throw err;
     }
-
-    return this.generateOfflineFallback(userText);
   }
 
   /**
-   * Fallback cerdas saat mode offline atau koneksi sedang tidak tersedia
+   * Fallback cerdas saat mode offline (Pesawat / Tanpa Koneksi)
    */
   private generateOfflineFallback(query: string): string {
     const q = query.toLowerCase();
