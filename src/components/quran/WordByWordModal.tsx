@@ -39,32 +39,44 @@ export const WordByWordModal: React.FC<WordByWordModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<ModalTab>('words');
 
-  if (!isOpen || !ayat) return null;
-
-  const words = (ayat.words && ayat.words.length > 0)
-    ? ayat.words
-    : ayat.arabicText.split(/\s+/).filter(Boolean).map((w, idx) => ({
-        id: idx + 1,
-        arabic: w,
-        transliteration: `Lafal ke-${idx + 1}`,
-        meaningId: `Potongan kata ke-${idx + 1}`
-      }));
+  const words = useMemo(() => {
+    if (!ayat) return [];
+    return (ayat.words && ayat.words.length > 0)
+      ? ayat.words
+      : ayat.arabicText.split(/\s+/).filter(Boolean).map((w, idx) => ({
+          id: idx + 1,
+          arabic: w,
+          transliteration: `Lafal ke-${idx + 1}`,
+          meaningId: `Potongan kata ke-${idx + 1}`
+        }));
+  }, [ayat]);
 
   // Research Data
   const irabData = useMemo(() => {
-    return SyntacticIrabEngine.analyzeAyah(ayat.surahNumber, ayat.numberInSurah, ayat.arabicText);
+    return SyntacticIrabEngine.analyzeAyah(
+      ayat?.surahNumber || 1,
+      ayat?.numberInSurah || 1,
+      ayat?.arabicText || ''
+    );
   }, [ayat]);
 
   const hadithCorrelations = useMemo(() => {
-    return QuranHadithCrossGraph.getCorrelationsForAyah(ayat.surahNumber, ayat.numberInSurah);
+    return QuranHadithCrossGraph.getCorrelationsForAyah(
+      ayat?.surahNumber || 1,
+      ayat?.numberInSurah || 1
+    );
   }, [ayat]);
 
   const qiraatVariants = useMemo(() => {
-    return QiraatComparativeEngine.getVariantsForAyah(ayat.surahNumber, ayat.numberInSurah);
+    return QiraatComparativeEngine.getVariantsForAyah(
+      ayat?.surahNumber || 1,
+      ayat?.numberInSurah || 1
+    );
   }, [ayat]);
 
   const asmaulPairs = useMemo(() => {
     const allPairs = AsmaulHusnaOntologyEngine.getPairedAttributes();
+    if (!ayat) return allPairs.slice(0, 2);
     const matched = allPairs.filter((p) =>
       p.representativeAyat.some(
         (a) => a.surahNumber === ayat.surahNumber && a.ayahNumber === ayat.numberInSurah
@@ -74,8 +86,13 @@ export const WordByWordModal: React.FC<WordByWordModalProps> = ({
   }, [ayat]);
 
   const parallelVerse = useMemo(() => {
-    return MultilingualConcordanceEngine.getParallelVerse(ayat.surahNumber, ayat.numberInSurah);
+    return MultilingualConcordanceEngine.getParallelVerse(
+      ayat?.surahNumber || 1,
+      ayat?.numberInSurah || 1
+    );
   }, [ayat]);
+
+  if (!isOpen || !ayat) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">

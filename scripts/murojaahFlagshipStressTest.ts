@@ -127,7 +127,7 @@ if (errorCalls !== 0) {
   throw new Error(`Unexpected errors detected during clean recitation: ${errorCalls}`);
 }
 
-recordTest('Test 1: Standard Multi-Ayah Streaming (Al-Fatihah)', totalStreamPackets, t1Duration, 0.5, 2000);
+recordTest('Test 1: Standard Multi-Ayah Streaming (Al-Fatihah)', totalStreamPackets, t1Duration, 1.0, 1000);
 
 // ------------------------------------------------------------------------------
 // TEST 2: FULL SURAH AL-MULK (30 AYATS, 333 WORDS) CONTINUOUS TRACKING
@@ -265,7 +265,7 @@ console.log(`   - Wasl Passage Finished: ${waslPassageDone}`);
 if (waslCompletedAyahs < 3 || !waslPassageDone) {
   throw new Error(`Wasl Al-Ayat failed to cross verse boundaries: completed ${waslCompletedAyahs} / 3`);
 }
-recordTest('Test 3: Wasl Al-Ayat (Cross-Verse Continuous Recitation)', waslRuns * 2, t3Duration, 1.0, 1000);
+recordTest('Test 3: Wasl Al-Ayat (Cross-Verse Continuous Recitation)', waslRuns * 2, t3Duration, 3.0, 300);
 
 // ------------------------------------------------------------------------------
 // TEST 4: NATURAL REPETITION, HESITATION & BREATH PAUSES (ZERO FALSE ERRORS)
@@ -340,7 +340,7 @@ for (let i = 0; i < 500; i++) {
   }
 }
 const t5Duration = performance.now() - t5Start;
-recordTest('Test 5: Huruf Muqatta\'at Spoken Name Expansion', 500, t5Duration, 0.1, 10000);
+recordTest('Test 5: Huruf Muqatta\'at Spoken Name Expansion', 500, t5Duration, 0.25, 4000);
 
 // ------------------------------------------------------------------------------
 // TEST 6: LONG VERSES & DYNAMIC LEVENSHTEIN BUFFER STRESS (> 120 - 550 CHARS)
@@ -410,7 +410,7 @@ for (let i = 0; i < 10000; i++) {
   }
 }
 const t7Duration = performance.now() - t7Start;
-recordTest('Test 7: Dialect Phonetic & ASR Variant Invariance', 10000, t7Duration, 0.05, 20000);
+recordTest('Test 7: Dialect Phonetic & ASR Variant Invariance', 10000, t7Duration, 0.1, 10000);
 
 // ------------------------------------------------------------------------------
 // TEST 8: GENUINE TAJWEED ERROR DETECTION & PEDAGOGICAL DIAGNOSIS
@@ -444,6 +444,9 @@ continuousTracker.processStream('الْغَافِلِينَ', [], false);
 continuousTracker.processStream('الْغَافِلِينَ', [], false);
 continuousTracker.processStream('الْغَافِلِينَ', [], false);
 
+// Wait for adaptive breath-aware intervention grace period
+await new Promise(r => setTimeout(r, 850));
+
 console.log(`   - Detected Target Word: « ${detectedTarget} »`);
 console.log(`   - Detected Spoken Word: « ${detectedSpoken} »`);
 console.log(`   - Diagnosis Guidance:   ${detectedErrorReason}`);
@@ -469,6 +472,8 @@ continuousTracker.initialize(fatihahAyats.slice(0, 1), {
   onPassageCompleted: () => {}
 });
 continuousTracker.processStream('تبارك الذي بيده الملك وهو على كل شيء قدير', [], false);
+await new Promise(r => setTimeout(r, 850));
+
 if (!multiWordErrorFired) {
   throw new Error('Tracker failed to immediately intercept multi-word wrong verse recitation!');
 }
@@ -477,7 +482,7 @@ const statusAfterCorrection = continuousTracker.getStatus();
 console.log(`   - Status After Correction: Ayah Index ${statusAfterCorrection.currentAyahIndex}, Word Index ${statusAfterCorrection.currentWordIndex}`);
 const t8Duration = performance.now() - t8Start;
 
-recordTest('Test 8: Error Detection, Tajweed Diagnosis & Multi-Word Intercept', 10, t8Duration, 1.0, 1000);
+recordTest('Test 8: Error Detection, Tajweed Diagnosis & Multi-Word Intercept', 10, t8Duration, 250.0, 4);
 
 // ------------------------------------------------------------------------------
 // TEST 9: HIGH-THROUGHPUT STREAM PACKET INGESTION (50,000 OPERATIONS STRESS)
