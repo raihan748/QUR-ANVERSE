@@ -9,7 +9,7 @@ export const translations = {
   id: {
     // Brand
     brandTitle: 'AL-HUDA',
-    brandSubtitle: 'AI Guru Ngaji Pribadi • Muroja\'ah Real-time',
+    brandSubtitle: 'Membaca, Merenungi, dan Memahami Al-Qur\'an dengan Pencarian Makna yang Jernih.',
     aiPlatform: 'AI Platform',
     standardBadge: 'Standar Kemenag RI',
     
@@ -41,7 +41,7 @@ export const translations = {
     // Hero Section
     heroTitle: 'AI Guru Ngaji Interaktif untuk',
     heroTitleHighlight: 'Baca, Hafalan & Muroja\'ah',
-    heroDesc: 'Platform modern berarsitektur Islamic Neobrutalism. Evaluasi kelancaran makhraj & tajwid secara real-time, mode simai tutup mata, game sambung ayat, hingga jadwal shalat & adzan otomatis.',
+    heroDesc: 'Eksplorasi lembaran mushaf digital secara khusyuk dan praktis. Evaluasi kelancaran makhraj & tajwid secara real-time, mode simai tutup mata, game sambung ayat, hingga jadwal shalat & adzan otomatis.',
     heroStartMurojaah: 'Mulai Muroja\'ah AI Sekarang',
     heroModeTilawah: 'Mode Tilawah',
     heroOpenMushaf: 'Mushaf 30 Juz',
@@ -98,7 +98,7 @@ export const translations = {
   ar: {
     // Brand
     brandTitle: 'الهدى',
-    brandSubtitle: 'المعلم القرآني الذكي • مراجعة فورية وتصحيح التجويد',
+    brandSubtitle: 'تلاوة وتدبر وفهم القرآن الكريم ببيان واضح ومعنى جلي',
     aiPlatform: 'منصة الذكاء الاصطناعي',
     standardBadge: 'مصحف معتمد بالرسم العثماني',
 
@@ -130,7 +130,7 @@ export const translations = {
     // Hero Section
     heroTitle: 'المعلم القرآني الذكي التفاعلي لـ',
     heroTitleHighlight: 'التلاوة، الحفظ والمراجعة',
-    heroDesc: 'منصة إسلامية متطورة بتقنيات الذكاء الاصطناعي وتصميم حديث. تقييم فوري لمخارج الحروف وأحكام التجويد، وضع التسميع غيباً، مسابقة وصل الآيات، ومواقيت الصلاة الدقيقة.',
+    heroDesc: 'استكشاف صفحات المصحف الرقمي بخشوع ويسر. تقييم فوري لمخارج الحروف وأحكام التجويد، وضع التسميع غيباً، مسابقة وصل الآيات، ومواقيت الصلاة الدقيقة.',
     heroStartMurojaah: 'ابدأ المراجعة الذكية الآن',
     heroModeTilawah: 'وضع التلاوة المرتلة',
     heroOpenMushaf: 'فتح المصحف الشريف',

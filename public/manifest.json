@@ -1,7 +1,7 @@
 {
-  "name": "Al-Huda - AI Powered Digital Quran",
+  "name": "Al-Huda - Membaca, Merenungi, dan Memahami Al-Qur'an",
   "short_name": "Al-Huda",
-  "description": "Al-Huda - AI Powered Digital Quran untuk Baca Al-Qur'an 30 Juz, Muroja'ah Real-time, Koreksi Tajwid, dan Waktu Shalat.",
+  "description": "Al-Huda: Membaca, Merenungi, dan Memahami Al-Qur'an dengan Pencarian Makna yang Jernih. Eksplorasi lembaran mushaf digital secara khusyuk dan praktis.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0B4627",
