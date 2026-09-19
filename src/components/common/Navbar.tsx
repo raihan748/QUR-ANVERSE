@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Download, Languages } from 'lucide-react';
+import { Sparkles, Download, Languages, Clock, BookOpen, Bot } from 'lucide-react';
 import { UserProfile, NavigationTab } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -28,23 +28,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => onSelectTab('murojaah_ai')}
           className="flex items-center gap-3 cursor-pointer group select-none"
         >
-          <div className="w-11 h-11 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black shadow-[3px_3px_0px_0px_#000] relative group-hover:scale-105 group-active:scale-95 transition-all overflow-hidden p-0.5 shrink-0 animate-pop">
-            <img 
-              src="/favicon.svg" 
-              alt="Al-Huda App Logo" 
-              className="w-full h-full object-contain rounded-xl drop-shadow-sm" 
-            />
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#10B981] border border-black flex items-center justify-center animate-bounce shadow-xs">
-              <Sparkles className="w-2.5 h-2.5 text-white" />
-            </div>
+          <div className="w-10 h-10 bg-gradient-to-br from-[#F59E0B] via-amber-400 to-amber-500 rounded-xl border-2 border-black flex items-center justify-center font-black text-black shadow-[2px_2px_0px_0px_#000] group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-all">
+            <span className="text-xl font-display">H</span>
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-extrabold text-base sm:text-xl tracking-wider font-display text-[#F59E0B] drop-shadow-xs">
-                {language === 'ar' ? t.brandTitle : 'AL-HUDA'}
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-lg font-extrabold tracking-tight font-display text-white">
+                AL-HUDA
               </h1>
-              <span className="px-2 py-0.5 bg-black text-[#10B981] text-[10px] font-black rounded-md border border-[#10B981] uppercase animate-pulse shadow-xs tracking-wide">
-                {t.aiPlatform}
+              <span className="px-1.5 py-0.5 text-[10px] font-black bg-[#F59E0B] text-black rounded border border-black uppercase tracking-wider">
+                PRO
               </span>
             </div>
             <p className="text-[11px] text-emerald-100 font-semibold hidden sm:block">
@@ -62,7 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#06331D] hover:bg-emerald-900 text-amber-300 border-2 border-amber-400/80 rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop"
               title="Absensi & Jurnal Sholat 5 Waktu"
             >
-              <span>🕌</span>
+              <Clock className="w-3.5 h-3.5 text-amber-300" />
               <span className="hidden sm:inline font-bold">Absen Sholat</span>
             </button>
           )}
@@ -77,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
             title="Dzikir Al-Ma'tsurat Pagi & Petang"
           >
-            <span>📿</span>
+            <BookOpen className="w-3.5 h-3.5 text-emerald-300" />
             <span className="hidden sm:inline font-bold">
               {language === 'ar' ? 'المأثورات' : 'Al-Ma\'tsurat'}
             </span>
@@ -87,9 +80,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('qv_open_quran_buddy'))}
             className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#06331D] hover:bg-emerald-900 text-amber-300 border-2 border-amber-400/80 rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop"
-            title="Tanya Quran Buddy (DeepSeek v4 Pro)"
+            title="Tanya Quran Buddy"
           >
-            <span>🤖</span>
+            <Bot className="w-3.5 h-3.5 text-amber-300" />
             <span className="hidden sm:inline font-bold">Quran Buddy</span>
           </button>
 
@@ -97,10 +90,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={toggleLanguage}
             className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#FEF3C7] hover:bg-[#FDE68A] text-black border-2 border-black rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop"
-            title={language === 'id' ? 'Ubah ke Bahasa Arab (Kuwait) / التبديل إلى العربية' : 'Ubah ke Bahasa Indonesia / التبديل إلى الإندونيسية'}
+            title={language === 'id' ? 'Ubah ke Bahasa Arab (Kuwait) / التبديل إلى العربية' : 'Ubah ke Bahasa Indonesia / التبدIL إلى الإندونيسية'}
           >
             <Languages className="w-4 h-4 text-[#0B4627]" />
-            <span>{language === 'id' ? '🇮🇩 ID' : '🇰🇼 AR'}</span>
+            <span className="font-bold">{language === 'id' ? 'ID' : 'AR'}</span>
             <span className="text-[10px] text-gray-700 hidden sm:inline">
               {language === 'id' ? 'العربية' : 'Indonesia'}
             </span>

@@ -172,7 +172,7 @@ export const MushafView: React.FC = () => {
           }`}
         >
           <BookOpen className="w-4 h-4 text-[#F59E0B]" />
-          <span>{language === 'ar' ? '📱 مصحف رقمي مفسر' : '📱 Mode Digital (Teks, Terjemah & Per Kata)'}</span>
+          <span>{language === 'ar' ? 'مصحف رقمي مفسر' : 'Mode Digital (Teks, Terjemah & Per Kata)'}</span>
         </button>
 
         <button
@@ -184,7 +184,7 @@ export const MushafView: React.FC = () => {
           }`}
         >
           <Sparkles className="w-4 h-4 text-[#F59E0B]" />
-          <span>{language === 'ar' ? '📖 مصحف المدينة ٦٠٤ صفحة (قلب الصفحات)' : '📖 Mode Mushaf Fisik Asli (604 Halaman Geser)'}</span>
+          <span>{language === 'ar' ? 'مصحف المدينة ٦٠٤ صفحة (قلب الصفحات)' : 'Mushaf Madinah Asli (604 Halaman)'}</span>
         </button>
       </div>
 
