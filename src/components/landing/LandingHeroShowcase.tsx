@@ -48,7 +48,7 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F59E0B] text-black font-extrabold text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] animate-pop">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{language === 'ar' ? 'منصة عالم القرآن الذكية' : 'QURANVERSE AI PLATFORM'}</span>
+                <span>{language === 'ar' ? 'منصة الهدى الذكية' : 'AL-HUDA AI PLATFORM'}</span>
               </span>
               <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/20 text-white font-bold text-xs rounded-xl border border-white/30 backdrop-blur-xs">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />

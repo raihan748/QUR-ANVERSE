@@ -8,7 +8,7 @@ const LANG_STORAGE_KEY = 'quranverse_app_lang_v1';
 export const translations = {
   id: {
     // Brand
-    brandTitle: 'QURANVERSE',
+    brandTitle: 'AL-HUDA',
     brandSubtitle: 'AI Guru Ngaji Pribadi • Muroja\'ah Real-time',
     aiPlatform: 'AI Platform',
     standardBadge: 'Standar Kemenag RI',
@@ -97,7 +97,7 @@ export const translations = {
 
   ar: {
     // Brand
-    brandTitle: 'عالم القرآن',
+    brandTitle: 'الهدى',
     brandSubtitle: 'المعلم القرآني الذكي • مراجعة فورية وتصحيح التجويد',
     aiPlatform: 'منصة الذكاء الاصطناعي',
     standardBadge: 'مصحف معتمد بالرسم العثماني',

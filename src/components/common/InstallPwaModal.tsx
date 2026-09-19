@@ -87,7 +87,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({ isOpen, onClos
                   NATIVE / PWA
                 </span>
               </div>
-              <p className="text-xs text-gray-700 font-medium">QURANVERSE - AI Guru Ngaji Pribadi di Smartphone Anda</p>
+              <p className="text-xs text-gray-700 font-medium">AL-HUDA - AI Guru Ngaji Pribadi di Smartphone Anda</p>
             </div>
           </div>
 
@@ -193,7 +193,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({ isOpen, onClos
                 <div className="p-4 bg-[#D1FAE5] border-2 border-black rounded-xl text-center">
                   <Sparkles className="w-8 h-8 text-[#0B4627] mx-auto mb-2" />
                   <p className="font-bold text-sm text-[#0B4627]">Aplikasi Sudah Terpasang di Perangkat Anda!</p>
-                  <p className="text-xs text-gray-600 mt-1">Buka melalui ikon QURANVERSE di layar utama Anda.</p>
+                  <p className="text-xs text-gray-600 mt-1">Buka melalui ikon AL-HUDA di layar utama Anda.</p>
                 </div>
               ) : (
                 <div>

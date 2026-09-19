@@ -1,7 +1,7 @@
 {
-  "name": "QURANVERSE - AI Powered Digital Quran",
-  "short_name": "QURANVERSE",
-  "description": "AI Powered Digital Quran untuk Baca Al-Qur'an 30 Juz, Muroja'ah Real-time, Koreksi Tajwid, dan Waktu Shalat.",
+  "name": "Al-Huda - AI Powered Digital Quran",
+  "short_name": "Al-Huda",
+  "description": "Al-Huda - AI Powered Digital Quran untuk Baca Al-Qur'an 30 Juz, Muroja'ah Real-time, Koreksi Tajwid, dan Waktu Shalat.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0B4627",

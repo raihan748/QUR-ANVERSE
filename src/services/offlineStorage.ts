@@ -21,7 +21,7 @@ export function sanitizeInput(input: string, maxLength: number = 200): string {
 // Default Initial Profile (Strictly 0 for fresh user progression)
 export const defaultProfile: UserProfile = {
   id: generateSecureId('hafidz'),
-  fullName: 'Hafidz QURANVERSE',
+  fullName: 'Hafidz Al-Huda',
   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
   hafidzLevel: 'Santri Pemula',
   totalXp: 0,

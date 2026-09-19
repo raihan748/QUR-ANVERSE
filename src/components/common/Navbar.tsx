@@ -23,7 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-[#0B4627] border-b-3 border-black px-4 py-3 text-white shadow-[0_4px_0_0_#111827]">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-        {/* Brand & Logo (QURANVERSE) */}
+        {/* Brand & Logo (AL-HUDA) */}
         <div
           onClick={() => onSelectTab('murojaah_ai')}
           className="flex items-center gap-3 cursor-pointer group select-none"
@@ -31,7 +31,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="w-11 h-11 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black shadow-[3px_3px_0px_0px_#000] relative group-hover:scale-105 group-active:scale-95 transition-all overflow-hidden p-0.5 shrink-0 animate-pop">
             <img 
               src="/favicon.svg" 
-              alt="Quranverse App Logo" 
+              alt="Al-Huda App Logo" 
               className="w-full h-full object-contain rounded-xl drop-shadow-sm" 
             />
             <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#10B981] border border-black flex items-center justify-center animate-bounce shadow-xs">
@@ -41,7 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-extrabold text-base sm:text-xl tracking-wider font-display text-[#F59E0B] drop-shadow-xs">
-                {language === 'ar' ? t.brandTitle : 'QURANVERSE'}
+                {language === 'ar' ? t.brandTitle : 'AL-HUDA'}
               </h1>
               <span className="px-2 py-0.5 bg-black text-[#10B981] text-[10px] font-black rounded-md border border-[#10B981] uppercase animate-pulse shadow-xs tracking-wide">
                 {t.aiPlatform}
