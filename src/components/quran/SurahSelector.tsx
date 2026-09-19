@@ -77,7 +77,7 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={language === 'ar' ? 'ابحث عن اسم السورة أو الرقم أو المعنى...' : 'Cari Surat (nama, arti, no)...'}
+            placeholder={language === 'ar' ? 'ابحث عن الآيات حسب الموضوع أو المعنى أو اسم السورة...' : 'Cari Ayat Berdasarkan Topik atau Makna Kalimat...'}
             className="w-full pl-9 pr-3 py-2 bg-white border-2 border-black rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
           />
           {searchQuery && (

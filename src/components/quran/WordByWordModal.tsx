@@ -162,7 +162,7 @@ export const WordByWordModal: React.FC<WordByWordModalProps> = ({
               }`}
             >
               <GraduationCap className="w-3.5 h-3.5 text-amber-300" />
-              <span>I'rab & Nahwu (Pilar 1)</span>
+              <span>I'rab & Kaidah Nahwu</span>
             </button>
 
             <button
@@ -172,7 +172,7 @@ export const WordByWordModal: React.FC<WordByWordModalProps> = ({
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Asmaul Husna (Pilar 2)</span>
+              <span>Asmaul Husna Terkait</span>
             </button>
 
             <button
@@ -182,7 +182,7 @@ export const WordByWordModal: React.FC<WordByWordModalProps> = ({
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Hadits Shahih (Pilar 4)</span>
+              <span>Hadits Shahih Pendukung</span>
             </button>
 
             <button
@@ -192,7 +192,7 @@ export const WordByWordModal: React.FC<WordByWordModalProps> = ({
               }`}
             >
               <Compass className="w-3.5 h-3.5 text-blue-400" />
-              <span>10 Qira'at (Pilar 5)</span>
+              <span>Perbandingan 10 Qira'at</span>
             </button>
 
             <button
@@ -202,7 +202,7 @@ export const WordByWordModal: React.FC<WordByWordModalProps> = ({
               }`}
             >
               <Globe2 className="w-3.5 h-3.5 text-teal-400" />
-              <span>Konkordansi Dunia (Pilar 6)</span>
+              <span>Kamus Makna Multibahasa</span>
             </button>
           </div>
 
