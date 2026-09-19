@@ -768,6 +768,38 @@ export const PhysicalMushafPageReader: React.FC = () => {
     return /^[ۖۗۘۙۚۛۜ۟۠]$/.test(word.trim()) || ['لا', 'قلى', 'صلى', 'ج', 'م', 'قف'].includes(word.trim());
   };
 
+  // Helper to parse line into full-width justified token items with attached waqaf marks
+  const parseMushafLineTokens = (rawText: string): Array<{
+    type: 'word' | 'ayah-number';
+    text: string;
+    waqafMark?: string;
+  }> => {
+    const rawTokens = (rawText || '').split(/\s+/).filter(Boolean);
+    const items: Array<{
+      type: 'word' | 'ayah-number';
+      text: string;
+      waqafMark?: string;
+    }> = [];
+
+    for (let i = 0; i < rawTokens.length; i++) {
+      const tok = rawTokens[i];
+
+      if (isWaqafMark(tok)) {
+        if (items.length > 0 && items[items.length - 1].type === 'word') {
+          items[items.length - 1].waqafMark = tok;
+        } else {
+          items.push({ type: 'word', text: tok });
+        }
+      } else if (isAyahNumberToken(tok)) {
+        items.push({ type: 'ayah-number', text: tok });
+      } else {
+        items.push({ type: 'word', text: tok });
+      }
+    }
+
+    return items;
+  };
+
   // Handle clicking Basmala line directly
   const handleBasmalaClick = (primarySurah: SurahMeta, pageNum: number) => {
     isAudioPlayingRef.current = true;
@@ -1029,15 +1061,15 @@ export const PhysicalMushafPageReader: React.FC = () => {
                     })()
                   );
 
-                  const words = (line.text || '').split(/\s+/).filter(Boolean);
-                  const isShortLine = words.length <= 5;
+                  const tokenItems = parseMushafLineTokens(line.text || '');
+                  const isShortLine = tokenItems.length <= 4 && (idx === lines.length - 1 || lines[idx + 1]?.type === 'surah-header');
 
                   return (
                     <div 
                       key={idx}
                       onClick={() => handleLineClick(line, pageNum)}
-                      className={`w-full font-quran text-lg sm:text-[21px] md:text-[23px] font-bold leading-[2.0] sm:leading-[2.2] py-0.5 px-1 transition-all duration-200 cursor-pointer mushaf-line-row ${
-                        isShortLine ? 'text-center' : 'mushaf-text-justified'
+                      className={`w-full font-quran text-[16px] sm:text-[18px] md:text-[20px] lg:text-[22px] font-bold leading-[1.8] sm:leading-[1.9] py-0.5 px-1 sm:px-2 transition-all duration-200 cursor-pointer mushaf-line-row ${
+                        isShortLine ? 'flex justify-center items-center gap-4' : 'flex items-center justify-between'
                       } ${
                         isLineActive 
                           ? isAudioPaused
@@ -1047,80 +1079,63 @@ export const PhysicalMushafPageReader: React.FC = () => {
                       }`}
                       title={line.verseRange ? `Ayat: ${line.verseRange} (Klik untuk dengarkan audio tilawah)` : undefined}
                     >
-                      {words.map((w, wIdx, wordsArr) => {
+                      {tokenItems.map((item, itemIdx, arr) => {
                         // 1. Check if token is Ayah Rosette Number
-                        if (isAyahNumberToken(w)) {
+                        if (item.type === 'ayah-number') {
                           return (
                             <span
-                              key={wIdx}
-                              className="inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 mx-1.5 my-0.5 rounded-full border border-[#9A3412] bg-gradient-to-br from-[#FEF3C7] via-[#FDE68A] to-[#F59E0B] text-[#7C2D12] font-quran text-xs sm:text-sm font-extrabold shadow-xs align-middle select-none shrink-0"
-                              title={`Akhir Ayat ke-${w}`}
+                              key={itemIdx}
+                              className="inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 mx-0.5 rounded-full border border-[#9A3412] bg-gradient-to-br from-[#FEF3C7] via-[#FDE68A] to-[#F59E0B] text-[#7C2D12] font-quran text-xs sm:text-sm font-extrabold shadow-xs align-middle select-none shrink-0"
+                              title={`Akhir Ayat ke-${item.text}`}
                             >
-                              {w}
+                              {item.text}
                             </span>
                           );
                         }
 
-                        // 2. Check if token is Lafadz Jalalah (Allah) -> Vibrant Red!
-                        if (isLafadzJalalah(w)) {
-                          return (
-                            <span
-                              key={wIdx}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedTajweedWord({ word: w, ruleName: 'Lafadz Jalalah (Allah)' });
-                              }}
-                              className="text-[#D92D20] font-black drop-shadow-[0_0_1px_rgba(217,45,32,0.3)] hover:scale-105 transition-transform inline-block mx-0.5 px-0.5 cursor-pointer"
-                              title="Lafadz Jalalah (الله) - Nama Agung Allah"
-                            >
-                              {w}
-                            </span>
-                          );
-                        }
-
-                        // 3. Check if token is Waqaf mark
-                        if (isWaqafMark(w)) {
-                          return (
-                            <span
-                              key={wIdx}
-                              className="relative inline-flex flex-col items-center justify-center text-[#B45309] font-bold px-0.5 -translate-y-0.5 select-none"
-                              title={`Tanda Waqaf: ${w}`}
-                            >
-                              <span className="text-xs sm:text-sm">{w}</span>
-                              {showWaqafIbtidaGuides && (
-                                <span className="text-[7px] font-sans font-bold text-[#DC2626] leading-none scale-90 -mt-0.5">
-                                  HENTI
-                                </span>
-                              )}
-                            </span>
-                          );
-                        }
-
-                        // 4. Default Word with Tajweed analysis
-                        const nextW = wordsArr[wIdx + 1] || '';
-                        const prevW = wordsArr[wIdx - 1] || '';
-                        const isEnd = wIdx === wordsArr.length - 1;
-                        const style = getTajweedColorForWord(w, nextW, prevW, isEnd);
+                        // 2. Default Word Token with Tajweed & attached Waqaf
+                        const nextW = arr[itemIdx + 1]?.text || '';
+                        const prevW = arr[itemIdx - 1]?.text || '';
+                        const isEnd = itemIdx === arr.length - 1;
+                        const style = getTajweedColorForWord(item.text, nextW, prevW, isEnd);
+                        const isAllah = isLafadzJalalah(item.text);
 
                         return (
-                          <span
-                            key={wIdx}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (style.ruleName) {
-                                setSelectedTajweedWord({ word: w, ruleName: style.ruleName });
-                              }
-                            }}
-                            className={`inline-block mx-0.5 px-0.5 py-0.2 rounded transition-all cursor-pointer select-text hover:scale-105 ${
-                              selectedTajweedWord?.word === w ? 'ring-2 ring-amber-500 bg-amber-100 font-black' : ''
-                            }`}
-                            style={{
-                              color: style.ruleName ? style.color : '#1C1917',
-                              backgroundColor: style.bg !== 'transparent' && selectedTajweedWord?.word !== w ? style.bg : undefined
-                            }}
-                            title={style.ruleName ? `${w} (${style.ruleName})` : w}
-                          >
-                            {w}
+                          <span key={itemIdx} className="relative inline-flex items-center gap-0.5 shrink-0 select-text">
+                            <span
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (isAllah) {
+                                  setSelectedTajweedWord({ word: item.text, ruleName: 'Lafadz Jalalah (Allah)' });
+                                } else if (style.ruleName) {
+                                  setSelectedTajweedWord({ word: item.text, ruleName: style.ruleName });
+                                }
+                              }}
+                              className={`inline-block px-0.5 py-0.2 rounded transition-all cursor-pointer hover:scale-105 ${
+                                selectedTajweedWord?.word === item.text ? 'ring-2 ring-amber-500 bg-amber-100 font-black' : ''
+                              }`}
+                              style={{
+                                color: isAllah ? '#D92D20' : (style.ruleName ? style.color : '#1C1917'),
+                                backgroundColor: style.bg !== 'transparent' && selectedTajweedWord?.word !== item.text ? style.bg : undefined
+                              }}
+                              title={isAllah ? 'Lafadz Jalalah (الله)' : (style.ruleName ? `${item.text} (${style.ruleName})` : item.text)}
+                            >
+                              {item.text}
+                            </span>
+
+                            {item.waqafMark && (
+                              <span
+                                className="relative inline-flex flex-col items-center justify-center text-[#B45309] font-bold px-0.5 -translate-y-1 select-none shrink-0"
+                                title={`Tanda Waqaf: ${item.waqafMark}`}
+                              >
+                                <span className="text-xs sm:text-sm font-quran">{item.waqafMark}</span>
+                                {showWaqafIbtidaGuides && (
+                                  <span className="text-[7px] font-sans font-bold text-[#DC2626] leading-none scale-75 -mt-0.5">
+                                    HENTI
+                                  </span>
+                                )}
+                              </span>
+                            )}
                           </span>
                         );
                       })}

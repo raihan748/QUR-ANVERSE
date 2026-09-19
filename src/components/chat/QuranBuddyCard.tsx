@@ -18,7 +18,7 @@ interface QuranBuddyCardProps {
 }
 
 export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }) => {
-  const [isOpen, setIsOpen] = useState<boolean>(true); // Terbuka langsung by default
+  const [isOpen, setIsOpen] = useState<boolean>(false); // Mulai dalam keadaan minimized agar tidak menutupi ayat mushaf
   const [isMinimized, setIsMinimized] = useState<boolean>(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState<string>('');
@@ -130,7 +130,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
           </div>
           <div className="text-left">
             <span className="block text-xs font-black leading-tight text-amber-300">Quran Buddy</span>
-            <span className="block text-[9px] text-emerald-200 font-mono">DeepSeek v4</span>
+            <span className="block text-[9px] text-emerald-200 font-medium">Sahabat Qur'an</span>
           </div>
           <Sparkles className="w-3.5 h-3.5 text-amber-300 group-hover:rotate-12 transition-transform ml-1" />
         </button>
