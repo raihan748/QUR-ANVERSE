@@ -1073,12 +1073,69 @@ export class ContinuousMurojaahTracker {
     spokenWord: string;
   } | null = null;
 
+  private stuckWatchdogTimeout: ReturnType<typeof setTimeout> | null = null;
+  private stuckTimeoutMs = 4500; // 4.5 detik jeda macet maksimal sebelum auto-koreksi Syekh
+
   public cancelPendingIntervention(): void {
     if (this.pendingInterventionTimeout) {
       clearTimeout(this.pendingInterventionTimeout);
       this.pendingInterventionTimeout = null;
     }
     this.pendingErrorPayload = null;
+  }
+
+  public cancelStuckWatchdog(): void {
+    if (this.stuckWatchdogTimeout) {
+      clearTimeout(this.stuckWatchdogTimeout);
+      this.stuckWatchdogTimeout = null;
+    }
+  }
+
+  public resetStuckWatchdog(): void {
+    this.cancelStuckWatchdog();
+    if (!this.isActive || this.isPaused || this.currentAyahIndex >= this.precompiledAyats.length) {
+      return;
+    }
+
+    const currentPrecompiled = this.precompiledAyats[this.currentAyahIndex];
+    if (!currentPrecompiled || this.currentWordIndex >= currentPrecompiled.words.length) {
+      return;
+    }
+
+    const targetWord = currentPrecompiled.words[this.currentWordIndex];
+    const targetAyahIdx = this.currentAyahIndex;
+    const targetWordIdx = this.currentWordIndex;
+
+    this.stuckWatchdogTimeout = setTimeout(() => {
+      this.stuckWatchdogTimeout = null;
+      if (!this.isActive || this.isPaused) return;
+      if (this.currentAyahIndex !== targetAyahIdx || this.currentWordIndex !== targetWordIdx) return;
+
+      // Jeda macet beberapa detik di kata ini: auto-koreksi dengan suara Syekh agar tidak stuck
+      this.totalErrors++;
+      this.isPaused = true;
+      this.consecutiveMismatchCount = 0;
+      this.lastEvaluatedMismatchToken = '';
+      this.sameTokenFrameCount = 0;
+
+      if (this.callbacks) {
+        this.callbacks.onErrorDetected(
+          targetAyahIdx,
+          targetWordIdx,
+          `Jeda bacaan: Lafal target « ${targetWord.raw} ». Simak bacaan Syekh berikut untuk melancarkan hafalan.`,
+          targetWord.raw,
+          this.lastEvaluatedMismatchToken || '...'
+        );
+      }
+    }, this.stuckTimeoutMs);
+
+    if (this.stuckWatchdogTimeout && typeof (this.stuckWatchdogTimeout as any).unref === 'function') {
+      (this.stuckWatchdogTimeout as any).unref();
+    }
+  }
+
+  public setStuckTimeout(ms: number): void {
+    this.stuckTimeoutMs = Math.max(2500, Math.min(10000, ms));
   }
 
   private scheduleAdaptiveIntervention(
@@ -1141,6 +1198,7 @@ export class ContinuousMurojaahTracker {
 
   public initialize(ayats: Ayat[], callbacks: ContinuousTrackerCallbacks, sensitivity: SensitivityLevel = 'normal'): void {
     this.cancelPendingIntervention();
+    this.cancelStuckWatchdog();
     this.targetAyats = ayats;
     this.precompiledAyats = ayats.map(a => precompileAyat(a));
     this.callbacks = callbacks;
@@ -1158,6 +1216,7 @@ export class ContinuousMurojaahTracker {
     this.isActive = true;
     this.isPaused = false;
     this.lastMatchTime = Date.now();
+    this.resetStuckWatchdog();
   }
 
   public setSensitivity(s: SensitivityLevel): void {
@@ -1170,18 +1229,21 @@ export class ContinuousMurojaahTracker {
 
   public stop(): void {
     this.cancelPendingIntervention();
+    this.cancelStuckWatchdog();
     this.isActive = false;
     this.isPaused = false;
   }
 
   public pause(): void {
     this.cancelPendingIntervention();
+    this.cancelStuckWatchdog();
     this.isPaused = true;
   }
 
   public resume(): void {
     this.isPaused = false;
     this.lastMatchTime = Date.now();
+    this.resetStuckWatchdog();
   }
 
   public getStatus() {
@@ -1403,6 +1465,7 @@ export class ContinuousMurojaahTracker {
       // Apply matched words or detect error
       if (bestMatchedIndices.length > 0) {
         this.cancelPendingIntervention();
+        this.resetStuckWatchdog();
         this.consecutiveMismatchCount = 0;
         this.lastEvaluatedMismatchToken = '';
         this.sameTokenFrameCount = 0;
@@ -1454,6 +1517,7 @@ export class ContinuousMurojaahTracker {
           // Check if all Ayats in the passage are completed
           if (this.currentAyahIndex >= this.targetAyats.length) {
             this.isActive = false;
+            this.cancelStuckWatchdog();
             const accuracyRatio = this.totalWordsCount > 0 ? (this.matchedWordsCount / this.totalWordsCount) : 1;
             const score = Math.max(0, Math.min(100, Math.round(accuracyRatio * 100 - (this.totalErrors * 3))));
             if (this.callbacks) {
@@ -1462,6 +1526,7 @@ export class ContinuousMurojaahTracker {
             return;
           }
 
+          this.resetStuckWatchdog();
           // Cascade: Check if remaining candidate phrases also contain words for the newly activated ayah!
           continue;
         }
@@ -1680,12 +1745,17 @@ export class ContinuousMurojaahTracker {
 
       if (this.currentAyahIndex >= this.targetAyats.length) {
         this.isActive = false;
+        this.cancelStuckWatchdog();
         const accuracyRatio = this.totalWordsCount > 0 ? (this.matchedWordsCount / this.totalWordsCount) : 1;
         const score = Math.max(0, Math.min(100, Math.round(accuracyRatio * 100 - (this.totalErrors * 3))));
         if (this.callbacks) {
           this.callbacks.onPassageCompleted(score);
         }
+      } else {
+        this.resetStuckWatchdog();
       }
+    } else {
+      this.resetStuckWatchdog();
     }
     return true;
   }
@@ -1697,6 +1767,7 @@ export class ContinuousMurojaahTracker {
     this.consecutiveMismatchCount = 0;
     this.lastEvaluatedMismatchToken = '';
     this.lastMatchTime = Date.now();
+    this.resetStuckWatchdog();
   }
 }
 
