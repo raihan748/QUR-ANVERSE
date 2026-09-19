@@ -188,8 +188,8 @@ export const PhysicalMushafPageReader: React.FC = () => {
   });
   const dragStartTimeRef = useRef<number>(0);
 
-  // Display Mode: 'scan' | 'layout' (Default: 'layout' for authentic real-life 15-line printed mushaf)
-  const [viewMode, setViewMode] = useState<'scan' | 'layout'>('layout');
+  // Display Mode: 'scan' | 'layout' (Default: 'scan' for authentic 1:1 Tajweed Madinah Mushaf)
+  const [viewMode, setViewMode] = useState<'scan' | 'layout'>('scan');
   const [showWaqafIbtidaGuides, setShowWaqafIbtidaGuides] = useState<boolean>(true);
   
   // Right Page Lines & Scans
@@ -949,11 +949,11 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
           {/* VIEW MODE 1: PHYSICAL SCANNED MADINAH MUSHAF */}
           {viewMode === 'scan' && (
-            <div className="w-full flex-1 flex items-center justify-center relative min-h-[500px] sm:min-h-[680px] bg-white rounded overflow-hidden">
+            <div className="w-full flex-1 flex items-center justify-center relative min-h-[520px] sm:min-h-[720px] bg-white rounded-xl overflow-hidden shadow-inner p-1 sm:p-2">
               {!scanLoaded && !scanError && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/90 z-20 space-y-2">
                   <div className="w-8 h-8 border-3 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-[11px] font-bold text-emerald-950">Memuat Halaman {pageNum}...</p>
+                  <p className="text-[11px] font-bold text-emerald-950">Memuat Lembaran Mushaf Tajwid Hal. {pageNum}...</p>
                 </div>
               )}
 
@@ -974,7 +974,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
                       setViewMode('layout');
                     }
                   }}
-                  className={`w-full max-h-[75vh] object-contain transition-opacity duration-300 pointer-events-none select-none drop-shadow-sm ${
+                  className={`w-full h-auto max-h-[82vh] object-contain transition-opacity duration-300 pointer-events-none select-none rounded shadow-sm ${
                     scanLoaded ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
@@ -1062,15 +1062,12 @@ export const PhysicalMushafPageReader: React.FC = () => {
                   );
 
                   const tokenItems = parseMushafLineTokens(line.text || '');
-                  const isShortLine = tokenItems.length <= 4 && (idx === lines.length - 1 || lines[idx + 1]?.type === 'surah-header');
 
                   return (
                     <div 
                       key={idx}
                       onClick={() => handleLineClick(line, pageNum)}
-                      className={`w-full font-quran text-[16px] sm:text-[18px] md:text-[20px] lg:text-[22px] font-bold leading-[1.8] sm:leading-[1.9] py-0.5 px-1 sm:px-2 transition-all duration-200 cursor-pointer mushaf-line-row ${
-                        isShortLine ? 'flex justify-center items-center gap-4' : 'flex items-center justify-between'
-                      } ${
+                      className={`w-full font-quran text-[17px] sm:text-[19px] md:text-[21px] lg:text-[23px] font-bold leading-[1.8] sm:leading-[1.9] py-0.5 px-1 sm:px-2 transition-all duration-200 cursor-pointer mushaf-line-row flex flex-wrap items-center justify-center gap-x-1 sm:gap-x-1.5 md:gap-x-2 ${
                         isLineActive 
                           ? isAudioPaused
                             ? 'bg-amber-200/35 border-b-2 border-amber-500 shadow-[0_2px_8px_rgba(245,158,11,0.2)]'
@@ -1259,20 +1256,8 @@ export const PhysicalMushafPageReader: React.FC = () => {
               </button>
             </div>
 
-            {/* VIEW MODE: MUSHAF 15 BARIS ASLI VS SCAN ARSIP */}
+            {/* VIEW MODE: MUSHAF TAJWID BERWARNA ASLI VS 15 BARIS TEKS */}
             <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_#000]">
-              <button
-                onClick={() => setViewMode('layout')}
-                className={`px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition-all ${
-                  viewMode === 'layout' 
-                    ? 'bg-[#0B4627] text-white shadow-xs' 
-                    : 'text-gray-700 dark:text-gray-300 hover:text-black'
-                }`}
-                title="Tampilan Mushaf Standar Cetak 15 Baris Asli (Padat & Real Life)"
-              >
-                <Layers className="w-3.5 h-3.5 text-[#F59E0B]" />
-                <span>15 Baris Asli</span>
-              </button>
               <button
                 onClick={() => setViewMode('scan')}
                 className={`px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition-all ${
@@ -1280,10 +1265,22 @@ export const PhysicalMushafPageReader: React.FC = () => {
                     ? 'bg-[#0B4627] text-white shadow-xs' 
                     : 'text-gray-700 dark:text-gray-300 hover:text-black'
                 }`}
-                title="Tampilan Gambar Scan Dokumen Arsip"
+                title="Tampilan Mushaf Cetak Tajwid Berwarna Asli (Persis Buku Fisik)"
               >
                 <ImageIcon className="w-3.5 h-3.5 text-[#F59E0B]" />
-                <span>Scan Arsip</span>
+                <span>Mushaf Tajwid Asli</span>
+              </button>
+              <button
+                onClick={() => setViewMode('layout')}
+                className={`px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition-all ${
+                  viewMode === 'layout' 
+                    ? 'bg-[#0B4627] text-white shadow-xs' 
+                    : 'text-gray-700 dark:text-gray-300 hover:text-black'
+                }`}
+                title="Tampilan Teks Digital 15 Baris Interaktif"
+              >
+                <Layers className="w-3.5 h-3.5 text-[#F59E0B]" />
+                <span>15 Baris Teks</span>
               </button>
             </div>
 
@@ -1469,7 +1466,9 @@ export const PhysicalMushafPageReader: React.FC = () => {
 
       {/* 📖 MAIN PHYSICAL MUSHAF BOOK SPREAD CONTAINER */}
       <div 
-        className="relative bg-[#EADBBE] dark:bg-[#0F172A] border-4 border-amber-950 rounded-2xl p-2 sm:p-5 shadow-[6px_6px_0px_0px_#111827] overflow-hidden"
+        className={`relative bg-[#EADBBE] dark:bg-[#0F172A] border-4 border-amber-950 rounded-2xl p-2 sm:p-5 shadow-[6px_6px_0px_0px_#111827] overflow-hidden ${
+          !isDualSpread ? 'max-w-2xl mx-auto' : 'max-w-6xl mx-auto'
+        }`}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
