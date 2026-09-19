@@ -44,7 +44,7 @@ import { NeobrutalCard } from '../common/NeobrutalCard';
 import { speechEngine, continuousTracker, SpeechEngine, ArabicDialect, normalizeArabic } from '../../services/speechEngine';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { audioRecorder } from '../../services/audioRecorderService';
-import { recordWeakVerse, resolveWeakVerse, addXpAndCheckStreak } from '../../services/offlineStorage';
+import { recordWeakVerse, resolveWeakVerse, addXpAndCheckStreak, saveMurojaahHistory } from '../../services/offlineStorage';
 import { recordMurojaahLogToSupabase } from '../../services/supabaseClient';
 import { 
   DailyQuranTarget, 
@@ -469,6 +469,20 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         const xpAward = 150 + passageAyats.length * 20;
         const updatedProfile = addXpAndCheckStreak(xpAward);
         onProfileUpdated(updatedProfile);
+
+        // Save to real offline storage history
+        saveMurojaahHistory({
+          id: 'murojaah_' + Date.now(),
+          surahNumber: selectedSurahNumber,
+          ayahNumber: passageAyats[0]?.numberInSurah || 1,
+          surahName: currentSurahMeta.latinName,
+          mode: 'realtime',
+          accuracyScore: Math.round(score),
+          passed: score >= 70,
+          timestamp: new Date().toISOString(),
+          feedbackNotes: `Muroja'ah ${passageAyats.length} Ayat Berhasil`
+        });
+        window.dispatchEvent(new CustomEvent('qv_murojaah_completed'));
 
         // Log to Supabase
         recordMurojaahLogToSupabase(
