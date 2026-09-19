@@ -355,6 +355,38 @@ export const PhysicalMushafPageReader: React.FC = () => {
     }
   }, [currentPage]);
 
+  // Auto-fallback timeout for Right Page (if CDN hangs > 3.5s)
+  useEffect(() => {
+    if (viewMode !== 'scan' || scanLoadedRight || scanErrorRight) return;
+    const timer = setTimeout(() => {
+      if (!scanLoadedRight && !scanErrorRight) {
+        if (scanUrlIndexRight + 1 < fallbackUrlsRight.length) {
+          setScanUrlIndexRight((prev) => prev + 1);
+        } else {
+          setScanErrorRight(true);
+          setViewMode('layout');
+        }
+      }
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, [viewMode, scanLoadedRight, scanErrorRight, scanUrlIndexRight, rightPageNumber, fallbackUrlsRight]);
+
+  // Auto-fallback timeout for Left Page (if CDN hangs > 3.5s)
+  useEffect(() => {
+    if (viewMode !== 'scan' || !leftPageNumber || scanLoadedLeft || scanErrorLeft) return;
+    const timer = setTimeout(() => {
+      if (!scanLoadedLeft && !scanErrorLeft) {
+        if (scanUrlIndexLeft + 1 < fallbackUrlsLeft.length) {
+          setScanUrlIndexLeft((prev) => prev + 1);
+        } else {
+          setScanErrorLeft(true);
+          setViewMode('layout');
+        }
+      }
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, [viewMode, scanLoadedLeft, scanErrorLeft, scanUrlIndexLeft, leftPageNumber, fallbackUrlsLeft]);
+
   // Trigger Page Slide & Flip Animation
   const triggerPageTurn = useCallback((dir: 'next' | 'prev') => {
     if (isTransitioning) return;
@@ -951,16 +983,25 @@ export const PhysicalMushafPageReader: React.FC = () => {
           {viewMode === 'scan' && (
             <div className="w-full flex-1 flex items-center justify-center relative min-h-[520px] sm:min-h-[720px] bg-white rounded-xl overflow-hidden shadow-inner p-1 sm:p-2">
               {!scanLoaded && !scanError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/90 z-20 space-y-2">
-                  <div className="w-8 h-8 border-3 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-[11px] font-bold text-emerald-950">Memuat Lembaran Mushaf Tajwid Hal. {pageNum}...</p>
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#FFFDF7]/95 z-20 space-y-3 p-4">
+                  <div className="w-9 h-9 border-3 border-[#0B4627] border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-xs font-bold text-emerald-950">Memuat Lembaran Mushaf Tajwid Hal. {pageNum}...</p>
+                  <button
+                    onClick={() => setViewMode('layout')}
+                    className="text-[11px] px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-800/40 rounded-lg font-bold cursor-pointer transition-all shadow-xs"
+                  >
+                    Beralih ke Mode Teks
+                  </button>
                 </div>
               )}
 
               {!scanError ? (
                 <img
+                  key={`${pageNum}-${scanUrlIndex}`}
                   src={fallbackUrls[scanUrlIndex] || fallbackUrls[0]}
                   alt={`Halaman ${pageNum} Mushaf Al-Quran Standar Madinah`}
+                  loading="eager"
+                  decoding="async"
                   onLoad={() => {
                     setScanLoaded(true);
                     setScanError(false);

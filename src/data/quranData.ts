@@ -1354,10 +1354,10 @@ export function getMadinahPageFallbackUrls(page: number): string[] {
   const safePage = Math.max(1, Math.min(604, page));
   const pStr = String(safePage).padStart(3, '0');
   return [
-    `https://quran.ksu.edu.sa/ayat/safahat_tajweed/${safePage}.png`,
+    `https://cdn.jsdelivr.net/gh/QuranHub/quran-pages-images@main/ayat/tajweed/${safePage}.png`,
+    `https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/ayat/tajweed/${safePage}.png`,
     `https://files.quran.app/hafs/madani/width_1260/page${pStr}.png`,
-    `https://cdn.quran.ws/svg/pages/v1.1.1/hafs-kfqc/${pStr}.svg`,
-    `https://quran.ksu.edu.sa/ayat/safahat1/${safePage}.png`
+    `https://quran.ksu.edu.sa/ayat/safahat_tajweed/${safePage}.png`
   ];
 }
 
