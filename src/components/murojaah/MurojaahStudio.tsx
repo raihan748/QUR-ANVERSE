@@ -143,7 +143,15 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [micVolume, setMicVolume] = useState<number>(0);
   const [speechLanguage, setSpeechLanguage] = useState<ArabicDialect>('ar-SA');
-  const [micSensitivity, setMicSensitivity] = useState<'normal' | 'high' | 'ultra'>('normal');
+  const [micSensitivity, setMicSensitivity] = useState<'normal' | 'high' | 'ultra'>(() => {
+    try {
+      const saved = localStorage.getItem('quranverse_murojaah_sensitivity_v1');
+      if (saved && ['normal', 'high', 'ultra'].includes(saved)) {
+        return saved as 'normal' | 'high' | 'ultra';
+      }
+    } catch {}
+    return 'high'; // Default: Mode Seimbang yang peka & responsif
+  });
   const [liveTranscript, setLiveTranscript] = useState('');
   const [sheikhTeguranMessage, setSheikhTeguranMessage] = useState<string | null>(null);
   const [isSheikhSpeaking, setIsSheikhSpeaking] = useState(false);
@@ -1081,6 +1089,9 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     key={lvl}
                     onClick={() => {
                       setMicSensitivity(lvl);
+                      try {
+                        localStorage.setItem('quranverse_murojaah_sensitivity_v1', lvl);
+                      } catch {}
                       speechEngine.setSensitivity(lvl);
                       continuousTracker.setSensitivity(lvl);
                     }}
@@ -1093,14 +1104,18 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     {lvl === 'normal' 
                       ? '🛡️ Mode Umum (Redam Bising)' 
                       : lvl === 'high' 
-                      ? '🟡 Mode Seimbang' 
-                      : '🔥 Mode Sunyi / Sensitif'}
+                      ? '🟡 Mode Seimbang (Rekomendasi)' 
+                      : '🔥 Mode Sunyi / Sensitif Tinggi'}
                   </button>
                 ))}
               </div>
 
               <span className="text-amber-200 text-[10px] font-semibold">
-                💡 Mode Umum aktif: Menyaring suara bising sekitar agar AI tidak salah dengar di tempat umum.
+                {micSensitivity === 'ultra' 
+                  ? '🔥 Mode Sensitif Tinggi aktif: Sangat peka menangkap tartil perlahan & suara halus di ruangan tenang.' 
+                  : micSensitivity === 'high' 
+                  ? '⚡ Mode Seimbang aktif: Kepekaan optimal untuk bacaan tartil harian.' 
+                  : '🛡️ Mode Umum aktif: Menyaring suara bising luar ruangan.'}
               </span>
             </div>
           </div>

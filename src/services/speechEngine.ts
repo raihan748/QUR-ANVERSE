@@ -447,7 +447,7 @@ export function isPrecompiledWordMatch(
     const diff = Math.abs(target.charLength - candidate.canonical.length);
     if (diff > 2) return false;
 
-    const shortThresh = sensitivity === 'ultra' ? 0.64 : sensitivity === 'high' ? 0.68 : 0.72;
+    const shortThresh = sensitivity === 'ultra' ? 0.58 : sensitivity === 'high' ? 0.62 : 0.66;
     return (
       fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= shortThresh ||
       (target.stemCanon && candidate.stemCanon && fastLevenshteinSimilarity(target.stemCanon, candidate.stemCanon) >= shortThresh) ||
@@ -456,8 +456,8 @@ export function isPrecompiledWordMatch(
   }
 
   // 6. Medium / Long Words (length >= 4)
-  const canonThresh = sensitivity === 'ultra' ? 0.58 : sensitivity === 'high' ? 0.62 : 0.66;
-  const latinThresh = sensitivity === 'ultra' ? 0.56 : sensitivity === 'high' ? 0.60 : 0.64;
+  const canonThresh = sensitivity === 'ultra' ? 0.50 : sensitivity === 'high' ? 0.54 : 0.58;
+  const latinThresh = sensitivity === 'ultra' ? 0.48 : sensitivity === 'high' ? 0.52 : 0.56;
 
   if (fastLevenshteinSimilarity(target.canonical, candidate.canonical) >= canonThresh) {
     return true;
@@ -494,8 +494,8 @@ export function isWordMatch(targetArabic: string, candidateSpoken: string, sensi
     }
   }
 
-  const canonThresh = sensitivity === 'ultra' ? 0.58 : sensitivity === 'high' ? 0.64 : 0.70;
-  const latinThresh = sensitivity === 'ultra' ? 0.56 : sensitivity === 'high' ? 0.62 : 0.68;
+  const canonThresh = sensitivity === 'ultra' ? 0.52 : sensitivity === 'high' ? 0.58 : 0.64;
+  const latinThresh = sensitivity === 'ultra' ? 0.50 : sensitivity === 'high' ? 0.56 : 0.62;
 
   return fastLevenshteinSimilarity(tCanon, sCanon) >= canonThresh || fastLevenshteinSimilarity(tLatin, sLatin) >= latinThresh;
 }
@@ -1382,7 +1382,7 @@ export class ContinuousMurojaahTracker {
       // Direct match against latest spoken words if multi-phrase matching was blocked
       if (bestMatchedIndices.length === 0) {
         const allTokens = rawTranscript.trim().split(/\s+/).filter(Boolean);
-        const lastTokens = allTokens.slice(-2);
+        const lastTokens = allTokens.slice(-4);
         for (const tok of lastTokens) {
           const analyzed = analyzeSpokenToken(tok);
           if (isPrecompiledWordMatch(expectedWords[this.currentWordIndex], analyzed, this.sensitivity)) {
