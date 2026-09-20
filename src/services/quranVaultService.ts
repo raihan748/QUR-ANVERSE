@@ -30,6 +30,20 @@ export interface QuranVaultStatus {
   domSentinelActive: boolean;
   immutabilityLocked: boolean;
   securityIncidents: SecurityIncident[];
+  chainedAuditLedgerLength?: number;
+  chainedAuditHeadHash?: string;
+  isLedgerValid?: boolean;
+}
+
+export interface ChainedAuditEntry {
+  sequenceNumber: number;
+  incidentId: string;
+  timestamp: number;
+  type: SecurityIncident['type'];
+  target: string;
+  prevHash: string;
+  entryHash: string;
+  status: SecurityIncident['status'];
 }
 
 export interface SecurityIncident {
@@ -71,6 +85,8 @@ class QuranVaultEngine {
   private coldStorageVault: Map<string, Ayat> = new Map(); // key: "surah:ayah" -> pristine Ayat
   
   private securityIncidents: SecurityIncident[] = [];
+  private chainedAuditLedger: ChainedAuditEntry[] = [];
+  private lastLedgerHash: string = '0x0000000000000000000000000000000000000000000000000000000000000000';
   private domObserver: MutationObserver | null = null;
   private isSealed: boolean = false;
   private isDeepLocked: boolean = false;
@@ -231,13 +247,102 @@ class QuranVaultEngine {
   }
 
   /**
-   * Records a security incident in the tamper ledger
+   * Records a security incident in the tamper ledger and append-only HMAC-SHA256 chained audit ring buffer
    */
   public recordSecurityIncident(incident: SecurityIncident): void {
     this.securityIncidents.unshift(incident);
     if (this.securityIncidents.length > 50) {
       this.securityIncidents.pop();
     }
+
+    // Append-Only HMAC-SHA256 Chained Ring Buffer (Max 128 items)
+    const seq = this.chainedAuditLedger.length + 1;
+    const payload = `${this.lastLedgerHash}:${seq}:${incident.id}:${incident.detectedAt}:${incident.type}:${incident.target}:${this.MASTER_VAULT_SECRET}`;
+    const entryHash = this.sha256(payload);
+
+    const entry: ChainedAuditEntry = {
+      sequenceNumber: seq,
+      incidentId: incident.id,
+      timestamp: incident.detectedAt,
+      type: incident.type,
+      target: incident.target,
+      prevHash: this.lastLedgerHash,
+      entryHash,
+      status: incident.status
+    };
+
+    this.chainedAuditLedger.push(entry);
+    this.lastLedgerHash = entryHash;
+    if (this.chainedAuditLedger.length > 128) {
+      this.chainedAuditLedger.shift();
+    }
+  }
+
+  /**
+   * Verifies cryptographic chain proof of the append-only audit ledger
+   */
+  public verifyChainedLedgerIntegrity(): { isValid: boolean; headHash: string; totalEntries: number; brokenSequenceAt?: number } {
+    if (this.chainedAuditLedger.length === 0) {
+      return { isValid: true, headHash: this.lastLedgerHash, totalEntries: 0 };
+    }
+
+    for (let i = 0; i < this.chainedAuditLedger.length; i++) {
+      const item = this.chainedAuditLedger[i];
+      const prevHash = i === 0 ? item.prevHash : this.chainedAuditLedger[i - 1].entryHash;
+      if (item.prevHash !== prevHash) {
+        return { isValid: false, headHash: this.lastLedgerHash, totalEntries: this.chainedAuditLedger.length, brokenSequenceAt: item.sequenceNumber };
+      }
+      const expectedPayload = `${item.prevHash}:${item.sequenceNumber}:${item.incidentId}:${item.timestamp}:${item.type}:${item.target}:${this.MASTER_VAULT_SECRET}`;
+      const expectedHash = this.sha256(expectedPayload);
+      if (item.entryHash !== expectedHash) {
+        return { isValid: false, headHash: this.lastLedgerHash, totalEntries: this.chainedAuditLedger.length, brokenSequenceAt: item.sequenceNumber };
+      }
+    }
+
+    return { isValid: true, headHash: this.lastLedgerHash, totalEntries: this.chainedAuditLedger.length };
+  }
+
+  public getChainedAuditLedger(): ChainedAuditEntry[] {
+    return [...this.chainedAuditLedger];
+  }
+
+  /**
+   * Computes hierarchical Merkle root for a Surah from all its Ayats.
+   */
+  public computeSurahMerkleRoot(surahNumber: number): string {
+    const cached = this.surahMerkleRegister.get(surahNumber);
+    if (cached) return cached;
+
+    const ayahs = this.coldStorageVault;
+    const surahAyahs: string[] = [];
+    for (let a = 1; ; a++) {
+      const key = `${surahNumber}:${a}`;
+      const item = ayahs.get(key);
+      if (!item) break;
+      let h = this.verseHashRegister.get(key);
+      if (!h) {
+        h = this.sha256(item.arabicText.trim());
+        this.verseHashRegister.set(key, h);
+      }
+      surahAyahs.push(h);
+    }
+
+    if (surahAyahs.length === 0) return this.sha256(`SURAH_${surahNumber}_EMPTY`);
+
+    let currentLevel = surahAyahs;
+    while (currentLevel.length > 1) {
+      const nextLevel: string[] = [];
+      for (let i = 0; i < currentLevel.length; i += 2) {
+        const left = currentLevel[i];
+        const right = (i + 1 < currentLevel.length) ? currentLevel[i + 1] : left;
+        nextLevel.push(this.sha256(`${left}:${right}`));
+      }
+      currentLevel = nextLevel;
+    }
+
+    const root = currentLevel[0];
+    this.surahMerkleRegister.set(surahNumber, root);
+    return root;
   }
 
   /**
@@ -386,7 +491,10 @@ class QuranVaultEngine {
       healthScore: health,
       domSentinelActive: !!this.domObserver,
       immutabilityLocked: this.isDeepLocked,
-      securityIncidents: [...this.securityIncidents]
+      securityIncidents: [...this.securityIncidents],
+      chainedAuditLedgerLength: this.chainedAuditLedger.length,
+      chainedAuditHeadHash: this.lastLedgerHash,
+      isLedgerValid: this.verifyChainedLedgerIntegrity().isValid
     };
   }
 

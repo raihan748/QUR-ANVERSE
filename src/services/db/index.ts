@@ -4,6 +4,7 @@
 
 export * from './schema';
 export * from './DatabaseManager';
+export * from './StorageAdapter';
 export * from './repositories/UserProfileRepository';
 export * from './repositories/MurojaahLogRepository';
 export * from './repositories/SpacedRepetitionRepository';

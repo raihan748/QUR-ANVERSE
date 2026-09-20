@@ -1,6 +1,6 @@
 // ==============================================================================
-// UNIFIED HYBRID DATABASE MANAGER
-// Enterprise Data Layer: Cloud Supabase + Local IndexedDB Storage
+// UNIFIED HYBRID DATABASE MANAGER (v3.0 Enterprise)
+// Enterprise Data Layer: Cloud Supabase + Multi-Tier Storage (IndexedDB/Local/Memory)
 // ==============================================================================
 
 import { userProfileRepo } from './repositories/UserProfileRepository';
@@ -8,6 +8,7 @@ import { murojaahLogRepo } from './repositories/MurojaahLogRepository';
 import { spacedRepetitionRepo } from './repositories/SpacedRepetitionRepository';
 import { bookmarkRepo } from './repositories/BookmarkRepository';
 import { isSupabaseConfigured, supabase } from '../supabaseClient';
+import { storageAdapter, StorageMetrics, StorageTransaction } from './StorageAdapter';
 
 export class DatabaseManager {
   private static instance: DatabaseManager;
@@ -16,6 +17,7 @@ export class DatabaseManager {
   public readonly murojaahLogs = murojaahLogRepo;
   public readonly spacedRepetition = spacedRepetitionRepo;
   public readonly bookmarks = bookmarkRepo;
+  public readonly storage = storageAdapter;
 
   private constructor() {}
 
@@ -37,6 +39,20 @@ export class DatabaseManager {
       mode: isCloud ? 'CLOUD_HYBRID' : 'LOCAL_OFFLINE',
       driver: isCloud ? 'Supabase PostgreSQL' : 'LocalStorage / IndexedDB'
     };
+  }
+
+  /**
+   * Executes atomic Unit-of-Work transactions with automatic rollback on storage failure
+   */
+  public async transaction<T>(operations: (tx: StorageTransaction) => Promise<T>): Promise<T> {
+    return this.storage.transaction(operations);
+  }
+
+  /**
+   * Evaluates storage tier, quota, usage, and health
+   */
+  public async getStorageMetrics(): Promise<StorageMetrics> {
+    return this.storage.getStorageMetrics();
   }
 }
 
