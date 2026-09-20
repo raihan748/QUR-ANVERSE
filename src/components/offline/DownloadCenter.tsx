@@ -51,7 +51,7 @@ export const DownloadCenter: React.FC = () => {
     {
       id: 'pkg_ai_model',
       name: 'Kamus Fonetik & Model AI Koreksi Muroja\'ah Flagship',
-      description: 'Beyond-Tarteel Guided ASR, verifikasi integritas data lokal, dan analisis makhraj offline.',
+      description: 'Neural Guided ASR, verifikasi integritas data lokal, dan analisis makhraj offline.',
       size: '3.2 MB',
       status: 'completed',
       progress: 100
@@ -214,7 +214,7 @@ export const DownloadCenter: React.FC = () => {
       totalAyahs: 6236,
       packagesIncluded: [
         'Teks Al-Qur\'an 30 Juz & Terjemahan Kemenag (Rasm Utsmani Madinah)',
-        'Kamus Fonetik & Model AI Koreksi Murojaah (Beyond-Tarteel)',
+        'Kamus Fonetik & Model AI Koreksi Murojaah (Neural ASR Engine)',
         'Audio Lantunan Adzan Madinah (Syekh Muhammad Marwan Al-Qassas)',
         'Audio Preset Murojaah Syekh Misyari Rasyid Al-Afasi',
         'Service Worker Cache Storage v2'

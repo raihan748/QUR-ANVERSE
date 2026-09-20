@@ -204,7 +204,7 @@ Proyek ini mengoptimalkan arsitektur *Zero-Cost Open-Source Infrastructure* sehi
 
 ### 6.3 Perbandingan dengan Proyek/Aplikasi Sejenis Terdahulu
 
-| Parameter Komparasi | Aplikasi Quran Konvensional (Quran.com / Muslim Pro) | Aplikasi Tahfizh Berbayar (Tarteel AI) | **QURANVERSE (Proyek Ini)** |
+| Parameter Komparasi | Aplikasi Quran Konvensional (Quran.com / Muslim Pro) | Aplikasi Tahfizh Berbayar Komersial | **QURANVERSE (Proyek Ini)** |
 | :--- | :--- | :--- | :--- |
 | **Pendeteksian Kata Beruntun** | ❌ Tidak ada (hanya baca manual) | ✅ Ada (Berbayar/Langganan Bulanan) | **✅ Ada (Gratis, Open-Source & Akurat)** |
 | **Format Mushaf Madinah 604 Hal.** | ⚠️ Sebagian (Tampilan vertikal panjang) | ❌ Hanya tampilan per ayat | **✅ 100% Presisi 15 Baris Pojok 604 Halaman** |
