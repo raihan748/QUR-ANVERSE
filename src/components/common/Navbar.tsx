@@ -28,8 +28,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => onSelectTab('murojaah_ai')}
           className="flex items-center gap-3 cursor-pointer group select-none"
         >
-          <div className="w-10 h-10 bg-gradient-to-br from-[#F59E0B] via-amber-400 to-amber-500 rounded-xl border-2 border-black flex items-center justify-center font-black text-black shadow-[2px_2px_0px_0px_#000] group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-all">
-            <span className="text-xl font-display">H</span>
+          <div className="w-11 h-11 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black shadow-[3px_3px_0px_0px_#000] relative group-hover:scale-105 group-active:scale-95 transition-all overflow-hidden p-0.5 shrink-0 animate-pop">
+            <img 
+              src="/favicon.svg" 
+              alt="Al-Huda App Logo" 
+              className="w-full h-full object-contain rounded-xl drop-shadow-sm" 
+            />
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#10B981] border border-black flex items-center justify-center shadow-xs">
+              <Sparkles className="w-2.5 h-2.5 text-white" />
+            </div>
           </div>
           <div>
             <div className="flex items-center gap-1.5">
