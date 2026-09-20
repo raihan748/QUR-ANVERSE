@@ -27,7 +27,6 @@ import {
 import confetti from 'canvas-confetti';
 import { Ayat, ChallengeMode, UserProfile } from '../../types';
 import { getRandomJuz29And30ChallengeWithOptions } from '../../data/quranData';
-import { NeobrutalCard } from '../common/NeobrutalCard';
 import { audioPlayer } from '../../services/audioPlayerService';
 import { speechEngine, SpeechEngine } from '../../services/speechEngine';
 import { audioRecorder } from '../../services/audioRecorderService';
@@ -313,77 +312,77 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
   return (
     <div className="space-y-4 pb-24 max-w-4xl mx-auto">
       {/* Header Banner */}
-      <NeobrutalCard variant="dark" className="p-4 sm:p-5 relative overflow-hidden shadow-[3px_3px_0px_0px_#F59E0B] border-2 border-black">
+      <div className="p-5 rounded-2xl bg-gradient-to-br from-[#0B4627] via-[#08381F] to-[#042413] border border-emerald-800/80 shadow-sm text-white relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <span className="px-2.5 py-0.5 text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-400/40 rounded-full flex items-center gap-1">
                 <Swords className="w-3.5 h-3.5" /> {language === 'ar' ? 'مسابقة وصل الآيات' : 'Sambung Ayat AI Arena'}
               </span>
-              <span className="px-2 py-0.5 text-xs font-extrabold bg-[#10B981] text-black rounded border border-black">
+              <span className="px-2.5 py-0.5 text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 rounded-full">
                 {language === 'ar' ? 'الجزء ٢٩ و ٣٠' : 'Juz 29 & 30'}
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold font-display text-white">
+            <h2 className="text-xl sm:text-2xl font-bold font-display text-white">
               {t.challengeArenaTitle}
             </h2>
-            <p className="text-xs text-gray-300 font-medium mt-1">
+            <p className="text-xs text-emerald-200/90 font-medium mt-1">
               {t.challengeArenaSub}
             </p>
           </div>
 
           {/* XP & Combo Display */}
           <div className="flex items-center gap-2">
-            <div className="px-3 py-2 bg-[#F59E0B] text-black border-2 border-black rounded-xl font-mono text-center">
-              <span className="text-[10px] font-extrabold block">{t.totalScore}</span>
-              <span className="text-xl font-black">{gameScore} {t.points}</span>
+            <div className="px-3.5 py-2 bg-amber-500/20 border border-amber-400/40 text-amber-300 rounded-xl font-mono text-center shadow-xs">
+              <span className="text-[10px] font-semibold block">{t.totalScore}</span>
+              <span className="text-lg font-bold text-white">{gameScore} {t.points}</span>
             </div>
             {comboStreak > 1 && (
-              <div className="px-3 py-2 bg-[#EF4444] text-white border-2 border-black rounded-xl font-mono text-center animate-bounce">
-                <span className="text-[10px] font-extrabold flex items-center justify-center gap-0.5">
-                  <Flame className="w-3 h-3 fill-white" /> COMBO
+              <div className="px-3.5 py-2 bg-rose-500/20 border border-rose-400/40 text-rose-300 rounded-xl font-mono text-center shadow-xs">
+                <span className="text-[10px] font-semibold flex items-center justify-center gap-0.5">
+                  <Flame className="w-3 h-3 fill-rose-300" /> COMBO
                 </span>
-                <span className="text-xl font-black">{comboStreak}x</span>
+                <span className="text-lg font-bold text-white">{comboStreak}x</span>
               </div>
             )}
           </div>
         </div>
-      </NeobrutalCard>
+      </div>
 
       {/* FILTER & INPUT MODE SELECTOR TABS */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* 1. Scope Juz */}
-        <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
-          <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
-            <BookOpen className="w-3.5 h-3.5 text-[#0B4627]" /> {t.scopeJuzTitle}
+        <div className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-2 flex items-center gap-1.5">
+            <BookOpen className="w-3.5 h-3.5 text-[#0B4627] dark:text-emerald-400" /> {t.scopeJuzTitle}
           </span>
           <div className="grid grid-cols-3 gap-1.5">
             <button
               onClick={() => { setJuzFilter('all'); loadChallenge('all', difficulty); }}
-              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-semibold rounded-xl border transition-all cursor-pointer ${
                 juzFilter === 'all'
-                  ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000] font-black'
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                  ? 'bg-[#0B4627] text-white border-emerald-700 shadow-xs'
+                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
               }`}
             >
               {language === 'ar' ? '٢٩ و ٣٠' : '29 & 30'}
             </button>
             <button
               onClick={() => { setJuzFilter(29); loadChallenge(29, difficulty); }}
-              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-semibold rounded-xl border transition-all cursor-pointer ${
                 juzFilter === 29
-                  ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000] font-black'
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                  ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
               }`}
             >
               {language === 'ar' ? 'جزء ٢٩' : 'Juz 29'}
             </button>
             <button
               onClick={() => { setJuzFilter(30); loadChallenge(30, difficulty); }}
-              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-semibold rounded-xl border transition-all cursor-pointer ${
                 juzFilter === 30
-                  ? 'bg-[#10B981] text-black shadow-[2px_2px_0px_0px_#000] font-black'
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
               }`}
             >
               {language === 'ar' ? 'جزء ٣٠' : 'Juz 30'}
@@ -391,38 +390,38 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
           </div>
         </div>
 
-        {/* 2. Tingkat Kesulitan (Sulit / Pertengahan Surat vs Sedang vs Mudah) */}
-        <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
-          <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
-            <Flame className="w-3.5 h-3.5 text-red-500 fill-red-500" /> {t.difficultyTitle}
+        {/* 2. Tingkat Kesulitan */}
+        <div className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-2 flex items-center gap-1.5">
+            <Flame className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> {t.difficultyTitle}
           </span>
           <div className="grid grid-cols-3 gap-1.5">
             <button
               onClick={() => { setDifficulty('hardcore'); loadChallenge(juzFilter, 'hardcore'); }}
-              className={`py-2 text-[11px] font-black rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-semibold rounded-xl border transition-all cursor-pointer ${
                 difficulty === 'hardcore'
-                  ? 'bg-[#EF4444] text-white shadow-[2px_2px_0px_0px_#000]'
-                  : 'bg-gray-100 text-gray-800 hover:bg-red-50'
+                  ? 'bg-rose-600 text-white border-rose-600 shadow-xs'
+                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
               }`}
             >
               {t.diffHardcore}
             </button>
             <button
               onClick={() => { setDifficulty('medium'); loadChallenge(juzFilter, 'medium'); }}
-              className={`py-2 text-[11px] font-black rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-semibold rounded-xl border transition-all cursor-pointer ${
                 difficulty === 'medium'
-                  ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]'
-                  : 'bg-gray-100 text-gray-800 hover:bg-amber-50'
+                  ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
               }`}
             >
               {t.diffMedium}
             </button>
             <button
               onClick={() => { setDifficulty('easy'); loadChallenge(juzFilter, 'easy'); }}
-              className={`py-2 text-[11px] font-black rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-semibold rounded-xl border transition-all cursor-pointer ${
                 difficulty === 'easy'
-                  ? 'bg-[#10B981] text-black shadow-[2px_2px_0px_0px_#000]'
-                  : 'bg-gray-100 text-gray-800 hover:bg-emerald-50'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
               }`}
             >
               {t.diffEasy}
@@ -430,38 +429,38 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
           </div>
         </div>
 
-        {/* 3. Input Method Selector (Pilihan Ganda / Suara Mic / Ketik) */}
-        <div className="p-3 bg-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827]">
-          <span className="text-xs font-extrabold text-gray-600 block mb-2 flex items-center gap-1">
-            <Zap className="w-3.5 h-3.5 text-[#F59E0B]" /> {t.methodTitle}
+        {/* 3. Input Method Selector */}
+        <div className="p-3.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-2 flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 text-amber-500" /> {t.methodTitle}
           </span>
           <div className="grid grid-cols-3 gap-1.5">
             <button
               onClick={() => setInputType('quiz')}
-              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-semibold rounded-xl border transition-all cursor-pointer ${
                 inputType === 'quiz'
-                  ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000] font-black'
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                  ? 'bg-[#0B4627] text-white border-emerald-700 shadow-xs'
+                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
               }`}
             >
               {t.methodQuiz}
             </button>
             <button
               onClick={() => setInputType('voice')}
-              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-semibold rounded-xl border transition-all cursor-pointer ${
                 inputType === 'voice'
-                  ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000] font-black'
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                  ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
               }`}
             >
               {t.methodVoice}
             </button>
             <button
               onClick={() => setInputType('text')}
-              className={`py-2 text-[11px] font-extrabold rounded-xl border-2 border-black transition-all cursor-pointer ${
+              className={`py-2 text-[11px] font-semibold rounded-xl border transition-all cursor-pointer ${
                 inputType === 'text'
-                  ? 'bg-[#10B981] text-black shadow-[2px_2px_0px_0px_#000] font-black'
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
               }`}
             >
               {t.methodText}
@@ -471,19 +470,19 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
       </div>
 
       {/* CHALLENGE ARENA CARD */}
-      <NeobrutalCard className="p-6 sm:p-8 space-y-6">
+      <div className="p-6 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs space-y-6">
         {/* Info Header */}
-        <div className="flex items-center justify-between border-b-2 border-black pb-4">
+        <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-3 py-1 bg-[#0B4627] text-white text-xs font-black rounded-lg border border-black">
+            <span className="px-2.5 py-1 bg-[#0B4627] text-white text-xs font-semibold rounded-lg">
               {language === 'ar' ? `الجزء ${challengeData.prompt.juz}` : `Juz ${challengeData.prompt.juz}`}
             </span>
             {difficulty === 'hardcore' && (
-              <span className="px-2.5 py-0.5 bg-[#EF4444] text-white text-[10px] font-black rounded-lg border border-black uppercase flex items-center gap-1 animate-pulse">
-                <Flame className="w-3 h-3 fill-white" /> {t.diffHardcore}
+              <span className="px-2.5 py-0.5 bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-300/60 dark:border-rose-800/60 text-[11px] font-semibold rounded-lg uppercase flex items-center gap-1">
+                <Flame className="w-3 h-3 fill-rose-500" /> {t.diffHardcore}
               </span>
             )}
-            <h3 className="text-lg font-black text-black">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               {language === 'ar'
                 ? `سورة ${challengeData.prompt.surahName} (الآية ${challengeData.prompt.numberInSurah})`
                 : `QS. ${challengeData.prompt.surahName} (Ayat ${challengeData.prompt.numberInSurah})`}
@@ -492,7 +491,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
 
           <button
             onClick={() => loadChallenge()}
-            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-black border-2 border-black rounded-xl text-xs font-extrabold flex items-center gap-1 neo-button cursor-pointer"
+            className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition duration-150 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>{t.newQuestion}</span>
@@ -500,25 +499,25 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
         </div>
 
         {/* PROMPT AYAT BOX */}
-        <div className="p-5 bg-[#F8F5EE] border-3 border-black rounded-2xl space-y-3">
+        <div className="p-5 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/60 rounded-2xl space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold text-[#0B4627] uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-[#0B4627] dark:text-emerald-400 uppercase tracking-wider">
               {t.listenPrompt}
             </span>
             <button
               onClick={() => audioPlayer.playAyat(challengeData.prompt.surahNumber, challengeData.prompt.numberInSurah)}
-              className="px-3 py-1 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-lg text-xs font-black flex items-center gap-1.5 neo-button cursor-pointer"
+              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition duration-150 shadow-xs cursor-pointer"
             >
               <Volume2 className="w-3.5 h-3.5" />
               <span>{t.playSheikhVoice}</span>
             </button>
           </div>
 
-          <div className="font-quran text-2xl sm:text-3xl text-right leading-loose text-black pt-2 font-bold" dir="rtl">
+          <div className="font-quran text-2xl sm:text-3xl text-right leading-loose text-slate-900 dark:text-white pt-2 font-bold" dir="rtl">
             {challengeData.prompt.arabicText}
           </div>
           {language === 'id' && (
-            <p className="text-xs text-gray-700 italic border-t border-gray-300 pt-2 font-medium">
+            <p className="text-xs text-slate-600 dark:text-slate-400 italic border-t border-emerald-200/50 dark:border-emerald-800/40 pt-2 font-medium">
               "{challengeData.prompt.translation}"
             </p>
           )}
@@ -526,14 +525,14 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
 
         {/* 2. AREA SAMBUNG AYAT SESUAI METODE PILIHAN */}
         <div className="space-y-4">
-          <div className="inline-block px-3 py-1 bg-[#FEF3C7] border-2 border-black rounded-full text-xs font-extrabold text-black">
+          <div className="inline-block px-3 py-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-300/70 dark:border-amber-700/60 rounded-full text-xs font-semibold text-amber-900 dark:text-amber-300">
             {t.continuePrompt}
           </div>
 
-          {/* METHOD 1: PILIHAN GANDA (100% BEBAS ERROR / DEVICE RAMAH) */}
+          {/* METHOD 1: PILIHAN GANDA */}
           {inputType === 'quiz' && (
             <div className="space-y-3">
-              <span className="text-xs font-extrabold text-gray-600 block">
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 block">
                 Pilih ayat lanjutan yang tepat dari 4 opsi di bawah ini:
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -542,19 +541,15 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   const isAnswered = lastResult !== null;
                   const isThisCorrect = opt.arabicText === challengeData.next.arabicText;
 
-                  let btnBg = 'bg-white hover:bg-amber-50';
-                  let borderCol = 'border-black';
+                  let cardStyle = 'bg-white dark:bg-slate-850 border-slate-200 dark:border-slate-800 hover:border-emerald-500 hover:bg-emerald-50/20';
                   if (isAnswered) {
                     if (isThisCorrect) {
-                      btnBg = 'bg-emerald-100 text-emerald-950 font-bold';
-                      borderCol = 'border-emerald-600 shadow-[3px_3px_0px_0px_#059669]';
+                      cardStyle = 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-100 border-emerald-500 shadow-xs font-bold';
                     } else if (isSelected && !isThisCorrect) {
-                      btnBg = 'bg-red-100 text-red-950';
-                      borderCol = 'border-red-600 shadow-[3px_3px_0px_0px_#DC2626]';
+                      cardStyle = 'bg-rose-50 dark:bg-rose-950/40 text-rose-950 dark:text-rose-100 border-rose-500 shadow-xs';
                     }
                   } else if (isSelected) {
-                    btnBg = 'bg-[#FEF3C7]';
-                    borderCol = 'border-black shadow-[3px_3px_0px_0px_#000]';
+                    cardStyle = 'bg-amber-50 dark:bg-amber-950/30 border-amber-400 shadow-xs';
                   }
 
                   return (
@@ -562,15 +557,15 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                       key={idx}
                       onClick={() => handleSelectQuizOption(opt)}
                       disabled={isAnswered}
-                      className={`p-4 rounded-2xl border-3 ${borderCol} ${btnBg} text-right transition-all cursor-pointer relative group flex flex-col justify-between`}
+                      className={`p-4 rounded-2xl border text-right transition-all cursor-pointer relative group flex flex-col justify-between shadow-xs ${cardStyle}`}
                     >
-                      <span className="text-[10px] font-mono font-bold text-gray-500 self-start px-2 py-0.5 rounded bg-gray-100 border border-gray-300">
+                      <span className="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 self-start px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
                         Opsi {String.fromCharCode(65 + idx)}
                       </span>
-                      <p className="font-arabic text-xl sm:text-2xl font-bold text-black leading-loose pt-2 pb-1" dir="rtl">
+                      <p className="font-arabic text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-loose pt-2 pb-1" dir="rtl">
                         {opt.arabicText}
                       </p>
-                      <p className="text-[11px] text-gray-600 font-sans text-left line-clamp-2 mt-1">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-sans text-left line-clamp-2 mt-1">
                         QS. {opt.surahName} [Ayat {opt.numberInSurah}] • {opt.translation}
                       </p>
                     </button>
@@ -580,24 +575,28 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
             </div>
           )}
 
-          {/* METHOD 2: SUARA (SPEECH RECOGNITION V4) */}
+          {/* METHOD 2: SUARA */}
           {inputType === 'voice' && (
             <div className="space-y-4">
               {/* Dialect Switcher */}
               <div className="flex items-center justify-center gap-2">
-                <span className="text-xs font-extrabold text-gray-600">Model Suara:</span>
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Model Suara:</span>
                 <button
                   onClick={() => setSpeechLanguage('id-ID')}
-                  className={`px-3 py-1 text-xs font-black rounded-xl border-2 border-black transition-all cursor-pointer ${
-                    speechLanguage === 'id-ID' ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]' : 'bg-gray-100 text-gray-700'
+                  className={`px-3 py-1 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                    speechLanguage === 'id-ID' 
+                      ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-xs' 
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                   }`}
                 >
                   ID - Indonesia (Paling Peka)
                 </button>
                 <button
                   onClick={() => setSpeechLanguage('ar-SA')}
-                  className={`px-3 py-1 text-xs font-black rounded-xl border-2 border-black transition-all cursor-pointer ${
-                    speechLanguage === 'ar-SA' ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]' : 'bg-gray-100 text-gray-700'
+                  className={`px-3 py-1 text-xs font-semibold rounded-xl border transition-all cursor-pointer ${
+                    speechLanguage === 'ar-SA' 
+                      ? 'bg-[#0B4627] text-white border-emerald-700 shadow-xs' 
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                   }`}
                 >
                   SA - Arab Saudi
@@ -606,17 +605,17 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
 
               {/* Live Equalizer Decibel Bar */}
               {isRecording && (
-                <div className="p-3 bg-gray-50 border-2 border-black rounded-xl space-y-2">
-                  <div className="flex items-center justify-between text-xs font-extrabold text-black">
-                    <span className="flex items-center gap-1.5 text-red-600">
-                      <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping" />
+                <div className="p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
+                      <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping" />
                       Mendeteksi Desibel Suara:
                     </span>
                     <span>{micVolume} % Volume</span>
                   </div>
-                  <div className="w-full h-3 bg-gray-200 rounded-full border border-black overflow-hidden">
+                  <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-emerald-500 via-amber-500 to-red-500 transition-all duration-75"
+                      className="h-full bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500 transition-all duration-75"
                       style={{ width: `${Math.max(5, micVolume)}%` }}
                     />
                   </div>
@@ -628,17 +627,17 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                 {!isRecording ? (
                   <button
                     onClick={handleStartMic}
-                    className="px-8 py-4 bg-[#10B981] hover:bg-[#059669] text-black border-3 border-black rounded-2xl text-base font-black flex items-center gap-3 neo-button shadow-[4px_4px_0px_0px_#000] cursor-pointer"
+                    className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-semibold flex items-center gap-2.5 shadow-sm transition duration-150 cursor-pointer"
                   >
-                    <Mic className="w-6 h-6" />
+                    <Mic className="w-5 h-5" />
                     <span>Mulai Rekam Suara Sambung Ayat</span>
                   </button>
                 ) : (
                   <button
                     onClick={handleStopAndEvaluateVoice}
-                    className="px-8 py-4 bg-[#EF4444] hover:bg-[#DC2626] text-white border-3 border-black rounded-2xl text-base font-black flex items-center gap-3 neo-button shadow-[4px_4px_0px_0px_#000] animate-pulse cursor-pointer"
+                    className="px-6 py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl text-sm font-semibold flex items-center gap-2.5 shadow-sm transition duration-150 cursor-pointer"
                   >
-                    <MicOff className="w-6 h-6" />
+                    <MicOff className="w-5 h-5" />
                     <span>Selesai & Nilai Suara Saya</span>
                   </button>
                 )}
@@ -646,11 +645,11 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
 
               {/* Spoken Text Display & Playback User Audio */}
               {spokenTranscript && (
-                <div className="p-4 bg-[#064E3B] text-white border-3 border-black rounded-2xl text-right shadow-[3px_3px_0px_0px_#000] space-y-1">
-                  <div className="flex items-center justify-between text-[11px] font-black text-emerald-300 border-b border-emerald-700/60 pb-1" dir="ltr">
+                <div className="p-4 bg-emerald-950 text-white border border-emerald-800/80 rounded-2xl text-right shadow-xs space-y-1">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-emerald-300 border-b border-emerald-800/60 pb-1" dir="ltr">
                     <span className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                      HASIL DIKTE SUARA (LIVE TRANSCRIPT):
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                      Hasil Dikte Suara:
                     </span>
                     <span className="font-mono text-amber-300">Terdeteksi</span>
                   </div>
@@ -670,9 +669,9 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                         setIsPlayingUserVoice(true);
                       }
                     }}
-                    className="px-4 py-2 bg-black text-white rounded-xl text-xs font-black flex items-center gap-2 border border-black neo-button cursor-pointer"
+                    className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition duration-150 cursor-pointer"
                   >
-                    <Headphones className="w-4 h-4 text-[#F59E0B]" />
+                    <Headphones className="w-4 h-4 text-amber-400" />
                     <span>{isPlayingUserVoice ? 'Memutar Suara Anda...' : 'Putar Rekaman Suara Saya'}</span>
                   </button>
                 </div>
@@ -682,8 +681,8 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
 
           {/* METHOD 3: KETIK JAWABAN */}
           {inputType === 'text' && (
-            <form onSubmit={handleSubmitTextAnswer} className="p-5 bg-white border-3 border-black rounded-2xl space-y-3">
-              <label className="text-xs font-black text-gray-700 block text-left">
+            <form onSubmit={handleSubmitTextAnswer} className="p-5 bg-slate-50 dark:bg-slate-850 border border-slate-200/90 dark:border-slate-800 rounded-2xl space-y-3">
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block text-left">
                 Ketik Lafal Sambungan Ayat (Teks Arab atau Latin):
               </label>
               <div className="flex gap-2">
@@ -692,11 +691,11 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   value={textAnswer}
                   onChange={(e) => setTextAnswer(e.target.value)}
                   placeholder="Contoh: Amma yatasa'alun atau عم يتساءلون..."
-                  className="flex-1 px-4 py-3 bg-[#F8F5EE] border-2 border-black rounded-xl text-sm font-bold text-black focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
+                  className="flex-1 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-[#0B4627] hover:bg-[#08351D] text-white font-black text-xs rounded-xl border-2 border-black neo-button cursor-pointer"
+                  className="px-5 py-2.5 bg-[#0B4627] hover:bg-[#08351D] text-white font-semibold text-xs rounded-xl shadow-xs transition duration-150 cursor-pointer"
                 >
                   Cek Jawaban
                 </button>
@@ -708,44 +707,46 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
         {/* EVALUATION RESULT BANNER */}
         {lastResult && (
           <div
-            className={`p-5 rounded-2xl border-3 border-black space-y-3 ${
-              lastResult.isCorrect ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-[#FEE2E2] text-[#991B1B]'
+            className={`p-5 rounded-2xl border space-y-3 shadow-xs ${
+              lastResult.isCorrect 
+                ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300/80 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200' 
+                : 'bg-rose-50 dark:bg-rose-950/30 border-rose-300/80 dark:border-rose-800/60 text-rose-900 dark:text-rose-200'
             }`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {lastResult.isCorrect ? (
-                  <CheckCircle className="w-6 h-6 text-[#10B981]" />
+                  <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <XCircle className="w-6 h-6 text-[#EF4444]" />
+                  <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
                 )}
-                <h4 className="text-base font-black">
-                  {lastResult.isCorrect ? 'BENAR & MUTQIN!' : 'BELUM TEPAT'}
+                <h4 className="text-sm sm:text-base font-bold">
+                  {lastResult.isCorrect ? 'Benar & Mutqin' : 'Belum Tepat'}
                 </h4>
               </div>
 
               <button
                 onClick={() => loadChallenge()}
-                className="px-4 py-2 bg-black text-white text-xs font-black rounded-xl border border-black neo-button cursor-pointer"
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition duration-150 cursor-pointer"
               >
                 Ayat Berikutnya &rarr;
               </button>
             </div>
 
-            <p className="text-xs font-semibold">{lastResult.praise}</p>
+            <p className="text-xs font-medium">{lastResult.praise}</p>
 
             {/* Display correct text */}
-            <div className="p-4 bg-white border-2 border-black rounded-xl text-black space-y-1">
-              <span className="text-[10px] font-black text-gray-500 uppercase">Kunci Sambungan Ayat yang Benar:</span>
+            <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-xl text-slate-900 dark:text-slate-100 space-y-1 shadow-xs">
+              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Kunci Sambungan Ayat yang Benar:</span>
               <p className="font-quran text-xl text-right leading-loose font-bold" dir="rtl">
                 {challengeData.next.arabicText}
               </p>
-              <p className="text-xs text-emerald-800 font-semibold">{challengeData.next.transliteration}</p>
-              <p className="text-xs text-gray-700 italic">{challengeData.next.translation}</p>
+              <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">{challengeData.next.transliteration}</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 italic">{challengeData.next.translation}</p>
             </div>
           </div>
         )}
-      </NeobrutalCard>
+      </div>
     </div>
   );
 };

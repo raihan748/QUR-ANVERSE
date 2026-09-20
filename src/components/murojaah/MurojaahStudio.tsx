@@ -42,7 +42,6 @@ import {
   getSurahAyahsRange, 
   getRandomAyatFromAvailable 
 } from '../../data/quranData';
-import { NeobrutalCard } from '../common/NeobrutalCard';
 import { speechEngine, continuousTracker, SpeechEngine, ArabicDialect, normalizeArabic } from '../../services/speechEngine';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
 import { audioRecorder } from '../../services/audioRecorderService';
@@ -582,18 +581,18 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       />
 
       {/* 2. SURAH, RANGE & SHEIKH COMPANION HEADER */}
-      <div className="bg-[#FFFDF7] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black pb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-[#0B4627] text-white flex items-center justify-center font-black border-2 border-black shadow-[2px_2px_0px_0px_#000]">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-[#0B4627] text-white flex items-center justify-center font-bold shadow-xs">
               {currentSurahMeta.number}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-black text-black">{currentSurahMeta.latinName}</h2>
-                <span className="font-arabic text-sm text-[#0B4627] font-bold">({currentSurahMeta.name})</span>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">{currentSurahMeta.latinName}</h2>
+                <span className="font-arabic text-sm text-[#0B4627] dark:text-emerald-400 font-bold">({currentSurahMeta.name})</span>
               </div>
-              <p className="text-xs text-gray-600 font-semibold">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 {currentSurahMeta.meaning} • {currentSurahMeta.ayahCount} Ayat ({currentSurahMeta.revelationPlace === 'Makkah' ? 'Makkiyyah' : 'Madaniyyah'})
               </p>
             </div>
@@ -603,7 +602,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsSurahPickerOpen(true)}
-              className="px-3.5 py-2 bg-[#FBBF24] hover:bg-[#F59E0B] text-black font-black text-xs rounded-xl border-2 border-black neo-button flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+              className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl border border-amber-400 shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
             >
               <BookOpen className="w-3.5 h-3.5" />
               <span>Ganti Surat (114)</span>
@@ -612,19 +611,19 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
             <div className="relative">
               <button
                 onClick={() => setIsReciterMenuOpen(!isReciterMenuOpen)}
-                className="px-3.5 py-2 bg-[#E0E7FF] hover:bg-[#C7D2FE] text-indigo-950 font-black text-xs rounded-xl border-2 border-black neo-button flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+                className="px-3.5 py-2 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-950 dark:text-indigo-200 font-bold text-xs rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
               >
-                <Volume2 className="w-3.5 h-3.5 text-indigo-700" />
+                <Volume2 className="w-3.5 h-3.5 text-indigo-700 dark:text-indigo-400" />
                 <span className="truncate max-w-[110px]">{activeReciter.name.split(' ')[0]}</span>
                 <ChevronDown className="w-3 h-3" />
               </button>
 
               {/* Reciter Dropdown */}
               {isReciterMenuOpen && (
-                <div className="absolute right-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] p-2 z-50 space-y-1">
-                  <div className="flex items-center justify-between px-2 py-1 border-b border-gray-200">
-                    <p className="text-[10px] font-black uppercase text-gray-500">Syekh Pembimbing:</p>
-                    <span className="text-[10px] font-bold text-[#0B4627] bg-emerald-100 px-1.5 py-0.2 rounded">{RECITERS_LIST.length} Qari</span>
+                <div className="absolute right-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 space-y-1">
+                  <div className="flex items-center justify-between px-2 py-1.5 border-b border-slate-100 dark:border-slate-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Syekh Pembimbing:</p>
+                    <span className="text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">{RECITERS_LIST.length} Qari</span>
                   </div>
                   <div className="max-h-72 overflow-y-auto space-y-1 pr-1">
                     {RECITERS_LIST.map((r: Reciter) => (
@@ -635,15 +634,15 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                           setActiveReciter(r);
                           setIsReciterMenuOpen(false);
                         }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs font-bold flex items-center justify-between transition-all ${
-                          activeReciter.id === r.id ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]' : 'hover:bg-gray-100 text-black'
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition-all ${
+                          activeReciter.id === r.id ? 'bg-[#0B4627] text-white shadow-xs font-semibold' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
                         }`}
                       >
                         <div className="truncate pr-2">
-                          <p className="font-bold truncate">{r.name}</p>
+                          <p className="font-semibold truncate">{r.name}</p>
                           <p className="text-[10px] opacity-75 truncate">{r.arabicName} • {r.style}</p>
                         </div>
-                        {activeReciter.id === r.id && <CheckCircle2 className="w-4 h-4 text-[#F59E0B] shrink-0" />}
+                        {activeReciter.id === r.id && <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />}
                       </button>
                     ))}
                   </div>
@@ -656,7 +655,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         {/* Range Selector & Preset Pills */}
         <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs font-bold text-gray-700">Rentang Ayat:</span>
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Rentang Ayat:</span>
             {(['1-5', '1-10', '1-20', 'all', 'custom'] as const).map((preset) => (
               <button
                 key={preset}
@@ -676,10 +675,10 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     setEndAyah(currentSurahMeta.ayahCount);
                   }
                 }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-black border-2 border-black neo-button cursor-pointer ${
+                className={`px-2.5 py-1 rounded-xl text-xs font-medium border cursor-pointer transition-all ${
                   rangePreset === preset
-                    ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-                    : 'bg-white text-black hover:bg-gray-100'
+                    ? 'bg-[#0B4627] text-amber-300 border-emerald-700 shadow-xs font-semibold'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
                 {preset === 'all' ? 'Semua Ayat' : preset === 'custom' ? 'Kustom' : `Ayat ${preset}`}
@@ -689,7 +688,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
           {/* Custom Input Spinners */}
           {rangePreset === 'custom' && (
-            <div className="flex items-center gap-1.5 bg-gray-50 border-2 border-black rounded-lg px-2 py-1 text-xs font-bold">
+            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs font-medium">
               <span>Dari:</span>
               <input
                 type="number"
@@ -697,7 +696,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 max={currentSurahMeta.ayahCount}
                 value={startAyah}
                 onChange={(e) => setStartAyah(Math.max(1, Math.min(Number(e.target.value), endAyah)))}
-                className="w-12 text-center bg-white border border-black rounded px-1 py-0.5 font-bold"
+                className="w-12 text-center bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-1 py-0.5 font-bold"
               />
               <span>Sampai:</span>
               <input
@@ -706,7 +705,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 max={currentSurahMeta.ayahCount}
                 value={endAyah}
                 onChange={(e) => setEndAyah(Math.min(currentSurahMeta.ayahCount, Math.max(Number(e.target.value), startAyah)))}
-                className="w-12 text-center bg-white border border-black rounded px-1 py-0.5 font-bold"
+                className="w-12 text-center bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-1 py-0.5 font-bold"
               />
             </div>
           )}
@@ -725,24 +724,24 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
             <div
               key={ayat.numberInSurah}
               ref={isActive ? activeAyahRef : undefined}
-              className={`p-4 rounded-2xl border-3 border-black transition-all space-y-3 ${
+              className={`p-4 rounded-2xl border transition-all space-y-3 ${
                 isActive
-                  ? 'bg-[#FEFCE8] shadow-[6px_6px_0px_0px_#CA8A04] ring-2 ring-amber-400 scale-[1.01]'
+                  ? 'bg-amber-50/90 dark:bg-amber-950/30 border-amber-400/80 shadow-md ring-2 ring-amber-400/30'
                   : isDone
-                  ? 'bg-[#ECFDF5] shadow-[3px_3px_0px_0px_#059669] opacity-90'
-                  : 'bg-white shadow-[3px_3px_0px_0px_#111827]'
+                  ? 'bg-emerald-50/80 dark:bg-emerald-950/20 border-emerald-300/80 dark:border-emerald-800 shadow-xs'
+                  : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 shadow-xs'
               }`}
             >
               {/* Ayah Header Badge */}
-              <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                 <div className="flex items-center gap-2">
                   <span
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black border-2 border-black ${
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border border-slate-200 dark:border-slate-700 ${
                       isDone
-                        ? 'bg-[#10B981] text-white'
+                        ? 'bg-emerald-600 text-white'
                         : isActive
-                        ? 'bg-[#F59E0B] text-black animate-pulse'
-                        : 'bg-gray-100 text-gray-700'
+                        ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-300'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                     }`}
                   >
                     {ayat.numberInSurah}
@@ -810,12 +809,12 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                           }
                           className={`font-arabic text-2xl sm:text-3xl px-2.5 py-1 rounded-xl transition-all inline-block select-none ${
                             isWordDone
-                              ? 'bg-[#10B981] text-white shadow-xs font-bold scale-105'
+                              ? 'bg-emerald-600 text-white shadow-xs font-semibold scale-105'
                               : isWordError
-                              ? 'bg-[#EF4444] text-white border-3 border-black shadow-[4px_4px_0px_0px_#000] scale-115 font-black ring-4 ring-red-300 animate-pulse'
+                              ? 'bg-red-500 text-white border border-red-400 shadow-md scale-110 font-bold ring-2 ring-red-300 animate-pulse'
                               : isCurrentWordTarget
-                              ? 'bg-[#FBBF24] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000] scale-110 font-bold animate-pulse hover:bg-amber-300 ring-4 ring-amber-300'
-                              : 'text-gray-800 hover:bg-gray-100'
+                              ? 'bg-amber-400 text-slate-950 border border-amber-500 shadow-md scale-105 font-bold ring-2 ring-amber-300 animate-pulse hover:bg-amber-300'
+                              : 'text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                           }`}
                         >
                           {w}
@@ -824,12 +823,12 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                         {/* Tajweed Mini Pill Badge */}
                         {tajweed.ruleName && (
                           <span
-                            className={`text-[9px] font-sans font-black px-1.5 py-0.2 rounded mt-0.5 border border-black shadow-xs transition-transform ${
+                            className={`text-[9px] font-sans font-bold px-1.5 py-0.5 rounded-md mt-0.5 border shadow-xs transition-transform ${
                               isCurrentWordTarget
-                                ? 'bg-amber-400 text-black scale-105 animate-bounce'
+                                ? 'bg-amber-400 text-slate-950 border-amber-500 scale-105'
                                 : isWordDone
-                                ? 'bg-emerald-200 text-emerald-950 opacity-90'
-                                : 'bg-gray-100 text-gray-700 opacity-70 group-hover:opacity-100'
+                                ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-200 border-emerald-300 dark:border-emerald-800 opacity-90'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 opacity-75 group-hover:opacity-100'
                             }`}
                             dir="ltr"
                           >
@@ -839,7 +838,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                       </div>
                     );
                   })}
-                  <span className="text-sm font-arabic font-bold text-[#0B4627] px-2 py-0.5 bg-emerald-50 rounded-full border border-emerald-300">
+                  <span className="text-sm font-arabic font-bold text-[#0B4627] dark:text-emerald-400 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/50 rounded-full border border-emerald-300 dark:border-emerald-800">
                     ۝{ayat.numberInSurah}
                   </span>
                 </div>
@@ -849,37 +848,37 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               {errorWordState && errorWordState.ayahIdx === aIdx && (() => {
                 const errTajweed = getTajweedColorForWord(errorWordState.targetWord);
                 return (
-                  <div className="my-3 p-4 bg-gradient-to-r from-red-950 via-red-900 to-red-950 text-white rounded-2xl border-3 border-red-500 shadow-[5px_5px_0px_0px_#000] space-y-3 animate-shake">
+                  <div className="my-3 p-4 bg-gradient-to-r from-red-950 via-red-900 to-red-950 text-white rounded-2xl border border-red-500/70 shadow-xl space-y-3">
                     <div className="flex items-center justify-between border-b border-red-700/80 pb-2">
                       <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-red-400 animate-ping"></span>
-                        <span className="font-black text-sm text-red-200 uppercase tracking-wide flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-400 animate-ping"></span>
+                        <span className="font-bold text-sm text-red-200 uppercase tracking-wide flex items-center gap-1.5">
                           <AlertCircle className="w-4 h-4 text-red-400" />
                           <span>TEGURAN OTOMATIS SYEKH (BACAAN SALAH)</span>
                         </span>
                       </div>
                       {isSheikhSpeaking && (
-                        <span className="px-2.5 py-1 bg-red-600 text-white font-black text-xs rounded-full border border-white animate-pulse flex items-center gap-1">
+                        <span className="px-2.5 py-1 bg-red-600 text-white font-bold text-xs rounded-full border border-red-400 animate-pulse flex items-center gap-1">
                           <Volume2 className="w-3.5 h-3.5" /> Syekh Membimbing...
                         </span>
                       )}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div className="p-2.5 bg-black/40 rounded-xl border border-red-700">
+                      <div className="p-2.5 bg-black/40 rounded-xl border border-red-700/60">
                         <span className="text-red-300 font-bold block mb-1">Lafadz Target yang Benar (Rasm Utsmani):</span>
                         <div className="flex items-center justify-between gap-2" dir="rtl">
                           <span className="font-arabic text-2xl font-black text-emerald-300">
                             « {errorWordState.targetWord} »
                           </span>
                           {errTajweed.ruleName && (
-                            <span className="text-[10px] font-sans font-black bg-emerald-900/90 text-emerald-200 border border-emerald-400 px-2 py-0.5 rounded-md" dir="ltr">
+                            <span className="text-[10px] font-sans font-bold bg-emerald-900/90 text-emerald-200 border border-emerald-500/60 px-2 py-0.5 rounded-md" dir="ltr">
                               {errTajweed.ruleName}
                             </span>
                           )}
                         </div>
                       </div>
-                      <div className="p-2.5 bg-black/40 rounded-xl border border-red-700">
+                      <div className="p-2.5 bg-black/40 rounded-xl border border-red-700/60">
                         <span className="text-red-300 font-bold block mb-1">Terdengar Keliru / Tertukar (Dikte):</span>
                         <span className="font-arabic text-xl font-bold text-red-400 line-through" dir="rtl">
                           « {errorWordState.spokenWord || '(Belum terdengar)'} »
@@ -888,15 +887,15 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     </div>
 
                     {/* Tajweed & Makhraj Deep Diagnostic Card */}
-                    <div className="p-3 bg-red-900/80 rounded-xl border border-red-500 text-red-100 font-medium text-xs space-y-1.5">
-                      <div className="flex items-center gap-1.5 text-yellow-300 font-black">
+                    <div className="p-3 bg-red-900/60 rounded-xl border border-red-600/60 text-red-100 font-medium text-xs space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-yellow-300 font-bold">
                         <Sparkles className="w-4 h-4 text-yellow-400" />
                         <span>Analisis Hukum Tajwid: {errTajweed.ruleName || 'Makharijul Huruf & Harakat Standar'}</span>
                       </div>
                       <p className="text-red-200 text-xs">
                         <strong>Penyebab Kesalahan:</strong> {errorWordState.reason}
                       </p>
-                      <div className="text-[11px] bg-black/50 p-2 rounded-lg text-emerald-200 border border-red-700 font-sans">
+                      <div className="text-[11px] bg-black/40 p-2 rounded-lg text-emerald-200 border border-red-800 font-sans">
                         <strong>Panduan Pelafalan yang Benar:</strong> Bunyikan huruf dengan makhraj yang fasih dan perhatikan kaidah {errTajweed.ruleName || 'harakat'} sebelum melanjutkan muroja'ah.
                       </div>
                     </div>
@@ -922,9 +921,9 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     <div className="flex flex-wrap gap-2 pt-1">
                       <button
                         onClick={handleRetryCurrentWord}
-                        className="flex-1 min-w-[200px] flex items-center justify-center gap-2 py-2 px-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5 transition-all cursor-pointer"
+                        className="flex-1 min-w-[200px] flex items-center justify-center gap-2 py-2 px-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl border border-amber-400 shadow-sm transition-all cursor-pointer"
                       >
-                        <Mic className="w-4 h-4 text-black animate-pulse" />
+                        <Mic className="w-4 h-4 text-slate-950 animate-pulse" />
                         <span>Wajib Baca Ulang Kata Ini Sekarang</span>
                       </button>
                       <button
@@ -937,7 +936,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                             () => setIsSheikhSpeaking(false)
                           );
                         }}
-                        className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl border border-white/40 transition-all cursor-pointer"
+                        className="flex items-center justify-center gap-1.5 py-2 px-3 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl border border-white/30 transition-all cursor-pointer"
                       >
                         <Volume2 className="w-4 h-4" />
                         Putar Ulang Audio Syekh
@@ -957,8 +956,8 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 );
 
                 return (
-                  <div className="my-3 p-3.5 bg-gradient-to-r from-[#022C22] via-[#064E3B] to-[#022C22] text-white rounded-2xl border-3 border-[#F59E0B] shadow-[4px_4px_0px_0px_#000] space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-black border-b border-emerald-700/60 pb-1.5">
+                  <div className="my-3 p-3.5 bg-gradient-to-r from-[#022C22] via-[#064E3B] to-[#022C22] text-white rounded-2xl border border-amber-500/50 shadow-lg space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold border-b border-emerald-700/60 pb-1.5">
                       <span className="flex items-center gap-2 text-amber-300">
                         <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
                         <Mic className="w-3.5 h-3.5 text-amber-300 inline" />
@@ -1051,51 +1050,51 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
       </div>
 
       {/* 4. REAL-TIME LIVE CONTROL BAR & HIGH-VISIBILITY MOBILE SUBTITLE HUD */}
-      <div className="sticky bottom-3 z-30 bg-[#FFFDF7] border-3 border-black rounded-2xl p-4 shadow-[6px_6px_0px_0px_#111827] space-y-3">
+      <div className="sticky bottom-3 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
         {/* Live Sheikh Correction Alert */}
         {sheikhTeguranMessage && (
-          <div className="p-3 bg-[#FEE2E2] border-2 border-red-500 rounded-xl flex items-center justify-between gap-2 animate-bounce text-xs font-bold text-red-900">
+          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl flex items-center justify-between gap-2 text-xs font-semibold text-rose-900 dark:text-rose-200">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
               <span>{sheikhTeguranMessage}</span>
             </div>
             {isSheikhSpeaking && (
-              <span className="px-2 py-0.5 bg-red-600 text-white rounded text-[10px] uppercase font-mono animate-pulse">
+              <span className="px-2 py-0.5 bg-rose-600 text-white rounded-md text-[10px] uppercase font-mono animate-pulse">
                 Syekh Bersuara...
               </span>
             )}
           </div>
         )}
 
-        {/* HIGH-VISIBILITY LIVE DICTATION SUBTITLE HUD (Mobile Optimized) */}
+        {/* HIGH-VISIBILITY LIVE DICTATION SUBTITLE HUD */}
         {isRecording && (
-          <div className="space-y-2 bg-[#064E3B] text-white p-3.5 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000]">
+          <div className="space-y-2 bg-[#042413] text-white p-3.5 rounded-2xl border border-emerald-800/80 shadow-md ring-1 ring-emerald-500/20">
             {/* Header: VU Sound Level Meter & Connection Badge */}
-            <div className="flex items-center justify-between text-xs font-black border-b border-emerald-700 pb-2">
+            <div className="flex items-center justify-between text-xs font-bold border-b border-emerald-800/60 pb-2">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
-                <span className="text-emerald-200 font-bold uppercase tracking-wider text-[11px] flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+                <span className="text-emerald-200 font-semibold uppercase tracking-wider text-[11px] flex items-center gap-1">
                   <Mic className="w-3.5 h-3.5 text-amber-300 inline" />
                   <span>الاستماع المباشر للتلاوة (Dikte Bahasa Arab)</span>
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 font-mono text-[11px] bg-[#0B4627] px-2.5 py-1 rounded-lg border border-emerald-600">
-                <Activity className="w-3.5 h-3.5 text-[#F59E0B] animate-pulse" />
+              <div className="flex items-center gap-1.5 font-mono text-[11px] bg-[#0B4627] px-2.5 py-1 rounded-lg border border-emerald-600/60">
+                <Activity className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
                 <span>VU: <b>{micVolume} dB</b></span>
                 <span className={`w-2 h-2 rounded-full ml-1 ${micVolume > 15 ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
               </div>
             </div>
 
-            {/* Live Dictation Display (Large, Multi-line, Authentic Arabic Font) */}
-            <div className="bg-[#022C22] p-3.5 rounded-xl border-2 border-emerald-600 min-h-[64px] flex flex-col justify-center text-right" dir="rtl">
-              <p className="text-[10px] font-black uppercase text-emerald-400 tracking-wider font-sans">
+            {/* Live Dictation Display */}
+            <div className="bg-[#021c0e] p-3.5 rounded-xl border border-emerald-800/60 min-h-[64px] flex flex-col justify-center text-right" dir="rtl">
+              <p className="text-[10px] font-bold uppercase text-emerald-400 tracking-wider font-sans">
                 النص القرآني المستمع (Lafal Bahasa Arab Terdeteksi):
               </p>
               <p className="text-base sm:text-xl font-bold text-amber-300 font-arabic leading-loose break-words mt-1">
                 {liveTranscript ? (
                   `« ${liveTranscript} »`
                 ) : (
-                  <span className="text-emerald-300 text-xs italic font-sans font-normal" dir="ltr">
+                  <span className="text-emerald-300/80 text-xs italic font-sans font-normal" dir="ltr">
                     بانتظار تلاوة الآية الكريمة... (Silakan melantunkan ayat dalam bahasa Arab)
                   </span>
                 )}
@@ -1105,7 +1104,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
             {/* Sensitivitas & Touch Assist Helper */}
             <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-emerald-300 font-bold">Filter Lingkungan & Sensitivitas:</span>
+                <span className="text-emerald-300 font-medium">Sensitivitas:</span>
                 {(['normal', 'high', 'ultra'] as const).map((lvl) => (
                   <button
                     key={lvl}
@@ -1117,27 +1116,27 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                       speechEngine.setSensitivity(lvl);
                       continuousTracker.setSensitivity(lvl);
                     }}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
                       micSensitivity === lvl
-                        ? 'bg-[#F59E0B] text-black border-black shadow-xs font-black'
-                        : 'bg-emerald-900 text-emerald-300 border-emerald-700 hover:bg-emerald-800'
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-xs'
+                        : 'bg-emerald-950/80 text-emerald-300 border-emerald-800 hover:bg-emerald-900'
                     }`}
                   >
                     {lvl === 'normal' 
-                      ? 'Mode Umum (Redam Bising)' 
+                      ? 'Mode Umum' 
                       : lvl === 'high' 
                       ? 'Mode Seimbang (Rekomendasi)' 
-                      : 'Mode Sunyi / Sensitif Tinggi'}
+                      : 'Mode Sensitif'}
                   </button>
                 ))}
               </div>
 
-              <span className="text-amber-200 text-[10px] font-semibold">
+              <span className="text-amber-200/90 text-[10px] font-medium">
                 {micSensitivity === 'ultra' 
-                  ? 'Mode Sensitif Tinggi aktif: Sangat peka menangkap tartil perlahan & suara halus di ruangan tenang.' 
+                  ? 'Sangat peka untuk tartil perlahan di ruangan tenang.' 
                   : micSensitivity === 'high' 
-                  ? 'Mode Seimbang aktif: Kepekaan optimal untuk bacaan tartil harian.' 
-                  : 'Mode Umum aktif: Menyaring suara bising luar ruangan.'}
+                  ? 'Kepekaan optimal untuk muroja\'ah harian.' 
+                  : 'Menyaring kebisingan luar ruangan.'}
               </span>
             </div>
           </div>
@@ -1149,28 +1148,27 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
             {!isRecording ? (
               <button
                 onClick={handleStartContinuousMurojaah}
-                className="px-5 py-3 bg-[#0B4627] hover:bg-[#064E3B] text-white font-black text-sm rounded-xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[3px_3px_0px_0px_#000]"
+                className="px-5 py-2.5 bg-[#0B4627] hover:bg-[#07301b] text-white font-bold text-sm rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-all active:scale-95"
               >
-                <Mic className="w-4 h-4 text-[#F59E0B]" />
+                <Mic className="w-4 h-4 text-amber-400" />
                 <span>Mulai Muroja'ah Beruntun</span>
               </button>
             ) : (
               <>
                 <button
                   onClick={handleStopSession}
-                  className="px-5 py-3 bg-[#EF4444] hover:bg-[#DC2626] text-white font-black text-sm rounded-xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[3px_3px_0px_0px_#000]"
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-all active:scale-95"
                 >
                   <MicOff className="w-4 h-4" />
                   <span>Selesai Sesi</span>
                 </button>
 
-                {/* Instant Skip / Assist Active Word Button */}
                 <button
                   onClick={() => continuousTracker.advanceCurrentWord(true)}
-                  className="px-4 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs sm:text-sm rounded-xl border-2 border-black neo-button flex items-center gap-1.5 cursor-pointer shadow-[3px_3px_0px_0px_#000] animate-pulse"
+                  className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
                   title="Lewati kata aktif jika pelafalan benar tapi dikte mic gagal mengenali"
                 >
-                  <Zap className="w-4 h-4 fill-black" />
+                  <Zap className="w-4 h-4 fill-slate-950" />
                   <span>Bantu / Lewati Kata Ini</span>
                 </button>
               </>
@@ -1178,16 +1176,16 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
             <button
               onClick={resetSessionState}
-              className="p-3 bg-white hover:bg-gray-100 text-black border-2 border-black rounded-xl neo-button cursor-pointer"
+              className="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer transition-colors shadow-xs"
               title="Ulangi dari Awal"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Speech Engine Dialect Selector (Full Arabic Dialects) */}
-          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl border border-black text-xs font-bold flex-wrap">
-            <span className="text-[10px] font-black text-gray-600 px-1">Dialek Arab:</span>
+          {/* Speech Engine Dialect Selector */}
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold flex-wrap">
+            <span className="text-[10px] font-bold text-slate-500 px-1">Dialek Arab:</span>
             {([
               { code: 'ar-SA', label: '[SA] السعودية' },
               { code: 'ar-EG', label: '[EG] مصر' },
@@ -1201,10 +1199,10 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                   setSpeechLanguage(code as ArabicDialect);
                   speechEngine.setLanguage(code as ArabicDialect);
                 }}
-                className={`px-2 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   speechLanguage === code
                     ? 'bg-[#0B4627] text-white shadow-xs'
-                    : 'text-gray-700 hover:text-black'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {label}
@@ -1215,32 +1213,32 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
         {/* Session Completed Banner */}
         {sessionCompleted && (
-          <div className="p-4 bg-[#D1FAE5] border-2 border-[#0B4627] rounded-xl text-center space-y-2 animate-in zoom-in-95">
-            <div className="flex items-center justify-center gap-2 text-[#0B4627]">
-              <Sparkles className="w-5 h-5 text-amber-600" />
-              <h4 className="text-base font-black">
+          <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-center space-y-2 animate-in zoom-in-95">
+            <div className="flex items-center justify-center gap-2 text-emerald-800 dark:text-emerald-300">
+              <Sparkles className="w-5 h-5 text-amber-500" />
+              <h4 className="text-base font-bold">
                 Maa Syaa Allah! Sesi Muroja'ah Beruntun Tuntas!
               </h4>
             </div>
-            <p className="text-xs font-bold text-emerald-900">
-              Skor Kelancaran: <b className="text-base font-black text-[#0B4627]">{finalScore}% (Mutqin)</b>
+            <p className="text-xs font-medium text-emerald-900 dark:text-emerald-200">
+              Skor Kelancaran: <b className="text-base font-bold text-[#0B4627] dark:text-emerald-400">{finalScore}% (Mutqin)</b>
             </p>
           </div>
         )}
       </div>
 
-      {/* 5. SURAH SELECTOR MODAL (114 SURAT) - FLOATING AT THE VERY TOP */}
+      {/* 5. SURAH SELECTOR MODAL (114 SURAT) */}
       {isSurahPickerOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-start justify-center p-3 sm:p-4 pt-3 sm:pt-6 overflow-y-auto">
-          <div className="w-full max-w-xl max-h-[85vh] flex flex-col bg-[#FFFDF7] border-3 border-black rounded-3xl p-4 sm:p-5 shadow-[8px_8px_0px_0px_#111827] animate-in fade-in slide-in-from-top-4 duration-200 space-y-3 mt-0">
-            <div className="flex items-center justify-between border-b-2 border-black pb-3">
-              <h3 className="text-sm sm:text-base font-black text-black flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-[#0B4627]" />
+          <div className="w-full max-w-xl max-h-[85vh] flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl animate-in fade-in zoom-in-95 duration-200 space-y-3 mt-0">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 <span>Pilih Surat untuk Muroja'ah (1–114 Surat)</span>
               </h3>
               <button
                 onClick={() => setIsSurahPickerOpen(false)}
-                className="p-1.5 px-2.5 bg-[#FEE2E2] hover:bg-[#FCA5A5] border-2 border-black rounded-xl font-bold text-xs cursor-pointer shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5 flex items-center gap-1"
+                className="p-1.5 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs cursor-pointer transition-colors flex items-center gap-1"
                 aria-label="Tutup"
               >
                 <X className="w-3.5 h-3.5" />
@@ -1250,13 +1248,13 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
             {/* Search Input */}
             <div className="relative">
-              <Search className="w-4 h-4 text-gray-500 absolute left-3 top-3" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari nama surat atau nomor..."
-                className="w-full pl-9 pr-3 py-2 bg-white border-2 border-black rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-emerald-600 dark:text-white"
               />
             </div>
 
@@ -1271,19 +1269,19 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     setIsSurahPickerOpen(false);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className={`w-full p-2.5 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
+                  className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                     selectedSurahNumber === s.number
-                      ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-                      : 'bg-white text-gray-900 hover:bg-[#FEF3C7]'
+                      ? 'bg-[#0B4627] text-white border-emerald-800 shadow-xs'
+                      : 'bg-slate-50 dark:bg-slate-850 border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white hover:bg-emerald-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="w-7 h-7 rounded-lg bg-gray-100 border border-black text-xs font-bold text-black flex items-center justify-center">
+                    <span className="w-7 h-7 rounded-lg bg-slate-200/60 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center justify-center">
                       {s.number}
                     </span>
                     <div>
-                      <p className="font-extrabold text-xs">{s.latinName}</p>
-                      <p className={`text-[10px] ${selectedSurahNumber === s.number ? 'text-emerald-200' : 'text-gray-500'}`}>
+                      <p className="font-bold text-xs">{s.latinName}</p>
+                      <p className={`text-[10px] ${selectedSurahNumber === s.number ? 'text-emerald-200' : 'text-slate-500'}`}>
                         {s.meaning} • {s.ayahCount} Ayat
                       </p>
                     </div>
@@ -1300,21 +1298,21 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
       {/* TOP FLOATING WORD TAJWEED INSPECTOR BANNER */}
       {selectedWordInspector && (
-        <div className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-3 animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className="bg-[#FFFDF7] dark:bg-[#0F172A] border-3 border-black rounded-2xl sm:rounded-3xl p-4 sm:p-5 space-y-3.5 shadow-[6px_6px_0px_0px_#000] text-gray-900 dark:text-gray-100 ring-4 ring-emerald-500/30">
-            <div className="flex items-center justify-between border-b-2 border-black pb-2.5">
+        <div className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-3 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 space-y-3.5 shadow-2xl text-slate-900 dark:text-slate-100 ring-1 ring-emerald-500/20">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#0B4627] text-[#F59E0B] flex items-center justify-center font-bold border border-black shadow-xs">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold border border-amber-400/40 shadow-xs">
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="font-black text-xs sm:text-sm text-black dark:text-white">Inspektur Kaidah Tajwid</h4>
-                  <p className="text-[10px] text-gray-500 font-mono">Surat {selectedWordInspector.surahNumber} • Ayat {selectedWordInspector.ayahNumber}</p>
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">Inspektur Kaidah Tajwid</h4>
+                  <p className="text-[10px] text-slate-400 font-mono">Surat {selectedWordInspector.surahNumber} • Ayat {selectedWordInspector.ayahNumber}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedWordInspector(null)}
-                className="p-1 px-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-black border-2 border-black cursor-pointer font-black text-xs shadow-[1px_1px_0px_0px_#000] active:translate-y-0.5 flex items-center gap-1"
+                className="p-1 px-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 cursor-pointer font-semibold text-xs transition-colors flex items-center gap-1"
                 aria-label="Tutup"
               >
                 <X className="w-3.5 h-3.5" />
@@ -1323,25 +1321,25 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
             </div>
 
             {/* Vocalized Word Showcase & Rule Pill */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 sm:p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl sm:rounded-2xl border-2 border-black">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 sm:p-4 bg-emerald-50/70 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-800">
               <div className="w-full sm:w-auto text-center sm:text-right" dir="rtl">
                 <span className="font-arabic text-3xl sm:text-4xl font-bold text-[#0B4627] dark:text-emerald-300 block py-0.5">
                   {selectedWordInspector.word}
                 </span>
               </div>
               <div className="flex flex-col items-center sm:items-end gap-1 w-full sm:w-auto">
-                <span className="px-2.5 py-0.5 bg-amber-400 text-black font-black rounded-lg text-[10px] border border-black shadow-xs">
+                <span className="px-2.5 py-0.5 bg-amber-400 text-slate-950 font-bold rounded-lg text-[10px] shadow-xs">
                   {selectedWordInspector.ruleName ? 'Hukum Teridentifikasi' : 'Standar'}
                 </span>
-                <span className="text-xs sm:text-sm font-black text-[#0B4627] dark:text-emerald-300 text-center sm:text-right">
+                <span className="text-xs sm:text-sm font-bold text-[#0B4627] dark:text-emerald-300 text-center sm:text-right">
                   {selectedWordInspector.ruleName || 'Makharijul Huruf & Harakat Asli'}
                 </span>
               </div>
             </div>
 
             {/* Tajweed Explanation Details */}
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border-2 border-amber-400 text-xs space-y-1">
-              <p className="text-gray-700 dark:text-gray-200 text-[11px] sm:text-xs leading-relaxed font-medium">
+            <div className="p-3 bg-amber-50/70 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/40 text-xs space-y-1">
+              <p className="text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs leading-relaxed font-medium">
                 {selectedWordInspector.ruleName 
                   ? `Kata ini memiliki kaidah khusus « ${selectedWordInspector.ruleName} » yang wajib dilafalkan dengan dengung, panjang mad, atau makhraj yang tepat saat muroja'ah.`
                   : 'Kata ini dibaca jelas sesuai harakat fathah, kasrah, dhommah, atau sukun tanpa penambahan dengung ekstra.'}
@@ -1358,14 +1356,14 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     activeReciter.id
                   );
                 }}
-                className="flex-1 py-2 px-3 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs rounded-xl border-2 border-black cursor-pointer shadow-[2px_2px_0px_0px_#000] flex items-center justify-center gap-1.5 active:translate-y-0.5 transition-all"
+                className="flex-1 py-2 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
               >
                 <Volume2 className="w-4 h-4" />
                 <span>Dengar Contoh Syekh</span>
               </button>
               <button
                 onClick={() => setSelectedWordInspector(null)}
-                className="px-4 py-2 bg-black hover:bg-gray-800 text-white font-black text-xs rounded-xl border-2 border-black cursor-pointer shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5 transition-all"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
               >
                 Tutup
               </button>

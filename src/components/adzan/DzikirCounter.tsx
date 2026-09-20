@@ -28,15 +28,15 @@ export const DzikirCounter: React.FC = () => {
   };
 
   return (
-    <NeobrutalCard variant="white" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
-      <div className="flex items-center justify-between border-b-2 border-dashed border-gray-300 pb-3 mb-4">
-        <div className="flex items-center gap-2">
-          <span className="w-8 h-8 rounded-xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black font-extrabold text-xs">
-            <Sparkles className="w-4 h-4 text-black" />
+    <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xs">
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+        <div className="flex items-center gap-2.5">
+          <span className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400">
+            <Sparkles className="w-4 h-4" />
           </span>
           <div>
-            <h4 className="text-base font-extrabold text-black">Tasbih Digital & Dzikir Pagi Petang</h4>
-            <p className="text-xs text-gray-500">
+            <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Tasbih Digital & Dzikir Pagi Petang</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Dzikir ke-{currentIndex + 1} dari {DZIKIR_PAGI_PETANG.length}
             </p>
           </div>
@@ -44,26 +44,26 @@ export const DzikirCounter: React.FC = () => {
 
         <button
           onClick={handleReset}
-          className="p-2 bg-gray-100 hover:bg-gray-200 border-2 border-black rounded-lg neo-button cursor-pointer"
+          className="p-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer transition"
           title="Reset Hitungan"
         >
-          <RotateCcw className="w-4 h-4 text-black" />
+          <RotateCcw className="w-4 h-4" />
         </button>
       </div>
 
       {/* Dzikir Text */}
-      <div className="text-center py-4 bg-[#FFFDF7] border-2 border-black rounded-2xl p-4 mb-5">
-        <p className="font-quran text-2xl sm:text-3xl text-emerald-950 font-bold leading-loose" dir="rtl">
+      <div className="text-center py-5 bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 rounded-2xl p-4 sm:p-5 mb-5">
+        <p className="font-quran text-2xl sm:text-3xl text-emerald-950 dark:text-emerald-200 font-bold leading-loose" dir="rtl">
           {currentDzikir.arabic}
         </p>
-        <p className="text-xs font-bold text-[#0B4627] italic mt-2">
+        <p className="text-xs font-semibold text-[#0B4627] dark:text-emerald-400 italic mt-2.5">
           {currentDzikir.transliteration}
         </p>
-        <p className="text-xs text-gray-700 mt-1">
+        <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-xl mx-auto">
           "{currentDzikir.translation}"
         </p>
-        <p className="text-[11px] text-amber-900 bg-amber-100 p-2 rounded-lg mt-3 border border-amber-300 flex items-center justify-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+        <p className="text-[11px] text-amber-900 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 p-2 rounded-lg mt-3 border border-amber-200/80 dark:border-amber-800 flex items-center justify-center gap-1.5 max-w-md mx-auto">
+          <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
           <span>Keutamaan: {currentDzikir.note}</span>
         </p>
       </div>
@@ -73,19 +73,19 @@ export const DzikirCounter: React.FC = () => {
         <div className="flex justify-center items-center gap-4">
           <button
             onClick={handleTap}
-            className="w-36 h-36 rounded-full bg-[#0B4627] hover:bg-[#064E3B] active:scale-95 text-white border-4 border-black shadow-[6px_6px_0px_0px_#111827] flex flex-col items-center justify-center cursor-pointer transition-all"
+            className="w-32 h-32 rounded-full bg-gradient-to-br from-[#0B4627] to-[#042413] hover:from-[#0d522e] hover:to-[#07301b] active:scale-95 text-white border-2 border-emerald-600/40 shadow-md flex flex-col items-center justify-center cursor-pointer transition-all"
           >
-            <span className="text-3xl font-black font-mono text-[#F59E0B]">{count}</span>
-            <span className="text-[11px] font-extrabold text-emerald-200 mt-1">
+            <span className="text-3xl font-bold font-mono text-amber-300">{count}</span>
+            <span className="text-[11px] font-medium text-emerald-200/90 mt-1">
               / {currentDzikir.repeatCount}x (Tap)
             </span>
           </button>
         </div>
 
-        <p className="text-xs font-bold text-gray-500">
+        <p className="text-xs text-slate-400">
           Sentuh lingkaran tasbih di atas setiap selesai membaca 1 kali.
         </p>
       </div>
-    </NeobrutalCard>
+    </div>
   );
 };

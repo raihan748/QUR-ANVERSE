@@ -17,7 +17,6 @@ import { SURAH_LIST, getSurahAyahs } from '../../data/quranData';
 import { SurahSelector } from './SurahSelector';
 import { WordByWordModal } from './WordByWordModal';
 import { QuranAudioBar } from './QuranAudioBar';
-import { NeobrutalCard } from '../common/NeobrutalCard';
 import { audioPlayer } from '../../services/audioPlayerService';
 import { getBookmarks, saveBookmark, setLastRead, getLastRead } from '../../services/offlineStorage';
 
@@ -33,112 +32,115 @@ export const MushafView: React.FC = () => {
     try {
       const saved = localStorage.getItem(STORAGE_MUSHAF_MODE);
       if (saved === 'digital' || saved === 'physical') return saved;
-    } catch {}
-    return 'physical'; // Default: Mushaf Fisik Asli (Open Book Spread)
+    } catch {
+      // ignore
+    }
+    return 'digital';
   });
 
-  const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(1);
+  const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(() => {
+    const last = getLastRead();
+    return last ? last.surahNumber : 1;
+  });
+
   const [ayats, setAyats] = useState<Ayat[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [fontSize, setFontSize] = useState<number>(28);
+  const [showTranslation, setShowTranslation] = useState<boolean>(true);
+  const [showTransliteration, setShowTransliteration] = useState<boolean>(true);
+  const [themeMode, setThemeMode] = useState<'paper' | 'emerald' | 'dark'>('paper');
+  const [showControls, setShowControls] = useState<boolean>(false);
 
-  // Audio State
-  const [currentPlayingAyat, setCurrentPlayingAyat] = useState<Ayat | null>(null);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-
-  // Word by word modal state
+  // Word-by-word modal state
   const [selectedAyatForWords, setSelectedAyatForWords] = useState<Ayat | null>(null);
   const [selectedWord, setSelectedWord] = useState<WordData | null>(null);
-  const [isWordModalOpen, setIsWordModalOpen] = useState(false);
+  const [isWordModalOpen, setIsWordModalOpen] = useState<boolean>(false);
 
-  // Styling & Preferences
-  const [fontSize, setFontSize] = useState<number>(28);
-  const [themeMode, setThemeMode] = useState<'paper' | 'dark' | 'emerald'>('paper');
-  const [showTranslation, setShowTranslation] = useState(true);
-  const [showTransliteration, setShowTransliteration] = useState(true);
-  const [showControls, setShowControls] = useState(false);
-
-  const handleSetViewMode = (mode: 'digital' | 'physical') => {
-    setMushafViewMode(mode);
-    try {
-      localStorage.setItem(STORAGE_MUSHAF_MODE, mode);
-    } catch {}
-  };
+  // Audio state
+  const [currentPlayingAyat, setCurrentPlayingAyat] = useState<Ayat | null>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
 
   // Bookmarks
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
-
-  // Note Drawer / Modal
-  const [activeNoteAyat, setActiveNoteAyat] = useState<Ayat | null>(null);
-  const [noteText, setNoteText] = useState('');
 
   const currentSurahMeta = SURAH_LIST.find((s) => s.number === selectedSurahNumber) || SURAH_LIST[0];
 
   useEffect(() => {
     setBookmarks(getBookmarks());
-    loadSurah(selectedSurahNumber);
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    getSurahAyahs(selectedSurahNumber).then((data) => {
+      if (isMounted) {
+        setAyats(data);
+        setLoading(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
   }, [selectedSurahNumber]);
 
-  const loadSurah = async (surahNumber: number) => {
-    setLoading(true);
-    const data = await getSurahAyahs(surahNumber);
-    setAyats(data);
-    setLoading(false);
-    setLastRead(surahNumber, 1, currentSurahMeta.latinName);
+  const handleSetViewMode = (mode: 'digital' | 'physical') => {
+    setMushafViewMode(mode);
+    try {
+      localStorage.setItem(STORAGE_MUSHAF_MODE, mode);
+    } catch {
+      // ignore
+    }
   };
 
-  const handlePlayAyat = async (ayat: Ayat) => {
+  const handlePlayAyat = (ayat: Ayat) => {
     if (currentPlayingAyat?.numberInSurah === ayat.numberInSurah && isPlayingAudio) {
       audioPlayer.pause();
       setIsPlayingAudio(false);
-      return;
-    }
-
-    setCurrentPlayingAyat(ayat);
-    setIsPlayingAudio(true);
-
-    const reciterId = audioPlayer.getActiveReciterId();
-
-    if (ayat.numberInSurah === 1 && ayat.surahNumber > 1 && ayat.surahNumber !== 9) {
-      // Play Bismillah first, then play Ayah 1
-      await audioPlayer.playBismillah(async () => {
-        await audioPlayer.playAyat(ayat.surahNumber, 1, () => {
-          const nextAyat = ayats.find(a => a.numberInSurah === ayat.numberInSurah + 1);
-          if (nextAyat) {
-            handlePlayAyat(nextAyat);
-          } else {
-            setIsPlayingAudio(false);
-            setCurrentPlayingAyat(null);
-          }
-        }, reciterId);
-      }, reciterId);
     } else {
-      await audioPlayer.playAyat(ayat.surahNumber, ayat.numberInSurah, () => {
-        // Auto play next ayat in Surah
-        const nextAyat = ayats.find(a => a.numberInSurah === ayat.numberInSurah + 1);
-        if (nextAyat) {
-          handlePlayAyat(nextAyat);
-        } else {
+      audioPlayer.playAyat(
+        ayat.surahNumber,
+        ayat.numberInSurah,
+        () => {
           setIsPlayingAudio(false);
           setCurrentPlayingAyat(null);
         }
-      }, reciterId);
+      );
+      setCurrentPlayingAyat(ayat);
+      setIsPlayingAudio(true);
     }
   };
 
   const handleToggleBookmark = (ayat: Ayat) => {
-    const updated = saveBookmark({
-      surahNumber: ayat.surahNumber,
-      ayahNumber: ayat.numberInSurah,
-      surahName: ayat.surahName,
-      arabicText: ayat.arabicText,
-      translation: ayat.translation,
-      note: noteText || undefined
-    });
-    setBookmarks(updated);
+    const isBookmarked = bookmarks.some(
+      (b) => b.surahNumber === ayat.surahNumber && b.ayahNumber === ayat.numberInSurah
+    );
+
+    if (isBookmarked) {
+      // remove
+      const updated = bookmarks.filter(
+        (b) => !(b.surahNumber === ayat.surahNumber && b.ayahNumber === ayat.numberInSurah)
+      );
+      localStorage.setItem('quranverse_bookmarks', JSON.stringify(updated));
+      setBookmarks(updated);
+    } else {
+      const newBm: Bookmark = {
+        id: `bm_${Date.now()}`,
+        surahNumber: ayat.surahNumber,
+        surahName: currentSurahMeta.latinName,
+        ayahNumber: ayat.numberInSurah,
+        arabicText: ayat.arabicText,
+        translation: ayat.translation,
+        createdAt: new Date().toISOString()
+      };
+      saveBookmark(newBm);
+      setBookmarks(getBookmarks());
+    }
   };
 
   const isAyatBookmarked = (ayat: Ayat) => {
-    return bookmarks.some(b => b.surahNumber === ayat.surahNumber && b.ayahNumber === ayat.numberInSurah);
+    return bookmarks.some(
+      (b) => b.surahNumber === ayat.surahNumber && b.ayahNumber === ayat.numberInSurah
+    );
   };
 
   const handleWordClick = (ayat: Ayat, word: WordData) => {
@@ -162,28 +164,28 @@ export const MushafView: React.FC = () => {
   return (
     <div className="space-y-4 pb-24 max-w-5xl mx-auto">
       {/* DUAL MODE SWITCHER: DIGITAL vs PHYSICAL 604-PAGE MUSHAF */}
-      <div className="flex border-2 border-black rounded-2xl overflow-hidden bg-[#E5E7EB] p-1 gap-1 shadow-[2px_2px_0px_0px_#111827]">
+      <div className="flex border border-slate-200/90 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800/80 p-1 gap-1 shadow-xs">
         <button
           onClick={() => handleSetViewMode('digital')}
-          className={`flex-1 py-2 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+          className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
             mushafViewMode === 'digital'
-              ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-              : 'text-gray-700 hover:text-black'
+              ? 'bg-[#0B4627] text-white shadow-xs font-bold'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
           }`}
         >
-          <BookOpen className="w-4 h-4 text-[#F59E0B]" />
+          <BookOpen className="w-4 h-4 text-amber-400" />
           <span>{language === 'ar' ? 'مصحف رقمي مفسر' : 'Mode Digital (Teks, Terjemah & Per Kata)'}</span>
         </button>
 
         <button
           onClick={() => handleSetViewMode('physical')}
-          className={`flex-1 py-2 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
+          className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 ${
             mushafViewMode === 'physical'
-              ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-              : 'text-gray-700 hover:text-black'
+              ? 'bg-[#0B4627] text-white shadow-xs font-bold'
+              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
           }`}
         >
-          <Sparkles className="w-4 h-4 text-[#F59E0B]" />
+          <Sparkles className="w-4 h-4 text-amber-400" />
           <span>{language === 'ar' ? 'مصحف المدينة ٦٠٤ صفحة (قلب الصفحات)' : 'Mushaf Madinah Asli (604 Halaman)'}</span>
         </button>
       </div>
@@ -199,35 +201,35 @@ export const MushafView: React.FC = () => {
           />
 
       {/* Surah Header Card */}
-      <NeobrutalCard variant="emerald" className="p-4 sm:p-5 relative overflow-hidden shadow-[3px_3px_0px_0px_#111827] border-2 border-black">
+      <div className="p-5 relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#032313] via-[#0B4627] to-[#042413] text-white border border-emerald-800/60 shadow-md">
         {/* Background Islamic Star Pattern */}
-        <div className="absolute -right-8 -top-8 w-40 h-40 bg-[#F59E0B]/10 rounded-full blur-xl pointer-events-none" />
+        <div className="absolute -right-8 -top-8 w-40 h-40 bg-amber-400/10 rounded-full blur-xl pointer-events-none" />
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative z-10">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <span className="px-2.5 py-0.5 text-xs font-bold bg-amber-500 text-slate-950 rounded-lg shadow-xs uppercase">
                 Surat ke-{currentSurahMeta.number}
               </span>
-              <span className="px-2 py-0.5 text-xs font-bold bg-white/20 text-white rounded border border-white/30">
+              <span className="px-2.5 py-0.5 text-xs font-medium bg-white/15 text-white rounded-lg border border-white/20">
                 {currentSurahMeta.revelationPlace} • {currentSurahMeta.ayahCount} Ayat
               </span>
-              <span className="px-2 py-0.5 text-xs font-bold bg-[#10B981] text-black rounded border border-black">
+              <span className="px-2.5 py-0.5 text-xs font-semibold bg-emerald-500/20 text-emerald-300 rounded-lg border border-emerald-400/30">
                 Juz {currentSurahMeta.juzList ? currentSurahMeta.juzList.join(', ') : currentSurahMeta.juzStart}
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold font-display text-white">
+            <h2 className="text-xl sm:text-2xl font-bold font-display text-white">
               Surat {currentSurahMeta.latinName}
             </h2>
-            <p className="text-xs text-emerald-200 font-medium">"{currentSurahMeta.meaning}"</p>
+            <p className="text-xs text-emerald-200/90 font-medium">"{currentSurahMeta.meaning}"</p>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowControls(!showControls)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#FFFDF7] text-black border-2 border-black rounded-xl neo-button cursor-pointer text-xs font-extrabold"
+              className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl cursor-pointer text-xs font-semibold transition-colors"
             >
-              <Sliders className="w-4 h-4 text-[#0B4627]" />
+              <Sliders className="w-4 h-4 text-amber-300" />
               <span>Pengaturan Tampilan</span>
             </button>
           </div>
@@ -303,15 +305,15 @@ export const MushafView: React.FC = () => {
             </div>
           </div>
         )}
-      </NeobrutalCard>
+      </div>
 
       {/* Bismillah Header (except At-Taubah 9) */}
       {selectedSurahNumber !== 9 && selectedSurahNumber !== 1 && (
-        <div className="text-center py-4 bg-[#FFFDF7] border-2 border-black rounded-xl shadow-[3px_3px_0px_0px_#111827]">
-          <p className="font-quran text-2xl text-emerald-950 font-bold" dir="rtl">
+        <div className="text-center py-4 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs">
+          <p className="font-quran text-2xl text-emerald-950 dark:text-emerald-300 font-bold" dir="rtl">
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
           </p>
-          <p className="text-[11px] text-gray-600 italic mt-1">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 italic mt-1 font-medium">
             "Dengan nama Allah Yang Maha Pengasih, Maha Penyayang"
           </p>
         </div>
@@ -322,7 +324,7 @@ export const MushafView: React.FC = () => {
         {loading ? (
           <div className="text-center py-12">
             <div className="w-10 h-10 border-4 border-[#0B4627] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-xs font-bold text-gray-700">Memuat Ayat Rasm Utsmani...</p>
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Memuat Ayat Rasm Utsmani...</p>
           </div>
         ) : (
           ayats.map((ayat) => {
@@ -332,20 +334,20 @@ export const MushafView: React.FC = () => {
             return (
               <div
                 key={ayat.numberInSurah}
-                className={`rounded-2xl p-4 sm:p-5 border-2 border-black transition-all ${getContainerTheme()} ${
+                className={`rounded-2xl p-4 sm:p-5 border transition-all ${getContainerTheme()} ${
                   isPlayingThis
-                    ? 'shadow-[3px_3px_0px_0px_#F59E0B] ring-2 ring-[#F59E0B]'
-                    : 'shadow-[2px_2px_0px_0px_#111827]'
+                    ? 'border-amber-400 shadow-md ring-2 ring-amber-400/30'
+                    : 'border-slate-200/90 dark:border-slate-800 shadow-xs'
                 }`}
               >
                 {/* Header Ayat Bar */}
-                <div className="flex items-center justify-between border-b-2 border-dashed border-gray-300 dark:border-gray-700 pb-3 mb-4">
+                <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800 pb-3 mb-4">
                   {/* Number Badge */}
                   <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black font-extrabold text-xs shadow-[2px_2px_0px_0px_#000]">
+                    <span className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-400/40 flex items-center justify-center font-bold text-xs shadow-xs">
                       {ayat.numberInSurah}
                     </span>
-                    <span className="text-xs font-bold text-gray-500">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                       Juz {ayat.juz}
                     </span>
                   </div>
@@ -355,8 +357,8 @@ export const MushafView: React.FC = () => {
                     {/* Play Audio Syekh Mishary */}
                     <button
                       onClick={() => handlePlayAyat(ayat)}
-                      className={`p-2 rounded-lg border-2 border-black neo-button cursor-pointer flex items-center gap-1 text-xs font-extrabold ${
-                        isPlayingThis ? 'bg-[#F59E0B] text-black' : 'bg-white text-[#0B4627]'
+                      className={`p-2 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer flex items-center gap-1 text-xs font-semibold transition-all ${
+                        isPlayingThis ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-xs' : 'bg-white dark:bg-slate-800 text-[#0B4627] dark:text-emerald-400 hover:bg-slate-50'
                       }`}
                       title="Dengarkan Suara Syekh Misyari"
                     >
@@ -371,7 +373,7 @@ export const MushafView: React.FC = () => {
                         setSelectedWord(null);
                         setIsWordModalOpen(true);
                       }}
-                      className="p-2 bg-[#D1FAE5] hover:bg-[#A7F3D0] text-[#0B4627] border-2 border-black rounded-lg neo-button cursor-pointer text-xs font-extrabold flex items-center gap-1"
+                      className="p-2 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-[#0B4627] dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl cursor-pointer text-xs font-semibold flex items-center gap-1 transition-colors"
                       title="Lihat Arti Kata per Kata"
                     >
                       <BookOpen className="w-4 h-4" />
@@ -381,12 +383,12 @@ export const MushafView: React.FC = () => {
                     {/* Bookmark Toggle */}
                     <button
                       onClick={() => handleToggleBookmark(ayat)}
-                      className={`p-2 rounded-lg border-2 border-black neo-button cursor-pointer ${
-                        isBookmarked ? 'bg-[#F59E0B] text-black' : 'bg-white text-gray-600'
+                      className={`p-2 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer transition-all ${
+                        isBookmarked ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-xs' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
                       }`}
                       title={isBookmarked ? 'Tersimpan di Bookmark' : 'Tandai Ayat'}
                     >
-                      <BookmarkIcon className={`w-4 h-4 ${isBookmarked ? 'fill-black' : ''}`} />
+                      <BookmarkIcon className={`w-4 h-4 ${isBookmarked ? 'fill-slate-950' : ''}`} />
                     </button>
                   </div>
                 </div>
@@ -413,7 +415,7 @@ export const MushafView: React.FC = () => {
                             className={`font-quran leading-loose px-2 py-0.5 rounded-lg cursor-pointer transition-all inline-block ${
                               tajweed.bg !== 'transparent' 
                                 ? 'shadow-xs border border-amber-300/40 font-bold' 
-                                : 'text-emerald-950 dark:text-emerald-300 hover:bg-[#FEF3C7] hover:text-black border border-transparent hover:border-black'
+                                : 'text-emerald-950 dark:text-emerald-300 hover:bg-amber-100/60 dark:hover:bg-amber-950/40 border border-transparent rounded-lg'
                             }`}
                             title={tajweed.ruleName ? `[${tajweed.ruleName}] ${w.meaningId} (${w.transliteration})` : `"${w.meaningId}" (${w.transliteration})`}
                           >
@@ -421,7 +423,7 @@ export const MushafView: React.FC = () => {
                           </span>
                         );
                       })}
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full border-2 border-black bg-[#F59E0B] text-black font-quran text-xs font-bold mr-2 shadow-[1px_1px_0px_0px_#000]">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-amber-500/50 bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-300 font-quran text-xs font-bold mr-2 shadow-xs">
                         ۝{ayat.numberInSurah}
                       </span>
                     </div>
@@ -469,7 +471,7 @@ export const MushafView: React.FC = () => {
         <button
           disabled={selectedSurahNumber <= 1}
           onClick={() => setSelectedSurahNumber(selectedSurahNumber - 1)}
-          className="px-4 py-2.5 bg-white disabled:opacity-40 text-black border-2 border-black rounded-xl neo-button cursor-pointer flex items-center gap-2 text-xs font-extrabold"
+          className="px-4 py-2.5 bg-white dark:bg-slate-800 disabled:opacity-40 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xs hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors cursor-pointer flex items-center gap-2 text-xs font-semibold"
         >
           <ChevronLeft className="w-4 h-4" /> Surat Sebelumnya
         </button>
@@ -477,9 +479,9 @@ export const MushafView: React.FC = () => {
         <button
           disabled={selectedSurahNumber >= 114}
           onClick={() => setSelectedSurahNumber(selectedSurahNumber + 1)}
-          className="px-4 py-2.5 bg-[#0B4627] disabled:opacity-40 text-white border-2 border-black rounded-xl neo-button cursor-pointer flex items-center gap-2 text-xs font-extrabold"
+          className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-40 text-white rounded-2xl shadow-xs transition-colors cursor-pointer flex items-center gap-2 text-xs font-semibold"
         >
-          Surat Selanjutnya <ChevronRight className="w-4 h-4 text-[#F59E0B]" />
+          Surat Selanjutnya <ChevronRight className="w-4 h-4 text-amber-300" />
         </button>
       </div>
 

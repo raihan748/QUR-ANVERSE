@@ -67,50 +67,54 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   return (
     <div className="space-y-4 pb-24 max-w-4xl mx-auto">
       {/* Profile Overview Card */}
-      <NeobrutalCard variant="emerald" className="p-4 sm:p-5 border-2 border-black shadow-[3px_3px_0px_0px_#111827]">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="bg-gradient-to-r from-[#0B4627] to-[#06331D] text-white rounded-2xl p-5 sm:p-6 border border-emerald-800/80 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-14 h-14 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black font-black text-xl shadow-[2px_2px_0px_0px_#000]">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-300 font-bold text-xl shadow-xs">
               {userProfile.fullName.charAt(0).toUpperCase()}
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 text-xs font-black bg-[#10B981] text-black rounded border border-black uppercase">
+                <span className="px-2.5 py-0.5 text-xs font-semibold bg-emerald-800/80 text-emerald-200 rounded-full border border-emerald-600/40 uppercase tracking-wide">
                   {userProfile.hafidzLevel}
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold font-display text-white">
+              <h2 className="text-xl sm:text-2xl font-bold font-display text-white">
                 {userProfile.fullName}
               </h2>
-              <p className="text-xs text-emerald-200">
-                Target Khatam Muroja'ah: <b className="text-white">30 Juz Mutqin</b>
+              <p className="text-xs text-emerald-200/90 mt-0.5">
+                Target Khatam Muroja'ah: <span className="text-white font-medium">30 Juz Mutqin</span>
               </p>
             </div>
           </div>
         </div>
-      </NeobrutalCard>
+      </div>
 
-      {/* JURNAL & ABSENSI SHOLAT 5 WAKTU WIDGET */}
-      <div className="bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Jurnal & Absensi Sholat 5 Waktu */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500 border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_#000] text-white shrink-0">
-            <Building2 className="w-6 h-6 text-white" />
+          <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40 flex items-center justify-center text-[#0B4627] dark:text-emerald-400 shrink-0">
+            <Building2 className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="text-sm sm:text-base font-black text-black dark:text-white">
+              <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                 Jurnal & Absensi Sholat Fardhu
               </h4>
-              <span className="text-[10px] font-black px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">
-                {prayerStats.todayCompleted} / 5 SELESAI ({prayerStats.percentage}%)
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800">
+                {prayerStats.todayCompleted} / 5 Selesai ({prayerStats.percentage}%)
               </span>
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5 flex items-center gap-1">
-              <Flame className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-              <span>Streak Disiplin: <strong className="text-amber-600 dark:text-amber-400 font-bold">{prayerStats.streakDays} Hari</strong> • Total Pahala Hari Ini: <strong className="text-emerald-700 dark:text-emerald-400 font-bold">+{prayerStats.todayXp} XP</strong></span>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5 flex-wrap">
+              <span className="flex items-center gap-1">
+                <Flame className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span>Disiplin: <strong className="text-amber-600 dark:text-amber-400 font-semibold">{prayerStats.streakDays} Hari</strong></span>
+              </span>
+              <span>•</span>
+              <span>Pahala Hari Ini: <strong className="text-emerald-700 dark:text-emerald-400 font-semibold">+{prayerStats.todayXp} XP</strong></span>
             </p>
             {/* Quick 5-Prayer Check Status Badges */}
-            <div className="flex items-center gap-1.5 flex-wrap mt-2">
+            <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
               {(['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'] as const).map((pId) => {
                 const rec = todayAttendance.records[pId];
                 const isDone = rec && rec.status !== 'belum';
@@ -120,15 +124,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     key={pId}
                     type="button"
                     onClick={onOpenPrayerAttendanceModal}
-                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border flex items-center gap-1 transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+                    className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border flex items-center gap-1 transition-all cursor-pointer ${
                       isDone
-                        ? 'bg-emerald-500 text-slate-950 border-emerald-600 shadow-xs'
-                        : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 border-gray-300 dark:border-gray-700'
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
+                        : 'bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'
                     }`}
                     title={`Klik untuk mencatat absensi sholat ${label}`}
                   >
                     <span className="flex items-center justify-center">
-                      {isDone ? <Check className="w-3 h-3 text-slate-950 stroke-[3]" /> : <Circle className="w-2.5 h-2.5 text-gray-400" />}
+                      {isDone ? <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" /> : <Circle className="w-2.5 h-2.5 text-slate-400" />}
                     </span>
                     <span>{label}</span>
                   </button>
@@ -141,68 +145,72 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {onOpenPrayerAttendanceModal && (
           <button
             onClick={onOpenPrayerAttendanceModal}
-            className="w-full sm:w-auto px-4 py-2 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition shrink-0"
+            className="w-full sm:w-auto px-4 py-2 bg-[#0B4627] hover:bg-[#08351d] text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition shrink-0"
           >
             <CheckSquare className="w-4 h-4" />
-            <span>Buka Ceklis Sholat</span>
+            <span>Ceklis Sholat</span>
           </button>
         )}
       </div>
 
-      {/* TARGET TILAWAH & MUROJA'AH HARI INI */}
+      {/* Target Tilawah & Muroja'ah Hari Ini */}
       <DailyTargetWidget onStartTarget={() => onNavigateToMurojaah()} />
 
-      {/* STATISTIK KELANCARAN & ANALISIS TAJWID */}
+      {/* Statistik Kelancaran & Analisis Tajwid */}
       <TahfidzMasteryAnalytics 
         userProfile={userProfile} 
         onNavigateToMurojaah={onNavigateToMurojaah} 
       />
 
-      {/* WEAK VERSES (AYAT LEMAH) & TIKRAR 1-5-10 METHOD */}
-      <NeobrutalCard variant="sepia" className="p-4 sm:p-5 border-2 border-black shadow-[3px_3px_0px_0px_#111827]">
-        <div className="flex items-center justify-between border-b-2 border-dashed border-gray-300 pb-3 mb-4">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-red-600" />
+      {/* Pelacak Ayat Lemah (Tikrar 1-5-10) */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
+              <ShieldAlert className="w-4 h-4" />
+            </div>
             <div>
-              <h3 className="text-base font-extrabold text-black">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                 Pelacak Ayat Lemah (Metode Tikrar 1-5-10)
               </h3>
-              <p className="text-xs text-gray-600">
-                Ayat yang perlu diulang pada Hari ke-1, Hari ke-5, dan Hari ke-10 agar menancap kuat.
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Pengulangan berkala Hari ke-1, ke-5, dan ke-10 agar hafalan mutqin.
               </p>
             </div>
           </div>
 
-          <span className="px-2.5 py-1 text-xs font-black bg-[#FEE2E2] text-red-800 rounded-lg border border-red-400">
+          <span className="px-2.5 py-1 text-xs font-semibold bg-red-50 text-red-700 rounded-lg border border-red-200">
             {weakVerses.filter(v => !v.resolved).length} Perlu Diulang
           </span>
         </div>
 
         {weakVerses.length === 0 ? (
-          <div className="text-center py-6 text-xs font-bold text-gray-500">
-            Belum ada ayat lemah tercatat. Mulai setoran muroja'ah Anda untuk melatih hafalan dari nol!
+          <div className="text-center py-6 text-xs text-slate-500">
+            Belum ada ayat lemah tercatat. Mulai sesi muroja'ah untuk melatih hafalan.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {weakVerses.map((v) => (
               <div
                 key={`${v.surahNumber}_${v.ayahNumber}`}
-                className={`p-3.5 rounded-xl border-2 border-black flex items-center justify-between gap-3 ${
-                  v.resolved ? 'bg-gray-100 opacity-60' : 'bg-[#FEF2F2]'
+                className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 ${
+                  v.resolved
+                    ? 'bg-slate-50 border-slate-200 opacity-60'
+                    : 'bg-red-50/50 border-red-200'
                 }`}
               >
                 <div>
-                  <p className="font-extrabold text-xs text-black">
+                  <p className="font-bold text-xs text-slate-900">
                     QS. {v.surahNumber} : Ayat {v.ayahNumber}
                   </p>
-                  <p className="text-[11px] text-gray-600">
+                  <p className="text-[11px] text-slate-500 mt-0.5">
                     Salah diulang {v.errorCount}x • Terakhir: {v.lastTestedDate}
                   </p>
                 </div>
                 {!v.resolved && (
                   <button
                     onClick={() => handleResolveWeak(v)}
-                    className="p-1.5 bg-white border border-black rounded-lg hover:bg-[#10B981] hover:text-white transition cursor-pointer"
+                    className="p-1.5 bg-white border border-slate-200 rounded-lg hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition cursor-pointer text-slate-700"
                     title="Tandai Sudah Lancar"
                   >
                     <CheckCircle2 className="w-4 h-4" />
@@ -212,19 +220,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             ))}
           </div>
         )}
-      </NeobrutalCard>
+      </div>
 
-      {/* BADGES COLLECTION */}
-      <NeobrutalCard variant="white" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
-        <div className="flex items-center gap-2 border-b-2 border-dashed border-gray-300 pb-3 mb-4">
-          <Award className="w-5 h-5 text-[#F59E0B]" />
-          <h3 className="text-base font-extrabold text-black">Koleksi Lencana Hafalan (Badges)</h3>
+      {/* Koleksi Lencana */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xs">
+        <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+            <Award className="w-4 h-4" />
+          </div>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Koleksi Lencana Hafalan</h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {badges.map((b) => {
             const renderIcon = () => {
-              const cls = "w-6 h-6 shrink-0";
+              const cls = "w-5 h-5 shrink-0";
               switch (b.icon) {
                 case 'sparkles': return <Sparkles className={`${cls} text-amber-500`} />;
                 case 'crown': return <Crown className={`${cls} text-amber-500`} />;
@@ -240,27 +250,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             return (
               <div
                 key={b.id}
-                className={`p-3.5 rounded-xl border-2 border-black flex items-center gap-3 ${
+                className={`p-3 rounded-xl border flex items-center gap-3 transition-colors ${
                   b.unlocked
-                    ? 'bg-[#D1FAE5] text-black shadow-[3px_3px_0px_0px_#0B4627]'
-                    : 'bg-gray-100 opacity-50'
+                    ? 'bg-emerald-50/60 border-emerald-200/80 text-slate-900'
+                    : 'bg-slate-50/70 border-slate-200/80 opacity-60'
                 }`}
               >
-                <div className="w-10 h-10 rounded-xl bg-white border border-black flex items-center justify-center shrink-0 shadow-xs">
+                <div className="w-9 h-9 rounded-lg bg-white border border-slate-200/80 flex items-center justify-center shrink-0 shadow-xs">
                   {renderIcon()}
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <p className="font-extrabold text-xs">{b.title}</p>
-                    {b.unlocked && <CheckCircle2 className="w-3.5 h-3.5 text-green-700" />}
+                    <p className="font-bold text-xs text-slate-900">{b.title}</p>
+                    {b.unlocked && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
                   </div>
-                  <p className="text-[11px] text-gray-700">{b.description}</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">{b.description}</p>
                 </div>
               </div>
             );
           })}
         </div>
-      </NeobrutalCard>
+      </div>
     </div>
   );
 };

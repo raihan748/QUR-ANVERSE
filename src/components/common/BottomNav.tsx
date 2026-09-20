@@ -22,8 +22,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#FFFDF7] border-t-3 border-black lg:hidden px-2 pt-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom,0px))] shadow-[0_-4px_0_0_#111827]">
-      <div className="flex items-center justify-around gap-1">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 lg:hidden px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] shadow-sm">
+      <div className="flex items-center justify-around gap-1 max-w-md mx-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -33,15 +33,15 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
               <button
                 key={tab.id}
                 onClick={() => onSelectTab(tab.id)}
-                className={`relative -top-3 p-2 rounded-2xl border-2 border-black flex flex-col items-center justify-center transition-all cursor-pointer ${
+                className={`relative -top-3 px-3 py-2 rounded-2xl flex flex-col items-center justify-center transition cursor-pointer shadow-sm ${
                   isActive
-                    ? 'bg-[#0B4627] text-[#F59E0B] shadow-[3px_3px_0px_0px_#000] scale-105'
-                    : 'bg-[#F59E0B] text-black shadow-[3px_3px_0px_0px_#000]'
+                    ? 'bg-[#0B4627] text-amber-300 ring-2 ring-amber-400/50 scale-105'
+                    : 'bg-amber-500 text-slate-950 font-bold'
                 }`}
               >
                 <Icon className="w-5 h-5" />
-                <span className="text-[10px] font-black mt-0.5 whitespace-nowrap">
-                  {language === 'ar' ? 'المعلم AI' : 'AI Ngaji'}
+                <span className="text-[10px] font-bold mt-0.5 whitespace-nowrap">
+                  {language === 'ar' ? 'المعلم' : 'Muroja\'ah'}
                 </span>
               </button>
             );
@@ -51,14 +51,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) 
             <button
               key={tab.id}
               onClick={() => onSelectTab(tab.id)}
-              className={`flex-1 py-1.5 px-1 rounded-xl flex flex-col items-center justify-center transition-all cursor-pointer ${
+              className={`flex-1 py-1 px-1 rounded-xl flex flex-col items-center justify-center transition cursor-pointer ${
                 isActive
-                  ? 'bg-[#0B4627] text-white border-2 border-black shadow-[2px_2px_0px_0px_#000]'
-                  : 'text-gray-700 hover:text-black'
+                  ? 'text-[#0B4627] font-bold'
+                  : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-[#F59E0B]' : ''}`} />
-              <span className="text-[10px] font-extrabold mt-0.5">{tab.label}</span>
+              <Icon className={`w-4 h-4 ${isActive ? 'text-[#0B4627]' : ''}`} />
+              <span className="text-[10px] mt-0.5">{tab.label}</span>
             </button>
           );
         })}

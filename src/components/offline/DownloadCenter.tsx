@@ -13,7 +13,6 @@ import {
   FileArchive,
   Check
 } from 'lucide-react';
-import { NeobrutalCard } from '../common/NeobrutalCard';
 import { ADZAN_MARWAN_ALQASSAS_URL } from '../../services/audioPlayerService';
 import { SURAH_LIST } from '../../data/quranData';
 
@@ -293,56 +292,58 @@ export const DownloadCenter: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-24 max-w-4xl mx-auto">
-      {/* Header */}
-      <NeobrutalCard variant="emerald" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
+      {/* Header Banner */}
+      <div className="p-6 rounded-2xl bg-gradient-to-br from-[#0B4627] via-[#08381F] to-[#042413] border border-emerald-800/80 shadow-sm text-white">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black font-extrabold shadow-[2px_2px_0px_0px_#000]">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400 font-bold shadow-xs">
             <Package className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-white">
-                Pusat Download Full Packet
+              <h2 className="text-xl sm:text-2xl font-bold font-display text-white">
+                Pusat Unduhan Paket Offline
               </h2>
-              <span className="px-2.5 py-0.5 text-[11px] font-black bg-[#F59E0B] text-black border-2 border-black rounded-lg">
-                ALL-IN-ONE
+              <span className="px-2.5 py-0.5 text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-400/40 rounded-full">
+                Lengkap
               </span>
             </div>
-            <p className="text-xs text-emerald-200 font-medium">
-              Satu kali unduh, dapatkan seluruh 30 Juz Mushaf, AI Muroja'ah, dan Audio Adzan Madinah 100% tanpa internet.
+            <p className="text-xs text-emerald-200/90 font-medium mt-0.5">
+              Satu kali unduh, simpan seluruh 30 Juz Mushaf, AI Muroja'ah, dan Audio Adzan Madinah tanpa internet.
             </p>
           </div>
         </div>
-      </NeobrutalCard>
+      </div>
 
       {/* MASTER FULL PACKET HERO CARD */}
-      <div className={`p-6 rounded-2xl border-3 border-black shadow-[6px_6px_0px_0px_#111827] transition-all ${
+      <div className={`p-6 rounded-2xl border transition-all duration-200 shadow-sm ${
         isFullPacketActive 
-          ? 'bg-gradient-to-br from-[#D1FAE5] via-[#A7F3D0] to-[#6EE7B7]' 
-          : 'bg-gradient-to-br from-[#FEF3C7] via-[#FDE68A] to-[#F59E0B]'
+          ? 'bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100/70 dark:from-emerald-950/40 dark:via-slate-900 dark:to-emerald-900/30 border-emerald-300/80 dark:border-emerald-700/60' 
+          : 'bg-gradient-to-br from-amber-50 via-orange-50/50 to-amber-100/60 dark:from-amber-950/30 dark:via-slate-900 dark:to-amber-900/20 border-amber-300/80 dark:border-amber-700/60'
       }`}>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className={`px-2.5 py-1 text-xs font-black border-2 border-black rounded-lg flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#000] ${
-                isFullPacketActive ? 'bg-[#0B4627] text-white' : 'bg-red-600 text-white'
+              <span className={`px-2.5 py-1 text-xs font-semibold rounded-full flex items-center gap-1.5 ${
+                isFullPacketActive 
+                  ? 'bg-emerald-600 text-white' 
+                  : 'bg-rose-600 text-white'
               }`}>
-                {isFullPacketActive ? <Check className="w-3.5 h-3.5 text-[#10B981]" /> : <Package className="w-3.5 h-3.5 text-white" />}
-                {isFullPacketActive ? 'FULL PACKET SUDAH AKTIF' : 'FULL PACKET BELUM LENGKAP'}
+                {isFullPacketActive ? <Check className="w-3.5 h-3.5" /> : <Package className="w-3.5 h-3.5" />}
+                {isFullPacketActive ? 'Paket Lengkap Aktif' : 'Paket Belum Lengkap'}
               </span>
-              <span className="text-xs font-bold text-gray-800">
-                Total Ukuran: ~49.0 MB (All-in-One)
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                Total Ukuran: ~49.0 MB
               </span>
             </div>
-            <h3 className="text-xl sm:text-2xl font-black text-black">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
               {isFullPacketActive 
-                ? 'Seluruh Paket Offline Telah Tersimpan Lengkap!' 
-                : 'Download Full Packet Sekaligus (All-in-One)'}
+                ? 'Seluruh Paket Offline Tersimpan Lengkap' 
+                : 'Unduh Seluruh Paket Offline Sekaligus'}
             </h3>
-            <p className="text-xs sm:text-sm text-gray-800 max-w-xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
               {isFullPacketActive
-                ? 'Aplikasi telah menyimpan teks 30 Juz, model AI koreksi tajweed, audio adzan Madinah, dan preset murattal ke Cache Storage perangkat. Anda siap menggunakannya di pondok pesantren atau daerah tanpa sinyal internet.'
-                : 'Klik tombol di samping untuk mengunduh dan mengaktifkan seluruh data Al-Qur\'an, AI, dan Audio sekaligus. Tidak perlu mendownload satu per satu!'}
+                ? 'Aplikasi telah menyimpan teks 30 Juz, model AI koreksi tajweed, audio adzan Madinah, dan preset murattal ke Cache Storage perangkat. Siap digunakan di daerah tanpa sinyal internet.'
+                : 'Unduh dan aktifkan seluruh data Al-Qur\'an, AI, dan Audio sekaligus tanpa perlu mengunduh satu per satu.'}
             </p>
           </div>
 
@@ -353,19 +354,19 @@ export const DownloadCenter: React.FC = () => {
                   type="button"
                   onClick={handleDownloadFullPacket}
                   disabled={isDownloadingFullPacket}
-                  className="px-5 py-3 bg-[#0B4627] hover:bg-[#072d19] text-white border-2 border-black rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 neo-button cursor-pointer shadow-[3px_3px_0px_0px_#000]"
+                  className="px-5 py-2.5 bg-[#0B4627] hover:bg-[#08361e] text-white rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-xs transition duration-150"
                 >
-                  <RefreshCw className={`w-4 h-4 text-[#F59E0B] ${isDownloadingFullPacket ? 'animate-spin' : ''}`} />
-                  <span>{isDownloadingFullPacket ? 'Memperbarui Cache...' : 'Perbarui / Verifikasi Full Packet'}</span>
+                  <RefreshCw className={`w-4 h-4 text-amber-400 ${isDownloadingFullPacket ? 'animate-spin' : ''}`} />
+                  <span>{isDownloadingFullPacket ? 'Memperbarui Cache...' : 'Perbarui / Verifikasi Paket'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleExportFullPacketArchive}
-                  className="px-5 py-2.5 bg-white hover:bg-gray-100 text-black border-2 border-black rounded-xl font-bold text-xs flex items-center justify-center gap-2 neo-button cursor-pointer shadow-[3px_3px_0px_0px_#000]"
+                  className="px-5 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xs transition duration-150"
                   title="Unduh file arsip data lengkap ke folder Download HP/Laptop"
                 >
-                  <FileDown className="w-4 h-4 text-[#0B4627]" />
-                  <span>Simpan Arsip Full Packet (.json)</span>
+                  <FileDown className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>Simpan Arsip Lengkap (.json)</span>
                 </button>
               </>
             ) : (
@@ -374,17 +375,17 @@ export const DownloadCenter: React.FC = () => {
                   type="button"
                   onClick={handleDownloadFullPacket}
                   disabled={isDownloadingFullPacket}
-                  className="px-6 py-4 bg-[#0B4627] hover:bg-[#072d19] text-white border-3 border-black rounded-xl font-black text-sm sm:text-base flex items-center justify-center gap-2 neo-button cursor-pointer shadow-[4px_4px_0px_0px_#000] animate-pulse"
+                  className="px-6 py-3 bg-[#0B4627] hover:bg-[#08361e] text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-sm transition duration-150"
                 >
-                  <DownloadCloud className={`w-5 h-5 text-[#F59E0B] ${isDownloadingFullPacket ? 'animate-bounce' : ''}`} />
-                  <span>{isDownloadingFullPacket ? 'Mengunduh Full Packet...' : 'Download Full Packet Sekarang'}</span>
+                  <DownloadCloud className="w-5 h-5 text-amber-400" />
+                  <span>{isDownloadingFullPacket ? 'Mengunduh Paket...' : 'Unduh Paket Sekarang'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleExportFullPacketArchive}
-                  className="px-4 py-2.5 bg-white hover:bg-gray-100 text-black border-2 border-black rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 neo-button cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+                  className="px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition duration-150"
                 >
-                  <FileArchive className="w-4 h-4 text-gray-700" />
+                  <FileArchive className="w-4 h-4 text-slate-500" />
                   <span>Simpan File Arsip (.json)</span>
                 </button>
               </>
@@ -394,14 +395,14 @@ export const DownloadCenter: React.FC = () => {
 
         {/* Live Full Packet Download Progress Bar */}
         {isDownloadingFullPacket && (
-          <div className="mt-5 pt-4 border-t-2 border-black/20 space-y-2 animate-in fade-in">
-            <div className="flex items-center justify-between text-xs font-black text-black">
+          <div className="mt-5 pt-4 border-t border-slate-200/70 dark:border-slate-700/60 space-y-2">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200">
               <span>{fullPacketStatus}</span>
               <span>{fullPacketProgress}%</span>
             </div>
-            <div className="w-full bg-white h-4 border-2 border-black rounded-full overflow-hidden p-0.5">
+            <div className="w-full bg-slate-200/80 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
               <div 
-                className="bg-[#0B4627] h-full rounded-full transition-all duration-300"
+                className="bg-[#0B4627] dark:bg-emerald-500 h-full rounded-full transition-all duration-300"
                 style={{ width: `${fullPacketProgress}%` }}
               ></div>
             </div>
@@ -411,57 +412,56 @@ export const DownloadCenter: React.FC = () => {
 
       {/* Offline Status & Quota Badge */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="p-4 bg-[#D1FAE5] border-3 border-black rounded-2xl shadow-[4px_4px_0px_0px_#0B4627] flex items-center gap-3">
-          <WifiOff className="w-6 h-6 text-[#0B4627] shrink-0" />
+        <div className="p-4 bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 rounded-2xl shadow-xs flex items-center gap-3">
+          <WifiOff className="w-6 h-6 text-emerald-700 dark:text-emerald-400 shrink-0" />
           <div>
-            <h4 className="text-xs sm:text-sm font-extrabold text-black">
-              PWA Offline-First Siap Digunakan!
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
+              PWA Offline Siap Digunakan
             </h4>
-            <p className="text-[11px] text-gray-700">
-              Aplikasi berjalan mandiri di pondok pesantren, perjalanan, atau daerah minim sinyal.
+            <p className="text-[11px] text-slate-600 dark:text-slate-400">
+              Aplikasi berjalan mandiri di tempat perjalanan atau daerah minim sinyal.
             </p>
           </div>
         </div>
 
-        <div className="p-4 bg-white border-3 border-black rounded-2xl shadow-[4px_4px_0px_0px_#111827] flex items-center gap-3">
-          <HardDrive className="w-6 h-6 text-[#F59E0B] shrink-0" />
+        <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs flex items-center gap-3">
+          <HardDrive className="w-6 h-6 text-amber-500 shrink-0" />
           <div>
-            <h4 className="text-xs sm:text-sm font-extrabold text-black">
-              Kapasitas Penyimpanan Browser
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
+              Penyimpanan Browser
             </h4>
-            <p className="text-[11px] text-gray-700">
+            <p className="text-[11px] text-slate-600 dark:text-slate-400">
               {storageUsage
                 ? `Terpakai ${storageUsage.usedMb} MB dari kapasitas ${storageUsage.quotaMb} MB`
-                : 'CacheStorage v2 aktif untuk aset audio & data offline'}
+                : 'CacheStorage aktif untuk aset audio dan data offline'}
             </p>
           </div>
         </div>
       </div>
 
       {/* Packages List */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {packages.map((pkg) => (
-          <NeobrutalCard key={pkg.id} variant="white" className="p-5 border-3 border-black shadow-[4px_4px_0px_0px_#111827]">
+          <div key={pkg.id} className="p-4 sm:p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xs">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-sm sm:text-base font-extrabold text-black">{pkg.name}</h4>
-                  <span className="px-2 py-0.5 text-[10px] font-black bg-gray-100 border border-black rounded">
+                  <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">{pkg.name}</h4>
+                  <span className="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full">
                     {pkg.size}
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 max-w-xl">{pkg.description}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed">{pkg.description}</p>
               </div>
 
               <div className="shrink-0 w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                {/* Direct Download to Device Link if file provided */}
                 {pkg.downloadUrl && (
                   <a
                     href={pkg.downloadUrl}
                     download={pkg.fileName || 'quranverse-audio.mp3'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 border-2 border-black rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_0px_#000] cursor-pointer"
+                    className="px-3 py-2 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-900 dark:text-amber-300 border border-amber-300/70 dark:border-amber-700/60 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition duration-150 cursor-pointer"
                     title="Simpan file langsung ke penyimpanan HP / Laptop"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -470,34 +470,34 @@ export const DownloadCenter: React.FC = () => {
                 )}
 
                 {pkg.status === 'completed' ? (
-                  <div className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#D1FAE5] text-[#0B4627] border-2 border-black rounded-xl font-extrabold text-xs shadow-[2px_2px_0px_0px_#000]">
-                    <CheckCircle2 className="w-4 h-4" />
+                  <div className="flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700/60 rounded-xl font-semibold text-xs shadow-xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span>Tersimpan Offline</span>
                   </div>
                 ) : pkg.status === 'downloading' ? (
                   <div className="w-full sm:w-40 space-y-1">
-                    <div className="w-full bg-gray-200 h-3 border border-black rounded-full overflow-hidden">
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                       <div
-                        className="bg-[#0B4627] h-full transition-all duration-300"
+                        className="bg-[#0B4627] dark:bg-emerald-500 h-full transition-all duration-300"
                         style={{ width: `${pkg.progress}%` }}
                       ></div>
                     </div>
-                    <p className="text-[10px] text-center font-bold text-gray-600">
+                    <p className="text-[10px] text-center font-medium text-slate-500">
                       Menyimpan ke Cache... {pkg.progress}%
                     </p>
                   </div>
                 ) : (
                   <button
                     onClick={() => handleDownload(pkg.id)}
-                    className="w-full sm:w-auto px-4 py-2 bg-[#0B4627] hover:bg-[#072d19] text-white border-2 border-black rounded-xl neo-button cursor-pointer font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_0px_#000]"
+                    className="w-full sm:w-auto px-4 py-2 bg-[#0B4627] hover:bg-[#08361e] text-white rounded-xl cursor-pointer font-semibold text-xs flex items-center justify-center gap-1.5 shadow-xs transition duration-150"
                   >
-                    <DownloadCloud className="w-4 h-4 text-[#F59E0B]" />
+                    <DownloadCloud className="w-4 h-4 text-amber-400" />
                     <span>Unduh ke Cache</span>
                   </button>
                 )}
               </div>
             </div>
-          </NeobrutalCard>
+          </div>
         ))}
       </div>
     </div>

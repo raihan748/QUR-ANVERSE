@@ -65,14 +65,14 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
       {/* Top Header */}
       <div className="flex items-center justify-between relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black shadow-[3px_3px_0px_0px_#000]">
-            <Building2 className="w-6 h-6 text-black" />
+          <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
+            <Building2 className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xs font-extrabold text-[#F59E0B] tracking-wider uppercase">
+            <span className="text-[11px] font-semibold text-amber-300 tracking-wider uppercase">
               Waktu Shalat Tiba • Lantunan Adzan Madinah
             </span>
-            <h2 className="text-xl sm:text-2xl font-black font-display text-white">
+            <h2 className="text-xl sm:text-2xl font-bold font-display text-white">
               Adzan Shalat {prayerName}
             </h2>
           </div>
@@ -85,67 +85,67 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
             download="adzan-madinah-syekh-marwan-al-qassas.mp3"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-3 bg-emerald-950/80 hover:bg-emerald-900 border-2 border-[#F59E0B] rounded-2xl cursor-pointer text-[#F59E0B] flex items-center gap-2 text-xs font-bold transition-all shadow-[2px_2px_0px_0px_#000]"
+            className="px-3 py-2 bg-emerald-900/60 hover:bg-emerald-900 text-amber-300 border border-amber-400/30 rounded-xl cursor-pointer flex items-center gap-1.5 text-xs font-semibold transition shadow-xs"
             title="Download Audio Adzan Madinah (3.6 MB)"
           >
-            <Download className="w-5 h-5" />
+            <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Unduh MP3</span>
           </a>
 
           <button
             onClick={toggleAudio}
-            className="p-3 bg-black/60 hover:bg-black border-2 border-[#F59E0B] rounded-2xl cursor-pointer text-[#F59E0B]"
+            className="p-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl cursor-pointer text-amber-300 transition"
             title={isPlayingAudio ? 'Matikan Suara Adzan' : 'Putar Suara Adzan'}
           >
-            {isPlayingAudio ? <Volume2 className="w-6 h-6 animate-pulse" /> : <VolumeX className="w-6 h-6" />}
+            {isPlayingAudio ? <Volume2 className="w-5 h-5 animate-pulse" /> : <VolumeX className="w-5 h-5" />}
           </button>
           <button
             onClick={onClose}
-            className="p-3 bg-[#DC2626] hover:bg-[#B91C1C] border-2 border-black rounded-2xl cursor-pointer text-white shadow-[2px_2px_0px_0px_#000]"
+            className="p-2.5 bg-white/10 hover:bg-rose-600/80 border border-white/20 rounded-xl cursor-pointer text-white transition"
             title="Tutup Layar Adzan"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {/* Center Grand Visual */}
       <div className="text-center relative z-10 my-auto max-w-2xl mx-auto space-y-6">
-        {/* Animated Mosque & Wave */}
-        <div className="w-28 h-28 mx-auto rounded-3xl bg-[#0B4627] border-3 border-[#F59E0B] flex items-center justify-center text-5xl shadow-[6px_6px_0px_0px_#000] animate-bounce">
-          <Building2 className="w-14 h-14 text-[#F59E0B]" />
+        {/* Mosque Icon */}
+        <div className="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-emerald-800 to-[#0B4627] border border-amber-400/40 flex items-center justify-center text-4xl shadow-lg">
+          <Building2 className="w-12 h-12 text-amber-300" />
         </div>
 
         <div>
-          <h1 className="font-quran text-4xl sm:text-6xl text-[#F59E0B] font-bold leading-loose" dir="rtl">
+          <h1 className="font-quran text-4xl sm:text-6xl text-amber-300 font-bold leading-loose" dir="rtl">
             حَيَّ عَلَى الصَّلَاةِ
           </h1>
-          <p className="text-sm sm:text-base text-emerald-200 font-semibold mt-2">
+          <p className="text-sm sm:text-base text-emerald-200 font-medium mt-2">
             "Marilah mendirikan shalat, marilah menuju kemenangan."
           </p>
-          <div className="mt-3 inline-block px-4 py-1.5 bg-black/50 border border-amber-400/40 rounded-xl">
-            <p className="text-xs text-amber-300 font-bold">
-              Muadzin: Syekh Muhammad Marwan Al-Qassas (الشيخ محمد مروan قصاص)
+          <div className="mt-3 inline-block px-4 py-1.5 bg-black/30 border border-emerald-800/80 rounded-xl">
+            <p className="text-xs text-amber-300 font-semibold">
+              Muadzin: Syekh Muhammad Marwan Al-Qassas
             </p>
-            <p className="text-[11px] text-emerald-200">
+            <p className="text-[11px] text-emerald-200/80">
               Masjid Nabawi, Madinah Al-Munawwarah
             </p>
           </div>
         </div>
 
         {/* Iqamah Countdown Badge */}
-        <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-black/60 border-2 border-[#F59E0B] rounded-2xl shadow-[3px_3px_0px_0px_#000]">
-          <Clock className="w-4 h-4 text-[#F59E0B]" />
-          <span className="text-xs font-extrabold text-white">
-            Hitung Mundur Iqamah: <b className="font-mono text-[#F59E0B]">{formatIqamahTime(iqamahCountdown)}</b>
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-black/40 border border-amber-400/30 rounded-xl">
+          <Clock className="w-4 h-4 text-amber-300" />
+          <span className="text-xs font-semibold text-white">
+            Hitung Mundur Iqamah: <b className="font-mono text-amber-300">{formatIqamahTime(iqamahCountdown)}</b>
           </span>
         </div>
 
-        {/* Toggle Doa Setelah Adzan & Quick Download Action */}
+        {/* Action Buttons */}
         <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={() => setShowDoa(!showDoa)}
-            className="px-5 py-2.5 bg-[#FFFDF7] text-black font-extrabold text-xs rounded-xl border-2 border-black neo-button cursor-pointer flex items-center gap-1.5"
+            className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white font-semibold text-xs rounded-xl border border-white/20 cursor-pointer flex items-center gap-1.5 transition"
           >
             <BookOpen className="w-4 h-4" />
             <span>{showDoa ? 'Sembunyikan Doa' : 'Baca Doa Setelah Adzan'}</span>
@@ -156,7 +156,7 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
             download="adzan-madinah-syekh-marwan-al-qassas.mp3"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-5 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-extrabold text-xs rounded-xl border-2 border-black neo-button cursor-pointer inline-flex items-center gap-1.5"
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold text-xs rounded-xl cursor-pointer inline-flex items-center gap-1.5 transition shadow-xs"
           >
             <Download className="w-4 h-4" />
             <span>Unduh Audio Adzan (3.6 MB)</span>
@@ -165,17 +165,17 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
 
         {/* Doa Setelah Adzan Card */}
         {showDoa && (
-          <div className="p-5 bg-black/80 border-2 border-[#F59E0B] rounded-2xl text-left space-y-3 animate-in fade-in">
-            <h4 className="text-xs font-black text-[#F59E0B] uppercase tracking-wider">
+          <div className="p-5 bg-black/60 border border-amber-400/30 rounded-2xl text-left space-y-3 animate-in fade-in">
+            <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider">
               {DOA_SETELAH_ADZAN.title}
             </h4>
             <p className="font-quran text-xl text-right leading-loose text-white" dir="rtl">
               {DOA_SETELAH_ADZAN.arabic}
             </p>
-            <p className="text-xs text-emerald-300 italic border-t border-emerald-800 pt-2">
+            <p className="text-xs text-emerald-300 italic border-t border-emerald-900/60 pt-2">
               {DOA_SETELAH_ADZAN.transliteration}
             </p>
-            <p className="text-xs text-gray-300">
+            <p className="text-xs text-slate-300">
               "{DOA_SETELAH_ADZAN.translation}"
             </p>
           </div>
@@ -186,7 +186,7 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
       <div className="text-center relative z-10">
         <button
           onClick={onClose}
-          className="px-8 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-sm rounded-xl border-2 border-black neo-button cursor-pointer"
+          className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold text-sm rounded-xl cursor-pointer transition shadow-xs"
         >
           Tutup & Lanjutkan Muroja'ah
         </button>

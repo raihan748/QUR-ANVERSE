@@ -78,25 +78,25 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
 
   return (
     <>
-      <div className="bg-[#FEF3C7] border-2 border-black rounded-2xl p-4 shadow-[3px_3px_0px_0px_#111827] space-y-3">
+      <div className="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5">
         {/* Header Title & Actions */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-2xl bg-[#0B4627] text-[#F59E0B] border-2 border-black flex items-center justify-center font-black text-xs font-mono shadow-[2px_2px_0px_0px_#000]">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0B4627] text-amber-300 border border-emerald-800 flex items-center justify-center font-bold text-xs font-mono shadow-xs shrink-0">
               #{currentDayNum}
             </div>
             <div>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded border border-amber-400">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-900 dark:text-amber-300 bg-amber-200/70 dark:bg-amber-900/40 px-2 py-0.5 rounded-md border border-amber-300/80 dark:border-amber-800">
                   {language === 'ar' ? `ورد اليوم #${currentDayNum} من ٣٦٥ يوماً` : `Target Hari #${currentDayNum} / 365 Hari`}
                 </span>
                 {target.isCompleted && (
-                  <span className="text-[10px] font-black uppercase text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded border border-emerald-400 flex items-center gap-1">
+                  <span className="text-[10px] font-semibold uppercase text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-300 dark:border-emerald-800 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> {language === 'ar' ? 'اكتمل ورد اليوم!' : 'Khatam Hari Ini!'}
                   </span>
                 )}
               </div>
-              <h3 className="text-base sm:text-lg font-black text-black">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5">
                 {language === 'ar' 
                   ? `سورة ${target.surahArabic} (${target.ayahCount} آية - الجزء ${target.juz})`
                   : `QS. ${target.surahName} (${target.surahArabic}) • ${target.ayahCount} Ayat (Juz ${target.juz})`}
@@ -107,7 +107,7 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
           <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end flex-wrap">
             <button
               onClick={() => setIsRoadmapOpen(true)}
-              className="px-2.5 py-1.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer"
+              className="px-3 py-1.5 bg-amber-100/80 dark:bg-amber-900/40 hover:bg-amber-200/90 text-amber-900 dark:text-amber-200 border border-amber-300/80 dark:border-amber-800 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition"
             >
               <Calendar className="w-3.5 h-3.5" />
               <span>{language === 'ar' ? 'خطة ٣٦٥ يوماً' : 'Roadmap 365 Hari'}</span>
@@ -115,7 +115,7 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
 
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-2.5 py-1.5 bg-white hover:bg-amber-100 text-black border-2 border-black rounded-xl text-xs font-extrabold flex items-center gap-1 cursor-pointer"
+              className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition shadow-xs"
             >
               <Settings2 className="w-3.5 h-3.5" />
               <span>{language === 'ar' ? 'تغيير السورة' : 'Ganti Target'}</span>
@@ -124,7 +124,7 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
             {onStartTarget && (
               <button
                 onClick={() => onStartTarget(target)}
-                className="px-4 py-1.5 bg-[#0B4627] hover:bg-[#08331c] text-[#F59E0B] border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 neo-button cursor-pointer"
+                className="px-4 py-1.5 bg-[#0B4627] hover:bg-[#07331b] text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition shadow-xs"
               >
                 <span>{t.dailyTargetAction}</span>
                 <ChevronRight className="w-4 h-4" />
@@ -135,59 +135,59 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
 
         {/* Progress Bar & Counter */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs font-black text-gray-800">
+          <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
             <span>
               {language === 'ar'
                 ? `التقدم: ${target.completedAyahNumbers.length} من ${target.ayahCount} آية`
                 : `Kemajuan Bacaan: ${target.completedAyahNumbers.length} dari ${target.ayahCount} Ayat`}
             </span>
-            <span className="text-amber-900 font-mono font-black">{progressPercentage}%</span>
+            <span className="text-amber-900 dark:text-amber-400 font-mono font-bold">{progressPercentage}%</span>
           </div>
 
-          <div className="w-full h-4 bg-white rounded-full border-2 border-black overflow-hidden p-0.5">
+          <div className="w-full h-2.5 bg-amber-200/50 dark:bg-slate-800 rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all ${
-                target.isCompleted ? 'bg-[#10B981]' : 'bg-[#F59E0B]'
+              className={`h-full rounded-full transition-all duration-300 ${
+                target.isCompleted ? 'bg-emerald-600' : 'bg-amber-500'
               }`}
-              style={{ width: `${Math.max(4, progressPercentage)}%` }}
+              style={{ width: `${Math.max(3, progressPercentage)}%` }}
             />
           </div>
         </div>
 
-        {/* Reward Bonus Information */}
-        <div className="flex items-center justify-between text-[11px] font-bold text-gray-700 pt-1 border-t border-amber-300">
-          <span className="flex items-center gap-1 text-amber-900">
-            <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
+        {/* Target Info */}
+        <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400 pt-1.5 border-t border-amber-200/70 dark:border-amber-900/30">
+          <span className="flex items-center gap-1 text-amber-900 dark:text-amber-300 font-medium">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
             {language === 'ar'
               ? `المحافظة على الورد اليومي والختمة المستمرة`
               : `Target Harian Muroja'ah Istiqomah`}
           </span>
-          <span className="text-gray-600 text-[10px] font-mono font-bold">
-            {language === 'ar' ? 'خطة سنوية متكاملة (١٤٤٨ هـ)' : 'Plan: 23 Agu 2026 – 23 Agu 2027 (1 Tahun)'}
+          <span className="text-slate-500 dark:text-slate-400 text-[10px] font-mono">
+            {language === 'ar' ? 'خطة سنوية متكاملة (١٤٤٨ هـ)' : 'Plan: 23 Agu 2026 - 23 Agu 2027 (1 Tahun)'}
           </span>
         </div>
       </div>
 
-      {/* MODAL ROADMAP 365 HARI (1 TAHUN KHATAM) */}
+      {/* Modal Roadmap 365 Hari */}
       <AnnualRoadmapModal
         isOpen={isRoadmapOpen}
         onClose={() => setIsRoadmapOpen(false)}
         onSelectTargetDay={handleSelectFromRoadmap}
       />
 
-      {/* MODAL GANTI TARGET HARIAN */}
+      {/* Modal Ganti Target Harian */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border-3 border-black rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-[8px_8px_0px_0px_#000] overflow-hidden">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-xl overflow-hidden">
             {/* Modal Header */}
-            <div className="p-4 bg-[#0B4627] text-white border-b-3 border-black flex items-center justify-between">
+            <div className="p-4 bg-[#0B4627] text-white flex items-center justify-between">
               <div>
-                <h4 className="text-base font-black">Pilih Target Tilawah / Muroja'ah Hari Ini</h4>
-                <p className="text-xs text-emerald-200">Pilih surat yang ingin Anda fokuskan hari ini</p>
+                <h4 className="text-sm font-bold">Pilih Target Tilawah / Muroja'ah Hari Ini</h4>
+                <p className="text-xs text-emerald-200/90 mt-0.5">Pilih surat yang ingin Anda fokuskan hari ini</p>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-xl bg-white text-black font-black text-sm flex items-center justify-center border-2 border-black cursor-pointer hover:bg-red-500 hover:text-white"
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition"
                 aria-label="Tutup"
               >
                 <X className="w-4 h-4" />
@@ -195,20 +195,20 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
             </div>
 
             {/* Search Input */}
-            <div className="p-3 border-b-2 border-black bg-amber-50">
+            <div className="p-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
               <input
                 type="text"
                 placeholder="Cari surat (contoh: Al-Mulk, Yasin, Al-Kahf, 67)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-3 py-2 bg-white border-2 border-black rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
                 autoFocus
               />
             </div>
 
             {/* Quick Filter Categories */}
-            <div className="px-3 py-2 bg-gray-100 border-b border-gray-300 flex items-center gap-1.5 overflow-x-auto text-[11px] font-black">
-              <span className="text-gray-500 shrink-0">Pilihan Cepat:</span>
+            <div className="px-3 py-2 bg-slate-50/70 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto text-[11px]">
+              <span className="text-slate-400 shrink-0 font-medium">Pilihan Cepat:</span>
               {[
                 { no: 67, label: 'Al-Mulk (Juz 29)' },
                 { no: 78, label: 'An-Naba\' (Juz 30)' },
@@ -220,7 +220,7 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
                 <button
                   key={rec.no}
                   onClick={() => handleSelectSurah(rec.no)}
-                  className="px-2.5 py-1 bg-white hover:bg-amber-200 border border-black rounded-lg shrink-0 cursor-pointer text-black"
+                  className="px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg shrink-0 cursor-pointer text-slate-700 dark:text-slate-200 font-medium transition"
                 >
                   {rec.label}
                 </button>
@@ -235,16 +235,16 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
                   <button
                     key={s.number}
                     onClick={() => handleSelectSurah(s.number)}
-                    className={`w-full p-2.5 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
+                    className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-                        : 'bg-white hover:bg-amber-50 text-black'
+                        ? 'bg-[#0B4627] text-white border-[#0B4627] shadow-xs'
+                        : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-800 text-slate-900 dark:text-white'
                     }`}
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-black">#{s.number}</span>
-                        <span className="font-extrabold text-xs">{s.latinName}</span>
+                        <span className={`font-mono text-xs font-bold ${isSelected ? 'text-amber-300' : 'text-slate-500'}`}>#{s.number}</span>
+                        <span className="font-semibold text-xs">{s.latinName}</span>
                         <span className="text-[10px] opacity-75">({s.meaning})</span>
                       </div>
                       <span className="text-[10px] opacity-80 block mt-0.5">

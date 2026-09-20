@@ -120,16 +120,16 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
             setIsOpen(true);
             setIsMinimized(false);
           }}
-          className="group flex items-center gap-2 px-3.5 py-2.5 bg-[#0B4627] hover:bg-[#07301b] text-white border-2 border-black rounded-2xl shadow-[4px_4px_0px_0px_#000] cursor-pointer transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5"
+          className="group flex items-center gap-2 px-3.5 py-2.5 bg-[#0B4627] hover:bg-[#07301b] text-white border border-emerald-700/60 rounded-2xl shadow-lg cursor-pointer transition-all duration-200 ring-1 ring-emerald-500/20 active:scale-95"
           title="Buka Quran Buddy (DeepSeek v4 Pro)"
         >
-          <div className="relative flex items-center justify-center w-7 h-7 bg-amber-400 text-black rounded-xl border border-black shadow-[1px_1px_0px_0px_#000]">
+          <div className="relative flex items-center justify-center w-7 h-7 bg-amber-500 text-slate-950 rounded-xl font-bold shadow-xs">
             <Bot className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 border border-black rounded-full animate-ping" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 border border-black rounded-full" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 border border-emerald-900 rounded-full animate-ping" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 border border-emerald-900 rounded-full" />
           </div>
           <div className="text-left">
-            <span className="block text-xs font-black leading-tight text-amber-300">Quran Buddy</span>
+            <span className="block text-xs font-bold leading-tight text-amber-300">Quran Buddy</span>
             <span className="block text-[9px] text-emerald-200 font-medium">Sahabat Qur'an</span>
           </div>
           <Sparkles className="w-3.5 h-3.5 text-amber-300 group-hover:rotate-12 transition-transform ml-1" />
@@ -142,28 +142,28 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
   if (isMinimized) {
     return (
       <div className={`fixed bottom-20 lg:bottom-6 right-4 z-[9999] ${className}`}>
-        <div className="flex items-center justify-between w-[280px] sm:w-[320px] px-3.5 py-2.5 bg-[#0B4627] text-white border-3 border-black rounded-2xl shadow-[4px_4px_0px_0px_#000]">
+        <div className="flex items-center justify-between w-[280px] sm:w-[320px] px-3.5 py-2.5 bg-[#0B4627] text-white border border-emerald-700/60 rounded-2xl shadow-lg ring-1 ring-emerald-500/20">
           <div
             onClick={() => setIsMinimized(false)}
             className="flex items-center gap-2 cursor-pointer select-none flex-1"
           >
             <Bot className="w-5 h-5 text-amber-400" />
-            <span className="font-black text-xs text-amber-300">Quran Buddy</span>
-            <span className="px-1.5 py-0.5 bg-emerald-900 border border-emerald-500 text-[9px] font-mono rounded text-emerald-300">
+            <span className="font-bold text-xs text-amber-300">Quran Buddy</span>
+            <span className="px-1.5 py-0.5 bg-emerald-950 border border-emerald-600/60 text-[9px] font-mono rounded text-emerald-300">
               Online
             </span>
           </div>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsMinimized(false)}
-              className="p-1 text-emerald-200 hover:text-white cursor-pointer"
+              className="p-1 text-emerald-200 hover:text-white cursor-pointer rounded-lg hover:bg-emerald-800 transition-colors"
               title="Perbesar"
             >
               <ChevronDown className="w-4 h-4 rotate-180" />
             </button>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1 text-emerald-200 hover:text-red-400 cursor-pointer"
+              className="p-1 text-emerald-200 hover:text-rose-300 cursor-pointer rounded-lg hover:bg-emerald-800 transition-colors"
               title="Tutup"
             >
               <X className="w-4 h-4" />
@@ -174,22 +174,22 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
     );
   }
 
-  // 3. Fully Expanded Compact Card (Tanpa Menu Setting, Langsung Siap Pakai)
+  // 3. Fully Expanded Compact Card
   return (
     <div
-      className={`fixed bottom-20 lg:bottom-6 right-3 sm:right-4 z-[9999] w-[320px] sm:w-[350px] md:w-[370px] h-[470px] sm:h-[500px] max-h-[78vh] flex flex-col bg-[#FFFDF7] border-3 border-black rounded-2xl shadow-[5px_5px_0px_0px_#000] overflow-hidden animate-pop ${className}`}
+      className={`fixed bottom-20 lg:bottom-6 right-3 sm:right-4 z-[9999] w-[320px] sm:w-[350px] md:w-[370px] h-[470px] sm:h-[500px] max-h-[78vh] flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 ring-1 ring-black/5 dark:ring-white/10 ${className}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#0B4627] text-white border-b-2 border-black select-none">
+      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#0B4627] text-white border-b border-emerald-800/80 select-none">
         <div className="flex items-center gap-2.5">
-          <div className="relative flex items-center justify-center w-8 h-8 bg-amber-400 text-black rounded-xl border-2 border-black shadow-[1px_1px_0px_0px_#000]">
+          <div className="relative flex items-center justify-center w-8 h-8 bg-amber-500 text-slate-950 rounded-xl font-bold shadow-xs">
             <Bot className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 border border-black rounded-full" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 border border-emerald-900 rounded-full" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h3 className="font-black text-xs text-amber-300">Quran Buddy</h3>
-              <span className="px-1.5 py-0.2 bg-emerald-950 text-emerald-300 text-[9px] font-mono rounded border border-emerald-600">
+              <h3 className="font-bold text-xs text-amber-300">Quran Buddy</h3>
+              <span className="px-1.5 py-0.2 bg-emerald-950 text-emerald-300 text-[9px] font-mono rounded border border-emerald-600/60">
                 DeepSeek v4 Pro
               </span>
             </div>
@@ -200,7 +200,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
         <div className="flex items-center gap-1">
           <button
             onClick={handleClearHistory}
-            className="p-1.5 text-emerald-200 hover:text-red-300 hover:bg-emerald-800 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-emerald-200 hover:text-rose-300 hover:bg-emerald-800 rounded-lg transition-colors cursor-pointer"
             title="Reset Percakapan"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -214,7 +214,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
           </button>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1.5 text-emerald-200 hover:text-red-400 hover:bg-emerald-800 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-emerald-200 hover:text-rose-300 hover:bg-emerald-800 rounded-lg transition-colors cursor-pointer"
             title="Tutup"
           >
             <X className="w-4 h-4" />
@@ -223,7 +223,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
       </div>
 
       {/* Chat Messages Area */}
-      <div className="flex-1 p-3 overflow-y-auto space-y-3 bg-[#FFFDF7]">
+      <div className="flex-1 p-3.5 overflow-y-auto space-y-3 bg-slate-50 dark:bg-slate-950">
         {messages.map((msg) => {
           const isUser = msg.role === 'user';
           return (
@@ -232,15 +232,15 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
               className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
             >
               <div
-                className={`text-xs leading-relaxed max-w-[88%] p-3 rounded-2xl border-2 border-black ${
+                className={`text-xs leading-relaxed max-w-[88%] p-3 rounded-2xl border ${
                   isUser
-                    ? 'bg-[#0B4627] text-white rounded-br-sm shadow-[2px_2px_0px_0px_#000]'
-                    : 'bg-white text-gray-900 rounded-bl-sm shadow-[2px_2px_0px_0px_#000] space-y-1'
+                    ? 'bg-[#0B4627] text-white rounded-br-xs border-emerald-800 shadow-xs'
+                    : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-bl-xs border-slate-200 dark:border-slate-800 shadow-xs space-y-1'
                 }`}
               >
                 <div className="whitespace-pre-wrap">{msg.content}</div>
               </div>
-              <span className="text-[9px] text-gray-400 mt-0.5 px-1">
+              <span className="text-[9px] text-slate-400 mt-0.5 px-1">
                 {new Date(msg.timestamp).toLocaleTimeString([], {
                   hour: '2-digit',
                   minute: '2-digit'
@@ -252,12 +252,12 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
 
         {/* Typing Loading Bubble */}
         {isLoading && (
-          <div className="flex items-center gap-2 p-3 bg-white text-gray-800 rounded-2xl border-2 border-black shadow-[2px_2px_0px_0px_#000] w-fit">
-            <span className="text-xs font-bold text-[#0B4627]">Quran Buddy sedang berpikir</span>
+          <div className="flex items-center gap-2 p-3 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs w-fit">
+            <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400">Quran Buddy sedang berpikir</span>
             <div className="flex gap-1 items-center">
-              <span className="w-1.5 h-1.5 bg-[#0B4627] rounded-full animate-bounce [animation-delay:-0.3s]" />
-              <span className="w-1.5 h-1.5 bg-[#0B4627] rounded-full animate-bounce [animation-delay:-0.15s]" />
-              <span className="w-1.5 h-1.5 bg-[#0B4627] rounded-full animate-bounce" />
+              <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce [animation-delay:-0.3s]" />
+              <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce [animation-delay:-0.15s]" />
+              <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce" />
             </div>
           </div>
         )}
@@ -265,14 +265,14 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Quick Prompts Suggestions (Tampil jika riwayat masih sedikit) */}
+      {/* Quick Prompts Suggestions */}
       {messages.length <= 2 && (
-        <div className="px-3 py-1.5 bg-amber-50/70 border-t border-b border-gray-200 flex gap-1.5 overflow-x-auto no-scrollbar">
+        <div className="px-3 py-2 bg-amber-50/50 dark:bg-amber-950/20 border-t border-b border-slate-200/80 dark:border-slate-800 flex gap-1.5 overflow-x-auto no-scrollbar">
           {quickPrompts.map((prompt, idx) => (
             <button
               key={idx}
               onClick={() => handleSendMessage(prompt.replace(/^[^a-zA-Z0-9]+/, '').trim())}
-              className="text-[10px] font-bold whitespace-nowrap px-2.5 py-1 bg-white hover:bg-amber-100 text-gray-800 border border-black rounded-lg transition-colors cursor-pointer shrink-0 shadow-[1px_1px_0px_0px_#000]"
+              className="text-[10px] font-medium whitespace-nowrap px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors cursor-pointer shrink-0 shadow-xs"
             >
               {prompt}
             </button>
@@ -286,7 +286,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
           e.preventDefault();
           handleSendMessage();
         }}
-        className="p-2.5 bg-white border-t-2 border-black flex items-center gap-2"
+        className="p-2.5 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2"
       >
         <input
           ref={inputRef}
@@ -295,12 +295,12 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Tanya tafsir, tajwid, atau tips hafalan..."
           disabled={isLoading}
-          className="flex-1 px-3 py-2 text-xs border-2 border-black rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 bg-[#F9FAFB] placeholder:text-gray-400 font-medium"
+          className="flex-1 px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-600 dark:text-white placeholder:text-slate-400 font-medium"
         />
         <button
           type="submit"
           disabled={!inputText.trim() || isLoading}
-          className="p-2 bg-[#F59E0B] hover:bg-[#D97706] disabled:opacity-50 disabled:hover:bg-[#F59E0B] text-black border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#000] cursor-pointer transition-all active:translate-x-0.5 active:translate-y-0.5 shrink-0"
+          className="p-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-slate-950 rounded-xl shadow-xs cursor-pointer transition-all active:scale-95 shrink-0"
           title="Kirim pesan"
         >
           <Send className="w-4 h-4" />

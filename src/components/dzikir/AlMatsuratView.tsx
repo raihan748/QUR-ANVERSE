@@ -529,46 +529,48 @@ export const AlMatsuratView: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 space-y-6 pb-28">
-      {/* 1. HERO BANNER WITH NEOBRUTALISM ACCENTS */}
-      <div className={`rounded-2xl border-3 border-black p-5 sm:p-7 transition-all shadow-[6px_6px_0px_0px_#000] ${
-        isMorning ? 'bg-[#FEF3C7]' : 'bg-[#1E293B] text-white'
+      {/* 1. HERO BANNER */}
+      <div className={`rounded-2xl border p-5 sm:p-7 transition-all shadow-xs ${
+        isMorning 
+          ? 'bg-gradient-to-br from-amber-50 via-amber-50/30 to-emerald-50/30 border-amber-200/80 text-slate-900' 
+          : 'bg-gradient-to-br from-[#042413] via-slate-900 to-slate-950 border-emerald-800/80 text-white'
       }`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`px-2.5 py-1 rounded-lg border-2 border-black text-xs font-black uppercase tracking-wider ${
-                isMorning ? 'bg-[#F59E0B] text-black' : 'bg-[#38BDF8] text-black'
+              <span className={`px-2.5 py-1 rounded-lg border text-xs font-bold uppercase tracking-wider ${
+                isMorning ? 'bg-amber-500/20 text-amber-900 border-amber-300' : 'bg-sky-500/20 text-sky-200 border-sky-400/40'
               }`}>
                 {isMorning ? "Al-Ma'tsurat Pagi" : "Al-Ma'tsurat Petang"}
               </span>
 
               {isAutoTime && (
-                <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-400">
+                <span className="flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                   <Clock className="w-3 h-3" /> Jam Lokal Otomatis
                 </span>
               )}
 
-              <span className="text-xs font-semibold opacity-80">
+              <span className="text-xs font-medium opacity-80">
                 Karya: Imam Syahid Hasan Al-Banna
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black font-display tracking-wide">
+            <h1 className="text-2xl sm:text-3xl font-extrabold font-display tracking-wide">
               {isMorning ? 'Wazhifah Ash-Shabah (Dzikir Pagi)' : 'Wazhifah Al-Masaa\' (Dzikir Petang)'}
             </h1>
-            <p className={`text-sm sm:text-base font-medium max-w-2xl ${isMorning ? 'text-gray-700' : 'text-slate-200'}`}>
+            <p className={`text-sm sm:text-base font-medium max-w-2xl ${isMorning ? 'text-slate-700' : 'text-slate-300'}`}>
               Benteng perlindungan mukmin, ketenangan qolbu, serta pembuka pintu barakah dan rezeki harian sesuai sunnah Rasulullah ﷺ.
             </p>
           </div>
 
           {/* Time Switcher Toggle */}
-          <div className="flex items-center gap-2 bg-white/90 dark:bg-black/40 backdrop-blur-xs p-1.5 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000]">
+          <div className="flex items-center gap-1.5 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xs p-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700 shadow-xs">
             <button
               onClick={() => handleTimeChange('morning')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-black text-xs transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer ${
                 selectedTime === 'morning'
-                  ? 'bg-[#F59E0B] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]'
-                  : 'text-gray-700 hover:text-black'
+                  ? 'bg-amber-500 text-slate-950 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Sun className="w-4 h-4 text-amber-600" />
@@ -576,10 +578,10 @@ export const AlMatsuratView: React.FC = () => {
             </button>
             <button
               onClick={() => handleTimeChange('evening')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-black text-xs transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-bold text-xs transition-all cursor-pointer ${
                 selectedTime === 'evening'
-                  ? 'bg-[#38BDF8] text-black border-2 border-black shadow-[2px_2px_0px_0px_#000]'
-                  : 'text-gray-700 dark:text-gray-300 hover:text-black'
+                  ? 'bg-sky-500 text-slate-950 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Moon className="w-4 h-4 text-blue-600" />
@@ -589,27 +591,27 @@ export const AlMatsuratView: React.FC = () => {
         </div>
 
         {/* PROGRESS BAR & VARIANT TABS */}
-        <div className="mt-6 pt-5 border-t-2 border-black/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="mt-6 pt-5 border-t border-slate-200/60 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           {/* Sughra vs Kubra Selector */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-black uppercase opacity-75">Varian:</span>
-            <div className="flex bg-white/80 p-1 rounded-lg border-2 border-black">
+            <span className="text-xs font-bold uppercase opacity-75">Varian:</span>
+            <div className="flex bg-white/80 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200/80 dark:border-slate-700">
               <button
                 onClick={() => setSelectedVariant('sughra')}
-                className={`px-3 py-1 text-xs font-black rounded-md transition-all cursor-pointer ${
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   selectedVariant === 'sughra'
-                    ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-                    : 'text-gray-800 hover:bg-gray-100'
+                    ? 'bg-[#0B4627] text-white shadow-xs'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
                 Sughra (Ringkas)
               </button>
               <button
                 onClick={() => setSelectedVariant('kubra')}
-                className={`px-3 py-1 text-xs font-black rounded-md transition-all cursor-pointer ${
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   selectedVariant === 'kubra'
-                    ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-                    : 'text-gray-800 hover:bg-gray-100'
+                    ? 'bg-[#0B4627] text-white shadow-xs'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
                 Kubra (Lengkap + Rabithah)
@@ -620,13 +622,13 @@ export const AlMatsuratView: React.FC = () => {
           {/* Progress summary */}
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <div className="flex-1 sm:w-48">
-              <div className="flex justify-between text-xs font-black mb-1">
+              <div className="flex justify-between text-xs font-bold mb-1">
                 <span>Progres Dzikir</span>
                 <span>{completedCount} / {filteredItems.length} ({progressPercent}%)</span>
               </div>
-              <div className="w-full h-3 bg-white/80 rounded-full border-2 border-black overflow-hidden">
+              <div className="w-full h-2.5 bg-slate-200/80 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-[#10B981] transition-all duration-300"
+                  className="h-full bg-emerald-600 transition-all duration-300"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -635,7 +637,7 @@ export const AlMatsuratView: React.FC = () => {
             {completedCount > 0 && (
               <button
                 onClick={handleResetAll}
-                className="p-1.5 bg-white text-gray-700 hover:text-red-600 border-2 border-black rounded-lg text-xs font-bold cursor-pointer"
+                className="p-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold cursor-pointer transition-colors shadow-xs"
                 title="Reset Hitungan Dzikir"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -645,29 +647,29 @@ export const AlMatsuratView: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. AUDIO RECITATION STICKY/PERSISTENT PLAYER BAR */}
-      <div className="bg-[#06331D] text-white border-3 border-black rounded-2xl p-4 shadow-[5px_5px_0px_0px_#000] flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* 2. AUDIO RECITATION PERSISTENT PLAYER BAR */}
+      <div className="bg-[#042413] text-white border border-emerald-800/80 rounded-2xl p-4 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4 ring-1 ring-emerald-500/20">
         {/* Left: Info & Status */}
         <div className="flex items-center gap-3 w-full md:w-auto">
           <button
             onClick={handleToggleFullAudio}
-            className={`w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center text-black shrink-0 transition-all cursor-pointer ${
+            className={`w-12 h-12 rounded-xl flex items-center justify-center text-slate-950 shrink-0 transition-all cursor-pointer font-bold ${
               audioState.playbackType === 'full' && audioState.isPlaying
-                ? 'bg-[#10B981] shadow-[2px_2px_0px_0px_#000]'
-                : 'bg-[#F59E0B] shadow-[3px_3px_0px_0px_#000] hover:scale-105'
+                ? 'bg-emerald-500 hover:bg-emerald-400 shadow-xs'
+                : 'bg-amber-500 hover:bg-amber-400 shadow-xs'
             }`}
             title={audioState.playbackType === 'full' && audioState.isPlaying ? 'Jeda Audio' : 'Putar Audio Lengkap'}
           >
             {audioState.playbackType === 'full' && audioState.isPlaying ? (
-              <Pause className="w-6 h-6 fill-black" />
+              <Pause className="w-6 h-6 fill-slate-950" />
             ) : (
-              <Play className="w-6 h-6 fill-black translate-x-0.5" />
+              <Play className="w-6 h-6 fill-slate-950 translate-x-0.5" />
             )}
           </button>
 
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-extrabold text-sm sm:text-base text-amber-300 truncate">
+              <h3 className="font-bold text-sm sm:text-base text-amber-300 truncate">
                 {audioState.playbackType === 'full' 
                   ? (selectedTime === 'morning' ? MATSURAT_META.fullAudioMorning.title : MATSURAT_META.fullAudioEvening.title)
                   : `Putar Lantunan Lengkap (${selectedTime === 'morning' ? 'Pagi' : 'Petang'})`}
@@ -685,7 +687,7 @@ export const AlMatsuratView: React.FC = () => {
           </div>
         </div>
 
-        {/* Center: Timeline Progress (visible when full audio is active) */}
+        {/* Center: Timeline Progress */}
         {audioState.playbackType === 'full' && (
           <div className="flex items-center gap-2 w-full md:max-w-md">
             <span className="text-[11px] font-mono text-emerald-300 min-w-[36px]">
@@ -697,7 +699,7 @@ export const AlMatsuratView: React.FC = () => {
               max={audioState.duration || 100}
               value={audioState.currentTime || 0}
               onChange={(e) => almatsuratAudioService.seek(parseFloat(e.target.value))}
-              className="w-full h-2 bg-emerald-950 rounded-lg appearance-none cursor-pointer accent-[#F59E0B]"
+              className="w-full h-2 bg-emerald-950 rounded-lg appearance-none cursor-pointer accent-amber-400"
             />
             <span className="text-[11px] font-mono text-emerald-300 min-w-[36px]">
               {formatSeconds(audioState.duration)}
@@ -707,14 +709,14 @@ export const AlMatsuratView: React.FC = () => {
 
         {/* Right: Speed & Stop Controls */}
         <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
-          <div className="flex items-center bg-emerald-950/80 rounded-lg border border-emerald-700/60 p-0.5">
+          <div className="flex items-center bg-emerald-950/80 rounded-xl border border-emerald-700/60 p-0.5">
             {[1.0, 1.25, 1.5].map((rate) => (
               <button
                 key={rate}
                 onClick={() => almatsuratAudioService.setSpeed(rate)}
-                className={`px-2 py-1 text-[11px] font-black rounded cursor-pointer ${
+                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg cursor-pointer transition-colors ${
                   audioState.playbackRate === rate
-                    ? 'bg-[#F59E0B] text-black'
+                    ? 'bg-amber-500 text-slate-950'
                     : 'text-emerald-200 hover:text-white'
                 }`}
               >
@@ -726,7 +728,7 @@ export const AlMatsuratView: React.FC = () => {
           {audioState.isPlaying && (
             <button
               onClick={() => almatsuratAudioService.stop()}
-              className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-black border border-black cursor-pointer shadow-[1px_1px_0px_0px_#000]"
+              className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold border border-rose-500/60 cursor-pointer transition-colors shadow-xs"
             >
               Stop
             </button>
@@ -734,35 +736,35 @@ export const AlMatsuratView: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. TOOLBAR & CONTROLS: SEARCH & TOGGLES */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000]">
+      {/* 3. TOOLBAR & CONTROLS */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
         {/* Search input */}
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Cari doa, ayat, atau arti..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
+            className="w-full pl-9 pr-3 py-2 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/60 focus:outline-hidden focus:ring-2 focus:ring-emerald-600 dark:text-white"
           />
         </div>
 
         {/* Font size and view options */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
           {/* Font size */}
-          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg border border-black">
-            <span className="text-[10px] font-black px-1">Arab:</span>
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+            <span className="text-[10px] font-bold px-1 text-slate-500">Arab:</span>
             <button
               onClick={() => setFontSize((s) => Math.max(18, s - 2))}
-              className="px-2 py-0.5 bg-white rounded border border-gray-400 font-black hover:bg-gray-200 cursor-pointer"
+              className="px-2 py-0.5 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 font-bold hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer"
               title="Perkecil Font"
             >
               A-
             </button>
             <button
               onClick={() => setFontSize((s) => Math.min(36, s + 2))}
-              className="px-2 py-0.5 bg-white rounded border border-gray-400 font-black hover:bg-gray-200 cursor-pointer"
+              className="px-2 py-0.5 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600 font-bold hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer"
               title="Perbesar Font"
             >
               A+
@@ -772,8 +774,10 @@ export const AlMatsuratView: React.FC = () => {
           {/* Toggle buttons */}
           <button
             onClick={() => setShowTransliteration(!showTransliteration)}
-            className={`px-2.5 py-1.5 rounded-lg border border-black font-bold cursor-pointer transition-all ${
-              showTransliteration ? 'bg-[#0B4627] text-white' : 'bg-gray-100 text-gray-700'
+            className={`px-3 py-1.5 rounded-xl border font-semibold cursor-pointer transition-all ${
+              showTransliteration 
+                ? 'bg-[#0B4627] text-white border-emerald-800 shadow-xs' 
+                : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
             }`}
           >
             Latin
@@ -781,8 +785,10 @@ export const AlMatsuratView: React.FC = () => {
 
           <button
             onClick={() => setShowTranslation(!showTranslation)}
-            className={`px-2.5 py-1.5 rounded-lg border border-black font-bold cursor-pointer transition-all ${
-              showTranslation ? 'bg-[#0B4627] text-white' : 'bg-gray-100 text-gray-700'
+            className={`px-3 py-1.5 rounded-xl border font-semibold cursor-pointer transition-all ${
+              showTranslation 
+                ? 'bg-[#0B4627] text-white border-emerald-800 shadow-xs' 
+                : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
             }`}
           >
             Arti
@@ -790,8 +796,10 @@ export const AlMatsuratView: React.FC = () => {
 
           <button
             onClick={() => setShowFadhilah(!showFadhilah)}
-            className={`px-2.5 py-1.5 rounded-lg border border-black font-bold cursor-pointer transition-all ${
-              showFadhilah ? 'bg-[#D97706] text-white' : 'bg-gray-100 text-gray-700'
+            className={`px-3 py-1.5 rounded-xl border font-semibold cursor-pointer transition-all ${
+              showFadhilah 
+                ? 'bg-amber-600 text-white border-amber-700 shadow-xs' 
+                : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
             }`}
           >
             Fadhilah
@@ -804,15 +812,11 @@ export const AlMatsuratView: React.FC = () => {
         {filteredItems.map((item, index) => {
           const currentCount = counts[item.id] || 0;
           const isDone = currentCount >= item.targetCount;
-          const progressPercentItem = Math.min(100, Math.round((currentCount / item.targetCount) * 100));
 
-          // Texts dynamically change according to morning / evening
           const arabicText = (!isMorning && item.arabicEvening) ? item.arabicEvening : item.arabic;
           const transliterationText = (!isMorning && item.transliterationEvening) ? item.transliterationEvening : item.transliteration;
           const translationText = (!isMorning && item.translationEvening) ? item.translationEvening : item.translation;
 
-          // Per-item audio
-          const itemAudio = (!isMorning && item.audioUrlEvening) ? item.audioUrlEvening : item.audioUrl;
           const isPlayingThisItem = audioState.playbackType === 'item' && audioState.activeItemId === item.id && audioState.isPlaying;
           const isCardActive = activeSync.activeItemId === item.id && (audioState.isPlaying || audioState.currentTime > 0);
 
@@ -820,59 +824,59 @@ export const AlMatsuratView: React.FC = () => {
             <div
               key={item.id}
               ref={(el) => { cardRefs.current[item.id] = el; }}
-              className={`rounded-2xl border-3 transition-all bg-white overflow-hidden ${
+              className={`rounded-2xl border transition-all bg-white dark:bg-slate-900 overflow-hidden ${
                 isCardActive
-                  ? 'border-[#0B4627] ring-4 ring-[#10B981]/40 shadow-[6px_6px_0px_0px_#0B4627] bg-[#FBFDF9]'
+                  ? 'border-emerald-600 ring-2 ring-emerald-500/30 shadow-md bg-emerald-50/10'
                   : isDone
-                  ? 'border-black ring-2 ring-emerald-500 bg-emerald-50/40 shadow-[4px_4px_0px_0px_#000]'
-                  : 'border-black shadow-[4px_4px_0px_0px_#000]'
+                  ? 'border-emerald-500/50 bg-emerald-50/20 dark:bg-emerald-950/10 shadow-xs'
+                  : 'border-slate-200/90 dark:border-slate-800 shadow-xs'
               }`}
             >
               {/* Card Header */}
-              <div className={`px-4 py-3 border-b-2 border-black flex flex-wrap items-center justify-between gap-2 transition-colors ${
-                isCardActive ? 'bg-emerald-50/80' : 'bg-[#FFFDF7]'
+              <div className={`px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 transition-colors ${
+                isCardActive ? 'bg-emerald-50/60 dark:bg-emerald-950/20' : 'bg-slate-50/50 dark:bg-slate-850/50'
               }`}>
                 <div className="flex items-center gap-2">
-                  <span className={`w-7 h-7 rounded-lg border border-black flex items-center justify-center font-black text-xs text-white ${
-                    isCardActive ? 'bg-[#10B981]' : 'bg-[#0B4627]'
+                  <span className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs text-white ${
+                    isCardActive ? 'bg-emerald-600' : 'bg-[#0B4627]'
                   }`}>
                     {index + 1}
                   </span>
-                  <h2 className="font-extrabold text-sm sm:text-base text-gray-900">
+                  <h2 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
                     {item.title}
                   </h2>
                   {item.variant === 'kubra' && (
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 bg-purple-100 text-purple-900 border border-purple-400 rounded-md">
+                    <span className="text-[10px] font-bold px-2 py-0.5 bg-purple-100 dark:bg-purple-950/60 text-purple-900 dark:text-purple-300 border border-purple-300 dark:border-purple-800 rounded-md">
                       Khusus Kubra
                     </span>
                   )}
                   {isCardActive && audioState.isPlaying && (
-                    <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0B4627] text-white text-[11px] font-black animate-pulse shadow-xs">
-                      <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
+                    <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0B4627] text-white text-[11px] font-medium animate-pulse shadow-xs">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                       <span>Sedang Dibaca Qari</span>
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                  {/* Per-Item Audio Play Button (Precise Segment Talaqqi) */}
+                  {/* Per-Item Audio Play Button */}
                   <button
                     onClick={() => handlePlayItemAudio(item.id)}
-                    className={`px-2.5 py-1 rounded-lg border border-black text-xs font-black flex items-center gap-1 cursor-pointer transition-all ${
+                    className={`px-2.5 py-1 rounded-lg border text-xs font-semibold flex items-center gap-1 cursor-pointer transition-all ${
                       isPlayingThisItem
-                        ? 'bg-[#10B981] text-black shadow-[1px_1px_0px_0px_#000]'
-                        : 'bg-[#FEF3C7] hover:bg-[#FDE68A] text-black shadow-[1px_1px_0px_0px_#000]'
+                        ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
+                        : 'bg-amber-100/80 hover:bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800'
                     }`}
                     title={isPlayingThisItem ? 'Jeda Audio' : 'Dengarkan Pelafalan Doa Ini Saja'}
                   >
                     {isPlayingThisItem ? (
                       <>
-                        <Pause className="w-3 h-3 fill-black" />
+                        <Pause className="w-3 h-3 fill-white" />
                         <span>Jeda</span>
                       </>
                     ) : (
                       <>
-                        <Volume2 className="w-3 h-3 text-black" />
+                        <Volume2 className="w-3 h-3" />
                         <span>Suara</span>
                       </>
                     )}
@@ -881,15 +885,15 @@ export const AlMatsuratView: React.FC = () => {
                   {/* Play Continuous Recitation from this Item */}
                   <button
                     onClick={() => handlePlayFromHere(item.id)}
-                    className="px-2 py-1 rounded-lg border border-black text-xs font-black flex items-center gap-1 bg-white hover:bg-emerald-50 text-gray-800 shadow-[1px_1px_0px_0px_#000] cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-semibold flex items-center gap-1 bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 shadow-xs cursor-pointer transition-colors"
                     title="Putar lantunan menerus mulai dari doa ini"
                   >
-                    <Play className="w-3 h-3 fill-black translate-x-0.5" />
+                    <Play className="w-3 h-3 fill-slate-700 dark:fill-slate-300 translate-x-0.5" />
                     <span className="hidden sm:inline">Mulai Sini</span>
                   </button>
 
                   {/* Target Count Badge */}
-                  <span className="text-xs font-black px-2.5 py-1 bg-amber-100 text-amber-900 border border-black rounded-lg">
+                  <span className="text-xs font-bold px-2.5 py-1 bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-800 rounded-lg">
                     Dibaca {item.targetCount}x
                   </span>
                 </div>
@@ -899,7 +903,7 @@ export const AlMatsuratView: React.FC = () => {
               <div className="p-4 sm:p-5 space-y-4">
                 {/* Arabic Text with Synchronized Underline */}
                 <div 
-                  className="font-quran leading-loose text-right text-gray-900 tracking-wide select-text py-2"
+                  className="font-quran leading-loose text-right text-slate-900 dark:text-slate-100 tracking-wide select-text py-2"
                   style={{ fontSize: `${fontSize}px`, lineHeight: `${fontSize * 1.9}px` }}
                   dir="rtl"
                 >
@@ -908,8 +912,8 @@ export const AlMatsuratView: React.FC = () => {
 
                 {/* Transliteration with Synchronized Underline */}
                 {showTransliteration && (
-                  <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-300/80 text-xs sm:text-sm font-medium text-amber-950 leading-relaxed italic">
-                    <span className="font-bold not-italic block text-[10px] text-amber-800 uppercase tracking-wider mb-0.5">
+                  <div className="p-3.5 bg-amber-50/50 dark:bg-amber-950/20 rounded-xl border border-amber-200/70 dark:border-amber-900/40 text-xs sm:text-sm font-medium text-amber-950 dark:text-amber-200 leading-relaxed italic">
+                    <span className="font-bold not-italic block text-[10px] text-amber-800 dark:text-amber-400 uppercase tracking-wider mb-0.5">
                       Transliterasi Latin:
                     </span>
                     {renderUnderlinedLatin(transliterationText, isCardActive, item.id)}
@@ -918,8 +922,8 @@ export const AlMatsuratView: React.FC = () => {
 
                 {/* Indonesian Translation */}
                 {showTranslation && (
-                  <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 text-xs sm:text-sm text-gray-800 leading-relaxed">
-                    <span className="font-bold block text-[10px] text-gray-600 uppercase tracking-wider mb-0.5">
+                  <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200/80 dark:border-slate-700 text-xs sm:text-sm text-slate-800 dark:text-slate-300 leading-relaxed">
+                    <span className="font-bold block text-[10px] text-slate-500 uppercase tracking-wider mb-0.5">
                       Terjemahan:
                     </span>
                     {translationText}
@@ -928,13 +932,13 @@ export const AlMatsuratView: React.FC = () => {
 
                 {/* Fadhilah & Sanad */}
                 {showFadhilah && item.fadhilah && (
-                  <div className="p-2.5 bg-emerald-50/60 rounded-xl border border-emerald-200 text-xs text-emerald-900 flex items-start gap-2">
-                    <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/20 rounded-xl border border-emerald-200 dark:border-emerald-800/40 text-xs text-emerald-900 dark:text-emerald-300 flex items-start gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-bold text-[11px] text-emerald-950">
+                      <p className="font-semibold text-[11px] text-emerald-950 dark:text-emerald-200">
                         {item.fadhilah}
                       </p>
-                      <p className="text-[10px] text-emerald-700 mt-0.5">
+                      <p className="text-[10px] text-emerald-700 dark:text-emerald-400 mt-0.5">
                         Sumber: {item.source}
                       </p>
                     </div>
@@ -943,22 +947,22 @@ export const AlMatsuratView: React.FC = () => {
               </div>
 
               {/* Card Footer: Interactive Digital Tasbih Counter */}
-              <div className="px-4 py-3 bg-[#FFFDF7] border-t-2 border-black flex items-center justify-between gap-3">
+              <div className="px-4 py-3 bg-slate-50/50 dark:bg-slate-850/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   {isDone ? (
-                    <span className="flex items-center gap-1 text-xs font-black text-emerald-700 bg-emerald-100 px-3 py-1 rounded-lg border border-emerald-400">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Selesai ({currentCount}/{item.targetCount})
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-300 dark:border-emerald-800">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Selesai ({currentCount}/{item.targetCount})
                     </span>
                   ) : (
-                    <span className="text-xs font-black text-gray-700">
-                      Hitungan: <strong className="text-black text-sm">{currentCount}</strong> / {item.targetCount}
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                      Hitungan: <strong className="text-slate-900 dark:text-white text-sm">{currentCount}</strong> / {item.targetCount}
                     </span>
                   )}
 
                   {currentCount > 0 && (
                     <button
                       onClick={(e) => handleResetItem(item.id, e)}
-                      className="p-1 text-gray-500 hover:text-red-600 cursor-pointer"
+                      className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       title="Reset hitungan kartu ini"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
@@ -970,10 +974,10 @@ export const AlMatsuratView: React.FC = () => {
                 <button
                   onClick={() => handleIncrement(item)}
                   disabled={isDone}
-                  className={`px-4 sm:px-6 py-2 rounded-xl border-2 border-black font-black text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
+                  className={`px-4 sm:px-6 py-2 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer select-none active:scale-95 ${
                     isDone
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed border-gray-400'
-                      : 'bg-[#F59E0B] hover:bg-[#D97706] text-black shadow-[3px_3px_0px_0px_#000]'
+                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200 dark:border-slate-700'
+                      : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs'
                   }`}
                 >
                   {isDone ? (
@@ -984,7 +988,7 @@ export const AlMatsuratView: React.FC = () => {
                   ) : (
                     <>
                       <span>Tap Tasbih</span>
-                      <span className="px-2 py-0.5 rounded bg-black text-white text-xs">
+                      <span className="px-2 py-0.5 rounded-lg bg-slate-950 text-amber-300 text-xs font-bold">
                         +{item.targetCount - currentCount}
                       </span>
                     </>
@@ -996,22 +1000,22 @@ export const AlMatsuratView: React.FC = () => {
         })}
 
         {filteredItems.length === 0 && (
-          <div className="p-8 text-center bg-white rounded-2xl border-2 border-black">
-            <p className="font-bold text-gray-600">Tidak ada doa yang cocok dengan pencarian "{searchQuery}".</p>
+          <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <p className="font-medium text-slate-500">Tidak ada doa yang cocok dengan pencarian "{searchQuery}".</p>
           </div>
         )}
       </div>
 
       {/* 5. INFORMATIVE FOOTER NOTE ON SANAD AL-BANNA */}
-      <div className="p-5 bg-amber-50 rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_#000] text-xs text-amber-950 space-y-2">
-        <div className="flex items-center gap-2 font-black text-sm text-[#0B4627]">
+      <div className="p-5 bg-amber-50/60 dark:bg-amber-950/20 rounded-2xl border border-amber-200/80 dark:border-amber-800/40 text-xs text-amber-950 dark:text-amber-200 space-y-2 shadow-xs">
+        <div className="flex items-center gap-2 font-bold text-sm text-[#0B4627] dark:text-emerald-400">
           <Info className="w-4 h-4" />
           <span>Mengenai Kitab Al-Ma'tsurat Hasan Al-Banna</span>
         </div>
         <p className="leading-relaxed">
           *Al-Ma'tsurat* adalah kumpulan wirid dan doa harian yang dihimpun oleh Imam Asy-Syahid Hasan Al-Banna dari ayat-ayat Al-Qur'an dan riwayat hadits-hadits shahih serta hasan. Dinamakan *Al-Ma'tsurat* karena seluruh bacaannya bersumber dari tuntunan ma'tsur (bersambung riwayatnya) dari Baginda Rasulullah Muhammad ﷺ.
         </p>
-        <p className="text-[11px] text-amber-800">
+        <p className="text-[11px] text-amber-800 dark:text-amber-400">
           Waktu utama membaca: <strong>Pagi</strong> setelah Subuh hingga sebelum Zhuhur, dan <strong>Petang</strong> setelah Ashar hingga sebelum Maghrib atau Isya.
         </p>
       </div>

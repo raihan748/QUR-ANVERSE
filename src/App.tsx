@@ -183,14 +183,13 @@ export function App() {
           cityName={activeLocation.city}
         />
 
-        {/* Main Content Area with Rich Entrance Animations */}
+        {/* Main Content Area */}
         <main className="flex-1 p-4 sm:p-6 lg:p-7 min-w-0">
-          {/* Dynamic Tab View Container with Error Boundary & Smooth Transitions */}
           <ErrorBoundary>
             <Suspense fallback={
               <div className="flex flex-col items-center justify-center min-h-[400px] p-12 text-center">
                 <div className="w-10 h-10 border-4 border-[#0B4627] border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="font-bold text-gray-700 text-sm">Memuat modul QUR'ANVERSE...</p>
+                <p className="font-semibold text-slate-700 text-sm">Memuat modul Al-Huda...</p>
               </div>
             }>
               <div key={activeTab} className="animate-fade-up">

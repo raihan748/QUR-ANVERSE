@@ -31,10 +31,10 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
 
   return (
     <section className="mb-8 space-y-6">
-      {/* HERO BANNER SECTION (Slide from Left + Slide from Right + Emerge) */}
-      <div className="relative rounded-3xl bg-[#0B4627] border-3 border-black p-6 sm:p-10 shadow-[8px_8px_0px_0px_#111827] overflow-hidden">
-        {/* Background Islamic Star Animated Watermark */}
-        <div className="absolute -right-16 -top-16 w-80 h-80 opacity-15 pointer-events-none animate-spin-slow">
+      {/* Hero Banner Section */}
+      <div className="relative rounded-3xl bg-gradient-to-br from-[#0B4627] via-[#083A20] to-[#042413] border border-emerald-800/80 p-6 sm:p-10 shadow-sm overflow-hidden text-white">
+        {/* Subtle Islamic Motif Accent */}
+        <div className="absolute -right-16 -top-16 w-80 h-80 opacity-10 pointer-events-none">
           <svg viewBox="0 0 200 200" fill="#F59E0B">
             <rect x="50" y="50" width="100" height="100" rx="10" />
             <rect x="50" y="50" width="100" height="100" rx="10" transform="rotate(45 100 100)" />
@@ -42,201 +42,157 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
         </div>
 
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left Column: Heading & Scroll-to-Action (Slide in from Left) */}
-          <div className="lg:col-span-7 space-y-5 animate-slide-left">
-            {/* Top Badges */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F59E0B] text-black font-extrabold text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] animate-pop">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{language === 'ar' ? 'منصة الهدى الذكية' : 'AL-HUDA AI PLATFORM'}</span>
-              </span>
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/20 text-white font-bold text-xs rounded-xl border border-white/30 backdrop-blur-xs">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
-                <span>{language === 'ar' ? 'الرسم العثماني وصوت الشيخ مشاري العفاسي' : 'Rasm Utsmani & Audio Syekh Misyari'}</span>
-              </span>
+          {/* Left Column: Heading & Primary Actions */}
+          <div className="lg:col-span-7 space-y-5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-900/80 text-emerald-200 text-xs font-semibold rounded-full border border-emerald-700/60">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span>{t.standardBadge} • Rasm Utsmani Madinah</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl font-black font-display text-white leading-tight tracking-tight">
-              {t.heroTitle} <span className="text-[#F59E0B] underline decoration-wavy decoration-black">{t.heroTitleHighlight}</span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-display leading-tight tracking-tight">
+              {t.heroTitle} <span className="text-amber-400">{t.heroTitleHighlight}</span>
             </h1>
 
             {/* Value Proposition */}
-            <p className="text-sm sm:text-base text-emerald-100 font-medium leading-relaxed max-w-xl">
+            <p className="text-sm sm:text-base text-emerald-100/90 font-normal leading-relaxed max-w-xl">
               {t.heroDesc}
             </p>
 
-            {/* SCROLL TO ACTION BUTTONS */}
+            {/* Structured CTAs */}
             <div className="flex flex-wrap gap-3 pt-2">
-              {/* Action 1: Start Murojaah AI */}
               <button
                 onClick={() => onSelectTab('murojaah_ai')}
-                className="px-5 py-3.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000] group"
+                className="px-6 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm rounded-xl shadow-xs flex items-center gap-2.5 transition cursor-pointer"
               >
-                <Mic2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <Mic2 className="w-4 h-4" />
                 <span>{t.heroStartMurojaah}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              {/* Action 2: Tilawah Studio */}
-              <button
-                onClick={() => onSelectTab('tilawah')}
-                className="px-5 py-3.5 bg-[#10B981] hover:bg-[#059669] text-black font-black text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000]"
-              >
-                <Sparkles className="w-5 h-5 text-black" />
-                <span>{t.heroModeTilawah}</span>
-              </button>
-
-              {/* Action 3: Open Mushaf 30 Juz */}
               <button
                 onClick={() => onSelectTab('mushaf')}
-                className="px-4 py-3.5 bg-[#FFFDF7] hover:bg-white text-black font-black text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000]"
+                className="px-5 py-3.5 bg-white/10 hover:bg-white/15 text-white font-semibold text-sm rounded-xl border border-white/20 flex items-center gap-2 transition cursor-pointer"
               >
-                <BookOpen className="w-4 h-4 text-[#0B4627]" />
+                <BookOpen className="w-4 h-4 text-amber-300" />
                 <span>{t.heroOpenMushaf}</span>
-              </button>
-
-              {/* Action 4: Install App */}
-              <button
-                onClick={onOpenInstallModal}
-                className="px-4 py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-sm rounded-2xl border-2 border-black neo-button flex items-center gap-2 cursor-pointer shadow-[4px_4px_0px_0px_#000]"
-              >
-                <Download className="w-4 h-4 text-[#F59E0B]" />
-                <span>{t.heroInstallApk}</span>
               </button>
             </div>
 
-            {/* Micro Feature Highlights */}
-            <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-extrabold text-emerald-200">
+            {/* Evidence & Integrity Badges */}
+            <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-emerald-200/90 font-medium">
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#F59E0B]" /> {t.heroOfflineReady}
+                <CheckCircle2 className="w-4 h-4 text-amber-400" /> {t.heroOfflineReady}
               </span>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#F59E0B]" /> {t.heroZeroCost}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#F59E0B]" /> {t.standardBadge}
+                <CheckCircle2 className="w-4 h-4 text-amber-400" /> Audio Syekh Misyari Rasyid
               </span>
             </div>
           </div>
 
-          {/* Right Column: Live AI Interactive Preview Card (Slide in from Right + Float) */}
-          <div className="lg:col-span-5 animate-slide-right">
-            <div className="relative">
-              {/* Floating Badge */}
-              <div className="absolute -top-4 -right-2 z-20 px-3 py-1 bg-[#10B981] text-black font-black text-xs rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] animate-float flex items-center gap-1">
-                <Mic2 className="w-3.5 h-3.5 text-black" /> {t.heroLiveBadge}
-              </div>
-
-              {/* Interactive Showcase Card */}
-              <div className="bg-[#FFFDF7] text-black border-3 border-black rounded-3xl p-5 sm:p-6 shadow-[8px_8px_0px_0px_#111827] space-y-4 animate-emerge">
-                {/* Header */}
-                <div className="flex items-center justify-between border-b-2 border-dashed border-gray-300 pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-xl bg-[#0B4627] text-white flex items-center justify-center font-bold text-xs border border-black">
-                      AI
-                    </span>
-                    <div>
-                      <p className="font-extrabold text-xs text-black">Live Koreksi Tajwid AI</p>
-                      <p className="text-[10px] text-gray-500 font-bold">Surat Al-Fatihah : Ayat 1</p>
-                    </div>
+          {/* Right Column: Live Recitation Showcase Card */}
+          <div className="lg:col-span-5">
+            <div className="bg-white text-slate-900 border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-md space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-[#0B4627] flex items-center justify-center font-bold text-xs">
+                    <Mic2 className="w-4 h-4" />
                   </div>
-                  <span className="px-2 py-0.5 text-[10px] font-black bg-[#D1FAE5] text-[#0B4627] rounded border border-[#0B4627]">
-                    Skor: 94% (Mutqin)
-                  </span>
+                  <div>
+                    <p className="font-bold text-xs text-slate-900">Deteksi Tajwid Real-Time</p>
+                    <p className="text-[11px] text-slate-500">QS. Al-Fatihah : Ayat 1</p>
+                  </div>
                 </div>
-
-                {/* Ayat Demo Display */}
-                <div className="p-3 bg-[#F8F5EE] border-2 border-black rounded-2xl text-center">
-                  <p className="font-quran text-2xl text-emerald-950 font-bold leading-relaxed" dir="rtl">
-                    بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                  </p>
-                </div>
-
-                {/* Word by Word Highlighting Example */}
-                <div className="flex flex-wrap gap-1.5 justify-center" dir="rtl">
-                  <span className="px-2 py-1 bg-[#D1FAE5] text-[#064E3B] border border-[#0B4627] rounded-lg font-quran text-sm font-bold inline-flex items-center gap-1">
-                    بِسْمِ <CheckCircle2 className="w-3 h-3 text-green-700 inline" />
-                  </span>
-                  <span className="px-2 py-1 bg-[#D1FAE5] text-[#064E3B] border border-[#0B4627] rounded-lg font-quran text-sm font-bold inline-flex items-center gap-1">
-                    اللَّهِ <CheckCircle2 className="w-3 h-3 text-green-700 inline" />
-                  </span>
-                  <span className="px-2 py-1 bg-[#FEF3C7] text-[#92400E] border border-[#D97706] rounded-lg font-quran text-sm font-bold">
-                    الرَّحْمَٰنِ <span className="text-[9px] font-sans font-extrabold text-amber-700">Mad 2 Harakat</span>
-                  </span>
-                  <span className="px-2 py-1 bg-[#D1FAE5] text-[#064E3B] border border-[#0B4627] rounded-lg font-quran text-sm font-bold inline-flex items-center gap-1">
-                    الرَّحِيمِ <CheckCircle2 className="w-3 h-3 text-green-700 inline" />
-                  </span>
-                </div>
-
-                {/* Dialogue Adab */}
-                <div className="p-3 bg-[#D1FAE5] border border-[#0B4627] rounded-xl text-xs text-[#064E3B] font-bold flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#0B4627] shrink-0" />
-                  <i>"Maa Syaa Allah! Bacaan antum sangat merdu dan fasih, pertahankan panjang mad pada Ar-Rahman."</i>
-                </div>
-
-                {/* Quick Action Button inside preview */}
-                <button
-                  onClick={() => onSelectTab('murojaah_ai')}
-                  className="w-full py-2.5 bg-[#0B4627] text-white font-extrabold text-xs rounded-xl border-2 border-black neo-button cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <Zap className="w-3.5 h-3.5 text-[#F59E0B]" />
-                  <span>Coba Baca Sekarang (Gratis via Mic)</span>
-                </button>
+                <span className="px-2.5 py-0.5 text-[11px] font-bold bg-emerald-50 text-emerald-800 rounded-full border border-emerald-200">
+                  Akurasi 94%
+                </span>
               </div>
+
+              {/* Ayat Display */}
+              <div className="p-4 bg-[#FFFDF9] border border-amber-200/60 rounded-xl text-center">
+                <p className="font-quran text-2xl text-emerald-950 font-bold leading-loose" dir="rtl">
+                  بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                </p>
+              </div>
+
+              {/* Word Highlighting Breakdown */}
+              <div className="flex flex-wrap gap-1.5 justify-center" dir="rtl">
+                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-lg font-quran text-sm font-semibold inline-flex items-center gap-1">
+                  بِسْمِ <CheckCircle2 className="w-3 h-3 text-emerald-600 inline" />
+                </span>
+                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-lg font-quran text-sm font-semibold inline-flex items-center gap-1">
+                  اللَّهِ <CheckCircle2 className="w-3 h-3 text-emerald-600 inline" />
+                </span>
+                <span className="px-2.5 py-1 bg-amber-50 text-amber-950 border border-amber-200 rounded-lg font-quran text-sm font-semibold">
+                  الرَّحْمَٰنِ <span className="text-[9px] font-sans text-amber-700 font-bold">Mad 2 Harakat</span>
+                </span>
+                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-lg font-quran text-sm font-semibold inline-flex items-center gap-1">
+                  الرَّحِيمِ <CheckCircle2 className="w-3 h-3 text-emerald-600 inline" />
+                </span>
+              </div>
+
+              {/* Guide Feedback Note */}
+              <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl text-xs text-emerald-900 font-medium flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
+                <span>Pelafalan makhraj dan panjang mad terverifikasi tartil.</span>
+              </div>
+
+              <button
+                onClick={() => onSelectTab('murojaah_ai')}
+                className="w-full py-2.5 bg-[#0B4627] hover:bg-emerald-900 text-white font-semibold text-xs rounded-xl transition cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Mic2 className="w-3.5 h-3.5 text-amber-400" />
+                <span>Mulai Latihan Setoran Lisan</span>
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* QUICK SCROLL-TO-ACTION FEATURE CARDS (Cascade Fade-in Up) */}
+      {/* Feature Navigation Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        {/* Card 1: Murojaah AI */}
         <div
           onClick={() => onSelectTab('murojaah_ai')}
-          className="p-4 bg-white border-2 border-black rounded-2xl neo-box cursor-pointer animate-fade-up hover:bg-[#FEF3C7] transition-all"
+          className="p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-emerald-300 hover:shadow-sm transition"
         >
-          <div className="w-10 h-10 rounded-xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black mb-2 shadow-[2px_2px_0px_0px_#000]">
-            <Mic2 className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center mb-2.5 font-bold">
+            <Mic2 className="w-4 h-4" />
           </div>
-          <h4 className="font-extrabold text-sm text-black">Muroja'ah AI</h4>
-          <p className="text-[11px] text-gray-600 mt-0.5">Koreksi Suara & Tajwid</p>
+          <h4 className="font-bold text-sm text-slate-900">Muroja'ah AI</h4>
+          <p className="text-xs text-slate-500 mt-0.5">Koreksi Suara & Tajwid</p>
         </div>
 
-        {/* Card 2: Simai Tutup Mata */}
         <div
           onClick={() => onSelectTab('simai')}
-          className="p-4 bg-white border-2 border-black rounded-2xl neo-box cursor-pointer animate-fade-up delay-100 hover:bg-[#D1FAE5] transition-all"
+          className="p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-emerald-300 hover:shadow-sm transition"
         >
-          <div className="w-10 h-10 rounded-xl bg-[#0B4627] border-2 border-black flex items-center justify-center text-[#F59E0B] mb-2 shadow-[2px_2px_0px_0px_#000]">
-            <Volume2 className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-100 text-[#0B4627] flex items-center justify-center mb-2.5 font-bold">
+            <Volume2 className="w-4 h-4" />
           </div>
-          <h4 className="font-extrabold text-sm text-black">Mode Simai</h4>
-          <p className="text-[11px] text-gray-600 mt-0.5">Tutup Mata & Sambung Lisan</p>
+          <h4 className="font-bold text-sm text-slate-900">Mode Sima'an</h4>
+          <p className="text-xs text-slate-500 mt-0.5">Tutup Mata & Sambung Lisan</p>
         </div>
 
-        {/* Card 3: Sambung Ayat Game */}
         <div
           onClick={() => onSelectTab('challenge')}
-          className="p-4 bg-white border-2 border-black rounded-2xl neo-box cursor-pointer animate-fade-up delay-200 hover:bg-[#EDE9FE] transition-all"
+          className="p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-emerald-300 hover:shadow-sm transition"
         >
-          <div className="w-10 h-10 rounded-xl bg-[#9333EA] border-2 border-black flex items-center justify-center text-white mb-2 shadow-[2px_2px_0px_0px_#000]">
-            <Award className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-900 flex items-center justify-center mb-2.5 font-bold">
+            <Award className="w-4 h-4" />
           </div>
-          <h4 className="font-extrabold text-sm text-black">Game Tantangan</h4>
-          <p className="text-[11px] text-gray-600 mt-0.5">Uji Hafalan & Sambung Ayat</p>
+          <h4 className="font-bold text-sm text-slate-900">Game Sambung Ayat</h4>
+          <p className="text-xs text-slate-500 mt-0.5">Uji Kepekaan Hafalan</p>
         </div>
 
-        {/* Card 4: Waktu Shalat & Adzan */}
         <div
           onClick={() => onSelectTab('prayer')}
-          className="p-4 bg-white border-2 border-black rounded-2xl neo-box cursor-pointer animate-fade-up delay-300 hover:bg-[#FEF3C7] transition-all"
+          className="p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-emerald-300 hover:shadow-sm transition"
         >
-          <div className="w-10 h-10 rounded-xl bg-[#059669] border-2 border-black flex items-center justify-center text-white mb-2 shadow-[2px_2px_0px_0px_#000]">
-            <Compass className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-100 text-[#0B4627] flex items-center justify-center mb-2.5 font-bold">
+            <Compass className="w-4 h-4" />
           </div>
-          <h4 className="font-extrabold text-sm text-black">Waktu Shalat</h4>
-          <p className="text-[11px] text-gray-600 mt-0.5">Makassar & Auto Adzan</p>
+          <h4 className="font-bold text-sm text-slate-900">Jadwal Shalat</h4>
+          <p className="text-xs text-slate-500 mt-0.5">Waktu Akurat & Adzan</p>
         </div>
       </div>
     </section>

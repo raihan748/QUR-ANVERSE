@@ -167,69 +167,67 @@ export const AsbabunNuzulView: React.FC<AsbabunNuzulViewProps> = ({
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
-      {/* Header Hero Banner (Neobrutalism) */}
-      <div className="bg-[#FFFDF7] border-3 border-black rounded-3xl p-6 sm:p-8 shadow-[6px_6px_0px_0px_#111827] relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-[#0B4627]/5 rounded-full blur-2xl pointer-events-none" />
-        
+      {/* Header Hero Banner */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-6 sm:p-7 shadow-xs relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
-          <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0B4627] text-[#F59E0B] border-2 border-black rounded-xl text-xs font-black shadow-[2px_2px_0px_0px_#000]">
+          <div className="space-y-2.5 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-[#0B4627] dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800 rounded-xl text-xs font-semibold">
               <ScrollText className="w-4 h-4" />
               <span>{language === 'ar' ? 'أسباب النزول وتاريخ الوحي' : 'ASBABUN NUZUL & HISTORI WAHYU'}</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight leading-snug">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight leading-snug">
               {language === 'ar'
                 ? 'سياق نزول الآيات وتاريخ الرسالة المحمدية'
                 : 'Menyelami Konteks Historis & Sebab Turunnya Ayat'}
             </h1>
-            <p className="text-xs sm:text-sm font-semibold text-gray-700 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               Memahami Al-Qur'an secara utuh dari sudut pandang sejarah nuzul wahyu (610-632 M). 
-              Diperkaya riwayat shahih dari <strong className="text-black underline decoration-[#F59E0B]">Shahih Al-Bukhari</strong>,{' '}
-              <strong className="text-black underline decoration-[#F59E0B]">Shahih Muslim</strong>, dan ensiklopedia <strong className="text-black underline decoration-[#F59E0B]">Lubabun Nuqul</strong> karya Al-Hafizh As-Suyuthi.
+              Diperkaya riwayat shahih dari <strong className="text-slate-900 dark:text-white font-semibold">Shahih Al-Bukhari</strong>,{' '}
+              <strong className="text-slate-900 dark:text-white font-semibold">Shahih Muslim</strong>, dan ensiklopedia <strong className="text-slate-900 dark:text-white font-semibold">Lubabun Nuqul</strong> karya Al-Hafizh As-Suyuthi.
             </p>
           </div>
 
           {/* Stat Badges */}
           <div className="grid grid-cols-2 gap-3 w-full md:w-auto shrink-0 font-mono">
-            <div className="bg-[#FEF3C7] border-2 border-black rounded-2xl p-3 shadow-[3px_3px_0px_0px_#000] text-center">
-              <span className="text-2xl font-black text-black block">114</span>
-              <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wider">Surah Tertib Nuzul</span>
+            <div className="bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 rounded-xl p-3 text-center">
+              <span className="text-2xl font-bold text-slate-900 dark:text-white block">114</span>
+              <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Surah Tertib Nuzul</span>
             </div>
-            <div className="bg-[#DCFCE7] border-2 border-black rounded-2xl p-3 shadow-[3px_3px_0px_0px_#000] text-center">
-              <span className="text-2xl font-black text-[#0B4627] block">6</span>
-              <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wider">Era Kenabian</span>
+            <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 rounded-xl p-3 text-center">
+              <span className="text-2xl font-bold text-[#0B4627] dark:text-emerald-400 block">6</span>
+              <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Era Kenabian</span>
             </div>
           </div>
         </div>
 
         {/* View Mode Toggle: Riwayat Asbabun Nuzul vs Tertib Kronologis Nuzul */}
-        <div className="mt-6 pt-5 border-t-2 border-dashed border-gray-300 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex bg-[#E5E7EB] p-1 border-2 border-black rounded-2xl gap-1 shadow-[2px_2px_0px_0px_#000]">
+        <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200/80 dark:border-slate-700 rounded-xl gap-1">
             <button
               onClick={() => setActiveViewTab('asbab')}
-              className={`px-4 py-2 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-2 ${
                 activeViewTab === 'asbab'
-                  ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-                  : 'text-gray-700 hover:text-black'
+                  ? 'bg-[#0B4627] text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
               }`}
             >
               <ScrollText className="w-4 h-4" />
               <span>{language === 'ar' ? 'أسباب النزول الصحيحة' : 'Katalog Asbabun Nuzul'}</span>
-              <span className="bg-[#F59E0B] text-black text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">
+              <span className="bg-amber-400 text-slate-950 text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">
                 {allAsbabRecords.length}
               </span>
             </button>
             <button
               onClick={() => setActiveViewTab('chronology')}
-              className={`px-4 py-2 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer flex items-center gap-2 ${
                 activeViewTab === 'chronology'
-                  ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-                  : 'text-gray-700 hover:text-black'
+                  ? 'bg-[#0B4627] text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
               }`}
             >
               <Clock className="w-4 h-4" />
               <span>{language === 'ar' ? 'الترتيب الزمني لنزول السور' : '114 Kronologi Nuzul Wahyu'}</span>
-              <span className="bg-white text-black text-[10px] px-1.5 py-0.2 rounded font-mono font-bold border border-black">
+              <span className="bg-white text-slate-900 text-[10px] px-1.5 py-0.2 rounded font-mono font-bold border border-slate-200">
                 114
               </span>
             </button>
@@ -237,18 +235,18 @@ export const AsbabunNuzulView: React.FC<AsbabunNuzulViewProps> = ({
 
           {/* Quick Search */}
           <div className="relative flex-1 min-w-[240px] max-w-md">
-            <Search className="w-4 h-4 text-gray-500 absolute left-3.5 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari surah, peristiwa, atau perawi hadits..."
-              className="w-full pl-10 pr-4 py-2 bg-white border-2 border-black rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#0B4627] shadow-[2px_2px_0px_0px_#000]"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-2.5 text-gray-400 hover:text-black flex items-center justify-center"
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer"
                 aria-label="Hapus pencarian"
               >
                 <X className="w-3.5 h-3.5" />
@@ -261,14 +259,14 @@ export const AsbabunNuzulView: React.FC<AsbabunNuzulViewProps> = ({
       {/* 6 Prophetic Eras Filter Bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
-          <span className="text-xs font-black text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
-            <Filter className="w-3.5 h-3.5 text-[#0B4627]" />
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <Filter className="w-3.5 h-3.5 text-[#0B4627] dark:text-emerald-400" />
             Pilih Era Kenabian (Tahun Wahyu):
           </span>
           {selectedEra !== 'ALL' && (
             <button
               onClick={() => setSelectedEra('ALL')}
-              className="text-[11px] font-bold text-[#0B4627] hover:underline cursor-pointer"
+              className="text-[11px] font-medium text-[#0B4627] dark:text-emerald-400 hover:underline cursor-pointer"
             >
               Reset ke Semua Era
             </button>
@@ -282,22 +280,22 @@ export const AsbabunNuzulView: React.FC<AsbabunNuzulViewProps> = ({
               <button
                 key={era.id}
                 onClick={() => setSelectedEra(era.id)}
-                className={`p-2.5 rounded-2xl border-2 border-black text-left transition-all cursor-pointer flex flex-col justify-between ${
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                   isSelected
-                    ? 'bg-[#0B4627] text-white shadow-[3px_3px_0px_0px_#000] -translate-y-0.5'
-                    : 'bg-white hover:bg-amber-50 text-gray-900 shadow-[2px_2px_0px_0px_#111827]'
+                    ? 'bg-[#0B4627] text-white border-[#0B4627] shadow-xs'
+                    : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-900 dark:text-white border-slate-200/80 dark:border-slate-800'
                 }`}
               >
                 <div>
-                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border border-black inline-block mb-1 ${
-                    isSelected ? 'bg-[#F59E0B] text-black' : era.badgeColor
+                  <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded border inline-block mb-1 ${
+                    isSelected ? 'bg-amber-400 text-slate-950 border-amber-500' : `${era.badgeColor} border-slate-200`
                   }`}>
                     {era.location}
                   </span>
-                  <p className="text-xs font-black leading-tight truncate">{era.nameId}</p>
+                  <p className="text-xs font-semibold leading-tight truncate">{era.nameId}</p>
                 </div>
-                <p className={`text-[9px] font-semibold mt-1 truncate ${
-                  isSelected ? 'text-amber-200' : 'text-gray-500'
+                <p className={`text-[9px] mt-1 truncate ${
+                  isSelected ? 'text-emerald-200' : 'text-slate-400'
                 }`}>
                   {era.period}
                 </p>
@@ -311,16 +309,16 @@ export const AsbabunNuzulView: React.FC<AsbabunNuzulViewProps> = ({
       {activeViewTab === 'asbab' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-black text-gray-700">
-              Menampilkan <strong className="text-black">{filteredAsbab.length}</strong> riwayat Asbabun Nuzul
+            <span className="text-xs text-slate-500">
+              Menampilkan <strong className="text-slate-900 dark:text-white">{filteredAsbab.length}</strong> riwayat Asbabun Nuzul
             </span>
           </div>
 
           {filteredAsbab.length === 0 ? (
-            <div className="bg-white border-3 border-black rounded-3xl p-10 text-center shadow-[4px_4px_0px_0px_#111827] space-y-3">
-              <ScrollText className="w-12 h-12 text-gray-400 mx-auto" />
-              <h3 className="text-base font-black text-gray-900">Tidak ada riwayat yang cocok</h3>
-              <p className="text-xs text-gray-600 max-w-sm mx-auto">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-10 text-center shadow-xs space-y-3">
+              <ScrollText className="w-10 h-10 text-slate-300 mx-auto" />
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Tidak ada riwayat yang cocok</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
                 Coba ubah kata kunci pencarian atau pilih era kenabian lainnya.
               </p>
               <button
@@ -328,7 +326,7 @@ export const AsbabunNuzulView: React.FC<AsbabunNuzulViewProps> = ({
                   setSearchQuery('');
                   setSelectedEra('ALL');
                 }}
-                className="px-4 py-2 bg-[#0B4627] text-[#F59E0B] border-2 border-black rounded-xl text-xs font-black cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+                className="px-4 py-2 bg-[#0B4627] text-white rounded-xl text-xs font-semibold cursor-pointer shadow-xs"
               >
                 Tampilkan Semua Riwayat
               </button>
@@ -343,31 +341,31 @@ export const AsbabunNuzulView: React.FC<AsbabunNuzulViewProps> = ({
                 return (
                   <div
                     key={`${rec.surahNumber}-${rec.ayahStart}-${idx}`}
-                    className="bg-[#FFFDF7] border-3 border-black rounded-3xl p-5 shadow-[4px_4px_0px_0px_#111827] flex flex-col justify-between hover:translate-y-[-2px] transition-all"
+                    className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-emerald-300 transition-all"
                   >
                     <div className="space-y-3">
                       {/* Card Header: Surah & Badges */}
-                      <div className="flex items-start justify-between gap-3 border-b-2 border-black/10 pb-3">
+                      <div className="flex items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="w-6 h-6 rounded-lg bg-[#0B4627] text-[#F59E0B] border border-black text-[11px] font-black flex items-center justify-center font-mono">
+                            <span className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-[#0B4627] dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800 text-[11px] font-bold flex items-center justify-center font-mono">
                               {surahMeta.number}
                             </span>
-                            <h3 className="text-sm font-black text-gray-900">
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                               QS. {surahMeta.latinName} : {rec.ayahStart}{rec.ayahEnd !== rec.ayahStart ? `-${rec.ayahEnd}` : ''}
                             </h3>
                           </div>
-                          <p className="text-[11px] font-semibold text-gray-600">
+                          <p className="text-[11px] text-slate-500">
                             {surahMeta.meaning} • Wahyu Ke-{nuzulOrder}
                           </p>
                         </div>
 
                         <div className="text-right">
-                          <span className="font-quran text-lg font-bold text-[#0B4627] block">
+                          <span className="font-quran text-lg font-bold text-[#0B4627] dark:text-emerald-400 block">
                             {surahMeta.name}
                           </span>
-                          <span className={`text-[9px] font-black px-2 py-0.5 rounded border border-black inline-block mt-0.5 ${
-                            eraInfo?.badgeColor || 'bg-gray-100 text-gray-800'
+                          <span className={`text-[9px] font-semibold px-2 py-0.5 rounded border inline-block mt-0.5 ${
+                            eraInfo?.badgeColor ? `${eraInfo.badgeColor} border-slate-200` : 'bg-slate-100 text-slate-700 border-slate-200'
                           }`}>
                             {eraInfo?.nameId.split(' ')[0] || rec.historicalEra}
                           </span>
@@ -375,22 +373,22 @@ export const AsbabunNuzulView: React.FC<AsbabunNuzulViewProps> = ({
                       </div>
 
                       {/* Event Title */}
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-black text-[#0B4627] flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
+                      <div className="space-y-1.5">
+                        <h4 className="text-xs font-bold text-[#0B4627] dark:text-emerald-400 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                           {rec.title}
                         </h4>
-                        <p className="text-xs font-medium text-gray-800 leading-relaxed bg-white border border-black/20 rounded-xl p-3 shadow-inner">
+                        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 rounded-xl p-3">
                           "{rec.sababSummary}"
                         </p>
                       </div>
 
                       {/* Sanad / Narrator Box */}
-                      <div className="bg-[#FEF3C7]/60 border border-black/30 rounded-xl p-2.5 flex items-start gap-2">
-                        <ShieldCheck className="w-4 h-4 text-[#0B4627] shrink-0 mt-0.5" />
+                      <div className="bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/40 rounded-xl p-2.5 flex items-start gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                         <div>
-                          <span className="text-[10px] font-black text-gray-900 block">Riwayat & Takhrij Sanad:</span>
-                          <p className="text-[11px] font-bold text-gray-700">
+                          <span className="text-[10px] font-semibold text-slate-900 dark:text-white block">Riwayat & Takhrij Sanad:</span>
+                          <p className="text-[11px] text-slate-600 dark:text-slate-300">
                             {rec.sanadNarrator}
                           </p>
                         </div>
@@ -398,20 +396,20 @@ export const AsbabunNuzulView: React.FC<AsbabunNuzulViewProps> = ({
                     </div>
 
                     {/* Card Actions */}
-                    <div className="pt-4 mt-3 border-t-2 border-black/10 flex items-center justify-between gap-2">
+                    <div className="pt-4 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
                       <button
                         onClick={() => onNavigateToMushaf && onNavigateToMushaf(rec.surahNumber, rec.ayahStart)}
-                        className="flex-1 py-2 px-3 bg-white hover:bg-emerald-50 text-gray-900 border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5"
+                        className="flex-1 py-2 px-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-xs"
                       >
-                        <BookOpen className="w-3.5 h-3.5 text-[#0B4627]" />
+                        <BookOpen className="w-3.5 h-3.5 text-[#0B4627] dark:text-emerald-400" />
                         <span>Buka di Mushaf</span>
                       </button>
 
                       <button
                         onClick={() => onNavigateToMurojaah && onNavigateToMurojaah(rec.surahNumber, rec.ayahStart)}
-                        className="flex-1 py-2 px-3 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5"
+                        className="flex-1 py-2 px-3 bg-[#0B4627] hover:bg-[#07331b] text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-xs"
                       >
-                        <Mic className="w-3.5 h-3.5 text-black" />
+                        <Mic className="w-3.5 h-3.5 text-amber-300" />
                         <span>Uji Muroja'ah</span>
                       </button>
                     </div>
@@ -427,44 +425,44 @@ export const AsbabunNuzulView: React.FC<AsbabunNuzulViewProps> = ({
       {activeViewTab === 'chronology' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-black text-gray-700">
+            <span className="text-xs text-slate-500">
               Urutan Penurunan 114 Surah (Berdasarkan Riwayat Al-Hafizh As-Suyuthi dalam <em>Al-Itqan fi Ulumil Qur'an</em>)
             </span>
           </div>
 
-          <div className="bg-[#FFFDF7] border-3 border-black rounded-3xl p-5 shadow-[4px_4px_0px_0px_#111827]">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 shadow-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {chronologicalSurahs.map((item) => {
                 const eraInfo = ERAS.find((e) => e.id === item.era);
                 return (
                   <div
                     key={item.order}
-                    className="p-3 bg-white border-2 border-black rounded-2xl flex items-center justify-between gap-2 shadow-[2px_2px_0px_0px_#000] hover:bg-amber-50 transition-all"
+                    className="p-3 bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/80 rounded-xl flex items-center justify-between gap-2 hover:border-emerald-300 transition-all"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-[#0B4627] text-[#F59E0B] border-2 border-black flex flex-col items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-[#0B4627] text-amber-300 flex flex-col items-center justify-center shrink-0">
                         <span className="text-[7px] font-bold uppercase leading-none">WAHYU</span>
-                        <span className="text-xs font-black font-mono leading-none">#{item.order}</span>
+                        <span className="text-xs font-bold font-mono leading-none">#{item.order}</span>
                       </div>
                       <div className="truncate">
-                        <p className="text-xs font-black text-gray-900 truncate">
+                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                           {item.meta.latinName}
                         </p>
-                        <p className="text-[10px] font-semibold text-gray-600">
+                        <p className="text-[10px] text-slate-500">
                           Surah #{item.meta.number} • {item.meta.ayahCount} Ayat
                         </p>
                       </div>
                     </div>
 
                     <div className="text-right shrink-0">
-                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border border-black block mb-1 ${
-                        eraInfo?.badgeColor || 'bg-gray-100 text-gray-800'
+                      <span className={`text-[8px] font-semibold px-1.5 py-0.5 rounded border block mb-1 ${
+                        eraInfo?.badgeColor ? `${eraInfo.badgeColor} border-slate-200` : 'bg-slate-100 text-slate-700 border-slate-200'
                       }`}>
                         {item.meta.revelationPlace}
                       </span>
                       <button
                         onClick={() => onNavigateToMushaf && onNavigateToMushaf(item.meta.number)}
-                        className="text-[10px] font-black text-[#0B4627] hover:underline inline-flex items-center gap-0.5 cursor-pointer"
+                        className="text-[10px] font-semibold text-[#0B4627] dark:text-emerald-400 hover:underline inline-flex items-center gap-0.5 cursor-pointer"
                       >
                         Buka <ChevronRight className="w-3 h-3" />
                       </button>

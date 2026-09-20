@@ -31,7 +31,6 @@ import {
   Flame,
   Binary
 } from 'lucide-react';
-import { NeobrutalCard } from '../common/NeobrutalCard';
 import { useLanguage } from '../../context/LanguageContext';
 import { HealthWatchdogService, SystemHealthReport } from '../../services/healthWatchdogService';
 import { quranVault, QuranVaultStatus } from '../../services/quranVaultService';
@@ -299,54 +298,54 @@ export const FrontierResearchHub: React.FC = () => {
   const [hadithSurah, hadithAyah] = selectedHadithVerse.split(':').map(Number);
   const hadithResult = QuranHadithCrossGraph.getHadithsForAyah(hadithSurah, hadithAyah);
 
-  // Pillar 5 Qiraat
+  // Pillar 5 Qira'at
   const [qiraatSurah, qiraatAyah] = selectedQiraatKey.split(':').map(Number);
   const qiraatVariants = QiraatComparativeEngine.getVariantsForAyat(qiraatSurah, qiraatAyah);
 
   // Pillar 6 Concordance
   const [concSurah, concAyah] = selectedConcordanceAyah.split(':').map(Number);
-  const parallelVerse = MultilingualConcordanceEngine.getParallelVerse(concSurah, concAyah, [selectedConcordanceLang]);
+  const parallelVerse = MultilingualConcordanceEngine.getParallelVerse(concSurah, concAyah);
 
   return (
     <div className="space-y-6 pb-20 animate-fade-in">
       {/* 1. HERO HEADER */}
-      <div className="p-6 bg-gradient-to-br from-[#0B4627] via-[#06331D] to-black border-3 border-black rounded-3xl text-white shadow-[6px_6px_0px_0px_#111827] relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 rounded-full bg-[#10B981]/15 blur-3xl pointer-events-none"></div>
+      <div className="p-6 bg-gradient-to-br from-[#0B4627] via-[#06331D] to-[#042413] border border-emerald-800/80 rounded-3xl text-white shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none"></div>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-3 py-1 bg-[#F59E0B] text-black font-black text-xs rounded-xl border border-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="px-3 py-1 bg-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow-xs uppercase tracking-wider flex items-center gap-1.5">
                 <Cpu className="w-3.5 h-3.5" /> 16 FLAGSHIP ENGINES
               </span>
-              <span className="px-3 py-1 bg-black/60 text-[#34D399] font-mono text-xs rounded-xl border border-[#10B981] flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+              <span className="px-3 py-1 bg-emerald-950/80 text-emerald-300 font-mono text-xs rounded-xl border border-emerald-500/40 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 WATCHDOG & VAULT: 100% OPERATIONAL
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black font-display text-white tracking-wide">
+            <h1 className="text-2xl sm:text-3xl font-bold font-display text-white tracking-wide">
               {language === 'ar' ? 'مركز أبحاث الذكاء الاصطناعي والمحركات الـ ١٦' : 'Pusat Riset AI & 16 Engine Flagship AL-HUDA'}
             </h1>
-            <p className="text-emerald-100 text-xs sm:text-sm mt-1 max-w-2xl font-medium">
+            <p className="text-emerald-100/90 text-xs sm:text-sm mt-1 max-w-2xl font-normal">
               Mesin aktif dan terintegrasi penuh: 5 Model AI Frontier, Sistem Guardian Watchdog & Vault Anti-Deface, 
               9 Pilar Riset Al-Qur'an, dan Live Heavy Stress Test yang dapat Anda operasikan langsung detik ini!
             </p>
           </div>
 
           {/* Quick SLA Status Card */}
-          <div className="bg-black/50 p-3 rounded-2xl border-2 border-emerald-500/60 flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-emerald-900/80 border border-emerald-400 flex items-center justify-center text-emerald-300">
+          <div className="bg-emerald-950/60 p-3.5 rounded-2xl border border-emerald-600/40 flex items-center gap-3 shrink-0 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-emerald-900/80 border border-emerald-400/50 flex items-center justify-center text-emerald-300 shadow-xs">
               <Activity className="w-5 h-5 animate-pulse" />
             </div>
             <div className="font-mono text-xs">
-              <span className="text-gray-400 block text-[10px]">THROUGHPUT SLA:</span>
-              <span className="text-emerald-400 font-black text-sm">17,765 ops/sec</span>
+              <span className="text-emerald-300/70 block text-[10px] tracking-wider uppercase font-semibold">THROUGHPUT SLA:</span>
+              <span className="text-emerald-300 font-bold text-sm">17,765 ops/sec</span>
               <span className="text-[10px] text-amber-300 block">Latency: 59.94 µs/op</span>
             </div>
           </div>
         </div>
 
         {/* 4 Primary Hub Tabs */}
-        <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-emerald-800/80">
+        <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-emerald-800/60">
           {[
             { id: 'frontier', label: '5 Model Frontier AI', icon: Brain, count: '5 Model' },
             { id: 'guardian', label: 'Watchdog & Quran Vault', icon: ShieldCheck, count: '2 Guardian' },
@@ -359,16 +358,16 @@ export const FrontierResearchHub: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border-2 border-black font-black text-xs transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-semibold text-xs transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-[#F59E0B] text-black shadow-[3px_3px_0px_0px_#000] scale-102'
-                    : 'bg-[#06331D] text-white hover:bg-emerald-900 shadow-[2px_2px_0px_0px_#000]'
+                    ? 'bg-amber-500 text-slate-950 border border-amber-400 shadow-md font-bold'
+                    : 'bg-emerald-950/60 text-emerald-100 hover:bg-emerald-900/80 border border-emerald-800/60 shadow-xs'
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono ${
-                  isActive ? 'bg-black text-[#F59E0B]' : 'bg-black/50 text-emerald-300'
+                <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-medium ${
+                  isActive ? 'bg-slate-950 text-amber-300' : 'bg-black/40 text-emerald-300'
                 }`}>
                   {tab.count}
                 </span>
@@ -383,20 +382,20 @@ export const FrontierResearchHub: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Model 1: TinyML Neural Audio Classifier */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-3">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3.5">
               <div className="flex items-center justify-between">
-                <span className="px-2.5 py-1 bg-amber-100 text-amber-900 border border-amber-400 rounded-lg text-[10px] font-black uppercase">
+                <span className="px-2.5 py-1 bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-400/30 rounded-lg text-[10px] font-bold uppercase">
                   Frontier 1 • TinyML Audio
                 </span>
-                <span className="font-mono text-[11px] font-bold text-emerald-600">Latency &lt; 2µs</span>
+                <span className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Latency &lt; 2µs</span>
               </div>
-              <h3 className="font-black text-base text-gray-900">Neural MLP Lahn Classifier</h3>
-              <p className="text-xs text-gray-600">
+              <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">Neural MLP Lahn Classifier</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
                 Jaringan syaraf tiruan 3-lapisan terkuantisasi (13-dim MFCC) yang berjalan langsung di CPU browser Anda tanpa server untuk klasifikasi Lahn Jaliy & Khafiy.
               </p>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-700 block">Pilih Karakter Vektor Suara (MFCC):</label>
+                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block">Pilih Karakter Vektor Suara (MFCC):</label>
                 <div className="grid grid-cols-2 gap-1.5">
                   {[
                     { id: 'q', label: '/q/ Qalqalah' },
@@ -407,8 +406,10 @@ export const FrontierResearchHub: React.FC = () => {
                     <button
                       key={p.id}
                       onClick={() => setTinyMLPhonemeChoice(p.id as any)}
-                      className={`p-1.5 text-[11px] font-mono font-bold rounded-lg border border-black cursor-pointer ${
-                        tinyMLPhonemeChoice === p.id ? 'bg-[#0B4627] text-white' : 'bg-gray-100 text-gray-800'
+                      className={`p-1.5 text-[11px] font-mono font-medium rounded-lg border cursor-pointer transition-all ${
+                        tinyMLPhonemeChoice === p.id 
+                          ? 'bg-[#0B4627] text-amber-300 border-emerald-700 shadow-xs font-bold' 
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200'
                       }`}
                     >
                       {p.label}
@@ -419,43 +420,43 @@ export const FrontierResearchHub: React.FC = () => {
 
               <button
                 onClick={handleRunTinyMLTest}
-                className="w-full py-2 bg-[#0B4627] hover:bg-emerald-900 text-white font-black text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] cursor-pointer flex items-center justify-center gap-1.5 active:scale-98"
+                className="w-full py-2 bg-[#0B4627] hover:bg-[#07301a] text-amber-300 font-bold text-xs rounded-xl border border-emerald-700/60 shadow-xs cursor-pointer flex items-center justify-center gap-1.5 active:scale-98 transition-all"
               >
                 <Play className="w-3.5 h-3.5" /> Uji Inferensi Syaraf Sekarang
               </button>
 
               {tinyMLResult && (
-                <div className="p-2.5 bg-emerald-50 border border-emerald-400 rounded-xl text-xs space-y-1 font-mono">
+                <div className="p-2.5 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-300/80 dark:border-emerald-800 rounded-xl text-xs space-y-1 font-mono">
                   <div className="flex justify-between">
-                    <span>Prediksi Kategori:</span>
-                    <b className="text-emerald-800">{tinyMLResult.predictedClass}</b>
+                    <span className="text-slate-600 dark:text-slate-400">Prediksi Kategori:</span>
+                    <b className="text-emerald-800 dark:text-emerald-300">{tinyMLResult.predictedClass}</b>
                   </div>
                   <div className="flex justify-between">
-                    <span>Tingkat Keyakinan:</span>
-                    <b>{(tinyMLResult.confidenceScore * 100).toFixed(1)}%</b>
+                    <span className="text-slate-600 dark:text-slate-400">Tingkat Keyakinan:</span>
+                    <b className="text-slate-800 dark:text-slate-200">{(tinyMLResult.confidenceScore * 100).toFixed(1)}%</b>
                   </div>
-                  <div className="flex justify-between text-gray-500 text-[10px]">
+                  <div className="flex justify-between text-slate-500 text-[10px]">
                     <span>Waktu Eksekusi Live:</span>
-                    <span className="font-bold text-emerald-700">{tinyMLResult.executionLatencyUs.toFixed(2)} µs</span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-400">{tinyMLResult.executionLatencyUs.toFixed(2)} µs</span>
                   </div>
                 </div>
               )}
-            </NeobrutalCard>
+            </div>
 
             {/* Model 2: Breath Economy & Lung Capacity Optimizer */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-3">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3.5">
               <div className="flex items-center justify-between">
-                <span className="px-2.5 py-1 bg-sky-100 text-sky-900 border border-sky-400 rounded-lg text-[10px] font-black uppercase">
+                <span className="px-2.5 py-1 bg-sky-500/15 text-sky-900 dark:text-sky-300 border border-sky-400/30 rounded-lg text-[10px] font-bold uppercase">
                   Frontier 2 • Fisiologi
                 </span>
-                <span className="font-mono text-[11px] font-bold text-sky-600">Waqaf & Ibtida'</span>
+                <span className="font-mono text-[11px] font-bold text-sky-600 dark:text-sky-400">Waqaf & Ibtida'</span>
               </div>
-              <h3 className="font-black text-base text-gray-900">Breath Economy Optimizer</h3>
-              <p className="text-xs text-gray-600">
+              <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">Breath Economy Optimizer</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
                 Model kapasitas paru-paru santri saat tilawah panjang, mengantisipasi habis nafas dan memberikan rekomendasi waqaf jaiz tanpa merusak makna.
               </p>
               <div className="space-y-1.5 text-xs">
-                <div className="flex justify-between text-gray-700">
+                <div className="flex justify-between text-slate-700 dark:text-slate-300">
                   <span>Simulasi Durasi Suara:</span>
                   <span className="font-bold font-mono">{(breathSimDuration / 1000).toFixed(1)} detik</span>
                 </div>
@@ -468,44 +469,44 @@ export const FrontierResearchHub: React.FC = () => {
                   onChange={(e) => setBreathSimDuration(Number(e.target.value))}
                   className="w-full accent-[#0B4627]"
                 />
-                <div className="p-2 bg-sky-50 border border-sky-300 rounded-xl text-[11px] text-sky-900 space-y-1">
+                <div className="p-2.5 bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800 rounded-xl text-[11px] text-sky-900 dark:text-sky-200 space-y-1">
                   <div className="flex items-center gap-1.5 font-bold">
-                    <Sparkles className="w-3.5 h-3.5 text-sky-600" />
+                    <Sparkles className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                     <span>Cadangan Paru-paru: <b>{Math.max(0, Math.round((1 - breathSimDuration / 12500) * 100))}%</b></span>
                   </div>
                   {breathSimDuration > 8500 ? (
-                    <span className="text-red-600 font-bold flex items-center gap-1">
+                    <span className="text-red-600 dark:text-red-400 font-semibold flex items-center gap-1">
                       <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
                       <span>Nafas kritis! Sistem otomatis mengarahkan ke tanda Waqaf terdekat.</span>
                     </span>
                   ) : (
-                    <span className="text-emerald-700 font-bold flex items-center gap-1">
+                    <span className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                       <span>Ritme pernapasan stabil untuk 1 ayat penuh.</span>
                     </span>
                   )}
                 </div>
               </div>
-            </NeobrutalCard>
+            </div>
 
             {/* Model 3: Circadian Bio-Memory Spaced Repetition */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-3">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3.5">
               <div className="flex items-center justify-between">
-                <span className="px-2.5 py-1 bg-purple-100 text-purple-900 border border-purple-400 rounded-lg text-[10px] font-black uppercase">
+                <span className="px-2.5 py-1 bg-purple-500/15 text-purple-900 dark:text-purple-300 border border-purple-400/30 rounded-lg text-[10px] font-bold uppercase">
                   Frontier 3 • Neurosains
                 </span>
-                <span className="font-mono text-[11px] font-bold text-purple-600">FSRS Bio-Ritme</span>
+                <span className="font-mono text-[11px] font-bold text-purple-600 dark:text-purple-400">FSRS Bio-Ritme</span>
               </div>
-              <h3 className="font-black text-base text-gray-900">Circadian Memory Engine</h3>
-              <p className="text-xs text-gray-600">
+              <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">Circadian Memory Engine</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
                 Menghitung efisiensi konsolidasi memori hafalan Al-Qur'an berdasarkan jam biologis sirkadian santri (Golden Hour Ba'da Subuh).
               </p>
               <div className="space-y-2 text-xs">
-                <label className="text-gray-700 block font-bold">Pilih Jam Evaluasi Hafalan:</label>
+                <label className="text-slate-700 dark:text-slate-300 block font-semibold">Pilih Jam Evaluasi Hafalan:</label>
                 <select 
                   value={selectedCircadianHour}
                   onChange={(e) => setSelectedCircadianHour(Number(e.target.value))}
-                  className="w-full p-2 border-2 border-black rounded-xl bg-white text-xs font-bold"
+                  className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0B4627]"
                 >
                   <option value={5}>05:00 Pagi (Ba'da Subuh - Golden Hour)</option>
                   <option value={9}>09:00 Pagi (Waktu Dhuha)</option>
@@ -513,26 +514,26 @@ export const FrontierResearchHub: React.FC = () => {
                   <option value={18}>18:30 Petang (Ba'da Maghrib)</option>
                   <option value={22}>22:00 Malam (Menjelang Tidur)</option>
                 </select>
-                <div className="p-2.5 bg-purple-50 border border-purple-300 rounded-xl space-y-1">
-                  <div className="flex justify-between font-bold text-purple-900">
+                <div className="p-2.5 bg-purple-50/80 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-xl space-y-1">
+                  <div className="flex justify-between font-bold text-purple-900 dark:text-purple-200">
                     <span>Fase: {circadianInfo.phaseName}</span>
                     <span className="font-mono">x{circadianInfo.factor} Efisiensi</span>
                   </div>
-                  <p className="text-[11px] text-purple-800">{circadianInfo.cognitiveAdvantage}</p>
+                  <p className="text-[11px] text-purple-800 dark:text-purple-300 font-normal">{circadianInfo.cognitiveAdvantage}</p>
                 </div>
               </div>
-            </NeobrutalCard>
+            </div>
 
             {/* Model 4: 3D Anatomical Vocal Tract Coordinates */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-3">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3.5">
               <div className="flex items-center justify-between">
-                <span className="px-2.5 py-1 bg-emerald-100 text-emerald-900 border border-emerald-400 rounded-lg text-[10px] font-black uppercase">
+                <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-900 dark:text-emerald-300 border border-emerald-400/30 rounded-lg text-[10px] font-bold uppercase">
                   Frontier 4 • Anatomi 3D
                 </span>
-                <span className="font-mono text-[11px] font-bold text-emerald-600">Koordinat X,Y,Z</span>
+                <span className="font-mono text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Koordinat X,Y,Z</span>
               </div>
-              <h3 className="font-black text-base text-gray-900">Vocal Tract 3D Makhraj</h3>
-              <p className="text-xs text-gray-600">
+              <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">Vocal Tract 3D Makhraj</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
                 Peta koordinat geometris 3D organ bicara (Halq, Lisan, Syafatain, Khaisyum) untuk panduan visual titik sentuh lidah dan langit-langit.
               </p>
               <div className="space-y-2 text-xs">
@@ -541,8 +542,10 @@ export const FrontierResearchHub: React.FC = () => {
                     <button
                       key={char}
                       onClick={() => updateMakhrajLetter(char)}
-                      className={`w-7 h-7 rounded-lg font-arabic font-black border border-black cursor-pointer transition-transform ${
-                        selectedLetterMakhraj === char ? 'bg-[#0B4627] text-white scale-110' : 'bg-gray-100 hover:bg-gray-200'
+                      className={`w-7 h-7 rounded-lg font-arabic font-bold border cursor-pointer transition-all ${
+                        selectedLetterMakhraj === char 
+                          ? 'bg-[#0B4627] text-amber-300 border-emerald-700 shadow-xs scale-105' 
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200'
                       }`}
                     >
                       {char}
@@ -550,49 +553,49 @@ export const FrontierResearchHub: React.FC = () => {
                   ))}
                 </div>
                 {makhraj3DInfo && (
-                  <div className="p-2.5 bg-emerald-50 border border-emerald-400 rounded-xl text-[11px] font-mono space-y-1">
-                    <div>Huruf: <b>{makhraj3DInfo.letterName}</b> ({makhraj3DInfo.makhrajRegion})</div>
+                  <div className="p-2.5 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-[11px] font-mono space-y-1">
+                    <div>Huruf: <b className="text-emerald-800 dark:text-emerald-300">{makhraj3DInfo.letterName}</b> ({makhraj3DInfo.makhrajRegion})</div>
                     <div>Skor Keselarasan: <b>{makhraj3DInfo.similarityScore}%</b></div>
-                    <div className="text-gray-700 text-[10px] font-sans">{makhraj3DInfo.anatomicalFeedback}</div>
+                    <div className="text-slate-600 dark:text-slate-400 text-[10px] font-sans">{makhraj3DInfo.anatomicalFeedback}</div>
                   </div>
                 )}
               </div>
-            </NeobrutalCard>
+            </div>
 
             {/* Model 5: Zero-Internet WebRTC Halaqah Mesh */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-3">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3.5">
               <div className="flex items-center justify-between">
-                <span className="px-2.5 py-1 bg-rose-100 text-rose-900 border border-rose-400 rounded-lg text-[10px] font-black uppercase">
+                <span className="px-2.5 py-1 bg-rose-500/15 text-rose-900 dark:text-rose-300 border border-rose-400/30 rounded-lg text-[10px] font-bold uppercase">
                   Frontier 5 • P2P Mesh
                 </span>
-                <span className="font-mono text-[11px] font-bold text-rose-600">Offline P2P</span>
+                <span className="font-mono text-[11px] font-bold text-rose-600 dark:text-rose-400">Offline P2P</span>
               </div>
-              <h3 className="font-black text-base text-gray-900">Zero-Internet Halaqah Mesh</h3>
-              <p className="text-xs text-gray-600">
+              <h3 className="font-bold text-base text-slate-900 dark:text-slate-100">Zero-Internet Halaqah Mesh</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
                 Protokol sinkronisasi P2P WebRTC untuk santri di pesantren tanpa internet. Tetap dapat sima'an dan muroja'ah bersama via local Wi-Fi / hotspot.
               </p>
-              <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-xs space-y-2">
+              <div className="p-3 bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 rounded-xl text-xs space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-rose-900">Status Mesh Lokal:</span>
-                  <span className="px-2 py-0.5 bg-rose-600 text-white font-mono rounded text-[10px]">READY</span>
+                  <span className="font-bold text-rose-900 dark:text-rose-300">Status Mesh Lokal:</span>
+                  <span className="px-2 py-0.5 bg-rose-600 text-white font-mono rounded text-[10px] font-bold">READY</span>
                 </div>
-                <div className="flex justify-between text-[11px] text-gray-700">
+                <div className="flex justify-between text-[11px] text-slate-700 dark:text-slate-300">
                   <span>Santri Terhubung:</span>
-                  <span className="font-bold font-mono text-rose-900">{meshPeersCount} Santri</span>
+                  <span className="font-bold font-mono text-rose-900 dark:text-rose-300">{meshPeersCount} Santri</span>
                 </div>
                 <button
                   onClick={handleMeshSyncSim}
-                  className="w-full py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] rounded-lg border border-black cursor-pointer flex items-center justify-center gap-1.5"
+                  className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-[11px] rounded-xl border border-rose-500 cursor-pointer flex items-center justify-center gap-1.5 transition-colors shadow-xs"
                 >
                   <Share2 className="w-3.5 h-3.5" /> Uji Sinkronisasi Santri Baru
                 </button>
                 {meshSyncMessage && (
-                  <div className="p-1.5 bg-white border border-rose-400 rounded text-[10px] text-rose-800 font-mono">
+                  <div className="p-1.5 bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700 rounded-lg text-[10px] text-rose-800 dark:text-rose-300 font-mono">
                     {meshSyncMessage}
                   </div>
                 )}
               </div>
-            </NeobrutalCard>
+            </div>
           </div>
         </div>
       )}
@@ -602,80 +605,80 @@ export const FrontierResearchHub: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Guardian 1: Autonomous HealthWatchdog */}
-            <NeobrutalCard className="p-5 bg-[#FFFDF7] border-3 border-black space-y-4">
-              <div className="flex items-center justify-between border-b-2 border-black pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-[#0B4627] text-white flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_0px_#000]">
-                    <Activity className="w-5 h-5 text-emerald-300 animate-pulse" />
+            <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-200/60 dark:border-emerald-800/60 shadow-xs">
+                    <Activity className="w-5 h-5 animate-pulse" />
                   </div>
                   <div>
-                    <h3 className="font-black text-lg text-gray-900">Autonomous HealthWatchdog</h3>
-                    <p className="text-xs text-gray-500">Self-Healing Runtime, Storage Sanity & Zero-Crash Interceptor</p>
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white">Autonomous HealthWatchdog</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Self-Healing Runtime, Storage Sanity & Zero-Crash Interceptor</p>
                   </div>
                 </div>
-                <span className="px-3 py-1 bg-emerald-100 text-emerald-800 font-mono text-xs font-black rounded-xl border border-emerald-500">
+                <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-mono text-xs font-bold rounded-xl border border-emerald-200/80 dark:border-emerald-800/70">
                   {healthReport?.status || 'OPTIMAL'}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3 bg-gray-50 border-2 border-black rounded-xl">
-                  <span className="text-gray-500 block text-[10px]">STORAGE SANITY:</span>
-                  <b className="text-emerald-700 text-sm">{healthReport?.storageSanity.healthy ? '100% Valid & Aman' : 'Perlu Pemulihan'}</b>
-                  <span className="text-[10px] text-gray-500 block mt-1">{healthReport?.storageSanity.totalKeysChecked} Kunci Terverifikasi</span>
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 rounded-2xl">
+                  <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-bold uppercase tracking-wider">STORAGE SANITY</span>
+                  <b className="text-emerald-600 dark:text-emerald-400 text-sm font-bold block mt-0.5">{healthReport?.storageSanity.healthy ? '100% Valid & Aman' : 'Perlu Pemulihan'}</b>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-1">{healthReport?.storageSanity.totalKeysChecked} Kunci Terverifikasi</span>
                 </div>
-                <div className="p-3 bg-gray-50 border-2 border-black rounded-xl">
-                  <span className="text-gray-500 block text-[10px]">AUDIO SUBSYSTEM:</span>
-                  <b className="text-emerald-700 text-sm">60 FPS Decibel Meter</b>
-                  <span className="text-[10px] text-gray-500 block mt-1">AudioContext: {healthReport?.audioRuntime.audioContextState || 'Running'}</span>
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 rounded-2xl">
+                  <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-bold uppercase tracking-wider">AUDIO SUBSYSTEM</span>
+                  <b className="text-emerald-600 dark:text-emerald-400 text-sm font-bold block mt-0.5">60 FPS Decibel Meter</b>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-1">AudioContext: {healthReport?.audioRuntime.audioContextState || 'Running'}</span>
                 </div>
               </div>
 
               <button
                 onClick={handleSelfHeal}
                 disabled={isHealingStorage}
-                className="w-full py-3 bg-[#0B4627] hover:bg-emerald-900 text-white font-black text-xs rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs rounded-2xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <RefreshCw className={`w-4 h-4 ${isHealingStorage ? 'animate-spin' : ''}`} />
                 {isHealingStorage ? 'Memeriksa & Memulihkan Sistem...' : 'Jalankan Diagnostik & Auto-Repair Storage'}
               </button>
 
               {healResult && (
-                <div className="p-3 bg-emerald-100 border border-emerald-600 rounded-xl text-xs text-emerald-900 font-medium animate-fade-in flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl text-xs text-emerald-900 dark:text-emerald-300 font-medium animate-fade-in flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>Pemeriksaan Selesai: <b>{healResult.checked} kunci</b> diverifikasi, <b>{healResult.repaired} korupsi</b> dipulihkan otomatis ke baseline resmi.</span>
                 </div>
               )}
-            </NeobrutalCard>
+            </div>
 
             {/* Guardian 2: Cryptographic Quran Vault */}
-            <NeobrutalCard className="p-5 bg-[#FFFDF7] border-3 border-black space-y-4">
-              <div className="flex items-center justify-between border-b-2 border-black pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500 text-black flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_0px_#000]">
+            <div className="p-6 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-200/60 dark:border-amber-800/60 shadow-xs">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-black text-lg text-gray-900">Cryptographic Quran Vault</h3>
-                    <p className="text-xs text-gray-500">SHA-256 Merkle Ledger & Anti-Deface Audit (6.236 Ayat)</p>
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white">Cryptographic Quran Vault</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">SHA-256 Merkle Ledger & Anti-Deface Audit (6.236 Ayat)</p>
                   </div>
                 </div>
-                <span className="px-3 py-1 bg-black text-[#10B981] font-mono text-xs font-black rounded-xl border border-[#10B981]">
+                <span className="px-2.5 py-1 bg-slate-900 text-emerald-400 font-mono text-xs font-bold rounded-xl border border-emerald-500/30">
                   LOCKED
                 </span>
               </div>
 
-              <div className="p-3 bg-black text-emerald-400 font-mono text-xs rounded-xl border-2 border-black space-y-1">
+              <div className="p-3.5 bg-slate-950 text-emerald-400 font-mono text-xs rounded-2xl border border-slate-800 space-y-1.5">
                 <div className="flex justify-between text-[11px]">
-                  <span>GENESIS HASH ROOT:</span>
+                  <span className="text-slate-400">GENESIS HASH ROOT:</span>
                   <span className="text-amber-400 truncate max-w-[200px]">{vaultStatus?.masterMerkleRoot || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}</span>
                 </div>
                 <div className="flex justify-between text-[11px]">
-                  <span>TOTAL AYAT TERVERIFIKASI:</span>
-                  <span>{vaultStatus?.totalVersesChecked || 6236} / 6.236 (100%)</span>
+                  <span className="text-slate-400">TOTAL AYAT TERVERIFIKASI:</span>
+                  <span className="text-slate-200">{vaultStatus?.totalVersesChecked || 6236} / 6.236 (100%)</span>
                 </div>
                 <div className="flex justify-between text-[11px]">
-                  <span>STATUS ANOMALI / DEFACE:</span>
+                  <span className="text-slate-400">STATUS ANOMALI / DEFACE:</span>
                   <span className="text-emerald-400 font-bold">0 Pelanggaran (Murni Rasm Utsmani)</span>
                 </div>
               </div>
@@ -683,16 +686,16 @@ export const FrontierResearchHub: React.FC = () => {
               <button
                 onClick={handleAuditVaultLive}
                 disabled={isAuditingVault}
-                className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-black font-black text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold text-xs rounded-2xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <Lock className={`w-4 h-4 ${isAuditingVault ? 'animate-spin' : ''}`} />
                 {isAuditingVault ? 'Mengaudit Merkle Ledger...' : 'Audit Ulang Merkle Ledger (6.236 Ayat)'}
               </button>
 
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Setiap ayat dan kata Al-Qur'an dilindungi secara kriptografis menggunakan rantai hash SHA-256. Jika terdapat manipulasi teks pada memory atau database lokal, Vault akan mendeteksi dan mengembalikan teks murni seketika.
               </p>
-            </NeobrutalCard>
+            </div>
           </div>
         </div>
       )}
@@ -700,70 +703,70 @@ export const FrontierResearchHub: React.FC = () => {
       {/* 4. TAB 3: 9 PILAR RISET AL-QUR'AN */}
       {activeTab === 'pillars' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {/* Pilar 1: Syntactic I'rab Nahwu Sharaf Engine */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-2.5">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-emerald-400 rounded text-[10px] font-black uppercase">
+                <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60 rounded-lg text-[10px] font-bold uppercase">
                   Pilar 1 • Nahwu Sharaf
                 </span>
-                <span className="font-mono text-[10px] text-emerald-700 font-bold">Live Parser</span>
+                <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Live Parser</span>
               </div>
-              <h4 className="font-black text-sm text-gray-900">Syntactic I'rab Dependency Parser</h4>
-              <p className="text-xs text-gray-600">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white">Syntactic I'rab Dependency Parser</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Urai struktur nahwu-sharaf (Mubtada', Khabar, Jar-Majrur, Na'at) secara otomatis per-kata.
               </p>
 
-              <div className="space-y-2 text-xs">
-                <label className="text-[11px] font-bold text-gray-700 block">Pilih Ayat Uji I'rab:</label>
+              <div className="space-y-2.5 text-xs">
+                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block">Pilih Ayat Uji I'rab:</label>
                 <select 
                   value={selectedIrabKey}
                   onChange={(e) => setSelectedIrabKey(e.target.value)}
-                  className="w-full p-2 border-2 border-black rounded-xl bg-white text-xs font-bold"
+                  className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20"
                 >
                   <option value="1:1">QS. Al-Fatihah: 1 (بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ)</option>
                   <option value="1:2">QS. Al-Fatihah: 2 (الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ)</option>
                   <option value="112:1">QS. Al-Ikhlas: 1 (قُلْ هُوَ اللَّهُ أَحَدٌ)</option>
                 </select>
 
-                <div className="p-2.5 bg-emerald-50 border border-emerald-300 rounded-xl space-y-2">
-                  <div className="font-bold text-emerald-900 text-xs">Pohon Sintaksis ({irabAnalysis.words.length} Kata):</div>
+                <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/50 rounded-2xl space-y-2">
+                  <div className="font-bold text-emerald-900 dark:text-emerald-200 text-xs">Pohon Sintaksis ({irabAnalysis.words.length} Kata):</div>
                   <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                     {irabAnalysis.words.map((w, idx) => (
-                      <div key={idx} className="p-1.5 bg-white border border-emerald-200 rounded-lg text-[11px]">
+                      <div key={idx} className="p-2 bg-white dark:bg-slate-800 border border-emerald-200/70 dark:border-slate-700 rounded-xl text-[11px] shadow-2xs">
                         <div className="flex justify-between items-center">
-                          <span className="font-arabic font-black text-sm text-emerald-950">{w.arabicWord}</span>
-                          <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-900 font-mono text-[9px] rounded font-bold">
+                          <span className="font-arabic font-bold text-base text-emerald-950 dark:text-emerald-200">{w.arabicWord}</span>
+                          <span className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-mono text-[9px] rounded-md font-bold">
                             {w.grammarRole} ({w.irabCase})
                           </span>
                         </div>
-                        <div className="text-[10px] text-gray-600 mt-0.5">{w.grammaticalExplanation}</div>
+                        <div className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5">{w.grammaticalExplanation}</div>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
-            </NeobrutalCard>
+            </div>
 
             {/* Pilar 2: Asmaul Husna Ontology Engine */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-2.5">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-400 rounded text-[10px] font-black uppercase">
+                <span className="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 rounded-lg text-[10px] font-bold uppercase">
                   Pilar 2 • Asmaul Husna
                 </span>
-                <span className="font-mono text-[10px] text-amber-700 font-bold">Fawashil Matrix</span>
+                <span className="font-mono text-[10px] text-amber-600 dark:text-amber-400 font-bold">Fawashil Matrix</span>
               </div>
-              <h4 className="font-black text-sm text-gray-900">99 Asmaul Husna Quranic Ontology</h4>
-              <p className="text-xs text-gray-600">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white">99 Asmaul Husna Quranic Ontology</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Peta relasi teologis kemunculan pasangan Nama-Nama Allah (Fawashil Al-Ayat) di seluruh Al-Qur'an.
               </p>
 
-              <div className="space-y-2 text-xs">
-                <label className="text-[11px] font-bold text-gray-700 block">Pilih Pasangan Nama Mulia:</label>
+              <div className="space-y-2.5 text-xs">
+                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block">Pilih Pasangan Nama Mulia:</label>
                 <select
                   value={selectedAsmaPairKey}
                   onChange={(e) => setSelectedAsmaPairKey(e.target.value)}
-                  className="w-full p-2 border-2 border-black rounded-xl bg-white text-xs font-bold"
+                  className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-amber-500/20"
                 >
                   <option value="aziz_hakim">العَزِيزُ الحَكِيمُ (Al-'Aziz Al-Hakim - 47x)</option>
                   <option value="ghafur_rahim">الغَفُورُ الرَّحِيمُ (Al-Ghafur Ar-Rahim - 72x)</option>
@@ -771,42 +774,42 @@ export const FrontierResearchHub: React.FC = () => {
                   <option value="ghaniyy_hamid">الغَنِيُّ الحَمِيدُ (Al-Ghaniyy Al-Hamid - 10x)</option>
                 </select>
 
-                <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-xl space-y-1.5">
+                <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 rounded-2xl space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-arabic text-base font-black text-amber-950">{pairedAsma.arabicText}</span>
-                    <span className="font-mono text-[10px] font-bold bg-amber-200 px-2 py-0.5 rounded text-amber-900">
+                    <span className="font-arabic text-base font-bold text-amber-950 dark:text-amber-200">{pairedAsma.arabicText}</span>
+                    <span className="font-mono text-[10px] font-bold bg-amber-100 dark:bg-amber-900/60 px-2 py-0.5 rounded-lg text-amber-900 dark:text-amber-200">
                       {pairedAsma.quranicFrequency}x Muncul
                     </span>
                   </div>
-                  <p className="text-[11px] text-amber-900">{pairedAsma.theologicalContext}</p>
+                  <p className="text-[11px] text-amber-900/90 dark:text-amber-200/90 leading-relaxed">{pairedAsma.theologicalContext}</p>
                   {pairedAsma.representativeAyat.length > 0 && (
-                    <div className="p-1.5 bg-white border border-amber-200 rounded text-[10px] text-gray-700 font-mono">
+                    <div className="p-2 bg-white dark:bg-slate-800 border border-amber-200/60 dark:border-slate-700 rounded-xl text-[10px] text-slate-700 dark:text-slate-300 font-mono">
                       Contoh: QS. {pairedAsma.representativeAyat[0].surahNumber}:{pairedAsma.representativeAyat[0].ayahNumber} «{pairedAsma.representativeAyat[0].arabicSnippet}»
                     </div>
                   )}
                 </div>
               </div>
-            </NeobrutalCard>
+            </div>
 
             {/* Pilar 3: Chronological Wahyu Revelation Engine */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-2.5">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 bg-sky-100 text-sky-900 border border-sky-400 rounded text-[10px] font-black uppercase">
+                <span className="px-2 py-0.5 bg-sky-50 dark:bg-sky-950/50 text-sky-800 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/60 rounded-lg text-[10px] font-bold uppercase">
                   Pilar 3 • Kronologi Wahyu
                 </span>
-                <span className="font-mono text-[10px] text-sky-700 font-bold">As-Suyuthi 114</span>
+                <span className="font-mono text-[10px] text-sky-600 dark:text-sky-400 font-bold">As-Suyuthi 114</span>
               </div>
-              <h4 className="font-black text-sm text-gray-900">Chronological Revelation Timeline</h4>
-              <p className="text-xs text-gray-600">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white">Chronological Revelation Timeline</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Rekonstruksi urutan turunnya surat (Tartib Nuzul) & Asbabun Nuzul historis.
               </p>
 
-              <div className="space-y-2 text-xs">
-                <label className="text-[11px] font-bold text-gray-700 block">Pilih Surat Al-Qur'an:</label>
+              <div className="space-y-2.5 text-xs">
+                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block">Pilih Surat Al-Qur'an:</label>
                 <select
                   value={selectedSurahWahyu}
                   onChange={(e) => setSelectedSurahWahyu(Number(e.target.value))}
-                  className="w-full p-2 border-2 border-black rounded-xl bg-white text-xs font-bold"
+                  className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-sky-500/20"
                 >
                   <option value={96}>QS. 96 Al-'Alaq (Wahyu Pertama di Hira)</option>
                   <option value={1}>QS. 1 Al-Fatihah (Pembuka Kitab)</option>
@@ -816,41 +819,41 @@ export const FrontierResearchHub: React.FC = () => {
                   <option value={110}>QS. 110 An-Nashr (Fathu Makkah & Ajal Nabi)</option>
                 </select>
 
-                <div className="p-2.5 bg-sky-50 border border-sky-300 rounded-xl space-y-1 text-xs">
-                  <div className="flex justify-between font-bold text-sky-900">
+                <div className="p-3 bg-sky-50/60 dark:bg-sky-950/30 border border-sky-200/80 dark:border-sky-800/50 rounded-2xl space-y-1.5 text-xs">
+                  <div className="flex justify-between font-bold text-sky-900 dark:text-sky-200">
                     <span>Nomor Mushaf: #{selectedSurahWahyu}</span>
                     <span className="font-mono">Urutan Nuzul: ke-{wahyuOrder}</span>
                   </div>
-                  <span className="text-[11px] text-sky-800 font-medium block">Periode: <b>{wahyuEra}</b></span>
+                  <span className="text-[11px] text-sky-800 dark:text-sky-300 font-medium block">Periode: <b>{wahyuEra}</b></span>
                   {asbabList.length > 0 && (
-                    <div className="mt-1.5 p-1.5 bg-white border border-sky-200 rounded text-[10px] text-gray-700">
-                      <b className="text-sky-900 block">{asbabList[0].title}</b>
+                    <div className="mt-1.5 p-2 bg-white dark:bg-slate-800 border border-sky-200/60 dark:border-slate-700 rounded-xl text-[10px] text-slate-700 dark:text-slate-300">
+                      <b className="text-sky-900 dark:text-sky-200 block mb-0.5">{asbabList[0].title}</b>
                       <span>{asbabList[0].sababSummary}</span>
                     </div>
                   )}
                 </div>
               </div>
-            </NeobrutalCard>
+            </div>
 
             {/* Pilar 4: Quran-Hadith Cross-Reference Graph */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-2.5">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 bg-purple-100 text-purple-900 border border-purple-400 rounded text-[10px] font-black uppercase">
+                <span className="px-2 py-0.5 bg-purple-50 dark:bg-purple-950/50 text-purple-800 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60 rounded-lg text-[10px] font-bold uppercase">
                   Pilar 4 • Hadits Shahih
                 </span>
-                <span className="font-mono text-[10px] text-purple-700 font-bold">Knowledge Graph</span>
+                <span className="font-mono text-[10px] text-purple-600 dark:text-purple-400 font-bold">Knowledge Graph</span>
               </div>
-              <h4 className="font-black text-sm text-gray-900">Quran-Hadith Cross Graph</h4>
-              <p className="text-xs text-gray-600">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white">Quran-Hadith Cross Graph</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Menghubungkan ayat Al-Qur'an dengan hadits tafsir dan sabab nuzul dari Shahih Bukhari & Muslim.
               </p>
 
-              <div className="space-y-2 text-xs">
-                <label className="text-[11px] font-bold text-gray-700 block">Pilih Ayat Terhubung:</label>
+              <div className="space-y-2.5 text-xs">
+                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block">Pilih Ayat Terhubung:</label>
                 <select
                   value={selectedHadithVerse}
                   onChange={(e) => setSelectedHadithVerse(e.target.value)}
-                  className="w-full p-2 border-2 border-black rounded-xl bg-white text-xs font-bold"
+                  className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-purple-500/20"
                 >
                   <option value="1:1">QS. Al-Fatihah: 1 (As-Sab'ul Matsani)</option>
                   <option value="2:255">QS. Al-Baqarah: 255 (Ayat Kursi Teragung)</option>
@@ -858,46 +861,46 @@ export const FrontierResearchHub: React.FC = () => {
                   <option value="110:1">QS. An-Nashr: 1 (Isyarat Ajal Rasulullah)</option>
                 </select>
 
-                <div className="p-2.5 bg-purple-50 border border-purple-300 rounded-xl space-y-1.5">
+                <div className="p-3 bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/80 dark:border-purple-800/50 rounded-2xl space-y-1.5">
                   {hadithResult.correlations.length > 0 ? (
                     <>
-                      <div className="flex justify-between items-center text-[10px] font-mono text-purple-900 font-bold">
+                      <div className="flex justify-between items-center text-[10px] font-mono text-purple-900 dark:text-purple-200 font-bold">
                         <span>{hadithResult.correlations[0].hadith.bookTitleLatin} #{hadithResult.correlations[0].hadith.hadithNumber}</span>
-                        <span className="px-1.5 py-0.5 bg-purple-200 rounded">SHAHIH</span>
+                        <span className="px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/60 rounded">SHAHIH</span>
                       </div>
-                      <p className="text-[11px] text-purple-950 font-medium italic">
+                      <p className="text-[11px] text-purple-950 dark:text-purple-200 font-medium italic leading-relaxed">
                         "{hadithResult.correlations[0].hadith.indonesianTranslation}"
                       </p>
-                      <div className="text-[10px] text-purple-800">
+                      <div className="text-[10px] text-purple-800 dark:text-purple-300">
                         Sanad: <b>{hadithResult.correlations[0].hadith.narratorCompanion}</b>
                       </div>
                     </>
                   ) : (
-                    <span className="text-gray-500">Tidak ada edge hadits langsung.</span>
+                    <span className="text-slate-500 dark:text-slate-400">Tidak ada edge hadits langsung.</span>
                   )}
                 </div>
               </div>
-            </NeobrutalCard>
+            </div>
 
             {/* Pilar 5: Comparative Qira'at 'Asyrah Engine */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-2.5">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 bg-rose-100 text-rose-900 border border-rose-400 rounded text-[10px] font-black uppercase">
+                <span className="px-2 py-0.5 bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/60 rounded-lg text-[10px] font-bold uppercase">
                   Pilar 5 • 10 Qira'at Mutawatir
                 </span>
-                <span className="font-mono text-[10px] text-rose-700 font-bold">10 Imam 20 Rawi</span>
+                <span className="font-mono text-[10px] text-rose-600 dark:text-rose-400 font-bold">10 Imam 20 Rawi</span>
               </div>
-              <h4 className="font-black text-sm text-gray-900">10 Mutawatir Qira'at Comparative</h4>
-              <p className="text-xs text-gray-600">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white">10 Mutawatir Qira'at Comparative</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Membandingkan ragam bacaan 10 Imam ('Ashim, Nafi', Hamzah, dll) pada ayat yang sama secara fonetik.
               </p>
 
-              <div className="space-y-2 text-xs">
-                <label className="text-[11px] font-bold text-gray-700 block">Pilih Ayat Varian Qira'at:</label>
+              <div className="space-y-2.5 text-xs">
+                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block">Pilih Ayat Varian Qira'at:</label>
                 <select
                   value={selectedQiraatKey}
                   onChange={(e) => setSelectedQiraatKey(e.target.value)}
-                  className="w-full p-2 border-2 border-black rounded-xl bg-white text-xs font-bold"
+                  className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-rose-500/20"
                 >
                   <option value="1:4">QS. 1:4 (Maaliki vs Maliki)</option>
                   <option value="2:9">QS. 2:9 (Yakhda'una vs Yukhadi'una)</option>
@@ -906,37 +909,37 @@ export const FrontierResearchHub: React.FC = () => {
 
                 <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                   {qiraatVariants.map((v, idx) => (
-                    <div key={idx} className="p-2 bg-rose-50 border border-rose-200 rounded-lg text-xs space-y-1">
+                    <div key={idx} className="p-2.5 bg-rose-50/60 dark:bg-rose-950/30 border border-rose-200/70 dark:border-rose-800/50 rounded-xl text-xs space-y-1">
                       <div className="flex justify-between items-center">
-                        <span className="font-bold text-rose-900 text-[11px]">{v.imamDisplayName}</span>
-                        <span className="font-arabic font-black text-base text-rose-950">{v.arabicLafadz}</span>
+                        <span className="font-bold text-rose-900 dark:text-rose-200 text-[11px]">{v.imamDisplayName}</span>
+                        <span className="font-arabic font-bold text-base text-rose-950 dark:text-rose-200">{v.arabicLafadz}</span>
                       </div>
-                      <div className="text-[10px] text-gray-700 font-mono">Kaidah: {v.phoneticRule}</div>
+                      <div className="text-[10px] text-slate-600 dark:text-slate-400 font-mono">Kaidah: {v.phoneticRule}</div>
                     </div>
                   ))}
                 </div>
               </div>
-            </NeobrutalCard>
+            </div>
 
             {/* Pilar 6: Multilingual Root Concordance */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-2.5">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 bg-teal-100 text-teal-900 border border-teal-400 rounded text-[10px] font-black uppercase">
+                <span className="px-2 py-0.5 bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border border-teal-200/80 dark:border-teal-800/60 rounded-lg text-[10px] font-bold uppercase">
                   Pilar 6 • Konkordansi Bahasa
                 </span>
-                <span className="font-mono text-[10px] text-teal-700 font-bold">10 Bahasa Dunia</span>
+                <span className="font-mono text-[10px] text-teal-600 dark:text-teal-400 font-bold">10 Bahasa Dunia</span>
               </div>
-              <h4 className="font-black text-sm text-gray-900">Multilingual Parallel Concordance</h4>
-              <p className="text-xs text-gray-600">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white">Multilingual Parallel Concordance</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Uji perbandingan terjemahan resmi Al-Qur'an dalam 10 bahasa dunia (ID, EN, MS, TR, FR, DE, RU, ES).
               </p>
 
-              <div className="space-y-2 text-xs">
-                <div className="grid grid-cols-2 gap-1.5">
+              <div className="space-y-2.5 text-xs">
+                <div className="grid grid-cols-2 gap-2">
                   <select
                     value={selectedConcordanceAyah}
                     onChange={(e) => setSelectedConcordanceAyah(e.target.value)}
-                    className="p-1.5 border border-black rounded-lg bg-white text-[11px] font-bold"
+                    className="p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800 text-[11px] font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-teal-500/20"
                   >
                     <option value="1:1">QS. Al-Fatihah: 1</option>
                     <option value="1:2">QS. Al-Fatihah: 2</option>
@@ -947,7 +950,7 @@ export const FrontierResearchHub: React.FC = () => {
                   <select
                     value={selectedConcordanceLang}
                     onChange={(e) => setSelectedConcordanceLang(e.target.value as any)}
-                    className="p-1.5 border border-black rounded-lg bg-white text-[11px] font-bold"
+                    className="p-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800 text-[11px] font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-teal-500/20"
                   >
                     <option value="id">Indonesia (Kemenag)</option>
                     <option value="en">English (Sahih Int.)</option>
@@ -958,44 +961,44 @@ export const FrontierResearchHub: React.FC = () => {
                   </select>
                 </div>
 
-                <div className="p-2.5 bg-teal-50 border border-teal-300 rounded-xl space-y-1">
-                  <span className="text-[10px] text-teal-800 font-bold block uppercase">
+                <div className="p-3 bg-teal-50/60 dark:bg-teal-950/30 border border-teal-200/80 dark:border-teal-800/50 rounded-2xl space-y-1">
+                  <span className="text-[10px] text-teal-800 dark:text-teal-300 font-bold block uppercase tracking-wider">
                     Terjemahan Terverifikasi ({selectedConcordanceLang.toUpperCase()}):
                   </span>
-                  <p className="text-xs text-teal-950 font-medium">
+                  <p className="text-xs text-teal-950 dark:text-teal-100 font-medium leading-relaxed">
                     "{parallelVerse.translations[selectedConcordanceLang] || 'Memuat terjemahan...'}"
                   </p>
                 </div>
               </div>
-            </NeobrutalCard>
+            </div>
 
             {/* Pilar 7: Earley Parser & QVM Bytecode Engine */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-2.5">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 bg-indigo-100 text-indigo-900 border border-indigo-400 rounded text-[10px] font-black uppercase">
+                <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60 rounded-lg text-[10px] font-bold uppercase">
                   Pilar 7 • Compiler & QVM
                 </span>
-                <span className="font-mono text-[10px] text-indigo-700 font-bold">50k ops/sec</span>
+                <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">50k ops/sec</span>
               </div>
-              <h4 className="font-black text-sm text-gray-900">Earley Parser & QVM Bytecode</h4>
-              <p className="text-xs text-gray-600">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white">Earley Parser & QVM Bytecode</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Kompilasi teks Al-Qur'an menjadi instruksi bytecode biner Quran Virtual Machine untuk pencocokan real-time.
               </p>
 
               <button
                 onClick={handleCompileQVM}
-                className="w-full py-2 bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-xs rounded-xl border border-black shadow-[2px_2px_0px_0px_#000] cursor-pointer flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-2xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <Binary className="w-3.5 h-3.5" /> Jalankan Kompilasi QVM Bytecode
               </button>
 
               {isQvmCompiled && (
-                <div className="p-2 bg-indigo-50 border border-indigo-300 rounded-xl text-[10px] font-mono text-indigo-900 space-y-1">
+                <div className="p-3 bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-800/50 rounded-2xl text-[10px] font-mono text-indigo-900 dark:text-indigo-200 space-y-1.5">
                   <div className="flex justify-between">
                     <span>Waktu Kompilasi:</span>
                     <b>{qvmExecutionTimeUs.toFixed(2)} µs</b>
                   </div>
-                  <div className="text-gray-600">
+                  <div className="text-slate-600 dark:text-slate-400">
                     0x00: OP_INIT_RASM 0x01<br/>
                     0x04: OP_ASSERT_GHUNNAH 2H<br/>
                     0x08: OP_MATCH_PHONEME [B-S-M]<br/>
@@ -1003,34 +1006,34 @@ export const FrontierResearchHub: React.FC = () => {
                   </div>
                 </div>
               )}
-            </NeobrutalCard>
+            </div>
 
             {/* Pilar 8: Sanad Transmission DAG */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-2.5">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-400 rounded text-[10px] font-black uppercase">
+                <span className="px-2 py-0.5 bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 rounded-lg text-[10px] font-bold uppercase">
                   Pilar 8 • Sanad & Rantai
                 </span>
-                <span className="font-mono text-[10px] text-amber-700 font-bold">Muttashil</span>
+                <span className="font-mono text-[10px] text-amber-600 dark:text-amber-400 font-bold">Muttashil</span>
               </div>
-              <h4 className="font-black text-sm text-gray-900">Sanad Transmission Graph (DAG)</h4>
-              <p className="text-xs text-gray-600">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white">Sanad Transmission Graph (DAG)</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Silsilah transmisi bacaan Al-Qur'an dari Rasulullah ﷺ ke Shahabat hingga Imam & Rawi.
               </p>
 
-              <div className="space-y-1.5 text-xs">
-                <label className="text-[11px] font-bold text-gray-700 block">Pilih Riwayat Transmisi:</label>
+              <div className="space-y-2.5 text-xs">
+                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 block">Pilih Riwayat Transmisi:</label>
                 <select
                   value={selectedSanadRiwayat}
                   onChange={(e) => setSelectedSanadRiwayat(e.target.value as any)}
-                  className="w-full p-2 border-2 border-black rounded-xl bg-white text-xs font-bold"
+                  className="w-full p-2.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-amber-500/20"
                 >
                   <option value="hafs">Hafs 'an 'Ashim (Standar Dunia Islam)</option>
                   <option value="warsh">Warsh 'an Nafi' (Afrika Utara & Maghribi)</option>
                   <option value="duri">Ad-Duri 'an Abi 'Amr (Sudan & Levant)</option>
                 </select>
 
-                <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-xl text-[10px] text-amber-900 font-mono space-y-1">
+                <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 rounded-2xl text-[10px] text-amber-900 dark:text-amber-200 font-mono space-y-1">
                   {selectedSanadRiwayat === 'hafs' && (
                     <>
                       <div>1. Rasulullah ﷺ</div>
@@ -1060,39 +1063,39 @@ export const FrontierResearchHub: React.FC = () => {
                   )}
                 </div>
               </div>
-            </NeobrutalCard>
+            </div>
 
             {/* Pilar 9: Zero-Knowledge Integrity Ledger */}
-            <NeobrutalCard className="p-4 bg-[#FFFDF7] border-3 border-black space-y-2.5">
+            <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-3">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 bg-gray-100 text-gray-900 border border-gray-400 rounded text-[10px] font-black uppercase">
+                <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg text-[10px] font-bold uppercase">
                   Pilar 9 • Kriptografi ZK
                 </span>
-                <span className="font-mono text-[10px] text-gray-700 font-bold">SHA-256 Proof</span>
+                <span className="font-mono text-[10px] text-slate-600 dark:text-slate-400 font-bold">SHA-256 Proof</span>
               </div>
-              <h4 className="font-black text-sm text-gray-900">Zero-Knowledge Tamper Ledger</h4>
-              <p className="text-xs text-gray-600">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-white">Zero-Knowledge Tamper Ledger</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Verifikasi matematika kriptografis yang membuktikan keaslian teks tanpa deface.
               </p>
 
               <button
                 onClick={handleRunZKProof}
-                className="w-full py-2 bg-gray-900 hover:bg-black text-white font-bold text-xs rounded-xl border border-black shadow-[2px_2px_0px_0px_#000] cursor-pointer flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-semibold text-xs rounded-2xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <Key className="w-3.5 h-3.5 text-amber-400" /> Hitung Bukti Hash Kriptografis
               </button>
 
               {zkProofResult && (
-                <div className="p-2 bg-gray-100 border border-gray-400 rounded-xl text-[10px] font-mono text-gray-900 space-y-1">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl text-[10px] font-mono text-slate-900 dark:text-slate-200 space-y-1">
                   <div className="flex justify-between">
                     <span>Status Verifikasi:</span>
-                    <b className="text-emerald-700">VALID (BEBAS DEFACE)</b>
+                    <b className="text-emerald-600 dark:text-emerald-400">VALID (BEBAS DEFACE)</b>
                   </div>
-                  <div className="truncate text-gray-600">Hash: {zkProofResult.hash}</div>
-                  <div className="text-gray-500">Waktu Verifikasi: {zkProofResult.durationMs.toFixed(2)} ms</div>
+                  <div className="truncate text-slate-600 dark:text-slate-400">Hash: {zkProofResult.hash}</div>
+                  <div className="text-slate-500">Waktu Verifikasi: {zkProofResult.durationMs.toFixed(2)} ms</div>
                 </div>
               )}
-            </NeobrutalCard>
+            </div>
           </div>
         </div>
       )}
@@ -1100,13 +1103,13 @@ export const FrontierResearchHub: React.FC = () => {
       {/* 5. TAB 4: LIVE IN-BROWSER HEAVY STRESS TEST RUNNER */}
       {activeTab === 'stress' && (
         <div className="space-y-6">
-          <NeobrutalCard className="p-6 bg-[#FFFDF7] border-3 border-black space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-black pb-4">
+          <div className="p-6 sm:p-7 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-xs space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
               <div>
-                <h3 className="font-black text-xl text-gray-900 flex items-center gap-2">
-                  <Zap className="w-6 h-6 text-[#F59E0B]" /> Live Heavy Stress Test & Benchmark Suite
+                <h3 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2.5">
+                  <Zap className="w-5 h-5 text-amber-500" /> Live Heavy Stress Test & Benchmark Suite
                 </h3>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                   Uji ketahanan 16 Engine langsung di peramban Anda: 10.000 paket suara, 2.000 inferensi linguistik, 10.000 inferensi TinyML, dan audit 6.236 ayat.
                 </p>
               </div>
@@ -1114,7 +1117,7 @@ export const FrontierResearchHub: React.FC = () => {
               <button
                 onClick={handleRunInBrowserStressTest}
                 disabled={isStressRunning}
-                className="px-6 py-3 bg-[#10B981] hover:bg-[#059669] text-white font-black text-sm rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_#000] active:scale-95 transition-all cursor-pointer flex items-center gap-2 shrink-0"
+                className="px-5 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs rounded-2xl shadow-xs active:scale-95 transition-all cursor-pointer flex items-center gap-2 shrink-0"
               >
                 <Play className={`w-4 h-4 ${isStressRunning ? 'animate-spin' : ''}`} />
                 {isStressRunning ? 'Menjalankan Stress Test...' : 'Jalankan Heavy Stress Test Sekarang'}
@@ -1123,14 +1126,14 @@ export const FrontierResearchHub: React.FC = () => {
 
             {/* Progress Bar */}
             {isStressRunning && (
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs font-bold font-mono">
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-semibold font-mono text-slate-700 dark:text-slate-300">
                   <span>Proses Pengujian Beban Berat:</span>
                   <span>{stressProgress}%</span>
                 </div>
-                <div className="w-full bg-gray-200 h-4 rounded-full border-2 border-black overflow-hidden p-0.5">
+                <div className="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full border border-slate-200 dark:border-slate-700 overflow-hidden p-0.5">
                   <div 
-                    className="bg-gradient-to-r from-emerald-500 to-[#F59E0B] h-full rounded-full transition-all duration-300"
+                    className="bg-linear-to-r from-emerald-500 to-amber-500 h-full rounded-full transition-all duration-300"
                     style={{ width: `${stressProgress}%` }}
                   ></div>
                 </div>
@@ -1140,29 +1143,29 @@ export const FrontierResearchHub: React.FC = () => {
             {/* Results Table */}
             {stressResults.length > 0 && (
               <div className="space-y-4 animate-fade-in">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left border-2 border-black rounded-xl overflow-hidden">
-                    <thead className="bg-[#0B4627] text-white font-black">
+                <div className="overflow-x-auto rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-[#042413] text-emerald-200 font-semibold border-b border-emerald-900/40">
                       <tr>
-                        <th className="p-3">Nama Engine / Modul</th>
-                        <th className="p-3 text-center">Operasi</th>
-                        <th className="p-3 text-center">Total Waktu</th>
-                        <th className="p-3 text-center">Latency per Op</th>
-                        <th className="p-3 text-center">Throughput</th>
-                        <th className="p-3 text-center">Status SLA</th>
+                        <th className="p-3.5">Nama Engine / Modul</th>
+                        <th className="p-3.5 text-center">Operasi</th>
+                        <th className="p-3.5 text-center">Total Waktu</th>
+                        <th className="p-3.5 text-center">Latency per Op</th>
+                        <th className="p-3.5 text-center">Throughput</th>
+                        <th className="p-3.5 text-center">Status SLA</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 font-mono">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono text-slate-800 dark:text-slate-200">
                       {stressResults.map((r, idx) => (
-                        <tr key={idx} className="hover:bg-emerald-50">
-                          <td className="p-3 font-sans font-bold text-gray-900">{r.name}</td>
-                          <td className="p-3 text-center">{r.ops.toLocaleString()} ops</td>
-                          <td className="p-3 text-center">{r.durationMs.toFixed(2)} ms</td>
-                          <td className="p-3 text-center text-emerald-700 font-bold">{r.latencyUs.toFixed(2)} µs</td>
-                          <td className="p-3 text-center font-bold">{r.throughput.toLocaleString()} ops/s</td>
-                          <td className="p-3 text-center">
-                            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 border border-emerald-500 rounded-lg text-[10px] font-black inline-flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                          <td className="p-3.5 font-sans font-bold text-slate-900 dark:text-white">{r.name}</td>
+                          <td className="p-3.5 text-center">{r.ops.toLocaleString()} ops</td>
+                          <td className="p-3.5 text-center">{r.durationMs.toFixed(2)} ms</td>
+                          <td className="p-3.5 text-center text-emerald-600 dark:text-emerald-400 font-bold">{r.latencyUs.toFixed(2)} µs</td>
+                          <td className="p-3.5 text-center font-bold">{r.throughput.toLocaleString()} ops/s</td>
+                          <td className="p-3.5 text-center">
+                            <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60 rounded-lg text-[10px] font-bold inline-flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
                               <span>100% PASSED</span>
                             </span>
                           </td>
@@ -1172,23 +1175,23 @@ export const FrontierResearchHub: React.FC = () => {
                   </table>
                 </div>
 
-                <div className="p-4 bg-emerald-900 text-white rounded-2xl border-2 border-black shadow-[3px_3px_0px_0px_#000] flex items-center justify-between">
+                <div className="p-4 bg-[#042413] text-white rounded-2xl border border-emerald-900/50 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
                     <div>
-                      <h4 className="font-black text-sm">Semua 16 Engine Lulus Uji Beban Berat 100% Green!</h4>
-                      <p className="text-xs text-emerald-200">
+                      <h4 className="font-bold text-sm text-emerald-100">Semua 16 Engine Lulus Uji Beban Berat 100% Green!</h4>
+                      <p className="text-xs text-emerald-300/80 mt-0.5">
                         Total {stressResults.reduce((a, b) => a + b.ops, 0).toLocaleString()} operasi diselesaikan dalam waktu kurang dari 1 detik dengan 0 kebocoran memori.
                       </p>
                     </div>
                   </div>
-                  <span className="px-3 py-1.5 bg-black text-amber-300 font-mono text-xs font-black rounded-xl border border-amber-400">
+                  <span className="px-3 py-1 bg-slate-900/80 text-amber-300 font-mono text-xs font-bold rounded-xl border border-amber-400/40 shrink-0">
                     ZERO-BUG VERIFIED
                   </span>
                 </div>
               </div>
             )}
-          </NeobrutalCard>
+          </div>
         </div>
       )}
     </div>

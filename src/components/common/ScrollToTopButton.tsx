@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUp, Mic2, BookOpen, Compass } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import { NavigationTab } from '../../types';
 
 interface ScrollToTopButtonProps {
-  onSelectTab: (tab: NavigationTab) => void;
+  onSelectTab?: (tab: NavigationTab) => void;
 }
 
-export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({ onSelectTab }) => {
+export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -32,14 +32,13 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({ onSelectTa
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-36 lg:bottom-22 right-4 z-40 flex flex-col items-end gap-2 animate-pop">
-      {/* Scroll to Top Button */}
+    <div className="fixed bottom-36 lg:bottom-22 right-4 z-40 flex flex-col items-end gap-2 transition-all">
       <button
         onClick={scrollToTop}
-        className="w-11 h-11 rounded-2xl bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black neo-button flex items-center justify-center cursor-pointer shadow-[3px_3px_0px_0px_#000]"
+        className="w-11 h-11 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white border border-emerald-600/50 flex items-center justify-center cursor-pointer shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
         title="Kembali ke Atas"
       >
-        <ArrowUp className="w-5 h-5 font-black" />
+        <ArrowUp className="w-5 h-5 font-bold" />
       </button>
     </div>
   );

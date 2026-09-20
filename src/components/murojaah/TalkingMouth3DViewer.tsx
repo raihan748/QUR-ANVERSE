@@ -637,7 +637,7 @@ export const TalkingMouth3DViewer: React.FC<TalkingMouth3DViewerProps> = ({
   const safeBreath = Math.max(0, Math.min(100, Math.round(breathRemainingPercent || 0)));
 
   return (
-    <div className="bg-[#111827] text-white border-2 border-red-500 rounded-2xl p-4 shadow-[4px_4px_0px_0px_#000] space-y-3 font-sans">
+    <div className="bg-slate-900 text-white border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3 font-sans">
       {/* Header Bar */}
       <div className="flex items-center justify-between border-b border-gray-700 pb-2">
         <div className="flex items-center gap-2">
@@ -724,10 +724,10 @@ export const TalkingMouth3DViewer: React.FC<TalkingMouth3DViewerProps> = ({
                     setCurrentProgress(accum / Math.max(1, totalDurationMs));
                     setIsPlaying(false);
                   }}
-                  className={`w-9 h-9 rounded-xl font-quran text-lg font-bold flex items-center justify-center border-2 transition-all cursor-pointer ${
+                  className={`w-9 h-9 rounded-xl font-quran text-lg font-bold flex items-center justify-center border transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#F59E0B] text-black border-white shadow-[2px_2px_0px_0px_#FFF] scale-105'
-                      : 'bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700'
+                      ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-md scale-105'
+                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-750'
                   }`}
                   title={p.name}
                 >
@@ -779,7 +779,7 @@ export const TalkingMouth3DViewer: React.FC<TalkingMouth3DViewerProps> = ({
           <button
             onClick={() => setIsSlowMotion(!isSlowMotion)}
             className={`px-2.5 py-1.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
-              isSlowMotion ? 'bg-amber-400 text-black border-black font-black' : 'bg-gray-800 text-gray-300 border-gray-600'
+              isSlowMotion ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold' : 'bg-slate-800 text-slate-300 border-slate-700'
             }`}
           >
             {isSlowMotion ? '0.5x Slow' : '1.0x Normal'}

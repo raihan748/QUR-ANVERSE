@@ -18,27 +18,27 @@ export const NeobrutalCard: React.FC<NeobrutalCardProps> = ({
   const getVariantStyles = () => {
     switch (variant) {
       case 'emerald':
-        return 'bg-[#0B4627] text-white border-2 border-black shadow-[4px_4px_0px_0px_#111827]';
+        return 'bg-[#0B4627] text-white border border-emerald-800 shadow-sm';
       case 'gold':
-        return 'bg-[#F59E0B] text-black border-2 border-black shadow-[4px_4px_0px_0px_#111827]';
+        return 'bg-gradient-to-br from-amber-500 to-amber-600 text-slate-950 border border-amber-400 shadow-sm';
       case 'dark':
-        return 'bg-[#111827] text-[#F9FAFB] border-2 border-[#F59E0B] shadow-[4px_4px_0px_0px_#0B4627]';
+        return 'bg-slate-900 text-slate-50 border border-slate-800 shadow-sm';
       case 'sepia':
-        return 'bg-[#FFFDF7] text-[#111827] border-2 border-black shadow-[4px_4px_0px_0px_#D97706]';
+        return 'bg-[#FFFDF9] text-slate-900 border border-amber-200/80 shadow-xs';
       case 'white':
       default:
-        return 'bg-white text-[#111827] border-2 border-black shadow-[4px_4px_0px_0px_#111827]';
+        return 'bg-white text-slate-900 border border-slate-200/90 shadow-xs';
     }
   };
 
   const interactiveStyles = interactive
-    ? 'cursor-pointer hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[6px_6px_0px_0px_#111827] active:translate-x-1 active:translate-y-1 active:shadow-[1px_1px_0px_0px_#111827] transition-all'
+    ? 'cursor-pointer hover:border-slate-300 hover:shadow-md active:translate-y-0.5 transition duration-150 ease-out'
     : '';
 
   return (
     <div
       onClick={onClick}
-      className={`rounded-xl p-4 sm:p-5 relative ${getVariantStyles()} ${interactiveStyles} ${className}`}
+      className={`rounded-2xl p-4 sm:p-5 relative ${getVariantStyles()} ${interactiveStyles} ${className}`}
     >
       {children}
     </div>

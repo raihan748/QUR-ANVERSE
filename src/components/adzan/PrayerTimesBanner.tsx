@@ -210,34 +210,34 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
 
   return (
     <div className="space-y-6 pb-24 max-w-4xl mx-auto">
-      {/* FLOATING TOAST */}
+      {/* Floating Toast */}
       {toastMessage && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-emerald-900 text-white px-4 py-2.5 rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_#000] text-xs font-bold flex items-center gap-2 animate-bounce">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#0B4627] text-white px-4 py-2.5 rounded-xl border border-emerald-600 shadow-lg text-xs font-semibold flex items-center gap-2">
           <Check className="w-4 h-4 text-emerald-300" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* 1. HEADER & LIVE INTERNET LOCATION SELECTOR */}
-      <NeobrutalCard variant="emerald" className="p-5 sm:p-6 relative overflow-visible shadow-[6px_6px_0px_0px_#111827] space-y-4">
+      {/* Header & Location Selector */}
+      <div className="bg-gradient-to-r from-[#0B4627] to-[#06331D] text-white rounded-2xl p-5 sm:p-6 border border-emerald-800/80 shadow-xs relative overflow-visible space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="px-2 py-0.5 text-xs font-black bg-[#F59E0B] text-black rounded border border-black uppercase flex items-center gap-1">
-                <Globe className="w-3.5 h-3.5" /> Jadwal Shalat Live Internet
+              <span className="px-2.5 py-0.5 text-xs font-semibold bg-amber-500/20 text-amber-300 rounded-full border border-amber-400/30 uppercase tracking-wide flex items-center gap-1">
+                <Globe className="w-3.5 h-3.5" /> Jadwal Shalat Internet
               </span>
-              <span className="px-2 py-0.5 text-xs font-bold bg-white/20 text-white rounded border border-white/30 font-mono">
+              <span className="px-2 py-0.5 text-xs font-medium bg-white/10 text-white rounded-md border border-white/20 font-mono">
                 {liveApiResponse?.hijriDate || '13 Rabi\'ul Awwal 1448 H'}
               </span>
-              <span className="px-2 py-0.5 text-[10px] font-black bg-emerald-400 text-black rounded border border-black">
+              <span className="px-2 py-0.5 text-[10px] font-semibold bg-emerald-800/80 text-emerald-200 rounded-md border border-emerald-600/40">
                 {liveApiResponse?.source === 'internet' ? 'API Kemenag RI / Aladhan' : 'Astronomis MABIMS'}
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black font-display text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold font-display text-white">
               Waktu Shalat & Adzan Presisi
             </h2>
-            <p className="text-xs text-emerald-100 font-medium">
-              Sinkronisasi waktu lokal internet otomatis + pemutaran audio adzan Syekh Muhammad Marwan Al-Qassas (Masjid Nabawi Madinah) saat masuk waktu shalat.
+            <p className="text-xs text-emerald-200/90 font-normal mt-0.5">
+              Sinkronisasi waktu lokal internet otomatis dengan audio adzan Syekh Muhammad Marwan Al-Qassas (Masjid Nabawi).
             </p>
           </div>
 
@@ -247,7 +247,7 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
               download="adzan-madinah-syekh-marwan-al-qassas.mp3"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2.5 bg-emerald-950/90 hover:bg-emerald-900 text-[#F59E0B] border-2 border-[#F59E0B] rounded-xl neo-button cursor-pointer font-black text-xs flex items-center gap-2 shrink-0 shadow-[2px_2px_0px_0px_#000]"
+              className="px-3.5 py-2 bg-emerald-950/80 hover:bg-emerald-900 text-amber-300 border border-amber-400/40 rounded-xl cursor-pointer font-semibold text-xs flex items-center gap-1.5 shrink-0 transition"
               title="Download File Audio Adzan Madinah (3.6 MB)"
             >
               <Download className="w-4 h-4" />
@@ -256,49 +256,49 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
 
             <button
               onClick={handleToggleAutoAdzan}
-              className={`px-3.5 py-2.5 rounded-xl border-2 border-black font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all neo-button ${
+              className={`px-3.5 py-2 rounded-xl border font-semibold text-xs flex items-center gap-1.5 cursor-pointer transition ${
                 autoAdzanEnabled
-                  ? 'bg-emerald-300 hover:bg-emerald-200 text-slate-950'
-                  : 'bg-rose-200 hover:bg-rose-300 text-rose-950'
+                  ? 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40 hover:bg-emerald-500/30'
+                  : 'bg-rose-500/20 text-rose-200 border-rose-400/40 hover:bg-rose-500/30'
               }`}
-              title="Aktifkan/Nonaktifkan Adzan otomatis saat masuk waktu shalat (Android background alarm & web alert)"
+              title="Aktifkan/Nonaktifkan Adzan otomatis saat masuk waktu shalat"
             >
-              {autoAdzanEnabled ? <Bell className="w-4 h-4 text-emerald-950" /> : <BellOff className="w-4 h-4 text-rose-800" />}
+              {autoAdzanEnabled ? <Bell className="w-4 h-4 text-emerald-300" /> : <BellOff className="w-4 h-4 text-rose-300" />}
               <span>{autoAdzanEnabled ? 'Adzan Auto (Aktif)' : 'Adzan Auto (Mati)'}</span>
             </button>
 
             <button
               onClick={() => handleTestAdzan(countdownData.nextPrayer?.name || 'Dzuhur')}
-              className="px-4 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl neo-button cursor-pointer font-black text-xs flex items-center gap-2 shrink-0 shadow-[2px_2px_0px_0px_#000]"
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl cursor-pointer font-semibold text-xs flex items-center gap-1.5 shrink-0 shadow-xs transition"
               title="Tes bunyi notifikasi & suara adzan sekarang"
             >
-              <Play className="w-4 h-4 fill-black" />
+              <Play className="w-3.5 h-3.5 fill-current" />
               <span>Tes Notifikasi & Adzan</span>
             </button>
           </div>
         </div>
 
         {/* Location Selector Bar */}
-        <div className="pt-3 border-t border-white/20 flex flex-wrap items-center justify-between gap-2">
+        <div className="pt-3 border-t border-emerald-800/80 flex flex-wrap items-center justify-between gap-2">
           {/* Active City Display & Dropdown */}
           <div className="relative">
             <button
               onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
-              className="px-3 py-1.5 bg-white hover:bg-amber-50 text-black border-2 border-black rounded-xl text-xs font-black flex items-center gap-2 neo-button cursor-pointer shadow-[2px_2px_0px_0px_#000]"
+              className="px-3 py-1.5 bg-white/10 hover:bg-white/15 text-white border border-white/20 rounded-xl text-xs font-semibold flex items-center gap-2 cursor-pointer transition"
             >
-              <MapPin className="w-3.5 h-3.5 text-[#0B4627]" />
+              <MapPin className="w-3.5 h-3.5 text-amber-300" />
               <span>{activeLocation.city}</span>
-              <span className="text-[10px] bg-emerald-100 px-1.5 py-0.2 rounded font-mono font-bold text-emerald-900 border border-emerald-300">
+              <span className="text-[10px] bg-emerald-800/80 px-1.5 py-0.2 rounded font-mono font-medium text-emerald-200 border border-emerald-600/40">
                 UTC+{activeLocation.timezone}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-gray-700" />
+              <ChevronDown className="w-3.5 h-3.5 text-emerald-200" />
             </button>
 
             {isCityDropdownOpen && (
-              <div className="absolute left-0 top-full mt-2 w-72 bg-white border-3 border-black rounded-2xl p-2 shadow-[6px_6px_0px_0px_#000] z-50 animate-in fade-in zoom-in-95 space-y-1">
-                <div className="p-1.5 border-b-2 border-black flex items-center justify-between text-black">
-                  <span className="text-xs font-black text-[#0B4627]">Pilih Kota / Lokasi Shalat:</span>
-                  <button onClick={() => setIsCityDropdownOpen(false)} className="text-gray-500 hover:text-black p-0.5 rounded cursor-pointer" aria-label="Tutup"><X className="w-3.5 h-3.5" /></button>
+              <div className="absolute left-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-2 shadow-xl z-50 animate-in fade-in zoom-in-95 space-y-1">
+                <div className="p-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-slate-900 dark:text-white">
+                  <span className="text-xs font-bold text-[#0B4627] dark:text-emerald-400">Pilih Kota / Lokasi Shalat:</span>
+                  <button onClick={() => setIsCityDropdownOpen(false)} className="text-slate-400 hover:text-slate-700 p-0.5 rounded cursor-pointer" aria-label="Tutup"><X className="w-3.5 h-3.5" /></button>
                 </div>
                 <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
                   {POPULAR_CITIES.map((c) => {
@@ -307,14 +307,14 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
                       <button
                         key={c.id}
                         onClick={() => handleSelectCity(c)}
-                        className={`w-full p-2 rounded-xl border-2 border-black text-left flex items-center justify-between transition-all cursor-pointer ${
+                        className={`w-full p-2 rounded-xl text-left flex items-center justify-between transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]'
-                            : 'bg-[#F9FAFB] hover:bg-amber-50 text-gray-900'
+                            ? 'bg-[#0B4627] text-white'
+                            : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-white'
                         }`}
                       >
-                        <span className="text-xs font-black">{c.city}</span>
-                        <span className={`text-[10px] font-bold ${isSelected ? 'text-amber-300' : 'text-gray-600'}`}>
+                        <span className="text-xs font-medium">{c.city}</span>
+                        <span className={`text-[10px] ${isSelected ? 'text-amber-300' : 'text-slate-500'}`}>
                           UTC+{c.timezone}
                         </span>
                       </button>
@@ -329,42 +329,46 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
           <button
             onClick={handleDetectGPS}
             disabled={isGpsLoading}
-            className="px-3 py-1.5 bg-[#FEF3C7] hover:bg-[#FDE68A] text-black border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 neo-button cursor-pointer shadow-[2px_2px_0px_0px_#000] disabled:opacity-50"
+            className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition disabled:opacity-50"
           >
-            {isGpsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5 text-blue-700" />}
+            {isGpsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
             <span>{isGpsLoading ? 'Mendeteksi Koordinat...' : 'Deteksi GPS Otomatis'}</span>
           </button>
         </div>
 
         {gpsError && (
-          <div className="text-xs font-bold text-amber-200 bg-black/40 px-3 py-1.5 rounded-lg border border-amber-400 flex items-center gap-2">
+          <div className="text-xs font-medium text-amber-200 bg-black/40 px-3 py-1.5 rounded-lg border border-amber-400/40 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-300 shrink-0" />
             <span>{gpsError}</span>
           </div>
         )}
-      </NeobrutalCard>
+      </div>
 
-      {/* 2. JURNAL & ABSENSI SHOLAT 5 WAKTU CARD */}
-      <div className="bg-gradient-to-r from-[#06331D] via-[#0B4627] to-[#06331D] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      {/* Jurnal & Absensi Sholat 5 Waktu Card */}
+      <div className="bg-gradient-to-r from-[#06331D] via-[#0B4627] to-[#06331D] border border-emerald-800/80 rounded-2xl p-5 shadow-xs text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-start sm:items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_#000] shrink-0 text-slate-950">
-            <Building2 className="w-6 h-6 text-slate-950" />
+          <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center shrink-0 text-amber-300">
+            <Building2 className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="text-sm sm:text-base font-black text-white">
+              <h4 className="text-sm sm:text-base font-bold text-white">
                 Jurnal & Absensi Sholat 5 Waktu
               </h4>
-              <span className="text-[10px] font-black px-2 py-0.5 rounded bg-emerald-400 text-slate-950 border border-black shadow-xs">
-                {attendanceStats.todayCompleted} / 5 SELESAI ({attendanceStats.percentage}%)
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-800/80 text-emerald-200 border border-emerald-600/40">
+                {attendanceStats.todayCompleted} / 5 Selesai ({attendanceStats.percentage}%)
               </span>
             </div>
-            <p className="text-xs text-emerald-100 mt-0.5 flex items-center gap-1">
-              <Flame className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-              <span>Streak Sholat: <strong className="text-amber-300 font-bold">{attendanceStats.streakDays} Hari Rutin</strong> • Pahala: <strong className="text-emerald-300 font-bold">+{attendanceStats.todayXp} XP</strong></span>
+            <p className="text-xs text-emerald-200/90 mt-1 flex items-center gap-1.5 flex-wrap">
+              <span className="flex items-center gap-1">
+                <Flame className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                <span>Streak: <strong className="text-amber-300 font-semibold">{attendanceStats.streakDays} Hari Rutin</strong></span>
+              </span>
+              <span>•</span>
+              <span>Pahala: <strong className="text-emerald-300 font-semibold">+{attendanceStats.todayXp} XP</strong></span>
             </p>
             {/* Quick 5-Prayer Check Status Badges */}
-            <div className="flex items-center gap-1.5 flex-wrap mt-2">
+            <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
               {(['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'] as const).map((pId) => {
                 const rec = todayAttendance.records[pId];
                 const isDone = rec && rec.status !== 'belum';
@@ -374,15 +378,15 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
                     key={pId}
                     type="button"
                     onClick={onOpenPrayerAttendanceModal}
-                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md border flex items-center gap-1 transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+                    className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border flex items-center gap-1 transition-all cursor-pointer ${
                       isDone
-                        ? 'bg-emerald-500 text-slate-950 border-emerald-300 shadow-xs'
-                        : 'bg-black/30 hover:bg-black/50 text-emerald-300/80 border-emerald-900/40'
+                        ? 'bg-emerald-500/30 text-emerald-200 border-emerald-400/40'
+                        : 'bg-black/20 hover:bg-black/30 text-emerald-200/70 border-emerald-900/40'
                     }`}
                     title={`Klik untuk mencatat absensi sholat ${label}`}
                   >
                     {isDone ? (
-                      <Check className="w-3 h-3 stroke-[3]" />
+                      <Check className="w-3 h-3 text-emerald-300" />
                     ) : (
                       <Circle className="w-2.5 h-2.5 opacity-60" />
                     )}
@@ -397,35 +401,35 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
         {onOpenPrayerAttendanceModal && (
           <button
             onClick={onOpenPrayerAttendanceModal}
-            className="w-full md:w-auto px-4 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all shrink-0"
+            className="w-full md:w-auto px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition shadow-xs shrink-0"
           >
             <CheckSquare className="w-4 h-4" />
-            <span>Buka Ceklis Absensi Sholat</span>
+            <span>Ceklis Absensi Sholat</span>
           </button>
         )}
       </div>
 
-      {/* 3. AUTO-ADZAN SWITCH WITH USER PERMISSION & SYEKH MARWAN AL-QASSAS PROFILE */}
-      <div className="bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Auto-Adzan Switch */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className={`w-12 h-12 rounded-2xl border-2 border-black flex items-center justify-center text-2xl shadow-[2px_2px_0px_0px_#000] shrink-0 ${
-            autoAdzanEnabled ? 'bg-[#10B981] text-white' : 'bg-gray-200 text-gray-400'
+          <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${
+            autoAdzanEnabled ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400' : 'bg-slate-100 text-slate-400 dark:bg-slate-800'
           }`}>
-            {autoAdzanEnabled ? <Volume2 className="w-6 h-6 animate-pulse" /> : <VolumeX className="w-6 h-6" />}
+            {autoAdzanEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="text-sm sm:text-base font-black text-black dark:text-white">
+              <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                 Adzan Otomatis Masuk Waktu Shalat
               </h4>
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded border border-black shadow-xs ${
-                autoAdzanEnabled ? 'bg-emerald-300 text-emerald-950' : 'bg-gray-200 text-gray-600'
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                autoAdzanEnabled ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
               }`}>
                 {autoAdzanEnabled ? 'AKTIF' : 'NONAKTIF'}
               </span>
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
-              Muadzin Tunggal: <strong className="text-[#0B4627] dark:text-emerald-400 font-black">Syekh Muhammad Marwan Al-Qassas</strong> (Muadzin Masjid Nabawi Madinah)
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Muadzin: <strong className="text-[#0B4627] dark:text-emerald-400 font-semibold">Syekh Muhammad Marwan Al-Qassas</strong> (Masjid Nabawi Madinah)
             </p>
           </div>
         </div>
@@ -433,53 +437,53 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
         <div className="flex items-center gap-2 self-end sm:self-center">
           <button
             onClick={handleToggleAutoAdzan}
-            className={`px-4 py-2 border-2 border-black rounded-xl text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition shadow-xs ${
               autoAdzanEnabled 
-                ? 'bg-[#10B981] hover:bg-[#059669] text-white' 
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                ? 'bg-emerald-700 hover:bg-emerald-800 text-white' 
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700'
             }`}
           >
             {autoAdzanEnabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
-            <span>{autoAdzanEnabled ? 'Adzan Otomatis: AKTIF' : 'Aktifkan Adzan'}</span>
+            <span>{autoAdzanEnabled ? 'Adzan Otomatis: Aktif' : 'Aktifkan Adzan'}</span>
           </button>
         </div>
       </div>
 
-      {/* 2. 10-MINUTE WARNING ALERT */}
+      {/* 10-Minute Warning Alert */}
       {countdownData.isWithin10Minutes && (
-        <div className="p-4 bg-[#FEF3C7] border-3 border-black rounded-2xl shadow-[4px_4px_0px_0px_#D97706] flex items-center gap-3 animate-bounce">
-          <Bell className="w-6 h-6 text-[#D97706] shrink-0" />
+        <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-300/80 dark:border-amber-800 rounded-2xl flex items-center gap-3 shadow-xs">
+          <Bell className="w-5 h-5 text-amber-600 shrink-0" />
           <div>
-            <h4 className="text-xs sm:text-sm font-black text-black flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4 text-[#D97706] shrink-0" />
-              <span>Peringatan: 10 Menit Menuju Waktu Shalat {countdownData.nextPrayer?.name}!</span>
+            <h4 className="text-xs sm:text-sm font-bold text-amber-950 dark:text-amber-200 flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>Peringatan: 10 Menit Menuju Waktu Shalat {countdownData.nextPrayer?.name}</span>
             </h4>
-            <p className="text-xs text-gray-700 font-medium">
-              Persiapkan wudhu dan bersiap menuju masjid / shalat tepat waktu.
+            <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
+              Persiapkan wudhu dan bersiap menuju shalat tepat waktu.
             </p>
           </div>
         </div>
       )}
 
-      {/* 3. BIG COUNTDOWN BOX */}
-      <NeobrutalCard variant="dark" className="p-6 sm:p-8 text-center border-3 border-black shadow-[6px_6px_0px_0px_#0B4627]">
-        <div className="flex items-center justify-center gap-2 text-xs font-extrabold text-[#F59E0B] uppercase tracking-wider mb-2">
+      {/* Big Countdown Box */}
+      <div className="bg-gradient-to-br from-[#06331D] via-[#0B4627] to-[#042413] border border-emerald-800/80 rounded-2xl p-6 sm:p-8 text-center shadow-xs text-white">
+        <div className="flex items-center justify-center gap-2 text-xs font-semibold text-amber-300 uppercase tracking-wider mb-2">
           <Clock className="w-4 h-4" />
           <span>Hitung Mundur Menuju Shalat {countdownData.nextPrayer?.name}</span>
         </div>
 
-        {/* Huge Digital Clock */}
-        <div className="text-5xl sm:text-7xl font-black font-mono tracking-widest text-white my-3">
+        {/* Digital Clock */}
+        <div className="text-5xl sm:text-7xl font-bold font-mono tracking-widest text-white my-3">
           {countdownData.formattedCountdown}
         </div>
 
-        <p className="text-xs text-gray-300 font-medium">
+        <p className="text-xs text-emerald-200/90 font-normal">
           Waktu Shalat {countdownData.nextPrayer?.name} di {activeLocation.city}:{' '}
-          <b className="text-[#F59E0B] text-sm font-mono">{countdownData.nextPrayer?.timeStr}</b>
+          <b className="text-amber-300 text-sm font-mono font-bold">{countdownData.nextPrayer?.timeStr}</b>
         </p>
-      </NeobrutalCard>
+      </div>
 
-      {/* 4. 7 PRAYER TIMES GRID (Imsak, Subuh, Terbit, Dzuhur, Ashar, Maghrib, Isya) */}
+      {/* 7 Prayer Times Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5 sm:gap-3">
         {prayerTimes.map((item) => {
           const isCurrent = item.isNext;
@@ -487,17 +491,17 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
           return (
             <div
               key={item.id}
-              className={`p-3 rounded-2xl border-2 border-black text-center transition-all ${
+              className={`p-3.5 rounded-2xl border text-center transition-all ${
                 isCurrent
-                  ? 'bg-[#F59E0B] text-black shadow-[4px_4px_0px_0px_#111827] -translate-y-1 ring-2 ring-amber-400'
-                  : 'bg-white text-gray-900 shadow-[2px_2px_0px_0px_#111827]'
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-xs ring-2 ring-amber-300/50'
+                  : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 text-slate-900 dark:text-white shadow-xs'
               }`}
             >
               <span className="font-quran text-base font-bold block">{item.arabicName}</span>
-              <p className="font-black text-xs mt-0.5">{item.name}</p>
-              <p className="text-base font-black font-mono mt-1 text-[#0B4627]">{item.timeStr}</p>
+              <p className="font-semibold text-xs mt-0.5">{item.name}</p>
+              <p className={`text-base font-bold font-mono mt-1 ${isCurrent ? 'text-slate-950' : 'text-[#0B4627] dark:text-emerald-400'}`}>{item.timeStr}</p>
               {isCurrent && (
-                <span className="inline-block px-1.5 py-0.5 text-[9px] font-black bg-black text-white rounded mt-1 uppercase">
+                <span className="inline-block px-1.5 py-0.5 text-[9px] font-bold bg-slate-950 text-white rounded mt-1 uppercase">
                   Berikutnya
                 </span>
               )}
@@ -506,7 +510,7 @@ export const PrayerTimesBanner: React.FC<PrayerTimesBannerProps> = ({
         })}
       </div>
 
-      {/* 5. TASBIH DIGITAL & DZIKIR */}
+      {/* Tasbih Digital & Dzikir */}
       <DzikirCounter />
     </div>
   );

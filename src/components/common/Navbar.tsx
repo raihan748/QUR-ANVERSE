@@ -21,97 +21,88 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { language, toggleLanguage, t, isRtl } = useLanguage();
 
   return (
-    <header className="sticky top-0 z-40 bg-[#0B4627] border-b-3 border-black px-4 py-3 text-white shadow-[0_4px_0_0_#111827]">
+    <header className="sticky top-0 z-40 bg-[#0B4627] border-b border-emerald-800/80 px-4 py-2.5 text-white shadow-xs backdrop-blur-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-        {/* Brand & Logo (AL-HUDA) */}
+        {/* Brand & Logo */}
         <div
           onClick={() => onSelectTab('murojaah_ai')}
           className="flex items-center gap-3 cursor-pointer group select-none"
         >
-          <div className="w-11 h-11 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black shadow-[3px_3px_0px_0px_#000] relative group-hover:scale-105 group-active:scale-95 transition-all overflow-hidden p-0.5 shrink-0 animate-pop">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center text-black p-1 shrink-0 group-hover:border-amber-400 transition">
             <img 
               src="/favicon.svg" 
-              alt="Al-Huda App Logo" 
-              className="w-full h-full object-contain rounded-xl drop-shadow-sm" 
+              alt="Al-Huda Logo" 
+              className="w-full h-full object-contain drop-shadow-xs" 
             />
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#10B981] border border-black flex items-center justify-center shadow-xs">
-              <Sparkles className="w-2.5 h-2.5 text-white" />
-            </div>
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-lg font-extrabold tracking-tight font-display text-white">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-black tracking-wide font-display text-amber-300">
                 AL-HUDA
               </h1>
-              <span className="px-1.5 py-0.5 text-[10px] font-black bg-[#F59E0B] text-black rounded border border-black uppercase tracking-wider">
-                PRO
-              </span>
             </div>
-            <p className="text-[11px] text-emerald-100 font-semibold hidden sm:block">
+            <p className="text-[11px] text-emerald-200/80 font-medium hidden sm:block">
               {t.brandSubtitle}
             </p>
           </div>
         </div>
 
-        {/* Stats & Quick Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* ABSENSI SHOLAT 5 WAKTU BUTTON */}
+        {/* Quick Actions */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Absensi Sholat */}
           {onOpenPrayerAttendanceModal && (
             <button
               onClick={onOpenPrayerAttendanceModal}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#06331D] hover:bg-emerald-900 text-amber-300 border-2 border-amber-400/80 rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#06331D] hover:bg-emerald-900/80 text-amber-300 border border-emerald-700/60 rounded-xl text-xs font-semibold transition cursor-pointer"
               title="Absensi & Jurnal Sholat 5 Waktu"
             >
               <Clock className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden sm:inline font-bold">Absen Sholat</span>
+              <span className="hidden sm:inline">Absen Sholat</span>
             </button>
           )}
 
-          {/* AL-MATSURAT QUICK ACCESS BUTTON */}
+          {/* Dzikir Al-Matsurat */}
           <button
             onClick={() => onSelectTab('dzikir')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop border-2 border-black ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border ${
               activeTab === 'dzikir'
-                ? 'bg-[#F59E0B] text-black'
-                : 'bg-[#06331D] hover:bg-emerald-900 text-emerald-200 border-emerald-500/80'
+                ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold'
+                : 'bg-[#06331D] hover:bg-emerald-900/80 text-emerald-200 border-emerald-700/60'
             }`}
             title="Dzikir Al-Ma'tsurat Pagi & Petang"
           >
-            <BookOpen className="w-3.5 h-3.5 text-emerald-300" />
-            <span className="hidden sm:inline font-bold">
+            <BookOpen className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">
               {language === 'ar' ? 'المأثورات' : 'Al-Ma\'tsurat'}
             </span>
           </button>
 
-          {/* QURAN BUDDY AI ASSISTANT BUTTON */}
+          {/* Quran Buddy */}
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('qv_open_quran_buddy'))}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#06331D] hover:bg-emerald-900 text-amber-300 border-2 border-amber-400/80 rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#06331D] hover:bg-emerald-900/80 text-amber-300 border border-emerald-700/60 rounded-xl text-xs font-semibold transition cursor-pointer"
             title="Tanya Quran Buddy"
           >
             <Bot className="w-3.5 h-3.5 text-amber-300" />
-            <span className="hidden sm:inline font-bold">Quran Buddy</span>
+            <span className="hidden sm:inline">Tanya Ayat</span>
           </button>
 
-          {/* BILINGUAL LANGUAGE SWITCHER (ID <-> AR - KUWAIT) */}
+          {/* Language Switcher */}
           <button
             onClick={toggleLanguage}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#FEF3C7] hover:bg-[#FDE68A] text-black border-2 border-black rounded-xl neo-button cursor-pointer text-xs font-black shadow-[2px_2px_0px_0px_#000] animate-pop"
-            title={language === 'id' ? 'Ubah ke Bahasa Arab (Kuwait) / التبديل إلى العربية' : 'Ubah ke Bahasa Indonesia / التبدIL إلى الإندونيسية'}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-slate-900 border border-amber-300/80 rounded-xl text-xs font-bold transition cursor-pointer"
+            title={language === 'id' ? 'Ubah ke Bahasa Arab' : 'Ubah ke Bahasa Indonesia'}
           >
-            <Languages className="w-4 h-4 text-[#0B4627]" />
-            <span className="font-bold">{language === 'id' ? 'ID' : 'AR'}</span>
-            <span className="text-[10px] text-gray-700 hidden sm:inline">
-              {language === 'id' ? 'العربية' : 'Indonesia'}
-            </span>
+            <Languages className="w-3.5 h-3.5 text-[#0B4627]" />
+            <span>{language === 'id' ? 'ID' : 'AR'}</span>
           </button>
 
-          {/* INSTALL APP BUTTON (Featured) */}
+          {/* Install App */}
           <button
             onClick={onOpenInstallModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#10B981] hover:bg-[#059669] text-white border-2 border-black rounded-xl neo-button cursor-pointer text-xs font-black animate-pop"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer"
           >
-            <Download className="w-4 h-4 text-[#F59E0B]" />
+            <Download className="w-3.5 h-3.5" />
             <span className="hidden xs:inline">{t.heroInstallApk}</span>
           </button>
         </div>

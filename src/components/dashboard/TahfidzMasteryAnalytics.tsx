@@ -178,27 +178,27 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
   const circadianInfo = CircadianBioMemoryEngine.getCircadianEfficiency(currentHour);
 
   return (
-    <NeobrutalCard variant="white" className="p-4 sm:p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827] space-y-6">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xs space-y-6">
       {/* Header Title */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b-2 border-dashed border-gray-300 pb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-[#0B4627] text-white flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_0px_#000]">
-            <BarChart3 className="w-5 h-5 text-[#F59E0B]" />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-[#0B4627] dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/50 shrink-0">
+            <BarChart3 className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-black">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               {language === 'ar' ? 'إحصائيات الإتقان والتجويد' : 'Statistik Progres Nyata'}
             </h3>
-            <p className="text-xs text-gray-600 font-medium">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {language === 'ar'
                 ? 'بيانات حقيقية مبنية بالكامل على تفاعلك وجلساتك في التطبيق.'
-                : 'Data statistik 100% nyata berdasarkan rekaman sesi latihan & aktivitas antum di aplikasi.'}
+                : 'Data statistik nyata berdasarkan rekaman sesi latihan & aktivitas Anda.'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-[#D1FAE5] text-[#064E3B] border border-[#0B4627] rounded-xl text-xs font-black">
-          <ShieldCheck className="w-4 h-4 text-emerald-700" />
+        <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800 rounded-xl text-xs font-semibold">
+          <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
           <span>
             {language === 'ar' 
               ? `المتوسط: ${averageScore}%` 
@@ -207,78 +207,78 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
         </div>
       </div>
 
-      {/* 4 SUMMARY STAT METRIC PILLS (100% REAL DATA) */}
+      {/* Summary Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {/* Metric 1: Total Sesi Nyata */}
-        <div className="p-3 bg-[#F8F5EE] border-2 border-black rounded-xl text-center shadow-xs">
-          <span className="text-[10px] font-extrabold text-gray-600 block uppercase">
+        {/* Metric 1: Total Sesi */}
+        <div className="p-3.5 bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-center">
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 block uppercase">
             {language === 'ar' ? 'جلسات التسميع' : 'Total Setoran'}
           </span>
-          <span className="text-xl font-black text-[#0B4627]">
-            {totalSessions} <span className="text-xs font-bold text-gray-700">{language === 'ar' ? 'جلسة' : 'Sesi'}</span>
+          <span className="text-xl font-bold text-[#0B4627] dark:text-emerald-400 block mt-0.5">
+            {totalSessions} <span className="text-xs font-medium text-slate-500">{language === 'ar' ? 'جلسة' : 'Sesi'}</span>
           </span>
-          <span className="text-[10px] text-emerald-700 font-bold block mt-0.5">
+          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium block mt-0.5">
             {totalPassed > 0 ? `${totalPassed} Sesi Mutqin` : '0 Sesi Disimpan'}
           </span>
         </div>
 
-        {/* Metric 2: Waktu Murojaah Nyata */}
-        <div className="p-3 bg-[#F8F5EE] border-2 border-black rounded-xl text-center shadow-xs">
-          <span className="text-[10px] font-extrabold text-gray-600 block uppercase">
+        {/* Metric 2: Waktu Murojaah */}
+        <div className="p-3.5 bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-center">
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 block uppercase">
             {language === 'ar' ? 'وقت المراجعة' : 'Waktu Latihan'}
           </span>
-          <span className="text-xl font-black text-black">
-            {totalMinutes} <span className="text-xs font-bold text-gray-700">{language === 'ar' ? 'دقيقة' : 'Menit'}</span>
+          <span className="text-xl font-bold text-slate-900 dark:text-white block mt-0.5">
+            {totalMinutes} <span className="text-xs font-medium text-slate-500">{language === 'ar' ? 'دقيقة' : 'Menit'}</span>
           </span>
-          <span className="text-[10px] text-blue-700 font-bold block mt-0.5">
+          <span className="text-[10px] text-slate-500 font-medium block mt-0.5">
             {totalSessions > 0 ? 'Terekam di sistem' : 'Belum Ada Waktu'}
           </span>
         </div>
 
-        {/* Metric 3: Surat Disetor Nyata */}
-        <div className="p-3 bg-[#F8F5EE] border-2 border-black rounded-xl text-center shadow-xs">
-          <span className="text-[10px] font-extrabold text-gray-600 block uppercase">
+        {/* Metric 3: Surat Disetor */}
+        <div className="p-3.5 bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-center">
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 block uppercase">
             {language === 'ar' ? 'السور المتقنة' : 'Surat Disetor'}
           </span>
-          <span className="text-xl font-black text-[#D97706]">
-            {surahsMastered} <span className="text-xs font-bold text-gray-700">{language === 'ar' ? 'سورة' : 'Surat'}</span>
+          <span className="text-xl font-bold text-amber-600 dark:text-amber-400 block mt-0.5">
+            {surahsMastered} <span className="text-xs font-medium text-slate-500">{language === 'ar' ? 'سورة' : 'Surat'}</span>
           </span>
-          <span className="text-[10px] text-amber-700 font-bold block mt-0.5">
+          <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium block mt-0.5">
             {surahsMastered > 0 ? `${surahsMastered} dari 114 Surat` : '0 dari 114 Surat'}
           </span>
         </div>
 
-        {/* Metric 4: Target Khatam 365 Hari Real */}
-        <div className="p-3 bg-[#F8F5EE] border-2 border-black rounded-xl text-center shadow-xs">
-          <span className="text-[10px] font-extrabold text-gray-600 block uppercase">
+        {/* Metric 4: Target Khatam 365 Hari */}
+        <div className="p-3.5 bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-center">
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 block uppercase">
             {language === 'ar' ? 'خطة الختم' : 'Roadmap 365 Hari'}
           </span>
-          <span className="text-xl font-black text-[#2563EB]">
-            {annualProgress.completedDaysCount} <span className="text-xs font-bold text-gray-700">/ 365 Hari</span>
+          <span className="text-xl font-bold text-emerald-700 dark:text-emerald-400 block mt-0.5">
+            {annualProgress.completedDaysCount} <span className="text-xs font-medium text-slate-500">/ 365 Hari</span>
           </span>
-          <span className="text-[10px] text-indigo-700 font-bold block mt-0.5">
+          <span className="text-[10px] text-slate-500 font-medium block mt-0.5">
             {annualProgress.completionPercentage}% (Hari ke-{annualProgress.currentDayNumber})
           </span>
         </div>
       </div>
 
-      {/* 4 INDIKATOR KUALITAS BACAAN & AMALAN (DATA NYATA) */}
+      {/* Indikator Kelancaran */}
       <div className="space-y-3">
-        <h4 className="text-xs font-black text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4 text-[#F59E0B]" />
-          {language === 'ar' ? 'مؤشرات الأداء الفعلية' : 'Indikator Kelancaran & Kualitas Nyata'}
+        <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+          {language === 'ar' ? 'مؤشرات الأداء الفعلية' : 'Indikator Kelancaran & Kualitas'}
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {tajwidMetrics.map((m, idx) => (
-            <div key={idx} className="p-3 bg-white border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_#111827]">
+            <div key={idx} className="p-3 bg-slate-50/60 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/80 rounded-xl">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-extrabold text-black">{m.label}</span>
+                <span className="text-xs font-semibold text-slate-900 dark:text-white">{m.label}</span>
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] font-bold text-gray-600">({m.level})</span>
-                  <span className="text-xs font-black text-[#0B4627]">{m.score}%</span>
+                  <span className="text-[10px] text-slate-500">({m.level})</span>
+                  <span className="text-xs font-bold text-[#0B4627] dark:text-emerald-400">{m.score}%</span>
                 </div>
               </div>
-              <div className="w-full h-3 bg-gray-200 rounded-full border border-black overflow-hidden">
+              <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${m.color} transition-all duration-700 rounded-full`}
                   style={{ width: `${m.score}%` }}
@@ -289,15 +289,15 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
         </div>
       </div>
 
-      {/* RIWAYAT SESI SETORAN LISAN TERBARU (LIVE ACTIVITY FEED) */}
+      {/* Riwayat Sesi Setoran Lisan */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-black text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-[#0B4627]" />
-            {language === 'ar' ? 'سجل جلسات التسميع الحقيقية' : 'Riwayat Sesi Muroja\'ah Nyata'}
+          <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-[#0B4627] dark:text-emerald-400" />
+            {language === 'ar' ? 'سجل جلسات التسميع الحقيقية' : 'Riwayat Sesi Muroja\'ah'}
           </h4>
-          <span className="text-[10px] font-bold text-gray-600">
-            {murojaahLogs.length} Total Sesi Tersimpan
+          <span className="text-[10px] text-slate-500">
+            {murojaahLogs.length} Total Sesi
           </span>
         </div>
 
@@ -306,29 +306,29 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
             {murojaahLogs.slice(0, 4).map((log) => (
               <div 
                 key={log.id} 
-                className="p-3 bg-[#FFFDF7] border-2 border-black rounded-xl flex items-center justify-between gap-2 shadow-xs"
+                className="p-3 bg-white dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700 rounded-xl flex items-center justify-between gap-2 shadow-xs"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center border font-bold text-xs ${
-                    log.passed ? 'bg-emerald-100 text-emerald-900 border-emerald-400' : 'bg-amber-100 text-amber-900 border-amber-400'
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-semibold text-xs ${
+                    log.passed ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
                   }`}>
-                    {log.passed ? <Check className="w-4 h-4 text-emerald-800" /> : <AlertCircle className="w-4 h-4 text-amber-800" />}
+                    {log.passed ? <Check className="w-4 h-4 text-emerald-700" /> : <AlertCircle className="w-4 h-4 text-amber-700" />}
                   </div>
                   <div>
-                    <p className="text-xs font-extrabold text-black">
+                    <p className="text-xs font-semibold text-slate-900 dark:text-white">
                       QS. {log.surahName} [Ayat {log.ayahNumber}]
                     </p>
-                    <p className="text-[10px] text-gray-500">
+                    <p className="text-[10px] text-slate-500 mt-0.5">
                       {new Date(log.timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} • Mode: {log.mode}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className={`text-xs font-black block ${log.accuracyScore >= 80 ? 'text-emerald-700' : 'text-amber-700'}`}>
+                  <span className={`text-xs font-bold block ${log.accuracyScore >= 80 ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
                     {log.accuracyScore}% Akurat
                   </span>
-                  <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${
-                    log.passed ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-red-50 text-red-800 border-red-300'
+                  <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${
+                    log.passed ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-red-50 text-red-800 dark:bg-red-950/60 dark:text-red-300'
                   }`}>
                     {log.passed ? 'Mutqin' : 'Perlu Diulang'}
                   </span>
@@ -337,13 +337,13 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
             ))}
           </div>
         ) : (
-          <div className="p-4 bg-[#F8F5EE] border-2 border-dashed border-gray-400 rounded-xl text-center space-y-2">
-            <p className="text-xs text-gray-600 font-bold">
-              Belum ada riwayat rekaman suara. Sesi latihan lisan antum akan langsung tercatat dan dianalisis secara real-time di sini.
+          <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700 rounded-xl text-center space-y-2">
+            <p className="text-xs text-slate-500">
+              Belum ada riwayat rekaman suara. Sesi latihan lisan Anda akan tercatat secara otomatis di sini.
             </p>
             <button
               onClick={onNavigateToMurojaah}
-              className="px-3 py-1.5 bg-[#0B4627] hover:bg-[#072F1A] text-white text-xs font-bold rounded-lg cursor-pointer transition shadow-xs"
+              className="px-3 py-1.5 bg-[#0B4627] hover:bg-[#072F1A] text-white text-xs font-semibold rounded-lg cursor-pointer transition shadow-xs"
             >
               Mulai Sesi Pertama
             </button>
@@ -351,38 +351,38 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
         )}
       </div>
 
-      {/* CAPAIAN HAFALAN PER JUZ (DATA REAL DARI SURAT YANG DISIDANGKAN) */}
+      {/* Capaian Hafalan per Juz */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-black text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4 text-[#0B4627]" />
-            {language === 'ar' ? 'نسبة إنجاز الحفظ لكل جزء' : 'Capaian Hafalan per Juz (Surat Lolos)'}
+          <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <BookOpen className="w-3.5 h-3.5 text-[#0B4627] dark:text-emerald-400" />
+            {language === 'ar' ? 'نسبة إنجاز الحفظ لكل جزء' : 'Capaian Hafalan per Juz'}
           </h4>
-          <span className="text-[11px] font-bold text-emerald-800">
+          <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
             {language === 'ar' ? 'خطة ٣٠ جزءاً' : 'Roadmap 30 Juz'}
           </span>
         </div>
 
         <div className="space-y-2.5">
           {juzProgress.map((j) => (
-            <div key={j.juz} className="p-3 bg-[#F8F5EE] border-2 border-black rounded-xl">
-              <div className="flex items-center justify-between mb-1">
+            <div key={j.juz} className="p-3 bg-slate-50/60 dark:bg-slate-800/30 border border-slate-200/80 dark:border-slate-700/80 rounded-xl">
+              <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 bg-[#0B4627] text-white text-[10px] font-black rounded border border-black">
+                  <span className="px-2 py-0.5 bg-[#0B4627] text-white text-[10px] font-semibold rounded-md">
                     {language === 'ar' ? `جزء ${j.juz}` : `Juz ${j.juz}`}
                   </span>
-                  <span className="text-xs font-extrabold text-black">{j.name}</span>
+                  <span className="text-xs font-semibold text-slate-900 dark:text-white">{j.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-extrabold bg-[#FEF3C7] text-amber-900 px-1.5 py-0.2 rounded border border-amber-400">
+                  <span className="text-[10px] font-medium bg-amber-50 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 px-2 py-0.5 rounded border border-amber-200/80 dark:border-amber-800">
                     {j.status}
                   </span>
-                  <span className="text-xs font-black text-[#0B4627]">{j.percent}%</span>
+                  <span className="text-xs font-bold text-[#0B4627] dark:text-emerald-400">{j.percent}%</span>
                 </div>
               </div>
-              <div className="w-full h-2.5 bg-gray-200 rounded-full border border-black overflow-hidden">
+              <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-[#10B981] transition-all duration-700 rounded-full"
+                  className="h-full bg-emerald-600 transition-all duration-700 rounded-full"
                   style={{ width: `${j.percent}%` }}
                 />
               </div>
@@ -391,108 +391,110 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
         </div>
       </div>
 
-      {/* 1. MODEL 3: JAM EMAS SIRKADIAN & RETENSI KOGNITIF BIOLOGIS */}
-      <div className="p-4 bg-[#FFFDF7] border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_#000] space-y-2">
-        <div className="flex items-center justify-between border-b border-black/10 pb-2">
+      {/* Rekomendasi Jam Belajar Optimal */}
+      <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-900/40 rounded-2xl space-y-2 shadow-xs">
+        <div className="flex items-center justify-between border-b border-emerald-200/60 dark:border-emerald-900/40 pb-2">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-[#0B4627]" />
-            <span className="text-xs font-black text-gray-900 uppercase">
-              Rekomendasi Jam Emas Sirkadian (FSRS Bio-Memory)
+            <Clock className="w-4 h-4 text-[#0B4627] dark:text-emerald-400" />
+            <span className="text-xs font-bold text-slate-900 dark:text-white uppercase">
+              Rekomendasi Waktu Belajar Optimal
             </span>
           </div>
-          <span className="text-[10px] font-mono font-bold bg-[#0B4627] text-[#F59E0B] px-2 py-0.5 rounded border border-black">
+          <span className="text-[10px] font-mono font-semibold bg-[#0B4627] text-amber-300 px-2 py-0.5 rounded-md">
             Pukul {currentHour.toString().padStart(2, '0')}:00 WIB
           </span>
         </div>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-black text-[#0B4627]">
+            <p className="text-xs font-semibold text-[#0B4627] dark:text-emerald-400">
               Fase Saat Ini: {circadianInfo.phaseName}
             </p>
-            <p className="text-[11px] text-gray-700 font-medium mt-0.5">
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
               {circadianInfo.cognitiveAdvantage}
             </p>
           </div>
-          <span className="text-xs font-black px-2.5 py-1 rounded-xl border border-black bg-amber-100 text-amber-900 font-mono shrink-0">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-xl border border-amber-300/80 bg-amber-50 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300 font-mono shrink-0">
             x{circadianInfo.factor.toFixed(2)} Retensi
           </span>
         </div>
       </div>
 
-      {/* 2. SILSILAH SANAD MUTASHIL */}
-      <div className="p-4 bg-white border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_#000] space-y-3">
-        <div className="flex items-center justify-between border-b border-black/10 pb-2">
+      {/* Silsilah Sanad Mutashil */}
+      <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl space-y-3 shadow-xs">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
           <div className="flex items-center gap-2">
-            <Network className="w-4 h-4 text-[#0B4627]" />
-            <span className="text-xs font-black text-gray-900 uppercase">
+            <Network className="w-4 h-4 text-[#0B4627] dark:text-emerald-400" />
+            <span className="text-xs font-bold text-slate-900 dark:text-white uppercase">
               Silsilah Sanad Mutashil (Rantai Talaqqi)
             </span>
           </div>
           <button
             onClick={() => setIsSanadExpanded(!isSanadExpanded)}
-            className="text-[10px] font-bold text-[#0B4627] hover:underline cursor-pointer font-mono flex items-center gap-1"
+            className="text-[11px] font-medium text-[#0B4627] dark:text-emerald-400 hover:underline cursor-pointer flex items-center gap-1"
           >
-            <span>{isSanadExpanded ? 'Sembunyikan Silsilah' : 'Lihat Silsilah Sanad'}</span>
+            <span>{isSanadExpanded ? 'Sembunyikan Silsilah' : 'Lihat Silsilah'}</span>
             {isSanadExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
         </div>
-        <p className="text-[11px] text-gray-600 font-medium">
+        <p className="text-[11px] text-slate-600 dark:text-slate-400">
           Rantai transmisi talaqqi bersambung tanpa putus dari santri hingga Rasulullah ﷺ melalui Qira'at 'Ashim riwayat Hafs.
         </p>
 
         {isSanadExpanded && (
-          <div className="space-y-2 pt-1 border-t border-dashed border-gray-300">
-            <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-300 flex items-center justify-between text-xs">
-              <span className="font-bold text-gray-900">1. {userProfile.fullName || 'Hafidz Al-Huda'}</span>
-              <span className="text-[9px] font-mono font-bold bg-[#0B4627] text-white px-2 py-0.5 rounded">Generasi Sekarang</span>
+          <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 flex items-center justify-between text-xs">
+              <span className="font-semibold text-slate-900 dark:text-white">1. {userProfile.fullName || 'Hafidz Al-Huda'}</span>
+              <span className="text-[9px] font-mono font-medium bg-[#0B4627] text-white px-2 py-0.5 rounded">Generasi Sekarang</span>
             </div>
-            <div className="text-center text-xs text-gray-400 font-bold">↓ Talaqqi & Musyafahah</div>
-            <div className="p-2.5 bg-white rounded-xl border border-black flex items-center justify-between text-xs">
-              <span className="font-bold text-gray-900">2. Syekh Misyari Rasyid Al-Afasy</span>
-              <span className="text-[9px] font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-black">Ijazah 'Asyrah</span>
+            <div className="text-center text-xs text-slate-400 font-medium">↓ Talaqqi & Musyafahah</div>
+            <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs">
+              <span className="font-semibold text-slate-900 dark:text-white">2. Syekh Misyari Rasyid Al-Afasy</span>
+              <span className="text-[9px] font-mono font-medium bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded">Ijazah 'Asyrah</span>
             </div>
-            <div className="text-center text-xs text-gray-400 font-bold">↓ Sanad Al-Kufi</div>
-            <div className="p-2.5 bg-white rounded-xl border border-black flex items-center justify-between text-xs">
-              <span className="font-bold text-gray-900">3. Imam 'Ashim bin Abi an-Najud (w. 127 H)</span>
-              <span className="text-[9px] font-mono font-bold bg-blue-100 text-blue-900 px-2 py-0.5 rounded border border-black">Imam Qira'at Ke-5</span>
+            <div className="text-center text-xs text-slate-400 font-medium">↓ Sanad Al-Kufi</div>
+            <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs">
+              <span className="font-semibold text-slate-900 dark:text-white">3. Imam 'Ashim bin Abi an-Najud (w. 127 H)</span>
+              <span className="text-[9px] font-mono font-medium bg-blue-50 text-blue-900 border border-blue-200 px-2 py-0.5 rounded">Imam Qira'at Ke-5</span>
             </div>
-            <div className="text-center text-xs text-gray-400 font-bold">↓ Riwayat Thabi'in</div>
-            <div className="p-2.5 bg-white rounded-xl border border-black flex items-center justify-between text-xs">
-              <span className="font-bold text-gray-900">4. 'Ali bin Abi Thalib & 'Utsman bin 'Affan RA</span>
-              <span className="text-[9px] font-mono font-bold bg-purple-100 text-purple-900 px-2 py-0.5 rounded border border-black">Khulafaur Rasyidin</span>
+            <div className="text-center text-xs text-slate-400 font-medium">↓ Riwayat Thabi'in</div>
+            <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs">
+              <span className="font-semibold text-slate-900 dark:text-white">4. 'Ali bin Abi Thalib & 'Utsman bin 'Affan RA</span>
+              <span className="text-[9px] font-mono font-medium bg-purple-50 text-purple-900 border border-purple-200 px-2 py-0.5 rounded">Khulafaur Rasyidin</span>
             </div>
-            <div className="text-center text-xs text-gray-400 font-bold">↓ Talaqqi Wahyu</div>
-            <div className="p-2.5 bg-[#FEF3C7] rounded-xl border-2 border-black flex items-center justify-between text-xs font-black">
-              <span className="text-black">5. Rasulullah Muhammad ﷺ (Nabi Akhir Zaman)</span>
-              <span className="text-[9px] font-mono bg-[#0B4627] text-[#F59E0B] px-2 py-0.5 rounded border border-black">Khatamun Nabiyyin</span>
+            <div className="text-center text-xs text-slate-400 font-medium">↓ Talaqqi Wahyu</div>
+            <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 flex items-center justify-between text-xs font-semibold">
+              <span className="text-slate-900 dark:text-white">5. Rasulullah Muhammad ﷺ</span>
+              <span className="text-[9px] font-mono bg-[#0B4627] text-amber-300 px-2 py-0.5 rounded">Khatamun Nabiyyin</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Action Footer */}
-      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#F0FDF4] p-4 rounded-2xl border-2 border-[#0B4627]">
-        <div className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-[#0B4627]" />
+      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 bg-emerald-50/60 dark:bg-emerald-950/30 p-4 rounded-2xl border border-emerald-200/80 dark:border-emerald-900/40">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-[#0B4627] text-white flex items-center justify-center shrink-0">
+            <Target className="w-4 h-4" />
+          </div>
           <div>
-            <p className="text-xs font-black text-black">
+            <p className="text-xs font-bold text-slate-900 dark:text-white">
               {language === 'ar' ? 'هل أنت مستعد لبدء ورد المراجعة اليوم؟' : 'Siap Memulai Sesi Muroja\'ah Hari Ini?'}
             </p>
-            <p className="text-[11px] text-gray-600">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               {language === 'ar'
                 ? 'ابدأ التسميع الآن وسجل درجات التجويد لرفع مستوى إتقانك.'
-                : 'Mulai setoran lisan sekarang untuk merekam progres dan evaluasi tajwid antum secara otomatis.'}
+                : 'Mulai setoran lisan sekarang untuk melatih hafalan dan evaluasi tajwid.'}
             </p>
           </div>
         </div>
         <button
           onClick={onNavigateToMurojaah}
-          className="w-full sm:w-auto px-4 py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs rounded-xl border-2 border-black neo-button flex items-center justify-center gap-2 cursor-pointer shadow-[3px_3px_0px_0px_#000]"
+          className="w-full sm:w-auto px-4 py-2 bg-[#0B4627] hover:bg-[#07331b] text-white font-semibold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer transition shadow-xs shrink-0"
         >
-          <span>{language === 'ar' ? 'بدء المراجعة الذكية AI' : 'Mulai Muroja\'ah AI'}</span>
+          <span>{language === 'ar' ? 'بدء المراجعة' : 'Mulai Muroja\'ah'}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
-    </NeobrutalCard>
+    </div>
   );
 };
