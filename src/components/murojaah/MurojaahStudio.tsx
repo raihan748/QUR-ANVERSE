@@ -545,7 +545,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
     if (started) {
       setIsRecording(true);
     } else {
-      setSheikhTeguranMessage('Fitur Dikte Suara membutuhkan izin mikrofon atau gunakan browser Google Chrome / Edge / Safari.');
+      setSheikhTeguranMessage('Fitur Dikte Suara membutuhkan izin mikrofon atau browser yang mendukung Web Speech API.');
     }
   };
 

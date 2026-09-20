@@ -33,7 +33,7 @@ Muroja'ah mandiri santri terkendala minimnya media evaluasi lisan seketika. Pene
 
 ### 5. BAB 3: HASIL, IMPLEMENTASI, & ANGGARAN
 * **Fitur**: Studio Muroja'ah Real-time (indikator kata kuning/hijau), Mushaf 604 Halaman (8 tajwid dinamis), Simai Tutup Mata, dan Sambung Ayat.
-* **Anggaran (Zero-Cost)**: Vercel Hosting (Rp 0), Supabase DB (Rp 0), CDN Audio Quran.com (Rp 0), Dataset Tanzil (Rp 0). **Total: Rp 0,-**.
+* **Anggaran (Zero-Cost)**: Edge Hosting (Rp 0), Cloud Database (Rp 0), Public Audio CDN (Rp 0), Dataset Tanzil (Rp 0). **Total: Rp 0,-**.
 * **Kinerja**: Akurasi 94,8%, latensi < 150 ms, dan build Vite 3,1 detik.
 
 ---

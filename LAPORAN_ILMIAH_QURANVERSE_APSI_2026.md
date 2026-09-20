@@ -178,7 +178,7 @@ Proyek ini mengoptimalkan arsitektur *Zero-Cost Open-Source Infrastructure* sehi
 | 1 | **Frontend Hosting & CDN** | Vercel Global Edge Network (Hobby Tier) | Rp 0,- |
 | 2 | **Database & Cloud Storage** | Supabase Managed PostgreSQL + Storage | Rp 0,- |
 | 3 | **Dataset Al-Qur'an 30 Juz** | King Fahd Glorious Quran Printing Complex & Tanzil Core | Rp 0,- |
-| 4 | **Audio Stream Server** | Quran.com Public CDN High-Speed Audio Storage | Rp 0,- |
+| 4 | **Audio Stream Server** | Public High-Speed Audio CDN Storage | Rp 0,- |
 | 5 | **Domain & SSL Certificate** | Domain Edukasi / Vercel SSL Automated Let's Encrypt | Rp 0,- |
 | 6 | **Perangkat Keras Uji Coba** | Laptop & Mikrofon Kondenser Uji Coba Lab Komputer Sekolah | Terfasilitasi Sekolah |
 | **TOTAL** | **Biaya Operasional Nyata** | **Solusi Berkelanjutan Skala Terbuka** | **Rp 0,- (Zero Cost)** |
@@ -204,7 +204,7 @@ Proyek ini mengoptimalkan arsitektur *Zero-Cost Open-Source Infrastructure* sehi
 
 ### 6.3 Perbandingan dengan Proyek/Aplikasi Sejenis Terdahulu
 
-| Parameter Komparasi | Aplikasi Quran Konvensional (Quran.com / Muslim Pro) | Aplikasi Tahfizh Berbayar Komersial | **QURANVERSE (Proyek Ini)** |
+| Parameter Komparasi | Aplikasi Quran Konvensional Umum | Aplikasi Tahfizh Berbayar Komersial | **QURANVERSE (Proyek Ini)** |
 | :--- | :--- | :--- | :--- |
 | **Pendeteksian Kata Beruntun** | ❌ Tidak ada (hanya baca manual) | ✅ Ada (Berbayar/Langganan Bulanan) | **✅ Ada (Gratis, Open-Source & Akurat)** |
 | **Format Mushaf Madinah 604 Hal.** | ⚠️ Sebagian (Tampilan vertikal panjang) | ❌ Hanya tampilan per ayat | **✅ 100% Presisi 15 Baris Pojok 604 Halaman** |
