@@ -9,7 +9,8 @@ import {
   Sliders, 
   Gauge, 
   HelpCircle,
-  Maximize2
+  Maximize2,
+  Info
 } from 'lucide-react';
 import { ArticulatoryCoordinates, VocalTract3DHologramEngine } from '../../services/backend/frontier/VocalTract3DHologramEngine';
 
@@ -747,9 +748,9 @@ export const TalkingMouth3DViewer: React.FC<TalkingMouth3DViewerProps> = ({
           </div>
         </div>
 
-        {/* Anatomical Action Description */}
-        <p className="text-xs font-semibold text-emerald-200 bg-emerald-950/50 p-2 rounded-lg border border-emerald-700/50 leading-relaxed">
-          💡 <strong className="text-amber-300">Posisi Makhraj:</strong> {activePhoneme?.description}
+        <p className="text-xs font-semibold text-emerald-200 bg-emerald-950/50 p-2 rounded-lg border border-emerald-700/50 leading-relaxed flex items-center gap-1.5">
+          <Info className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+          <span><strong className="text-amber-300">Posisi Makhraj:</strong> {activePhoneme?.description}</span>
         </p>
       </div>
 

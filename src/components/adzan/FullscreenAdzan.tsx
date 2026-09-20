@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, X, Sparkles, BookOpen, Clock, Heart, Download } from 'lucide-react';
+import { Volume2, VolumeX, X, Sparkles, BookOpen, Clock, Heart, Download, Building2 } from 'lucide-react';
 import { PrayerTime } from '../../types';
 import { ADZAN_MARWAN_ALQASSAS_URL, audioPlayer } from '../../services/audioPlayerService';
 import { DOA_SETELAH_ADZAN } from '../../data/dzikirData';
@@ -65,8 +65,8 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
       {/* Top Header */}
       <div className="flex items-center justify-between relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black font-extrabold shadow-[3px_3px_0px_0px_#000]">
-            🕌
+          <div className="w-12 h-12 rounded-2xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black shadow-[3px_3px_0px_0px_#000]">
+            <Building2 className="w-6 h-6 text-black" />
           </div>
           <div>
             <span className="text-xs font-extrabold text-[#F59E0B] tracking-wider uppercase">
@@ -113,7 +113,7 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
       <div className="text-center relative z-10 my-auto max-w-2xl mx-auto space-y-6">
         {/* Animated Mosque & Wave */}
         <div className="w-28 h-28 mx-auto rounded-3xl bg-[#0B4627] border-3 border-[#F59E0B] flex items-center justify-center text-5xl shadow-[6px_6px_0px_0px_#000] animate-bounce">
-          🕌
+          <Building2 className="w-14 h-14 text-[#F59E0B]" />
         </div>
 
         <div>
@@ -128,7 +128,7 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
               Muadzin: Syekh Muhammad Marwan Al-Qassas (الشيخ محمد مروan قصاص)
             </p>
             <p className="text-[11px] text-emerald-200">
-              Masjid Nabawi, Madinah Al-Munawwarah 🇸🇦
+              Masjid Nabawi, Madinah Al-Munawwarah
             </p>
           </div>
         </div>
@@ -145,9 +145,10 @@ export const FullscreenAdzan: React.FC<FullscreenAdzanProps> = ({
         <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={() => setShowDoa(!showDoa)}
-            className="px-5 py-2.5 bg-[#FFFDF7] text-black font-extrabold text-xs rounded-xl border-2 border-black neo-button cursor-pointer"
+            className="px-5 py-2.5 bg-[#FFFDF7] text-black font-extrabold text-xs rounded-xl border-2 border-black neo-button cursor-pointer flex items-center gap-1.5"
           >
-            {showDoa ? 'Sembunyikan Doa' : '📖 Baca Doa Setelah Adzan'}
+            <BookOpen className="w-4 h-4" />
+            <span>{showDoa ? 'Sembunyikan Doa' : 'Baca Doa Setelah Adzan'}</span>
           </button>
 
           <a

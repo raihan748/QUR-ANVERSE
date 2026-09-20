@@ -9,7 +9,8 @@ import {
   BookOpen, 
   Settings2,
   Trophy,
-  Calendar
+  Calendar,
+  X
 } from 'lucide-react';
 import { NeobrutalCard } from './NeobrutalCard';
 import { 
@@ -167,14 +168,14 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
         </div>
       </div>
 
-      {/* 📅 MODAL ROADMAP 365 HARI (1 TAHUN KHATAM) */}
+      {/* MODAL ROADMAP 365 HARI (1 TAHUN KHATAM) */}
       <AnnualRoadmapModal
         isOpen={isRoadmapOpen}
         onClose={() => setIsRoadmapOpen(false)}
         onSelectTargetDay={handleSelectFromRoadmap}
       />
 
-      {/* ⚙️ MODAL GANTI TARGET HARIAN */}
+      {/* MODAL GANTI TARGET HARIAN */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white border-3 border-black rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-[8px_8px_0px_0px_#000] overflow-hidden">
@@ -187,8 +188,9 @@ export const DailyTargetWidget: React.FC<DailyTargetWidgetProps> = ({
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="w-8 h-8 rounded-xl bg-white text-black font-black text-sm flex items-center justify-center border-2 border-black cursor-pointer hover:bg-red-500 hover:text-white"
+                aria-label="Tutup"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

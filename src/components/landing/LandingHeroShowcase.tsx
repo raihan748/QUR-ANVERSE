@@ -155,23 +155,24 @@ export const LandingHeroShowcase: React.FC<LandingHeroShowcaseProps> = ({
 
                 {/* Word by Word Highlighting Example */}
                 <div className="flex flex-wrap gap-1.5 justify-center" dir="rtl">
-                  <span className="px-2 py-1 bg-[#D1FAE5] text-[#064E3B] border border-[#0B4627] rounded-lg font-quran text-sm font-bold">
-                    بِسْمِ <span className="text-[9px] font-sans font-extrabold text-green-700">✓</span>
+                  <span className="px-2 py-1 bg-[#D1FAE5] text-[#064E3B] border border-[#0B4627] rounded-lg font-quran text-sm font-bold inline-flex items-center gap-1">
+                    بِسْمِ <CheckCircle2 className="w-3 h-3 text-green-700 inline" />
                   </span>
-                  <span className="px-2 py-1 bg-[#D1FAE5] text-[#064E3B] border border-[#0B4627] rounded-lg font-quran text-sm font-bold">
-                    اللَّهِ <span className="text-[9px] font-sans font-extrabold text-green-700">✓</span>
+                  <span className="px-2 py-1 bg-[#D1FAE5] text-[#064E3B] border border-[#0B4627] rounded-lg font-quran text-sm font-bold inline-flex items-center gap-1">
+                    اللَّهِ <CheckCircle2 className="w-3 h-3 text-green-700 inline" />
                   </span>
                   <span className="px-2 py-1 bg-[#FEF3C7] text-[#92400E] border border-[#D97706] rounded-lg font-quran text-sm font-bold">
                     الرَّحْمَٰنِ <span className="text-[9px] font-sans font-extrabold text-amber-700">Mad 2 Harakat</span>
                   </span>
-                  <span className="px-2 py-1 bg-[#D1FAE5] text-[#064E3B] border border-[#0B4627] rounded-lg font-quran text-sm font-bold">
-                    الرَّحِيمِ <span className="text-[9px] font-sans font-extrabold text-green-700">✓</span>
+                  <span className="px-2 py-1 bg-[#D1FAE5] text-[#064E3B] border border-[#0B4627] rounded-lg font-quran text-sm font-bold inline-flex items-center gap-1">
+                    الرَّحِيمِ <CheckCircle2 className="w-3 h-3 text-green-700 inline" />
                   </span>
                 </div>
 
                 {/* Dialogue Adab */}
-                <div className="p-3 bg-[#D1FAE5] border border-[#0B4627] rounded-xl text-xs text-[#064E3B] font-bold">
-                  🧕 <i>"Maa Syaa Allah! Bacaan antum sangat merdu dan fasih, pertahankan panjang mad pada Ar-Rahman."</i>
+                <div className="p-3 bg-[#D1FAE5] border border-[#0B4627] rounded-xl text-xs text-[#064E3B] font-bold flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#0B4627] shrink-0" />
+                  <i>"Maa Syaa Allah! Bacaan antum sangat merdu dan fasih, pertahankan panjang mad pada Ar-Rahman."</i>
                 </div>
 
                 {/* Quick Action Button inside preview */}

@@ -32,7 +32,7 @@ export const DzikirCounter: React.FC = () => {
       <div className="flex items-center justify-between border-b-2 border-dashed border-gray-300 pb-3 mb-4">
         <div className="flex items-center gap-2">
           <span className="w-8 h-8 rounded-xl bg-[#F59E0B] border-2 border-black flex items-center justify-center text-black font-extrabold text-xs">
-            📿
+            <Sparkles className="w-4 h-4 text-black" />
           </span>
           <div>
             <h4 className="text-base font-extrabold text-black">Tasbih Digital & Dzikir Pagi Petang</h4>
@@ -62,8 +62,9 @@ export const DzikirCounter: React.FC = () => {
         <p className="text-xs text-gray-700 mt-1">
           "{currentDzikir.translation}"
         </p>
-        <p className="text-[11px] text-amber-900 bg-amber-100 p-2 rounded-lg mt-3 border border-amber-300">
-          ✨ Keutamaan: {currentDzikir.note}
+        <p className="text-[11px] text-amber-900 bg-amber-100 p-2 rounded-lg mt-3 border border-amber-300 flex items-center justify-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+          <span>Keutamaan: {currentDzikir.note}</span>
         </p>
       </div>
 

@@ -18,7 +18,8 @@ import {
   Check,
   Headphones,
   ChevronDown,
-  Edit3
+  Edit3,
+  X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Ayat, SimaiLevel, UserProfile, EvaluationResult } from '../../types';
@@ -147,7 +148,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
             expectedArabic: challengeData.next.arabicText,
             expectedLatin: challengeData.next.transliteration || '',
             wordEvaluations: [],
-            aiAdabPraise: '⚠️ Kendala Mikrofon',
+            aiAdabPraise: 'Kendala Mikrofon',
             aiCorrectionNote: `${err}. Santri dapat beralih menggunakan Mode Susun Potongan Ayat di bawah (100% Offline)!`,
             syekhAudioUrl: ''
           });
@@ -166,7 +167,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
         expectedArabic: challengeData.next.arabicText,
         expectedLatin: challengeData.next.transliteration || '',
         wordEvaluations: [],
-        aiAdabPraise: '⚠️ Izin Mikrofon Diperlukan',
+        aiAdabPraise: 'Izin Mikrofon Diperlukan',
         aiCorrectionNote: 'Fitur Dikte Suara memerlukan izin mikrofon browser. Anda juga dapat menggunakan Mode Susun Potongan Ayat di bawah secara 100% Offline!',
         syekhAudioUrl: ''
       });
@@ -292,9 +293,10 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                     </span>
                     <button
                       onClick={() => setIsReciterMenuOpen(false)}
-                      className="text-xs font-bold text-gray-500 hover:text-black"
+                      className="text-xs font-bold text-gray-500 hover:text-black p-0.5"
+                      aria-label="Tutup"
                     >
-                      ✕
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   {RECITERS_LIST.map((r) => {
@@ -343,7 +345,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                       : 'text-gray-300 hover:text-white'
                   }`}
                 >
-                  {lvl === 'pemula' ? '🟢 Pemula' : lvl === 'hafidz' ? '🟡 Hafidz' : '🔥 Hafidzah'}
+                  {lvl === 'pemula' ? 'Pemula' : lvl === 'hafidz' ? 'Hafidz' : 'Hafidzah'}
                 </button>
               ))}
             </div>
@@ -481,7 +483,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                     speechLanguage === 'ar-SA' ? 'bg-[#10B981] text-black' : 'text-emerald-200 hover:text-white'
                   }`}
                 >
-                  🇸🇦 Arab
+                  [SA] Arab
                 </button>
                 <button
                   onClick={() => setSpeechLanguage('ar-KW')}
@@ -489,7 +491,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                     speechLanguage === 'ar-KW' ? 'bg-amber-400 text-black' : 'text-emerald-200 hover:text-white'
                   }`}
                 >
-                  🇰🇼 Kuwait
+                  [KW] Kuwait
                 </button>
                 <button
                   onClick={() => setSpeechLanguage('id-ID')}
@@ -497,7 +499,7 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                     speechLanguage === 'id-ID' ? 'bg-[#F59E0B] text-black' : 'text-emerald-200 hover:text-white'
                   }`}
                 >
-                  🇮🇩 Latin
+                  [ID] Latin
                 </button>
               </div>
             )}
@@ -535,12 +537,13 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                     <div className="flex items-center justify-between text-[11px] font-black text-emerald-300 border-b border-emerald-700/60 pb-1" dir="ltr">
                       <span className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                        🎙️ HASIL DIKTE SUARA (LIVE TRANSCRIPT ARAB):
+                        <Mic className="w-3.5 h-3.5 text-amber-300 inline" />
+                        <span>HASIL DIKTE SUARA (LIVE TRANSCRIPT ARAB):</span>
                       </span>
                       <span className="font-mono text-amber-300">Aktif</span>
                     </div>
                     <p className="font-arabic text-xl sm:text-2xl font-bold text-amber-300 leading-loose break-words pt-1" dir="rtl">
-                      {spokenTranscript ? `« ${spokenTranscript} »` : '⏳ Sedang mendengarkan lantunan ayat Anda...'}
+                      {spokenTranscript ? `« ${spokenTranscript} »` : 'Sedang mendengarkan lantunan ayat Anda...'}
                     </p>
                   </div>
 
@@ -583,9 +586,10 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
                         setSelectedChips(prev => prev.filter((_, i) => i !== idx));
                         setWordChips(prev => [...prev, word]);
                       }}
-                      className="px-3 py-1.5 bg-[#10B981] text-black font-quran text-lg font-bold rounded-lg border border-black hover:bg-red-400 transition-colors"
+                      className="px-3 py-1.5 bg-[#10B981] text-black font-quran text-lg font-bold rounded-lg border border-black hover:bg-red-400 transition-colors inline-flex items-center gap-1.5"
                     >
-                      {word} ✕
+                      <span>{word}</span>
+                      <X className="w-3.5 h-3.5 text-black/70" />
                     </button>
                   ))
                 )}
@@ -610,9 +614,10 @@ export const SimaiTutupMata: React.FC<SimaiTutupMataProps> = ({
               {selectedChips.length > 0 && (
                 <button
                   onClick={handleEvaluateChips}
-                  className="w-full py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs rounded-xl border-2 border-black neo-button mt-2 cursor-pointer"
+                  className="w-full py-2.5 bg-[#F59E0B] hover:bg-[#D97706] text-black font-black text-xs rounded-xl border-2 border-black neo-button mt-2 cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  ✓ Periksa Susunan Kata
+                  <Check className="w-4 h-4" />
+                  <span>Periksa Susunan Kata</span>
                 </button>
               )}
             </div>

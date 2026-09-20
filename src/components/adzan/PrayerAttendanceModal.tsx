@@ -7,6 +7,24 @@ import {
   PRAYER_XP_REWARDS 
 } from '../../services/prayerAttendanceService';
 import confetti from 'canvas-confetti';
+import { 
+  Sparkles, 
+  Building2, 
+  CheckCircle2, 
+  CheckSquare, 
+  Clock, 
+  Flame, 
+  Circle, 
+  Home, 
+  BookOpen, 
+  Check, 
+  Sunrise, 
+  Sun, 
+  CloudSun, 
+  Sunset, 
+  Moon, 
+  X 
+} from 'lucide-react';
 
 interface PrayerAttendanceModalProps {
   isOpen: boolean;
@@ -104,6 +122,17 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
   const dueRecord = duePrayer ? attendance.records[duePrayer.id as 'subuh' | 'dzuhur' | 'ashar' | 'maghrib' | 'isya'] : null;
   const isDuePrayerCompleted = dueRecord && dueRecord.status !== 'belum';
 
+  const renderPrayerTimeIcon = (iconName: string, className = "w-5 h-5") => {
+    switch (iconName) {
+      case 'sunrise': return <Sunrise className={`${className} text-amber-400`} />;
+      case 'sun': return <Sun className={`${className} text-amber-400`} />;
+      case 'cloud-sun': return <CloudSun className={`${className} text-orange-400`} />;
+      case 'sunset': return <Sunset className={`${className} text-rose-400`} />;
+      case 'moon': return <Moon className={`${className} text-indigo-400`} />;
+      default: return <Clock className={`${className} text-emerald-400`} />;
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
       <div className="relative w-full max-w-2xl max-h-[92vh] flex flex-col bg-[#0F172A] border-2 border-emerald-500/30 rounded-3xl shadow-2xl shadow-emerald-950/80 overflow-hidden text-white font-sans">
@@ -114,7 +143,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
         {/* Floating Reward Toast Notification */}
         {justAwardedXp !== null && justAwardedXp > 0 && (
           <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-gradient-to-r from-amber-500 to-emerald-600 text-white font-bold px-4 py-2 rounded-2xl shadow-xl animate-bounce">
-            <span className="text-xl">✨</span>
+            <Sparkles className="w-5 h-5 text-white" />
             <span>+{justAwardedXp} XP Diperoleh!</span>
           </div>
         )}
@@ -122,8 +151,8 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
         {/* Modal Header */}
         <div className="p-5 sm:p-6 bg-slate-900/90 border-b border-slate-800 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-2xl shadow-lg shadow-emerald-900/50 border border-emerald-400/30">
-              🕌
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-900/50 border border-emerald-400/30">
+              <Building2 className="w-6 h-6 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -145,7 +174,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
             className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
             title="Tutup Jurnal Absensi"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -156,14 +185,14 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
           {duePrayer && (
             isDuePrayerCompleted ? (
               <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-emerald-900/60 to-slate-900 border border-emerald-500/60 flex items-start gap-3 shadow-lg">
-                <span className="text-2xl">✅</span>
+                <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
                 <div className="flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <h4 className="text-sm sm:text-base font-black text-emerald-300">
                       Alhamdulillah! Sholat {duePrayer.name} Telah Tercatat Selesai
                     </h4>
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/30 text-emerald-300 border border-emerald-500/40">
-                      {dueRecord?.status === 'jamaah_masjid' ? '🕌 Berjamaah (+50 XP)' : dueRecord?.status === 'tepat_waktu' ? '⏰ Awal Waktu (+30 XP)' : '🏠 Munfarid (+20 XP)'}
+                      {dueRecord?.status === 'jamaah_masjid' ? 'Berjamaah (+50 XP)' : dueRecord?.status === 'tepat_waktu' ? 'Awal Waktu (+30 XP)' : 'Munfarid (+20 XP)'}
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
@@ -173,7 +202,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
               </div>
             ) : dueRecord?.status === 'belum' ? (
               <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-600 flex items-start gap-3 shadow-lg">
-                <span className="text-2xl">📝</span>
+                <CheckSquare className="w-6 h-6 text-slate-300 shrink-0" />
                 <div className="flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <h4 className="text-sm sm:text-base font-bold text-slate-200">
@@ -191,7 +220,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                       onClick={() => handleSelectStatus(duePrayer.id as any, 'tepat_waktu')}
                       className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition cursor-pointer"
                     >
-                      <span>✓</span>
+                      <Check className="w-3.5 h-3.5" />
                       <span>Sekarang Sudah Sholat {duePrayer.name}</span>
                     </button>
                     <button
@@ -205,7 +234,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
               </div>
             ) : (
               <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/60 via-amber-900/40 to-slate-900 border border-amber-500/40 flex items-start gap-3 shadow-lg">
-                <span className="text-2xl animate-pulse">⏰</span>
+                <Clock className="w-6 h-6 text-amber-400 animate-pulse shrink-0" />
                 <div className="flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <h4 className="text-sm sm:text-base font-bold text-amber-300">
@@ -223,7 +252,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                       onClick={() => handleSelectStatus(duePrayer.id as any, 'tepat_waktu')}
                       className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition cursor-pointer"
                     >
-                      <span>✓</span>
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
                       <span>Saya Sudah Sholat {duePrayer.name}</span>
                     </button>
                     <button
@@ -280,7 +309,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
 
             <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
               <div className="px-3.5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2">
-                <span className="text-lg">🔥</span>
+                <Flame className="w-5 h-5 text-amber-400" />
                 <div>
                   <div className="text-[10px] text-amber-400/80 font-bold uppercase">Streak Sholat</div>
                   <div className="text-sm font-black text-amber-300">{streakDays} Hari Rutin</div>
@@ -288,7 +317,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
               </div>
 
               <div className="px-3.5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2">
-                <span className="text-lg">✨</span>
+                <Sparkles className="w-5 h-5 text-emerald-400" />
                 <div>
                   <div className="text-[10px] text-emerald-400/80 font-bold uppercase">Total Pahala XP</div>
                   <div className="text-sm font-black text-emerald-300">+{attendance.totalXpEarned || 0} XP</div>
@@ -300,7 +329,8 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
           {/* 5 Fardhu Prayer Attendance List */}
           <div className="space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-              <span>📋 Ceklis Sholat Fardhu Hari Ini</span>
+              <CheckSquare className="w-4 h-4 text-emerald-400" />
+              <span>Ceklis Sholat Fardhu Hari Ini</span>
             </h3>
 
             {FARDHU_PRAYER_IDS.map((pId) => {
@@ -337,11 +367,11 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                         }`}
                         title={isCompleted ? 'Batalkan centang (ubah ke belum)' : 'Centang sudah sholat'}
                       >
-                        <span className="text-base font-black leading-none">✓</span>
+                        <Check className="w-5 h-5 stroke-[3]" />
                       </button>
 
-                      <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xl shrink-0">
-                        {meta.icon}
+                      <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700">
+                        {renderPrayerTimeIcon(meta.icon)}
                       </div>
 
                       <div>
@@ -350,12 +380,12 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                           <span className="font-arabic text-slate-400 text-sm">{meta.arabic}</span>
                           {isCompleted ? (
                             <span className="px-2 py-0.5 text-[10px] font-black uppercase rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                              <span>✓</span>
+                              <Check className="w-3 h-3 stroke-[3]" />
                               <span>SELESAI</span>
                             </span>
                           ) : currentStatus === 'belum' && record ? (
                             <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1">
-                              <span>⭕</span>
+                              <Circle className="w-2.5 h-2.5 text-gray-500" />
                               <span>DITANDAI BELUM</span>
                             </span>
                           ) : isDueNow ? (
@@ -388,7 +418,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                         }`}
                         title="Sholat Berjamaah di Masjid (+50 XP)"
                       >
-                        <span>🕌</span>
+                        <Building2 className="w-3.5 h-3.5" />
                         <span>Berjamaah</span>
                         <span className="text-[10px] opacity-75">+50</span>
                       </button>
@@ -403,7 +433,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                         }`}
                         title="Sholat Tepat Waktu (+30 XP)"
                       >
-                        <span>⏰</span>
+                        <Clock className="w-3.5 h-3.5" />
                         <span>Awal Waktu</span>
                         <span className="text-[10px] opacity-75">+30</span>
                       </button>
@@ -418,7 +448,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                         }`}
                         title="Sholat Sendirian / Munfarid (+20 XP)"
                       >
-                        <span>🏠</span>
+                        <Home className="w-3.5 h-3.5" />
                         <span>Munfarid</span>
                         <span className="text-[10px] opacity-75">+20</span>
                       </button>
@@ -433,7 +463,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
                         }`}
                         title="Belum Menunaikan Sholat"
                       >
-                        <span>⭕</span>
+                        <Circle className="w-3 h-3 text-gray-500" />
                         <span>Belum</span>
                       </button>
                     </div>
@@ -446,7 +476,7 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
 
           {/* Motivational Hadith Card */}
           <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/20 flex items-start gap-3">
-            <span className="text-xl text-emerald-400 shrink-0">📖</span>
+            <BookOpen className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
             <p className="text-xs sm:text-sm text-emerald-200/90 leading-relaxed italic">
               "Amalan yang paling dicintai oleh Allah adalah sholat pada awal waktunya."
               <span className="block not-italic font-semibold text-emerald-400 text-xs mt-1">— HR. Bukhari & Muslim</span>
@@ -465,9 +495,10 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
             {duePrayer && !isDuePrayerCompleted && (
               <button
                 onClick={handleSnooze}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs sm:text-sm font-bold transition cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs sm:text-sm font-bold transition cursor-pointer flex items-center justify-center gap-1.5"
               >
-                🕒 Ingatkan 15 Mnt Lagi
+                <Clock className="w-3.5 h-3.5" />
+                <span>Ingatkan 15 Mnt Lagi</span>
               </button>
             )}
 
@@ -475,7 +506,8 @@ export const PrayerAttendanceModal: React.FC<PrayerAttendanceModalProps> = ({
               onClick={handleCloseModal}
               className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-emerald-950 transition flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>✅ Simpan & Tutup</span>
+              <Check className="w-4 h-4" />
+              <span>Simpan & Tutup</span>
             </button>
           </div>
         </div>

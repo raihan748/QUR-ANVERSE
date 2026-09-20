@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Book, Layers, Sparkles, Headphones, ChevronDown, Check, Clock } from 'lucide-react';
+import { Search, Book, Layers, Sparkles, Headphones, ChevronDown, Check, Clock, X } from 'lucide-react';
 import { SURAH_LIST, JUZ_MAP, getSurahsInJuz } from '../../data/quranData';
 import { SurahMeta } from '../../types';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
@@ -83,9 +83,10 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-2.5 text-xs text-gray-400 hover:text-black font-bold"
+              className="absolute right-3 top-2.5 text-gray-400 hover:text-black flex items-center justify-center"
+              aria-label="Hapus pencarian"
             >
-              ✕
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
@@ -159,9 +160,10 @@ export const SurahSelector: React.FC<SurahSelectorProps> = ({
                   </span>
                   <button
                     onClick={() => setIsReciterMenuOpen(false)}
-                    className="text-xs font-bold text-gray-500 hover:text-black"
+                    className="text-gray-500 hover:text-black p-0.5"
+                    aria-label="Tutup"
                   >
-                    ✕
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
                 <div className="max-h-72 overflow-y-auto space-y-1 pr-1">

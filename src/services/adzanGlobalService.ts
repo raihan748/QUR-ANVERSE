@@ -86,7 +86,7 @@ class AdzanGlobalService {
               // Web / PWA Push Notification
               if ('Notification' in window && Notification.permission === 'granted') {
                 try {
-                  new Notification(`🕌 Waktu Shalat ${prayer.name} Telah Tiba!`, {
+                  new Notification(`Waktu Shalat ${prayer.name} Telah Tiba!`, {
                     body: `Lantunan Adzan: Syekh Muhammad Marwan Al-Qassas (Muadzin Masjid Nabawi Madinah).`,
                     icon: '/favicon.svg',
                     badge: '/icon-192.svg'

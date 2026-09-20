@@ -11,7 +11,9 @@ import {
   Network,
   KeyRound,
   Check,
-  AlertCircle
+  AlertCircle,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { UserProfile, MurojaahSessionLog, WeakVerse } from '../../types';
 import { NeobrutalCard } from '../common/NeobrutalCard';
@@ -247,7 +249,7 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
             {totalSessions} <span className="text-xs font-bold text-gray-700">{language === 'ar' ? 'جلسة' : 'Sesi'}</span>
           </span>
           <span className="text-[10px] text-emerald-700 font-bold block mt-0.5">
-            {totalPassed > 0 ? `✓ ${totalPassed} Sesi Mutqin` : '0 Sesi Disimpan'}
+            {totalPassed > 0 ? `${totalPassed} Sesi Mutqin` : '0 Sesi Disimpan'}
           </span>
         </div>
 
@@ -341,7 +343,7 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center border font-bold text-xs ${
                     log.passed ? 'bg-emerald-100 text-emerald-900 border-emerald-400' : 'bg-amber-100 text-amber-900 border-amber-400'
                   }`}>
-                    {log.passed ? '✓' : '!'}
+                    {log.passed ? <Check className="w-4 h-4 text-emerald-800" /> : <AlertCircle className="w-4 h-4 text-amber-800" />}
                   </div>
                   <div>
                     <p className="text-xs font-extrabold text-black">
@@ -459,9 +461,10 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
           </div>
           <button
             onClick={() => setIsSanadExpanded(!isSanadExpanded)}
-            className="text-[10px] font-bold text-[#0B4627] hover:underline cursor-pointer font-mono"
+            className="text-[10px] font-bold text-[#0B4627] hover:underline cursor-pointer font-mono flex items-center gap-1"
           >
-            {isSanadExpanded ? 'Sembunyikan Silsilah ▲' : 'Lihat Silsilah Sanad ▼'}
+            <span>{isSanadExpanded ? 'Sembunyikan Silsilah' : 'Lihat Silsilah Sanad'}</span>
+            {isSanadExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
         </div>
         <p className="text-[11px] text-gray-600 font-medium">

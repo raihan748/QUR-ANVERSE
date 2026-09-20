@@ -10,7 +10,9 @@ import {
   ChevronRight, 
   Search, 
   Trophy,
-  Filter
+  Filter,
+  Clock,
+  X
 } from 'lucide-react';
 import { 
   RoadmapDayItem, 
@@ -78,8 +80,9 @@ export const AnnualRoadmapModal: React.FC<AnnualRoadmapModalProps> = ({
           <button
             onClick={onClose}
             className="w-9 h-9 rounded-2xl bg-white text-black font-black text-sm flex items-center justify-center border-2 border-black cursor-pointer hover:bg-red-500 hover:text-white shrink-0"
+            aria-label="Tutup"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -98,11 +101,13 @@ export const AnnualRoadmapModal: React.FC<AnnualRoadmapModalProps> = ({
           </div>
 
           <div className="flex items-center gap-3 text-xs font-black">
-            <span className="px-3 py-1.5 bg-white rounded-xl border-2 border-black">
-              ✅ {annualProgress.completedDaysCount} Hari Tuntas
+            <span className="px-3 py-1.5 bg-white rounded-xl border-2 border-black flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>{annualProgress.completedDaysCount} Hari Tuntas</span>
             </span>
-            <span className="px-3 py-1.5 bg-white rounded-xl border-2 border-black text-amber-900">
-              ⏳ {365 - annualProgress.completedDaysCount} Hari Tersisa
+            <span className="px-3 py-1.5 bg-white rounded-xl border-2 border-black text-amber-900 flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-amber-600" />
+              <span>{365 - annualProgress.completedDaysCount} Hari Tersisa</span>
             </span>
           </div>
         </div>

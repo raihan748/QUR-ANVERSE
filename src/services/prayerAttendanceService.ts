@@ -34,11 +34,11 @@ export const FARDHU_PRAYER_IDS: Array<'subuh' | 'dzuhur' | 'ashar' | 'maghrib' |
 ];
 
 export const PRAYER_DISPLAY_META: Record<string, { name: string; arabic: string; icon: string }> = {
-  subuh: { name: 'Subuh', arabic: 'الفجر', icon: '🌅' },
-  dzuhur: { name: 'Dzuhur', arabic: 'الظهر', icon: '☀️' },
-  ashar: { name: 'Ashar', arabic: 'العصر', icon: '🌤️' },
-  maghrib: { name: 'Maghrib', arabic: 'المغرب', icon: '🌇' },
-  isya: { name: 'Isya', arabic: 'العشاء', icon: '🌙' }
+  subuh: { name: 'Subuh', arabic: 'الفجر', icon: 'sunrise' },
+  dzuhur: { name: 'Dzuhur', arabic: 'الظهر', icon: 'sun' },
+  ashar: { name: 'Ashar', arabic: 'العصر', icon: 'cloud-sun' },
+  maghrib: { name: 'Maghrib', arabic: 'المغرب', icon: 'sunset' },
+  isya: { name: 'Isya', arabic: 'العشاء', icon: 'moon' }
 };
 
 export class PrayerAttendanceService {

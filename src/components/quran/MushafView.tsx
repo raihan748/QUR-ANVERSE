@@ -161,7 +161,7 @@ export const MushafView: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-24 max-w-5xl mx-auto">
-      {/* 🌟 DUAL MODE SWITCHER: DIGITAL vs PHYSICAL 604-PAGE MUSHAF */}
+      {/* DUAL MODE SWITCHER: DIGITAL vs PHYSICAL 604-PAGE MUSHAF */}
       <div className="flex border-2 border-black rounded-2xl overflow-hidden bg-[#E5E7EB] p-1 gap-1 shadow-[2px_2px_0px_0px_#111827]">
         <button
           onClick={() => handleSetViewMode('digital')}

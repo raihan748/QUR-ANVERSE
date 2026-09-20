@@ -138,7 +138,7 @@ class QuranVaultEngine {
         }
 
         this.midnightTimerId = setTimeout(() => {
-          console.log('🌙 [QURAN VAULT] 00:00 Midnight Trigger Fired! Executing Autonomous Reconciliation & Self-Healing...');
+          console.log('[QURAN VAULT] 00:00 Midnight Trigger Fired! Executing Autonomous Reconciliation & Self-Healing...');
           this.runFullVaultAuditAndSelfHeal();
           scheduleNextMidnight();
         }, msToMidnight);
@@ -417,7 +417,7 @@ class QuranVaultEngine {
   }
 
   /**
-   * ⚡ LIVE JURY DEMO: Simulates a real-time malicious deface attempt on an Ayah
+   * LIVE JURY DEMO: Simulates a real-time malicious deface attempt on an Ayah
    * Alters a harakat (kasrah -> dhammah), verifies hash mismatch, records incident, and self-heals from Cold Storage!
    */
   public simulateTamperAttack(surahNumber: number = 1, ayahNumber: number = 1): VerificationResult & { message: string; originalText: string; tamperedText: string } {
@@ -441,7 +441,7 @@ class QuranVaultEngine {
       ...result,
       originalText,
       tamperedText,
-      message: `🚨 Percobaan manipulasi Surah ${surahNumber}:${ayahNumber} terdeteksi! Hash berubah dari ${result.expectedHash.slice(0, 16)}... menjadi ${result.actualHash.slice(0, 16)}... Teks suci asli berhasil dipulihkan secara otomatis dari Cold Storage Vault.`
+      message: `Percobaan manipulasi Surah ${surahNumber}:${ayahNumber} terdeteksi! Hash berubah dari ${result.expectedHash.slice(0, 16)}... menjadi ${result.actualHash.slice(0, 16)}... Teks suci asli berhasil dipulihkan secara otomatis dari Cold Storage Vault.`
     };
   }
 }

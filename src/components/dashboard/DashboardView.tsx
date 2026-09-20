@@ -7,7 +7,16 @@ import {
   Calendar, 
   TrendingUp, 
   Award,
-  BookOpen
+  BookOpen,
+  Building2,
+  Flame,
+  CheckSquare,
+  Trophy,
+  Headphones,
+  Zap,
+  Crown,
+  Check,
+  Circle
 } from 'lucide-react';
 import { UserProfile, WeakVerse, AchievementBadge } from '../../types';
 import { getWeakVerses, resolveWeakVerse } from '../../services/offlineStorage';
@@ -81,11 +90,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </NeobrutalCard>
 
-      {/* 🕌 JURNAL & ABSENSI SHOLAT 5 WAKTU WIDGET */}
+      {/* JURNAL & ABSENSI SHOLAT 5 WAKTU WIDGET */}
       <div className="bg-[#FFFDF7] dark:bg-[#1E293B] border-3 border-black rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#111827] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500 border-2 border-black flex items-center justify-center text-2xl shadow-[2px_2px_0px_0px_#000] text-white shrink-0">
-            🕌
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500 border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_#000] text-white shrink-0">
+            <Building2 className="w-6 h-6 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -96,8 +105,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 {prayerStats.todayCompleted} / 5 SELESAI ({prayerStats.percentage}%)
               </span>
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
-              🔥 Streak Disiplin: <strong className="text-amber-600 dark:text-amber-400 font-bold">{prayerStats.streakDays} Hari</strong> • Total Pahala Hari Ini: <strong className="text-emerald-700 dark:text-emerald-400 font-bold">+{prayerStats.todayXp} XP</strong>
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5 flex items-center gap-1">
+              <Flame className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span>Streak Disiplin: <strong className="text-amber-600 dark:text-amber-400 font-bold">{prayerStats.streakDays} Hari</strong> • Total Pahala Hari Ini: <strong className="text-emerald-700 dark:text-emerald-400 font-bold">+{prayerStats.todayXp} XP</strong></span>
             </p>
             {/* Quick 5-Prayer Check Status Badges */}
             <div className="flex items-center gap-1.5 flex-wrap mt-2">
@@ -117,7 +127,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     }`}
                     title={`Klik untuk mencatat absensi sholat ${label}`}
                   >
-                    <span>{isDone ? '✓' : '○'}</span>
+                    <span className="flex items-center justify-center">
+                      {isDone ? <Check className="w-3 h-3 text-slate-950 stroke-[3]" /> : <Circle className="w-2.5 h-2.5 text-gray-400" />}
+                    </span>
                     <span>{label}</span>
                   </button>
                 );
@@ -131,16 +143,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             onClick={onOpenPrayerAttendanceModal}
             className="w-full sm:w-auto px-4 py-2 bg-[#F59E0B] hover:bg-[#D97706] text-black border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition shrink-0"
           >
-            <span>📋</span>
+            <CheckSquare className="w-4 h-4" />
             <span>Buka Ceklis Sholat</span>
           </button>
         )}
       </div>
 
-      {/* 🎯 TARGET TILAWAH & MUROJA'AH HARI INI */}
+      {/* TARGET TILAWAH & MUROJA'AH HARI INI */}
       <DailyTargetWidget onStartTarget={() => onNavigateToMurojaah()} />
 
-      {/* 📊 STATISTIK KELANCARAN & ANALISIS TAJWID */}
+      {/* STATISTIK KELANCARAN & ANALISIS TAJWID */}
       <TahfidzMasteryAnalytics 
         userProfile={userProfile} 
         onNavigateToMurojaah={onNavigateToMurojaah} 
@@ -168,53 +180,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         {weakVerses.length === 0 ? (
           <div className="text-center py-6 text-xs font-bold text-gray-500">
-            🌱 Belum ada ayat lemah tercatat. Mulai setoran muroja'ah Anda untuk melatih hafalan dari nol!
+            Belum ada ayat lemah tercatat. Mulai setoran muroja'ah Anda untuk melatih hafalan dari nol!
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {weakVerses.map((v) => (
               <div
-                key={v.id}
-                className={`p-4 rounded-xl border-2 border-black flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
-                  v.resolved ? 'bg-gray-100 opacity-60' : 'bg-white shadow-[3px_3px_0px_0px_#DC2626]'
+                key={`${v.surahNumber}_${v.ayahNumber}`}
+                className={`p-3.5 rounded-xl border-2 border-black flex items-center justify-between gap-3 ${
+                  v.resolved ? 'bg-gray-100 opacity-60' : 'bg-[#FEF2F2]'
                 }`}
               >
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-extrabold text-xs text-black">
-                      Surat {v.surahName} : Ayat {v.ayahNumber}
-                    </span>
-                    <span className="text-[10px] bg-red-100 text-red-800 px-1.5 py-0.2 rounded border border-red-300 font-bold">
-                      {v.errorCount}x Keliru
-                    </span>
-                  </div>
-                  <p className="font-quran text-lg text-emerald-950 font-bold mt-1 text-right sm:text-left" dir="rtl">
-                    {v.arabicText}
+                  <p className="font-extrabold text-xs text-black">
+                    QS. {v.surahNumber} : Ayat {v.ayahNumber}
+                  </p>
+                  <p className="text-[11px] text-gray-600">
+                    Salah diulang {v.errorCount}x • Terakhir: {v.lastTestedDate}
                   </p>
                 </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => audioPlayer.playAyat(v.surahNumber, v.ayahNumber)}
-                    className="p-2 bg-[#D1FAE5] text-[#0B4627] border border-black rounded-lg text-xs font-bold neo-button cursor-pointer"
-                    title="Dengarkan Suara Syekh"
-                  >
-                    Dengar Syekh
-                  </button>
+                {!v.resolved && (
                   <button
                     onClick={() => handleResolveWeak(v)}
-                    className="p-2 bg-[#F59E0B] text-black border border-black rounded-lg text-xs font-bold neo-button cursor-pointer"
+                    className="p-1.5 bg-white border border-black rounded-lg hover:bg-[#10B981] hover:text-white transition cursor-pointer"
+                    title="Tandai Sudah Lancar"
                   >
-                    {v.resolved ? 'Tuntas' : 'Tandai Sembuh'}
+                    <CheckCircle2 className="w-4 h-4" />
                   </button>
-                </div>
+                )}
               </div>
             ))}
           </div>
         )}
       </NeobrutalCard>
-
-
 
       {/* BADGES COLLECTION */}
       <NeobrutalCard variant="white" className="p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827]">
@@ -224,25 +222,43 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {badges.map((b) => (
-            <div
-              key={b.id}
-              className={`p-3.5 rounded-xl border-2 border-black flex items-center gap-3 ${
-                b.unlocked
-                  ? 'bg-[#D1FAE5] text-black shadow-[3px_3px_0px_0px_#0B4627]'
-                  : 'bg-gray-100 opacity-50'
-              }`}
-            >
-              <span className="text-3xl">{b.icon}</span>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <p className="font-extrabold text-xs">{b.title}</p>
-                  {b.unlocked && <CheckCircle2 className="w-3.5 h-3.5 text-green-700" />}
+          {badges.map((b) => {
+            const renderIcon = () => {
+              const cls = "w-6 h-6 shrink-0";
+              switch (b.icon) {
+                case 'sparkles': return <Sparkles className={`${cls} text-amber-500`} />;
+                case 'crown': return <Crown className={`${cls} text-amber-500`} />;
+                case 'flame': return <Flame className={`${cls} text-orange-500`} />;
+                case 'trophy': return <Trophy className={`${cls} text-yellow-500`} />;
+                case 'headphones': return <Headphones className={`${cls} text-blue-500`} />;
+                case 'zap': return <Zap className={`${cls} text-amber-500`} />;
+                case 'book': return <BookOpen className={`${cls} text-emerald-600`} />;
+                default: return <Award className={`${cls} text-[#0B4627]`} />;
+              }
+            };
+
+            return (
+              <div
+                key={b.id}
+                className={`p-3.5 rounded-xl border-2 border-black flex items-center gap-3 ${
+                  b.unlocked
+                    ? 'bg-[#D1FAE5] text-black shadow-[3px_3px_0px_0px_#0B4627]'
+                    : 'bg-gray-100 opacity-50'
+                }`}
+              >
+                <div className="w-10 h-10 rounded-xl bg-white border border-black flex items-center justify-center shrink-0 shadow-xs">
+                  {renderIcon()}
                 </div>
-                <p className="text-[11px] text-gray-700">{b.description}</p>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-extrabold text-xs">{b.title}</p>
+                    {b.unlocked && <CheckCircle2 className="w-3.5 h-3.5 text-green-700" />}
+                  </div>
+                  <p className="text-[11px] text-gray-700">{b.description}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </NeobrutalCard>
     </div>

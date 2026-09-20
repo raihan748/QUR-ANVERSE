@@ -123,7 +123,7 @@ class NativeAdzanScheduler {
 
             notificationsToSchedule.push({
               id: numericId,
-              title: `🕌 Waktu Shalat ${prayer.name} Telah Tiba!`,
+              title: `Waktu Shalat ${prayer.name} Telah Tiba!`,
               body: `Lantunan Adzan Madinah: Syekh Muhammad Marwan Al-Qassas (Muadzin Masjid Nabawi). Hayya 'alash-Shalah...`,
               channelId: NATIVE_ADZAN_CHANNEL_ID,
               sound: NATIVE_ADZAN_SOUND,
@@ -172,7 +172,7 @@ class NativeAdzanScheduler {
           notifications: [
             {
               id: 99999,
-              title: `🕌 [UJI COBA] Waktu Shalat ${prayerName} Tiba!`,
+              title: `[UJI COBA] Waktu Shalat ${prayerName} Tiba!`,
               body: `Suara Adzan Madinah: Syekh Muhammad Marwan Al-Qassas (Masjid Nabawi). Berhasil aktif di latar belakang!`,
               channelId: NATIVE_ADZAN_CHANNEL_ID,
               sound: NATIVE_ADZAN_SOUND,

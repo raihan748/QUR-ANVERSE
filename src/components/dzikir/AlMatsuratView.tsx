@@ -539,7 +539,7 @@ export const AlMatsuratView: React.FC = () => {
               <span className={`px-2.5 py-1 rounded-lg border-2 border-black text-xs font-black uppercase tracking-wider ${
                 isMorning ? 'bg-[#F59E0B] text-black' : 'bg-[#38BDF8] text-black'
               }`}>
-                {isMorning ? '🌅 Al-Ma\'tsurat Pagi' : '🌇 Al-Ma\'tsurat Petang'}
+                {isMorning ? "Al-Ma'tsurat Pagi" : "Al-Ma'tsurat Petang"}
               </span>
 
               {isAutoTime && (
@@ -680,7 +680,7 @@ export const AlMatsuratView: React.FC = () => {
               )}
             </div>
             <p className="text-xs text-emerald-200 truncate">
-              Qari: {MATSURAT_META.fullAudioMorning.reciter} • Sinkronisasi Kata & Underline Aktif ✨
+              Qari: {MATSURAT_META.fullAudioMorning.reciter} • Sinkronisasi Kata & Underline Aktif
             </p>
           </div>
         </div>
@@ -849,7 +849,7 @@ export const AlMatsuratView: React.FC = () => {
                   {isCardActive && audioState.isPlaying && (
                     <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0B4627] text-white text-[11px] font-black animate-pulse shadow-xs">
                       <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
-                      <span>🎙️ Sedang Dibaca Qari</span>
+                      <span>Sedang Dibaca Qari</span>
                     </span>
                   )}
                 </div>

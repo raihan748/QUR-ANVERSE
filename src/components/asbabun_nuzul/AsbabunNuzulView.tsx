@@ -12,7 +12,8 @@ import {
   Filter, 
   ChevronRight,
   History,
-  BookMarked
+  BookMarked,
+  X
 } from 'lucide-react';
 import { 
   ChronologicalWahyuEngine, 
@@ -247,9 +248,10 @@ export const AsbabunNuzulView: React.FC<AsbabunNuzulViewProps> = ({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-2.5 text-xs text-gray-400 hover:text-black font-black"
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-black flex items-center justify-center"
+                aria-label="Hapus pencarian"
               >
-                ✕
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>

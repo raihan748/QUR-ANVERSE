@@ -87,7 +87,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
       const errorMessage: ChatMessage = {
         id: `msg_err_${Date.now()}`,
         role: 'assistant',
-        content: `⚠️ Maaf, ada kendala: ${err?.message || 'Gagal tersambung ke DeepSeek'}. Coba kirim ulang ya Sahabat Qur'an.`,
+        content: `Maaf, ada kendala: ${err?.message || 'Gagal tersambung ke DeepSeek'}. Coba kirim ulang ya Sahabat Qur'an.`,
         timestamp: Date.now()
       };
       const finalHistory = [...newHistory, errorMessage];
@@ -105,10 +105,10 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
   };
 
   const quickPrompts = [
-    '💡 Apa keutamaan Surah Al-Ikhlas?',
-    '📖 Hukum Idgham Bighunnah & contohnya?',
-    '🤲 Tips agar hafalan Qur\'an cepat mutqin?',
-    '✨ Adab membaca Al-Qur\'an bagi santri?'
+    'Apa keutamaan Surah Al-Ikhlas?',
+    'Hukum Idgham Bighunnah & contohnya?',
+    'Tips agar hafalan Qur\'an cepat mutqin?',
+    'Adab membaca Al-Qur\'an bagi santri?'
   ];
 
   // 1. Minimized / Floating Trigger Button (Saat ditutup)

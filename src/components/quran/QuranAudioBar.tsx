@@ -9,7 +9,8 @@ import {
   Sparkles, 
   ChevronDown,
   UserCheck,
-  Headphones
+  Headphones,
+  X
 } from 'lucide-react';
 import { Ayat } from '../../types';
 import { audioPlayer, RECITERS_LIST, Reciter } from '../../services/audioPlayerService';
@@ -64,9 +65,10 @@ export const QuranAudioBar: React.FC<QuranAudioBarProps> = ({
             </span>
             <button
               onClick={() => setIsReciterMenuOpen(false)}
-              className="text-[10px] font-black text-gray-500 hover:text-black"
+              className="text-gray-500 hover:text-black p-0.5"
+              aria-label="Tutup"
             >
-              ✕
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-56 overflow-y-auto">

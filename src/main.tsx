@@ -10,7 +10,7 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     navigator.serviceWorker
       .register('/sw.js')
       .then((reg) => {
-        console.log('✅ [PWA] Quranverse Offline Service Worker Active:', reg.scope);
+        console.log('[PWA] Quranverse Offline Service Worker Active:', reg.scope);
       })
       .catch((err) => {
         console.warn('[PWA] Service Worker notice:', err);

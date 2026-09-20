@@ -169,7 +169,7 @@ export const DownloadCenter: React.FC = () => {
         await new Promise((r) => setTimeout(r, 400));
 
         setFullPacketProgress(100);
-        setFullPacketStatus('✓ Full Packet Berhasil Terpasang Lengkap! Semua fitur 100% siap digunakan offline.');
+        setFullPacketStatus('Full Packet Berhasil Terpasang Lengkap! Semua fitur 100% siap digunakan offline.');
       } else {
         // Fallback smooth progression for environments without Cache API
         for (let p = 25; p <= 100; p += 25) {
@@ -377,7 +377,7 @@ export const DownloadCenter: React.FC = () => {
                   className="px-6 py-4 bg-[#0B4627] hover:bg-[#072d19] text-white border-3 border-black rounded-xl font-black text-sm sm:text-base flex items-center justify-center gap-2 neo-button cursor-pointer shadow-[4px_4px_0px_0px_#000] animate-pulse"
                 >
                   <DownloadCloud className={`w-5 h-5 text-[#F59E0B] ${isDownloadingFullPacket ? 'animate-bounce' : ''}`} />
-                  <span>{isDownloadingFullPacket ? 'Mengunduh Full Packet...' : '⚡ Download Full Packet Sekarang'}</span>
+                  <span>{isDownloadingFullPacket ? 'Mengunduh Full Packet...' : 'Download Full Packet Sekarang'}</span>
                 </button>
                 <button
                   type="button"

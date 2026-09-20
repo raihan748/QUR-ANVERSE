@@ -30,7 +30,9 @@ import {
   Radio,
   Layers,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  X,
+  Wind
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Ayat, EvaluationResult, UserProfile, SurahMeta } from '../../types';
@@ -421,11 +423,11 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         const targetAyat = passageAyats[ayahIdx];
         if (!targetAyat) return;
 
-        // 🛑 HALT MIC IMMEDIATELY: Stop speech recognition & recording so the Sheikh's voice from speakers isn't picked up!
+        // HALT MIC IMMEDIATELY: Stop speech recognition & recording so the Sheikh's voice from speakers isn't picked up!
         speechEngine.stopListening();
         audioRecorder.stopRecording();
 
-        // 🚨 1. Set error word state & informative tajweed warning
+        // 1. Set error word state & informative tajweed warning
         setErrorWordState({
           ayahIdx,
           wordIdx,
@@ -433,16 +435,16 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           targetWord: targetWord || '',
           spokenWord: spokenWord || ''
         });
-        setSheikhTeguranMessage(`🚨 Teguran Syekh ${activeReciter.name}: ${reason}`);
+        setSheikhTeguranMessage(`Teguran Syekh ${activeReciter.name}: ${reason}`);
 
-        // 🔊 2. Play authentic Sheikh voice intervention automatically (Teguran Suara Langsung)
+        // 2. Play authentic Sheikh voice intervention automatically (Teguran Suara Langsung)
         setIsSheikhSpeaking(true);
         audioPlayer.playSheikhIntervention(
           targetAyat.surahNumber,
           targetAyat.numberInSurah,
           activeReciter.id,
           () => {
-            // 🔄 Auto-resume listening after Sheikh finishes so the santri can repeat the verse/word without losing error card!
+            // Auto-resume listening after Sheikh finishes so the santri can repeat the verse/word without losing error card!
             handleResumeListeningAfterSheikh();
           }
         );
@@ -569,7 +571,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
   return (
     <div className="space-y-4 pb-28 max-w-4xl mx-auto">
-      {/* 🎯 1. DAILY TARGET WIDGET (TARGET HARI INI) */}
+      {/* 1. DAILY TARGET WIDGET (TARGET HARI INI) */}
       <DailyTargetWidget
         onStartTarget={(target) => {
           setSelectedSurahNumber(target.surahNumber);
@@ -843,7 +845,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 </div>
               </div>
 
-              {/* 🚨 AUTO-TEGUR SYEKH ALERT CARD (When Mistake is Detected) */}
+              {/* AUTO-TEGUR SYEKH ALERT CARD (When Mistake is Detected) */}
               {errorWordState && errorWordState.ayahIdx === aIdx && (() => {
                 const errTajweed = getTajweedColorForWord(errorWordState.targetWord);
                 return (
@@ -853,7 +855,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                         <span className="w-3 h-3 rounded-full bg-red-400 animate-ping"></span>
                         <span className="font-black text-sm text-red-200 uppercase tracking-wide flex items-center gap-1.5">
                           <AlertCircle className="w-4 h-4 text-red-400" />
-                          🚨 TEGURAN OTOMATIS SYEKH (BACAAN SALAH)
+                          <span>TEGURAN OTOMATIS SYEKH (BACAAN SALAH)</span>
                         </span>
                       </div>
                       {isSheikhSpeaking && (
@@ -865,7 +867,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                       <div className="p-2.5 bg-black/40 rounded-xl border border-red-700">
-                        <span className="text-red-300 font-bold block mb-1">🎯 Lafadz Target yang Benar (Rasm Utsmani):</span>
+                        <span className="text-red-300 font-bold block mb-1">Lafadz Target yang Benar (Rasm Utsmani):</span>
                         <div className="flex items-center justify-between gap-2" dir="rtl">
                           <span className="font-arabic text-2xl font-black text-emerald-300">
                             « {errorWordState.targetWord} »
@@ -878,7 +880,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                         </div>
                       </div>
                       <div className="p-2.5 bg-black/40 rounded-xl border border-red-700">
-                        <span className="text-red-300 font-bold block mb-1">❌ Terdengar Keliru / Tertukar (Dikte):</span>
+                        <span className="text-red-300 font-bold block mb-1">Terdengar Keliru / Tertukar (Dikte):</span>
                         <span className="font-arabic text-xl font-bold text-red-400 line-through" dir="rtl">
                           « {errorWordState.spokenWord || '(Belum terdengar)'} »
                         </span>
@@ -895,7 +897,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                         <strong>Penyebab Kesalahan:</strong> {errorWordState.reason}
                       </p>
                       <div className="text-[11px] bg-black/50 p-2 rounded-lg text-emerald-200 border border-red-700 font-sans">
-                        <strong>📖 Panduan Pelafalan yang Benar:</strong> Bunyikan huruf dengan makhraj yang fasih dan perhatikan kaidah {errTajweed.ruleName || 'harakat'} sebelum melanjutkan muroja'ah.
+                        <strong>Panduan Pelafalan yang Benar:</strong> Bunyikan huruf dengan makhraj yang fasih dan perhatikan kaidah {errTajweed.ruleName || 'harakat'} sebelum melanjutkan muroja'ah.
                       </div>
                     </div>
 
@@ -923,7 +925,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                         className="flex-1 min-w-[200px] flex items-center justify-center gap-2 py-2 px-4 bg-amber-400 hover:bg-amber-300 text-black font-black text-xs rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5 transition-all cursor-pointer"
                       >
                         <Mic className="w-4 h-4 text-black animate-pulse" />
-                        🎙️ Wajib Baca Ulang Kata Ini Sekarang
+                        <span>Wajib Baca Ulang Kata Ini Sekarang</span>
                       </button>
                       <button
                         onClick={() => {
@@ -945,7 +947,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                 );
               })()}
 
-              {/* 🎙️ SUPER PROMINENT LIVE DICTATION HUD INSIDE ACTIVE AYAH CARD */}
+              {/* SUPER PROMINENT LIVE DICTATION HUD INSIDE ACTIVE AYAH CARD */}
               {isActive && isRecording && !errorWordState && (() => {
                 const currentWordTarget = words[matchedWords.length] || words[0] || '';
                 const currentWordTajweed = getTajweedColorForWord(
@@ -959,12 +961,14 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-black border-b border-emerald-700/60 pb-1.5">
                       <span className="flex items-center gap-2 text-amber-300">
                         <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
-                        🎙️ HASIL DIKTE SUARA & KOREKSI TAJWID REAL-TIME:
+                        <Mic className="w-3.5 h-3.5 text-amber-300 inline" />
+                        <span>HASIL DIKTE SUARA & KOREKSI TAJWID REAL-TIME:</span>
                       </span>
                       <div className="flex items-center gap-2">
                         {breathSnapshot?.isInhaling ? (
                           <span className="flex items-center gap-1.5 px-2 py-0.5 bg-sky-500/30 text-sky-200 border border-sky-400/80 rounded-lg font-sans text-[10px] animate-pulse shadow-sm">
-                            <span>🌬️ Sedang Tarik Nafas (Tanaffus)...</span>
+                            <Wind className="w-3 h-3 text-sky-300" />
+                            <span>Sedang Tarik Nafas (Tanaffus)...</span>
                           </span>
                         ) : (
                           <span className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-950/80 text-emerald-300 border border-emerald-600/70 rounded-lg font-sans text-[10px]" title="Sistem beradaptasi dengan ritme jeda nafas unik santri">
@@ -974,7 +978,10 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                         <div className="flex items-center gap-1.5 font-mono text-[10px] bg-black/40 px-2 py-0.5 rounded-md border border-emerald-500">
                           <Activity className="w-3 h-3 text-[#F59E0B] animate-pulse" />
                           <span>VU: {micVolume} dB</span>
-                          <span className="text-emerald-300 border-l border-emerald-700 pl-1.5">🌬️ {breathSnapshot?.remainingBreathPercent ?? 100}%</span>
+                          <span className="text-emerald-300 border-l border-emerald-700 pl-1.5 flex items-center gap-1">
+                            <Wind className="w-3 h-3 text-sky-400" />
+                            <span>{breathSnapshot?.remainingBreathPercent ?? 100}%</span>
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -984,18 +991,18 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                       {/* Unvocalized Dictation (Arab Gundul) */}
                       <div className="bg-[#021F17] p-2.5 rounded-xl border border-emerald-700 text-right space-y-1" dir="rtl">
                         <div className="flex items-center justify-between text-[10px] text-amber-400 font-sans font-bold" dir="ltr">
-                          <span>🗣️ Dikte Mic (Arab Gundul):</span>
+                          <span>Dikte Mic (Arab Gundul):</span>
                           <span className="bg-emerald-950 px-1 rounded border border-emerald-800 text-[9px] font-mono">Live STT</span>
                         </div>
                         <p className="font-arabic text-xl sm:text-2xl font-bold text-amber-300 leading-normal break-words min-h-[36px]">
-                          {liveTranscript ? `« ${liveTranscript} »` : <span className="text-xs font-sans text-emerald-300 font-normal italic" dir="ltr">⏳ Mendengarkan pelafalan...</span>}
+                          {liveTranscript ? `« ${liveTranscript} »` : <span className="text-xs font-sans text-emerald-300 font-normal italic" dir="ltr">Mendengarkan pelafalan...</span>}
                         </p>
                       </div>
 
                       {/* Target Word with Active Tajweed Rule */}
                       <div className="bg-[#064E3B] p-2.5 rounded-xl border border-amber-400/80 text-right space-y-1" dir="rtl">
                         <div className="flex items-center justify-between text-[10px] text-emerald-200 font-sans font-bold" dir="ltr">
-                          <span>🎯 Target Kata Aktif (Tajwid & Harakat):</span>
+                          <span>Target Kata Aktif (Tajwid & Harakat):</span>
                           {currentWordTajweed.ruleName && (
                             <span className="bg-amber-400 text-black px-1.5 py-0.2 rounded text-[9px] font-bold font-sans">
                               {currentWordTajweed.ruleName}
@@ -1025,7 +1032,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               {ayat.transliteration && (
                 <div className="pt-2.5 border-t border-emerald-100">
                   <p className="text-xs sm:text-[13px] text-emerald-950 font-semibold leading-relaxed tracking-wide font-sans bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200">
-                    <span className="text-[10px] font-black uppercase text-emerald-700 block mb-0.5 tracking-wider font-mono">🔤 Transliterasi Latin:</span>
+                    <span className="text-[10px] font-black uppercase text-emerald-700 block mb-0.5 tracking-wider font-mono">Transliterasi Latin:</span>
                     {ayat.transliteration}
                   </p>
                 </div>
@@ -1033,7 +1040,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               {ayat.translation && (
                 <div className="pt-2">
                   <p className="text-xs sm:text-[13px] text-gray-800 leading-relaxed font-normal bg-amber-50/60 p-2.5 rounded-xl border border-amber-200/80">
-                    <span className="text-[10px] font-black uppercase text-amber-800 block mb-0.5 tracking-wider font-mono">🇮🇩 Terjemahan (Kemenag RI):</span>
+                    <span className="text-[10px] font-black uppercase text-amber-800 block mb-0.5 tracking-wider font-mono">[ID] Terjemahan (Kemenag RI):</span>
                     "{ayat.translation}"
                   </p>
                 </div>
@@ -1054,21 +1061,22 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
             </div>
             {isSheikhSpeaking && (
               <span className="px-2 py-0.5 bg-red-600 text-white rounded text-[10px] uppercase font-mono animate-pulse">
-                🔊 Syekh Bersuara...
+                Syekh Bersuara...
               </span>
             )}
           </div>
         )}
 
-        {/* 📱 HIGH-VISIBILITY LIVE DICTATION SUBTITLE HUD (Mobile Optimized) */}
+        {/* HIGH-VISIBILITY LIVE DICTATION SUBTITLE HUD (Mobile Optimized) */}
         {isRecording && (
           <div className="space-y-2 bg-[#064E3B] text-white p-3.5 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000]">
             {/* Header: VU Sound Level Meter & Connection Badge */}
             <div className="flex items-center justify-between text-xs font-black border-b border-emerald-700 pb-2">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
-                <span className="text-emerald-200 font-bold uppercase tracking-wider text-[11px]">
-                  🎙️ الاستماع المباشر للتلاوة (Dikte Bahasa Arab)
+                <span className="text-emerald-200 font-bold uppercase tracking-wider text-[11px] flex items-center gap-1">
+                  <Mic className="w-3.5 h-3.5 text-amber-300 inline" />
+                  <span>الاستماع المباشر للتلاوة (Dikte Bahasa Arab)</span>
                 </span>
               </div>
               <div className="flex items-center gap-1.5 font-mono text-[11px] bg-[#0B4627] px-2.5 py-1 rounded-lg border border-emerald-600">
@@ -1088,7 +1096,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                   `« ${liveTranscript} »`
                 ) : (
                   <span className="text-emerald-300 text-xs italic font-sans font-normal" dir="ltr">
-                    ⏳ بانتظار تلاوة الآية الكريمة... (Silakan melantunkan ayat dalam bahasa Arab)
+                    بانتظار تلاوة الآية الكريمة... (Silakan melantunkan ayat dalam bahasa Arab)
                   </span>
                 )}
               </p>
@@ -1116,20 +1124,20 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                     }`}
                   >
                     {lvl === 'normal' 
-                      ? '🛡️ Mode Umum (Redam Bising)' 
+                      ? 'Mode Umum (Redam Bising)' 
                       : lvl === 'high' 
-                      ? '🟡 Mode Seimbang (Rekomendasi)' 
-                      : '🔥 Mode Sunyi / Sensitif Tinggi'}
+                      ? 'Mode Seimbang (Rekomendasi)' 
+                      : 'Mode Sunyi / Sensitif Tinggi'}
                   </button>
                 ))}
               </div>
 
               <span className="text-amber-200 text-[10px] font-semibold">
                 {micSensitivity === 'ultra' 
-                  ? '🔥 Mode Sensitif Tinggi aktif: Sangat peka menangkap tartil perlahan & suara halus di ruangan tenang.' 
+                  ? 'Mode Sensitif Tinggi aktif: Sangat peka menangkap tartil perlahan & suara halus di ruangan tenang.' 
                   : micSensitivity === 'high' 
-                  ? '⚡ Mode Seimbang aktif: Kepekaan optimal untuk bacaan tartil harian.' 
-                  : '🛡️ Mode Umum aktif: Menyaring suara bising luar ruangan.'}
+                  ? 'Mode Seimbang aktif: Kepekaan optimal untuk bacaan tartil harian.' 
+                  : 'Mode Umum aktif: Menyaring suara bising luar ruangan.'}
               </span>
             </div>
           </div>
@@ -1163,7 +1171,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
                   title="Lewati kata aktif jika pelafalan benar tapi dikte mic gagal mengenali"
                 >
                   <Zap className="w-4 h-4 fill-black" />
-                  <span>⚡ Bantu / Lewati Kata Ini</span>
+                  <span>Bantu / Lewati Kata Ini</span>
                 </button>
               </>
             )}
@@ -1181,11 +1189,11 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
           <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl border border-black text-xs font-bold flex-wrap">
             <span className="text-[10px] font-black text-gray-600 px-1">Dialek Arab:</span>
             {([
-              { code: 'ar-SA', label: '🇸🇦 السعودية' },
-              { code: 'ar-EG', label: '🇪🇬 مصر' },
-              { code: 'ar-AE', label: '🇦🇪 الإمارات' },
-              { code: 'ar-KW', label: '🇰🇼 الكويت' },
-              { code: 'id-ID', label: '🇮🇩 Latin/ID' }
+              { code: 'ar-SA', label: '[SA] السعودية' },
+              { code: 'ar-EG', label: '[EG] مصر' },
+              { code: 'ar-AE', label: '[AE] الإمارات' },
+              { code: 'ar-KW', label: '[KW] الكويت' },
+              { code: 'id-ID', label: '[ID] Latin/ID' }
             ] as const).map(({ code, label }) => (
               <button
                 key={code}
@@ -1211,7 +1219,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
             <div className="flex items-center justify-center gap-2 text-[#0B4627]">
               <Sparkles className="w-5 h-5 text-amber-600" />
               <h4 className="text-base font-black">
-                🎉 Maa Syaa Allah! Sesi Muroja'ah Beruntun Tuntas!
+                Maa Syaa Allah! Sesi Muroja'ah Beruntun Tuntas!
               </h4>
             </div>
             <p className="text-xs font-bold text-emerald-900">
@@ -1232,9 +1240,11 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               </h3>
               <button
                 onClick={() => setIsSurahPickerOpen(false)}
-                className="p-1.5 px-2 bg-[#FEE2E2] hover:bg-[#FCA5A5] border-2 border-black rounded-xl font-bold text-xs cursor-pointer shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5"
+                className="p-1.5 px-2.5 bg-[#FEE2E2] hover:bg-[#FCA5A5] border-2 border-black rounded-xl font-bold text-xs cursor-pointer shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5 flex items-center gap-1"
+                aria-label="Tutup"
               >
-                ✕ Tutup
+                <X className="w-3.5 h-3.5" />
+                <span>Tutup</span>
               </button>
             </div>
 
@@ -1288,7 +1298,7 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
         </div>
       )}
 
-      {/* 🔍 TOP FLOATING WORD TAJWEED INSPECTOR BANNER */}
+      {/* TOP FLOATING WORD TAJWEED INSPECTOR BANNER */}
       {selectedWordInspector && (
         <div className="fixed top-3 sm:top-5 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-3 animate-in fade-in slide-in-from-top-4 duration-200">
           <div className="bg-[#FFFDF7] dark:bg-[#0F172A] border-3 border-black rounded-2xl sm:rounded-3xl p-4 sm:p-5 space-y-3.5 shadow-[6px_6px_0px_0px_#000] text-gray-900 dark:text-gray-100 ring-4 ring-emerald-500/30">
@@ -1304,9 +1314,11 @@ export const MurojaahStudio: React.FC<MurojaahStudioProps> = ({
               </div>
               <button
                 onClick={() => setSelectedWordInspector(null)}
-                className="p-1 px-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-black border-2 border-black cursor-pointer font-black text-xs shadow-[1px_1px_0px_0px_#000] active:translate-y-0.5"
+                className="p-1 px-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-black border-2 border-black cursor-pointer font-black text-xs shadow-[1px_1px_0px_0px_#000] active:translate-y-0.5 flex items-center gap-1"
+                aria-label="Tutup"
               >
-                ✕ Tutup
+                <X className="w-3.5 h-3.5" />
+                <span>Tutup</span>
               </button>
             </div>
 

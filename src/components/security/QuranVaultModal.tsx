@@ -156,26 +156,34 @@ export const QuranVaultModal: React.FC<QuranVaultModalProps> = ({ isOpen, onClos
                   <span className="text-lg font-black font-mono text-[#0B4627] dark:text-emerald-400">
                     {vaultStatus.totalVersesChecked.toLocaleString('id-ID')}
                   </span>
-                  <span className="text-[9px] font-black text-emerald-600 block">✓ 114 Surah Lulus</span>
+                  <span className="text-[9px] font-black text-emerald-600 flex items-center justify-center gap-1">
+                    <Check className="w-3 h-3" /> 114 Surah Lulus
+                  </span>
                 </div>
                 <div className="p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-xl text-center shadow-[2px_2px_0px_0px_#000]">
                   <span className="text-xs text-gray-500 font-bold block">Kaidah Tajwid</span>
                   <span className="text-lg font-black font-mono text-[#0B4627] dark:text-emerald-400">
                     {vaultStatus.totalTajweedRulesChecked || 52}
                   </span>
-                  <span className="text-[9px] font-black text-emerald-600 block">✓ Terkunci SHA-256</span>
+                  <span className="text-[9px] font-black text-emerald-600 flex items-center justify-center gap-1">
+                    <Check className="w-3 h-3" /> Terkunci SHA-256
+                  </span>
                 </div>
                 <div className="p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-xl text-center shadow-[2px_2px_0px_0px_#000]">
                   <span className="text-xs text-gray-500 font-bold block">Kata Muroja'ah</span>
                   <span className="text-lg font-black font-mono text-[#0B4627] dark:text-emerald-400">
                     {vaultStatus.totalWordsChecked ? vaultStatus.totalWordsChecked.toLocaleString('id-ID') : '78.078'}
                   </span>
-                  <span className="text-[9px] font-black text-emerald-600 block">✓ 0 Kerusakan</span>
+                  <span className="text-[9px] font-black text-emerald-600 flex items-center justify-center gap-1">
+                    <Check className="w-3 h-3" /> 0 Kerusakan
+                  </span>
                 </div>
                 <div className="p-3 bg-white dark:bg-gray-800 border-2 border-black rounded-xl text-center shadow-[2px_2px_0px_0px_#000]">
                   <span className="text-xs text-gray-500 font-bold block">Auto-Heal 00:00</span>
                   <span className="text-lg font-black font-mono text-emerald-600">AKTIF</span>
-                  <span className="text-[9px] font-black text-emerald-600 block">✓ Self-Healing 24h</span>
+                  <span className="text-[9px] font-black text-emerald-600 flex items-center justify-center gap-1">
+                    <Check className="w-3 h-3" /> Self-Healing 24h
+                  </span>
                 </div>
               </div>
 
@@ -227,7 +235,7 @@ export const QuranVaultModal: React.FC<QuranVaultModalProps> = ({ isOpen, onClos
                   className="w-full py-2.5 bg-gradient-to-r from-red-600 via-amber-600 to-red-600 hover:from-red-500 hover:to-amber-500 text-white border-2 border-black rounded-xl font-black text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[2px_2px_0px_0px_#000] transition-all"
                 >
                   <ShieldAlert className="w-4 h-4 text-white" />
-                  <span>⚡ Simulasi Serangan: Ubah 1 Harakat QS. Al-Fatihah: 1</span>
+                  <span>Simulasi Serangan: Ubah 1 Harakat QS. Al-Fatihah: 1</span>
                 </button>
                 {simulationResult && (
                   <div className="p-3 bg-red-50 dark:bg-red-950/60 border-2 border-red-500 rounded-xl text-xs space-y-1 animate-in fade-in">
@@ -238,8 +246,9 @@ export const QuranVaultModal: React.FC<QuranVaultModalProps> = ({ isOpen, onClos
                     <p className="text-gray-700 dark:text-gray-200 leading-relaxed font-mono text-[11px]">
                       {simulationResult}
                     </p>
-                    <div className="pt-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
-                      ✓ Insiden tercatat di tab "Log Insiden". Buka tab Log Insiden untuk melihat bukti forensik!
+                    <div className="pt-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Insiden tercatat di tab "Log Insiden". Buka tab Log Insiden untuk melihat bukti forensik!</span>
                     </div>
                   </div>
                 )}
@@ -331,7 +340,10 @@ export const QuranVaultModal: React.FC<QuranVaultModalProps> = ({ isOpen, onClos
                       className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-400 rounded-xl text-xs space-y-1"
                     >
                       <div className="flex items-center justify-between font-bold text-red-900 dark:text-red-300">
-                        <span>🚨 {inc.type}: {inc.target}</span>
+                        <span className="flex items-center gap-1.5">
+                          <ShieldAlert className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                          <span>{inc.type}: {inc.target}</span>
+                        </span>
                         <span className="text-[10px] bg-red-200 text-red-900 px-1.5 py-0.5 rounded">
                           {inc.status}
                         </span>

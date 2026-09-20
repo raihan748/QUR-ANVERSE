@@ -1,5 +1,5 @@
 // ==============================================================================
-// ⚡ Ultra-Fast Zero-Allocation AI Speech Engine (Quranic Muroja'ah & Evaluation)
+// Ultra-Fast Zero-Allocation AI Speech Engine (Quranic Muroja'ah & Evaluation)
 // Multi-Dialect Arabic (ar-SA, ar-EG, ar-KW) & Nusantara Tajwid Phonetics
 // Features: Precompiled In-Memory Ayah Lexicon, 1D TypedArray Levenshtein ($O(1)$ RAM),
 // Deep Phonetic Acoustic Fusion, Delta Stream Ingestion, and Soft Lookahead Anti-Stuck.
@@ -900,12 +900,12 @@ export class SpeechEngine {
       aiCorrectionNote = 'Lafal belum cocok dengan ayat yang diuji. Simak dan tirukan lantunan tartil Syekh di bawah!';
     }
 
-    // ⚡ On-Device TinyML & MFCC Acoustic Spectral Verification
+    // On-Device TinyML & MFCC Acoustic Spectral Verification
     if (options && typeof options === 'object' && 'audioFeatures' in options && options.audioFeatures && options.audioFeatures.length > 0) {
       try {
         const classification = this.evaluateAcousticMFCC(options.audioFeatures);
         if (classification.predictedClass !== 'FASIH_ACCURATE' && classification.confidenceScore > 0.85) {
-          aiCorrectionNote += ` 🔍 [TinyML Akustik]: ${classification.recommendationNote}`;
+          aiCorrectionNote += ` [TinyML Akustik]: ${classification.recommendationNote}`;
         }
       } catch {}
     }
@@ -1165,7 +1165,7 @@ export class ContinuousMurojaahTracker {
       spokenWord
     };
 
-    // 🌬️ ADAPTIVE BREATH-AWARE TIMING:
+    // ADAPTIVE BREATH-AWARE TIMING:
     // Tailor intervention delay to student's personal breathing cadence & pause window
     const baseDelay = breathOptimizer.getAdaptiveInterventionDelayMs();
     const breathBonus = breathOptimizer.isInhaling() ? 450 : 0;
@@ -1619,7 +1619,7 @@ export class ContinuousMurojaahTracker {
 
                 const wrongVerseReason = diagnosis.errorReason || `Lafal yang dibaca (« ${rawTranscript.trim()} ») tidak cocok dengan target hafalan: « ${targetWord.raw} ». Simak teguran suara Syekh berikut.`;
 
-                // 🌬️ Adaptive gating: give grace period for breathing/istidrak before Sheikh voice intervenes
+                // Adaptive gating: give grace period for breathing/istidrak before Sheikh voice intervenes
                 this.scheduleAdaptiveIntervention(
                   this.currentAyahIndex,
                   this.currentWordIndex,
@@ -1671,7 +1671,7 @@ export class ContinuousMurojaahTracker {
                   isEnd
                 );
 
-                // 🌬️ Adaptive gating: give grace period for breathing/istidrak before Sheikh voice intervenes
+                // Adaptive gating: give grace period for breathing/istidrak before Sheikh voice intervenes
                 this.scheduleAdaptiveIntervention(
                   this.currentAyahIndex,
                   this.currentWordIndex,

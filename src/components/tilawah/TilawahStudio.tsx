@@ -22,7 +22,8 @@ import {
   Flame,
   Award,
   Settings2,
-  Target
+  Target,
+  X
 } from 'lucide-react';
 import { Ayat, SurahMeta, UserProfile, Bookmark } from '../../types';
 import confetti from 'canvas-confetti';
@@ -215,7 +216,7 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
 
   return (
     <div className={`space-y-4 pb-28 max-w-4xl mx-auto transition-all ${isFocusMode ? 'bg-[#F8F5EE] py-4' : ''}`}>
-      {/* 🎯 1. DAILY TARGET WIDGET (TARGET TILAWAH HARI INI) */}
+      {/* 1. DAILY TARGET WIDGET (TARGET TILAWAH HARI INI) */}
       {!isFocusMode && (
         <DailyTargetWidget
           onStartTarget={(target) => {
@@ -255,9 +256,10 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
                         <span className="text-[11px] font-black text-[#0B4627]">Pilih Qari ({RECITERS_LIST.length} Tersedia):</span>
                         <button
                           onClick={() => setIsReciterMenuOpen(false)}
-                          className="text-xs font-bold text-gray-500 hover:text-black"
+                          className="text-gray-500 hover:text-black p-0.5"
+                          aria-label="Tutup"
                         >
-                          ✕
+                          <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
                       <div className="max-h-72 overflow-y-auto space-y-1 pr-1">
@@ -332,8 +334,9 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
                   QS. {currentSurahMeta.latinName} ({currentSurahMeta.ayahCount} Ayat • Juz {currentSurahMeta.juzList ? currentSurahMeta.juzList.join(', ') : currentSurahMeta.juzStart})
                 </span>
               </div>
-              <span className="px-2 py-1 bg-amber-100 border border-black rounded-lg text-[10px] font-black uppercase text-amber-900">
-                Pilih Surat Lain ▾
+              <span className="px-2 py-1 bg-amber-100 border border-black rounded-lg text-[10px] font-black uppercase text-amber-900 flex items-center gap-1">
+                <span>Pilih Surat Lain</span>
+                <ChevronDown className="w-3 h-3" />
               </span>
             </button>
 
@@ -373,8 +376,9 @@ export const TilawahStudio: React.FC<TilawahStudioProps> = ({
               <button
                 onClick={() => setIsSurahModalOpen(false)}
                 className="w-8 h-8 rounded-xl bg-white text-black font-black text-sm flex items-center justify-center border-2 border-black cursor-pointer hover:bg-red-500 hover:text-white"
+                aria-label="Tutup"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

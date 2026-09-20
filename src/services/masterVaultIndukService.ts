@@ -253,7 +253,7 @@ export class MasterVaultIndukEngine {
   }
 
   /**
-   * 🛡️ CASCADED MULTI-CIPHER POST-QUANTUM COMBINER (PQC-512)
+   * CASCADED MULTI-CIPHER POST-QUANTUM COMBINER (PQC-512)
    * Merges SHA-512 -> Whirlpool-512 -> BLAKE-512 -> Keccak-512 with Maurer-Massey XOR-Split
    * Immune to both Shor's and Grover's Quantum Attacks (O(2^256) quantum operations)
    */
@@ -410,7 +410,7 @@ export class MasterVaultIndukEngine {
 
     // Listen for instant reconnection when Santri gets cell/wifi signal
     window.addEventListener('online', () => {
-      console.log('📡 [Master Vault Induk] Sinyal Internet Terdeteksi! Memulai Rekonsiliasi Otonom untuk Santri...');
+      console.log('[Master Vault Induk] Sinyal Internet Terdeteksi! Memulai Rekonsiliasi Otonom untuk Santri...');
       this.performAutonomousSantriReconciliation();
     });
   }

@@ -17,7 +17,8 @@ import {
   Zap, 
   ExternalLink,
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { 
   halaqahMesh, 
@@ -276,7 +277,7 @@ export const HalaqahMeshRoomView: React.FC<HalaqahMeshRoomViewProps> = ({ userPr
                   {localNode.name}
                 </p>
                 <p className="text-[10px] font-bold text-gray-600">
-                  {localNode.role === 'USTADZ_COORDINATOR' ? '👑 Ustadz Musyrif' : '📖 Santri Hafizh'}
+                  {localNode.role === 'USTADZ_COORDINATOR' ? 'Ustadz Musyrif' : 'Santri Hafizh'}
                 </p>
               </div>
             </div>
@@ -311,7 +312,7 @@ export const HalaqahMeshRoomView: React.FC<HalaqahMeshRoomViewProps> = ({ userPr
                     <div className="truncate">
                       <p className="text-xs font-black text-gray-900 truncate">{peer.name}</p>
                       <p className="text-[10px] font-bold text-gray-500">
-                        {peer.role === 'USTADZ_COORDINATOR' ? '👑 Ustadz' : '📖 Santri'} • {peer.totalSubmissions} Setoran
+                        {peer.role === 'USTADZ_COORDINATOR' ? 'Ustadz' : 'Santri'} • {peer.totalSubmissions} Setoran
                       </p>
                     </div>
                   </div>
@@ -477,9 +478,11 @@ export const HalaqahMeshRoomView: React.FC<HalaqahMeshRoomViewProps> = ({ userPr
                     </span>
                     <button
                       onClick={() => setActiveReviewSubmission(null)}
-                      className="text-xs font-bold text-gray-600 hover:text-black"
+                      className="text-xs font-bold text-gray-600 hover:text-black flex items-center gap-1"
+                      aria-label="Tutup"
                     >
-                      ✕ Tutup
+                      <X className="w-3.5 h-3.5" />
+                      <span>Tutup</span>
                     </button>
                   </div>
 
@@ -496,7 +499,7 @@ export const HalaqahMeshRoomView: React.FC<HalaqahMeshRoomViewProps> = ({ userPr
                               : 'bg-white text-gray-800 hover:bg-amber-100'
                           }`}
                         >
-                          {grade === 'MUMTAZ' ? 'Mumtaz 🌟' : grade === 'JAYYID_JIDDAN' ? 'Jayyid Jiddan ✨' : grade === 'JAYYID' ? 'Jayyid 👍' : 'Ulang ⚠️'}
+                          {grade === 'MUMTAZ' ? 'Mumtaz' : grade === 'JAYYID_JIDDAN' ? 'Jayyid Jiddan' : grade === 'JAYYID' ? 'Jayyid' : 'Perlu Ulang'}
                         </button>
                       ))}
                     </div>

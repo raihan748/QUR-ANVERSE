@@ -195,7 +195,7 @@ export const EnterpriseArchitectureInspector: React.FC = () => {
           <div className="flex items-center justify-between border-b-2 border-black pb-3">
             <div>
               <h3 className="text-lg font-black text-black">
-                📜 Formal Grammar & Abstract Syntax Tree (AST) Tajwid Tokenizer
+                Formal Grammar & Abstract Syntax Tree (AST) Tajwid Tokenizer
               </h3>
               <p className="text-xs text-gray-600 font-medium">
                 Membedah teks Al-Qur'an menjadi AST leksikal dengan 16 hukum tajwid formal, ketukan harakat, dan koordinat offset.
@@ -271,7 +271,7 @@ export const EnterpriseArchitectureInspector: React.FC = () => {
           <div className="flex items-center justify-between border-b-2 border-black pb-3">
             <div>
               <h3 className="text-lg font-black text-black">
-                🎙️ 17 Makhraj 3D Coordinate Topology & Dynamic Time Warping (DTW)
+                17 Makhraj 3D Coordinate Topology & Dynamic Time Warping (DTW)
               </h3>
               <p className="text-xs text-gray-600 font-medium">
                 Matriks koordinat artikulasi 3D ($X, Y, Z$) dan algoritma Sakoe-Chiba DTW untuk pencocokan deret waktu sinyal suara.
@@ -365,7 +365,7 @@ export const EnterpriseArchitectureInspector: React.FC = () => {
           <div className="flex items-center justify-between border-b-2 border-black pb-3">
             <div>
               <h3 className="text-lg font-black text-black">
-                🧠 SuperMemo SM-2 & Bayesian Knowledge Tracing (BKT) Engine
+                SuperMemo SM-2 & Bayesian Knowledge Tracing (BKT) Engine
               </h3>
               <p className="text-xs text-gray-600 font-medium">
                 Komputasi Spaced Repetition interval $I_n$, Easiness Factor $EF$, dan probabilitas penguasaan hafalan $P(L_t)$.
@@ -448,7 +448,7 @@ export const EnterpriseArchitectureInspector: React.FC = () => {
           <div className="flex items-center justify-between border-b-2 border-black pb-3">
             <div>
               <h3 className="text-lg font-black text-black">
-                🪐 Geosentric Solar Mechanics & Spherical Trigonometry
+                Geosentric Solar Mechanics & Spherical Trigonometry
               </h3>
               <p className="text-xs text-gray-600 font-medium">
                 Komputasi efemeris matahari orde tinggi untuk koordinat Kota Makassar & Arah Kiblat Ka'bah.
@@ -486,7 +486,7 @@ export const EnterpriseArchitectureInspector: React.FC = () => {
           <div className="flex items-center justify-between border-b-2 border-black pb-3">
             <div>
               <h3 className="text-lg font-black text-black">
-                🔗 Cryptographic Merkle-Tree Chained Audit Ledger
+                Cryptographic Merkle-Tree Chained Audit Ledger
               </h3>
               <p className="text-xs text-gray-600 font-medium">
                 Pencatatan setoran & gamifikasi berbasis rantai hash HMAC-SHA256 yang mustahil dimanipulasi (Anti-Cheat).
@@ -545,7 +545,7 @@ export const EnterpriseArchitectureInspector: React.FC = () => {
           <div className="flex items-center justify-between border-b-2 border-black pb-3">
             <div>
               <h3 className="text-lg font-black text-black">
-                🛡️ Enterprise Resilience Gateway & Rate Limiter
+                Enterprise Resilience Gateway & Rate Limiter
               </h3>
               <p className="text-xs text-gray-600 font-medium">
                 Token Bucket Algorithm, Circuit Breaker 3-State Machine, dan Multi-Tier LRU In-Memory Cache.

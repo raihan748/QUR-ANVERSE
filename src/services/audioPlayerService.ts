@@ -1,5 +1,5 @@
 // High-Fidelity Audio Player Service with Multi-Reciter Support & Smart Preloader
-// Supporting top international reciters (Kuwait 🇰🇼, Medina, Egypt)
+// Supporting top international reciters (Kuwait, Medina, Egypt)
 
 export interface Reciter {
   id: string;
@@ -17,7 +17,7 @@ export const RECITERS_LIST: Reciter[] = [
     id: 'alafasy',
     name: 'Syekh Mishary Rashid Al-Afasy',
     arabicName: 'مشاري راشد العفاسي',
-    style: 'Murattal Merdu (Kuwait 🇰🇼)',
+    style: 'Murattal Merdu (Kuwait)',
     bitrate: '128 kbps',
     country: 'Kuwait',
     folder: 'Alafasy_128kbps'

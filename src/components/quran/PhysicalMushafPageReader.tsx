@@ -395,13 +395,13 @@ export const PhysicalMushafPageReader: React.FC = () => {
     if (dir === 'next' && currentPage >= 604) {
       setDragOffset(35);
       setTimeout(() => setDragOffset(0), 220);
-      setToastMessage('📖 Anda telah berada di halaman terakhir (Surat An-Nas / Halaman 604)');
+      setToastMessage('Anda telah berada di halaman terakhir (Surat An-Nas / Halaman 604)');
       return;
     }
     if (dir === 'prev' && currentPage <= 1) {
       setDragOffset(-35);
       setTimeout(() => setDragOffset(0), 220);
-      setToastMessage('📖 Anda telah berada di halaman pertama (Surat Al-Fatihah / Halaman 1)');
+      setToastMessage('Anda telah berada di halaman pertama (Surat Al-Fatihah / Halaman 1)');
       return;
     }
 
@@ -484,9 +484,9 @@ export const PhysicalMushafPageReader: React.FC = () => {
           reciter.id
         );
       }
-      setToastMessage(`🎙️ Qari berganti ke: ${reciter.name}`);
+      setToastMessage(`Qari berganti ke: ${reciter.name}`);
     } else {
-      setToastMessage(`🎙️ Qari dipilih: ${reciter.name}`);
+      setToastMessage(`Qari dipilih: ${reciter.name}`);
     }
   };
 
@@ -549,14 +549,14 @@ export const PhysicalMushafPageReader: React.FC = () => {
     if (index >= queue.length) {
       // Finished all verses on current page!
       if (currentPage < 604) {
-        setToastMessage('📖 Halaman selesai. Melanjutkan ke halaman berikutnya...');
+        setToastMessage('Halaman selesai. Melanjutkan ke halaman berikutnya...');
         triggerPageTurn('next');
       } else {
         isAudioPlayingRef.current = false;
         setIsAudioActive(false);
         setIsAudioPaused(false);
         setCurrentPlayingVerse(null);
-        setToastMessage('✅ Tilawah khatam.');
+        setToastMessage('Tilawah khatam.');
       }
       return;
     }
@@ -570,7 +570,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
     const reciterIdToUse = activeReciterRef.current.id;
 
     if (item.isBasmala || item.ayahNumber === 0) {
-      setToastMessage(`📖 Bismillahir-Rahmanir-Rahim (Pembuka Surat ${item.surahLatin})`);
+      setToastMessage(`Bismillahir-Rahmanir-Rahim (Pembuka Surat ${item.surahLatin})`);
       // Preload ayah 1
       audioPlayer.preloadAyat(item.surahNumber, 1);
       audioPlayer.playBismillah(() => {
@@ -608,7 +608,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
     setIsAudioActive(false);
     setIsAudioPaused(false);
     setCurrentPlayingVerse(null);
-    setToastMessage('⏹ Audio tilawah dihentikan');
+    setToastMessage('Audio tilawah dihentikan');
   };
 
   const handleTogglePlayPause = () => {
@@ -624,7 +624,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
       setIsAudioPaused(false);
       setPageAudioQueue(queue);
       playQueueAt(0, queue);
-      setToastMessage(`▶ Memulai tilawah (${activeReciterRef.current.name})...`);
+      setToastMessage(`Memulai tilawah (${activeReciterRef.current.name})...`);
       return;
     }
 
@@ -633,7 +633,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
       isAudioPlayingRef.current = false;
       audioPlayer.pause();
       setIsAudioPaused(true);
-      setToastMessage('⏸ Audio tilawah dijeda');
+      setToastMessage('Audio tilawah dijeda');
       return;
     }
 
@@ -649,7 +649,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
       setPageAudioQueue(queue);
       playQueueAt(0, queue);
     }
-    setToastMessage(`▶ Melanjutkan tilawah (${activeReciterRef.current.name})...`);
+    setToastMessage(`Melanjutkan tilawah (${activeReciterRef.current.name})...`);
   };
 
   const handleSkipNextAyat = () => {
@@ -680,7 +680,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
       translation: `Tanda Baca Halaman ${rightPageNumber} (Juz ${juzNumberRight} • ${pageSurahsLatinLabelRight})`,
       note: `Ditandai dari Mode Mushaf Fisik Asli (Halaman ${rightPageNumber})`
     });
-    setToastMessage(`🔖 Halaman ${rightPageNumber} (${pageSurahsLatinLabelRight}) berhasil disimpan ke Bookmark!`);
+    setToastMessage(`Halaman ${rightPageNumber} (${pageSurahsLatinLabelRight}) berhasil disimpan ke Bookmark!`);
   };
 
   useEffect(() => {
@@ -845,7 +845,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
       isBasmala: true
     };
     setCurrentPlayingVerse(item);
-    setToastMessage(`📖 Bismillahir-Rahmanir-Rahim (${activeReciterRef.current.name})`);
+    setToastMessage(`Bismillahir-Rahmanir-Rahim (${activeReciterRef.current.name})`);
     
     const queue = buildPagePlaylist();
     setPageAudioQueue(queue);
@@ -1505,7 +1505,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
         </div>
       </div>
 
-      {/* 📖 MAIN PHYSICAL MUSHAF BOOK SPREAD CONTAINER */}
+      {/* MAIN PHYSICAL MUSHAF BOOK SPREAD CONTAINER */}
       <div 
         className={`relative bg-[#EADBBE] dark:bg-[#0F172A] border-4 border-amber-950 rounded-2xl p-2 sm:p-5 shadow-[6px_6px_0px_0px_#111827] overflow-hidden ${
           !isDualSpread ? 'max-w-2xl mx-auto' : 'max-w-6xl mx-auto'
@@ -1602,7 +1602,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
           )}
         </div>
 
-        {/* 🔊 FLOATING LIVE RECITATION HUD BAR */}
+        {/* FLOATING LIVE RECITATION HUD BAR */}
         {isAudioActive && currentPlayingVerse && (
           <div className="absolute bottom-3 left-4 right-4 sm:left-8 sm:right-8 bg-gradient-to-r from-[#0B4627] via-[#064E3B] to-[#0B4627] text-white p-3 sm:p-4 rounded-2xl border-3 border-amber-400 shadow-[0_8px_24px_rgba(0,0,0,0.45)] flex flex-wrap items-center justify-between gap-3 z-40 animate-fade-in backdrop-blur-md">
             <div className="flex items-center gap-3">
@@ -1621,7 +1621,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
                       ? 'bg-amber-200 text-amber-950 border-amber-400' 
                       : 'bg-amber-400 text-black border-amber-500'
                   }`}>
-                    {isAudioPaused ? '⏸ Tilawah Dijeda' : '▶ Sedang Tilawah'}
+                    {isAudioPaused ? 'Tilawah Dijeda' : 'Sedang Tilawah'}
                   </span>
                   <span className="text-xs sm:text-sm font-black text-amber-200">
                     {currentPlayingVerse.isBasmala || currentPlayingVerse.ayahNumber === 0
@@ -1717,7 +1717,7 @@ export const PhysicalMushafPageReader: React.FC = () => {
               }`}
             >
               <HelpCircle className="w-3.5 h-3.5 text-[#F59E0B]" />
-              <span>Kaidah Gharib {pageGharibData && pageGharibData.length > 0 ? '🌟' : ''}</span>
+              <span>Kaidah Gharib {pageGharibData && pageGharibData.length > 0 ? '(Tersedia)' : ''}</span>
             </button>
             <button
               onClick={() => setActiveTajweedTab('legend')}
@@ -1819,19 +1819,31 @@ export const PhysicalMushafPageReader: React.FC = () => {
         {activeTajweedTab === 'legend' && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
             <div className="p-2.5 bg-red-50 dark:bg-red-950/40 border-2 border-red-800 rounded-xl">
-              <span className="font-black text-red-700 dark:text-red-300 block">🔴 Hukum Mad</span>
+              <span className="font-black text-red-700 dark:text-red-300 flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block shrink-0" />
+                <span>Hukum Mad</span>
+              </span>
               <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-1">Mad Wajib, Jaiz, Lazim, 'Aridh (2-6 harakat)</p>
             </div>
             <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border-2 border-emerald-800 rounded-xl">
-              <span className="font-black text-emerald-700 dark:text-emerald-300 block">🟢 Ghunnah & Idgham</span>
+              <span className="font-black text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block shrink-0" />
+                <span>Ghunnah & Idgham</span>
+              </span>
               <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-1">Dengung sempurna 2-3 harakat</p>
             </div>
             <div className="p-2.5 bg-sky-50 dark:bg-sky-950/40 border-2 border-sky-800 rounded-xl">
-              <span className="font-black text-sky-700 dark:text-sky-300 block">🔵 Ikhfa'</span>
+              <span className="font-black text-sky-700 dark:text-sky-300 flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-sky-600 inline-block shrink-0" />
+                <span>Ikhfa'</span>
+              </span>
               <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-1">Samar-samar ber-ghunnah 2 harakat</p>
             </div>
             <div className="p-2.5 bg-purple-50 dark:bg-purple-950/40 border-2 border-purple-800 rounded-xl">
-              <span className="font-black text-purple-700 dark:text-purple-300 block">🟣 Iqlab</span>
+              <span className="font-black text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-purple-600 inline-block shrink-0" />
+                <span>Iqlab</span>
+              </span>
               <p className="text-[11px] text-gray-600 dark:text-gray-300 mt-1">Menukar suara N ke M dengan dengung</p>
             </div>
           </div>

@@ -199,7 +199,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
           setLastResult({
             isCorrect: false,
             accuracy: 0,
-            praise: `⚠️ ${err} (Silakan beralih ke Mode Pilihan Ganda / Mode Tulis 100% Offline)`
+            praise: `${err} (Silakan beralih ke Mode Pilihan Ganda / Mode Tulis 100% Offline)`
           });
         }
       }
@@ -213,7 +213,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
       setLastResult({
         isCorrect: false,
         accuracy: 0,
-        praise: '⚠️ Izin mikrofon diperlukan. Anda juga dapat menggunakan Mode Pilihan Ganda 100% Offline!'
+        praise: 'Izin mikrofon diperlukan. Anda juga dapat menggunakan Mode Pilihan Ganda 100% Offline!'
       });
     }
   };
@@ -234,7 +234,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
       setLastResult({
         isCorrect: false,
         accuracy: 0,
-        praise: '⚠️ Suara belum tertangkap jelas. Dekatkan mikrofon dan lantunkan kembali, atau gunakan "Mode Pilihan Ganda"!'
+        praise: 'Suara belum tertangkap jelas. Dekatkan mikrofon dan lantunkan kembali, atau gunakan "Mode Pilihan Ganda"!'
       });
       return;
     }
@@ -527,7 +527,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
         {/* 2. AREA SAMBUNG AYAT SESUAI METODE PILIHAN */}
         <div className="space-y-4">
           <div className="inline-block px-3 py-1 bg-[#FEF3C7] border-2 border-black rounded-full text-xs font-extrabold text-black">
-            🎯 {t.continuePrompt}
+            {t.continuePrompt}
           </div>
 
           {/* METHOD 1: PILIHAN GANDA (100% BEBAS ERROR / DEVICE RAMAH) */}
@@ -543,14 +543,18 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   const isThisCorrect = opt.arabicText === challengeData.next.arabicText;
 
                   let btnBg = 'bg-white hover:bg-amber-50';
+                  let borderCol = 'border-black';
                   if (isAnswered) {
                     if (isThisCorrect) {
-                      btnBg = 'bg-[#10B981] text-black font-black border-black ring-2 ring-black';
+                      btnBg = 'bg-emerald-100 text-emerald-950 font-bold';
+                      borderCol = 'border-emerald-600 shadow-[3px_3px_0px_0px_#059669]';
                     } else if (isSelected && !isThisCorrect) {
-                      btnBg = 'bg-[#EF4444] text-white border-black';
-                    } else {
-                      btnBg = 'bg-gray-100 text-gray-400 opacity-60';
+                      btnBg = 'bg-red-100 text-red-950';
+                      borderCol = 'border-red-600 shadow-[3px_3px_0px_0px_#DC2626]';
                     }
+                  } else if (isSelected) {
+                    btnBg = 'bg-[#FEF3C7]';
+                    borderCol = 'border-black shadow-[3px_3px_0px_0px_#000]';
                   }
 
                   return (
@@ -558,28 +562,16 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                       key={idx}
                       onClick={() => handleSelectQuizOption(opt)}
                       disabled={isAnswered}
-                      className={`p-4 rounded-2xl border-3 border-black text-right transition-all flex flex-col justify-between gap-2 neo-button cursor-pointer ${btnBg}`}
+                      className={`p-4 rounded-2xl border-3 ${borderCol} ${btnBg} text-right transition-all cursor-pointer relative group flex flex-col justify-between`}
                     >
-                      <div className="flex items-center justify-between w-full border-b border-black/10 pb-1">
-                        <span className="w-6 h-6 rounded-lg bg-black text-white font-mono text-xs flex items-center justify-center font-bold">
-                          {String.fromCharCode(65 + idx)}
-                        </span>
-                        {/* HIDE SURAH NAME BEFORE ANSWERING SO IT DOES NOT LEAK THE ANSWER */}
-                        {isAnswered ? (
-                          <span className="text-[10px] font-black text-gray-800">
-                            QS. {opt.surahName} : {opt.numberInSurah}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-bold text-gray-400">
-                            Opsi {String.fromCharCode(65 + idx)}
-                          </span>
-                        )}
-                      </div>
-                      <p className="font-quran text-lg leading-relaxed font-bold text-black pt-1" dir="rtl">
+                      <span className="text-[10px] font-mono font-bold text-gray-500 self-start px-2 py-0.5 rounded bg-gray-100 border border-gray-300">
+                        Opsi {String.fromCharCode(65 + idx)}
+                      </span>
+                      <p className="font-arabic text-xl sm:text-2xl font-bold text-black leading-loose pt-2 pb-1" dir="rtl">
                         {opt.arabicText}
                       </p>
-                      <p className="text-[11px] text-gray-700 italic text-left line-clamp-2">
-                        "{opt.translation}"
+                      <p className="text-[11px] text-gray-600 font-sans text-left line-clamp-2 mt-1">
+                        QS. {opt.surahName} [Ayat {opt.numberInSurah}] • {opt.translation}
                       </p>
                     </button>
                   );
@@ -588,19 +580,19 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
             </div>
           )}
 
-          {/* METHOD 2: REKAM SUARA DENGAN DECIBEL METER */}
+          {/* METHOD 2: SUARA (SPEECH RECOGNITION V4) */}
           {inputType === 'voice' && (
-            <div className="p-5 bg-white border-3 border-dashed border-[#0B4627] rounded-2xl text-center space-y-4">
-              {/* Mic Language Selector */}
-              <div className="flex items-center justify-center gap-2 pb-2">
-                <span className="text-xs font-bold text-gray-600">Model Bahasa Mic:</span>
+            <div className="space-y-4">
+              {/* Dialect Switcher */}
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-xs font-extrabold text-gray-600">Model Suara:</span>
                 <button
                   onClick={() => setSpeechLanguage('id-ID')}
                   className={`px-3 py-1 text-xs font-black rounded-xl border-2 border-black transition-all cursor-pointer ${
                     speechLanguage === 'id-ID' ? 'bg-[#F59E0B] text-black shadow-[2px_2px_0px_0px_#000]' : 'bg-gray-100 text-gray-700'
                   }`}
                 >
-                  🇮🇩 Indonesia (Paling Peka)
+                  ID - Indonesia (Paling Peka)
                 </button>
                 <button
                   onClick={() => setSpeechLanguage('ar-SA')}
@@ -608,7 +600,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                     speechLanguage === 'ar-SA' ? 'bg-[#0B4627] text-white shadow-[2px_2px_0px_0px_#000]' : 'bg-gray-100 text-gray-700'
                   }`}
                 >
-                  🇸🇦 Arab Saudi
+                  SA - Arab Saudi
                 </button>
               </div>
 
@@ -658,7 +650,7 @@ export const SambungAyatGame: React.FC<SambungAyatGameProps> = ({
                   <div className="flex items-center justify-between text-[11px] font-black text-emerald-300 border-b border-emerald-700/60 pb-1" dir="ltr">
                     <span className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                      🎙️ HASIL DIKTE SUARA (LIVE TRANSCRIPT):
+                      HASIL DIKTE SUARA (LIVE TRANSCRIPT):
                     </span>
                     <span className="font-mono text-amber-300">Terdeteksi</span>
                   </div>

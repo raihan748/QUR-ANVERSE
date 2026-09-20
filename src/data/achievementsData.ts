@@ -5,7 +5,7 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     id: 'badge_first_murojaah',
     title: 'Langkah Pertama Hafidz',
     description: 'Menyelesaikan 1 setoran Muroja\'ah AI dengan skor akurasi di atas 80%.',
-    icon: '🌟',
+    icon: 'sparkles',
     category: 'murojaah',
     unlocked: false,
     xpReward: 200
@@ -14,7 +14,7 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     id: 'badge_fatihah_master',
     title: 'Mahkota Al-Fatihah',
     description: 'Menuntaskan seluruh ayat Surat Al-Fatihah dengan nilai tajwid 100%.',
-    icon: '👑',
+    icon: 'crown',
     category: 'murojaah',
     unlocked: false,
     xpReward: 350
@@ -23,7 +23,7 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     id: 'badge_streak_7',
     title: 'Istiqomah 7 Hari',
     description: 'Melakukan muroja\'ah berturut-turut tanpa putus selama 7 hari.',
-    icon: '🔥',
+    icon: 'flame',
     category: 'streak',
     unlocked: false,
     xpReward: 500
@@ -32,7 +32,7 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     id: 'badge_streak_30',
     title: 'Pejuang 30 Hari Mutqin',
     description: 'Menuntaskan 30-Day Muroja\'ah Streak tanpa bolong 1 hari pun.',
-    icon: '🏆',
+    icon: 'trophy',
     category: 'streak',
     unlocked: false,
     xpReward: 2000
@@ -41,7 +41,7 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     id: 'badge_simai_listener',
     title: 'Telinga Emas Simai',
     description: 'Berhasil menyambung ayat pada Mode Muroja\'ah Tutup Mata di level Hafidz.',
-    icon: '🎧',
+    icon: 'headphones',
     category: 'challenge',
     unlocked: false,
     xpReward: 600
@@ -50,7 +50,7 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     id: 'badge_timer_rush',
     title: 'Penakluk Waktu',
     description: 'Menjawab 5 sambung ayat berturut-turut dalam Countdown Rush Challenge.',
-    icon: '⚡',
+    icon: 'zap',
     category: 'challenge',
     unlocked: false,
     xpReward: 750
@@ -59,7 +59,7 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     id: 'badge_juz_30',
     title: 'Penjaga Juz 30 (Juz \'Amma)',
     description: 'Menyelesaikan muroja\'ah seluruh 37 surat di Juz 30.',
-    icon: '📗',
+    icon: 'book',
     category: 'murojaah',
     unlocked: false,
     xpReward: 1500
@@ -68,7 +68,7 @@ export const INITIAL_BADGES: AchievementBadge[] = [
     id: 'badge_juz_29',
     title: 'Penjaga Juz 29 (Tabarak)',
     description: 'Menyelesaikan muroja\'ah seluruh 11 surat di Juz 29.',
-    icon: '📘',
+    icon: 'book',
     category: 'murojaah',
     unlocked: false,
     xpReward: 1800

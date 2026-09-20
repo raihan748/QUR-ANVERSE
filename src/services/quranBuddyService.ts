@@ -58,7 +58,7 @@ class QuranBuddyService {
       {
         id: 'msg_welcome',
         role: 'assistant',
-        content: `Assalamu'alaikum warahmatullah! 👋\n\nSaya **Quran Buddy**, sahabat belajarmu di Quranverse bertenaga **DeepSeek v4 Pro**.\n\nAda yang bisa saya bantu hari ini? Kamu bisa tanyakan arti ayat, hukum tajwid, tips muroja'ah, atau adab membaca Al-Qur'an! 😊`,
+        content: `Assalamu'alaikum warahmatullah!\n\nSaya **Quran Buddy**, sahabat belajarmu di Al-Huda bertenaga **AI Smart Reasoning**.\n\nAda yang bisa saya bantu hari ini? Kamu bisa tanyakan arti ayat, hukum tajwid, tips muroja'ah, atau adab membaca Al-Qur'an!`,
         timestamp: Date.now()
       }
     ];
@@ -162,18 +162,18 @@ class QuranBuddyService {
     const q = query.toLowerCase();
 
     if (q.includes('tajwid') || q.includes('ikhfa') || q.includes('idgham') || q.includes('idzhar')) {
-      return `*(Mode Offline - Basis Data Lokal)* 📖\n\n**Hukum Nun Sukun & Tanwin Ringkas:**\n- **Idzhar Halqi**: Dibaca jelas jika bertemu huruf ء هـ ع ح غ خ.\n- **Idgham Bighunnah**: Melebur berdengung bertemu ي ن م و.\n- **Idgham Bilaghunnah**: Melebur tanpa dengung bertemu ل ر.\n- **Iqlab**: Berubah menjadi mim bertemu ب.\n- **Ikhfa Haqiqi**: Dibaca samar bertemu 15 huruf lainnya.\n\n*Hubungkan ke internet untuk penjelasan DeepSeek v4 Pro yang lebih mendalam.*`;
+      return `*(Mode Offline - Basis Data Lokal)*\n\n**Hukum Nun Sukun & Tanwin Ringkas:**\n- **Idzhar Halqi**: Dibaca jelas jika bertemu huruf ء هـ ع ح غ خ.\n- **Idgham Bighunnah**: Melebur berdengung bertemu ي ن م و.\n- **Idgham Bilaghunnah**: Melebur tanpa dengung bertemu ل ر.\n- **Iqlab**: Berubah menjadi mim bertemu ب.\n- **Ikhfa Haqiqi**: Dibaca samar bertemu 15 huruf lainnya.\n\n*Hubungkan ke internet untuk penjelasan lebih mendalam.*`;
     }
 
     if (q.includes('ikhlas') || q.includes('al-ikhlas')) {
-      return `*(Mode Offline - Basis Data Lokal)* 🌟\n\n**Keutamaan Surah Al-Ikhlas:**\nRasulullah ﷺ bersabda bahwa Surah Al-Ikhlas nilainya sebanding dengan sepertiga Al-Qur'an (HR. Bukhari no. 5013) karena memuat pemurnian tauhid kepada Allah Yang Maha Esa.`;
+      return `*(Mode Offline - Basis Data Lokal)*\n\n**Keutamaan Surah Al-Ikhlas:**\nRasulullah ﷺ bersabda bahwa Surah Al-Ikhlas nilainya sebanding dengan sepertiga Al-Qur'an (HR. Bukhari no. 5013) karena memuat pemurnian tauhid kepada Allah Yang Maha Esa.`;
     }
 
     if (q.includes('muroja') || q.includes('hafal') || q.includes('tips') || q.includes('ingat')) {
-      return `*(Mode Offline - Basis Data Lokal)* 💡\n\n**Tips Menjaga Hafalan (Muroja'ah):**\n1. **Golden Hour Fajar**: Muroja'ah ba'da Subuh saat gelombang otak dalam kondisi alfa paling tenang.\n2. **Metode Tikrar**: Ulangi 1 halaman minimal 20x sebelum pindah ke ayat berikutnya.\n3. **Pakai di Sholat**: Bacalah hafalan baru pada sholat sunnah Rawatib dan Tahajjud.\n4. **Gunakan Fitur Muroja'ah AI**: Latih kelancaran bacaanmu di tab Muroja'ah Quranverse!`;
+      return `*(Mode Offline - Basis Data Lokal)*\n\n**Tips Menjaga Hafalan (Muroja'ah):**\n1. **Golden Hour Fajar**: Muroja'ah ba'da Subuh saat gelombang otak dalam kondisi alfa paling tenang.\n2. **Metode Tikrar**: Ulangi 1 halaman minimal 20x sebelum pindah ke ayat berikutnya.\n3. **Pakai di Sholat**: Bacalah hafalan baru pada sholat sunnah Rawatib dan Tahajjud.\n4. **Gunakan Fitur Muroja'ah AI**: Latih kelancaran bacaanmu di tab Muroja'ah!`;
     }
 
-    return `*(Mode Offline)* 📡\n\nMaaf, koneksi ke DeepSeek v4 Pro sedang tidak tersedia atau perangkat sedang offline. Pertanyaanmu *" ${query} "* akan terjawab lengkap begitu terhubung ke jaringan internet.\n\nKamu tetap bisa menggunakan fitur Mushaf, Muroja'ah AI, dan Al-Ma'tsurat secara 100% offline!`;
+    return `*(Mode Offline)*\n\nMaaf, koneksi sedang tidak tersedia atau perangkat sedang offline. Pertanyaanmu *" ${query} "* akan terjawab lengkap begitu terhubung ke jaringan internet.\n\nKamu tetap bisa menggunakan fitur Mushaf, Muroja'ah AI, dan Al-Ma'tsurat secara 100% offline!`;
   }
 }
 

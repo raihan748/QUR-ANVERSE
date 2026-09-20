@@ -468,12 +468,21 @@ export const FrontierResearchHub: React.FC = () => {
                   onChange={(e) => setBreathSimDuration(Number(e.target.value))}
                   className="w-full accent-[#0B4627]"
                 />
-                <div className="p-2 bg-sky-50 border border-sky-300 rounded-xl text-[11px] text-sky-900">
-                  💡 Cadangan Paru-paru: <b>{Math.max(0, Math.round((1 - breathSimDuration / 12500) * 100))}%</b>
+                <div className="p-2 bg-sky-50 border border-sky-300 rounded-xl text-[11px] text-sky-900 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <Sparkles className="w-3.5 h-3.5 text-sky-600" />
+                    <span>Cadangan Paru-paru: <b>{Math.max(0, Math.round((1 - breathSimDuration / 12500) * 100))}%</b></span>
+                  </div>
                   {breathSimDuration > 8500 ? (
-                    <span className="text-red-600 font-bold block mt-1">⚠️ Nafas kritis! Sistem otomatis mengarahkan ke tanda Waqaf terdekat.</span>
+                    <span className="text-red-600 font-bold flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                      <span>Nafas kritis! Sistem otomatis mengarahkan ke tanda Waqaf terdekat.</span>
+                    </span>
                   ) : (
-                    <span className="text-emerald-700 font-bold block mt-1">✅ Ritme pernapasan stabil untuk 1 ayat penuh.</span>
+                    <span className="text-emerald-700 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                      <span>Ritme pernapasan stabil untuk 1 ayat penuh.</span>
+                    </span>
                   )}
                 </div>
               </div>
@@ -632,8 +641,9 @@ export const FrontierResearchHub: React.FC = () => {
               </button>
 
               {healResult && (
-                <div className="p-3 bg-emerald-100 border border-emerald-600 rounded-xl text-xs text-emerald-900 font-medium animate-fade-in">
-                  ✅ Pemeriksaan Selesai: <b>{healResult.checked} kunci</b> diverifikasi, <b>{healResult.repaired} korupsi</b> dipulihkan otomatis ke baseline resmi.
+                <div className="p-3 bg-emerald-100 border border-emerald-600 rounded-xl text-xs text-emerald-900 font-medium animate-fade-in flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+                  <span>Pemeriksaan Selesai: <b>{healResult.checked} kunci</b> diverifikasi, <b>{healResult.repaired} korupsi</b> dipulihkan otomatis ke baseline resmi.</span>
                 </div>
               )}
             </NeobrutalCard>
@@ -1151,8 +1161,9 @@ export const FrontierResearchHub: React.FC = () => {
                           <td className="p-3 text-center text-emerald-700 font-bold">{r.latencyUs.toFixed(2)} µs</td>
                           <td className="p-3 text-center font-bold">{r.throughput.toLocaleString()} ops/s</td>
                           <td className="p-3 text-center">
-                            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 border border-emerald-500 rounded-lg text-[10px] font-black">
-                              ✅ 100% PASSED
+                            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 border border-emerald-500 rounded-lg text-[10px] font-black inline-flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                              <span>100% PASSED</span>
                             </span>
                           </td>
                         </tr>
