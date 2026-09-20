@@ -9,7 +9,6 @@ import {
   ArrowRight,
   ShieldCheck,
   Network,
-  KeyRound,
   Check,
   AlertCircle,
   ChevronUp,
@@ -19,7 +18,6 @@ import { UserProfile, MurojaahSessionLog, WeakVerse } from '../../types';
 import { NeobrutalCard } from '../common/NeobrutalCard';
 import { useLanguage } from '../../context/LanguageContext';
 import { CircadianBioMemoryEngine } from '../../services/backend/frontier/CircadianBioMemoryEngine';
-import { ZeroKnowledgeProofEngine, ZKPProofOfInclusion } from '../../services/backend/crypto/ZeroKnowledgeProofEngine';
 import { getMurojaahHistory, getWeakVerses, getBookmarks, getLastRead } from '../../services/offlineStorage';
 import { prayerAttendance } from '../../services/prayerAttendanceService';
 import { getAnnualProgress, getDailyTarget } from '../../services/dailyTargetService';
@@ -172,41 +170,12 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
     },
   ];
 
-  // Research Pillars & Models Integration States
+  // Silsilah Sanad State
   const [isSanadExpanded, setIsSanadExpanded] = useState(false);
-  const [zkpProof, setZkpProof] = useState<ZKPProofOfInclusion | null>(null);
-  const [isGeneratingZkp, setIsGeneratingZkp] = useState(false);
-  const [zkpError, setZkpError] = useState<string | null>(null);
 
   // Model 3: Circadian Golden Memory Hours Evaluation
   const currentHour = new Date().getHours();
   const circadianInfo = CircadianBioMemoryEngine.getCircadianEfficiency(currentHour);
-
-  // Pilar 9: Generate Merkle ZK-Proof of Memorization (Validasi Data Nyata)
-  const handleGenerateZkpCertificate = () => {
-    if (!hasRealActivity && userProfile.totalXp <= 0) {
-      setZkpError('Belum ada data sesi latihan nyata. Silakan selesaikan minimal 1 sesi muroja\'ah untuk menerbitkan sertifikat ZK-Proof.');
-      setTimeout(() => setZkpError(null), 4000);
-      return;
-    }
-
-    setIsGeneratingZkp(true);
-    setZkpError(null);
-    setTimeout(() => {
-      const leaves = [
-        ZeroKnowledgeProofEngine.hash(`SANTRI:${userProfile.id || 'qv_user'}`),
-        ZeroKnowledgeProofEngine.hash(`NAME:${userProfile.fullName || 'Hafidz Al-Huda'}`),
-        ZeroKnowledgeProofEngine.hash(`XP:${userProfile.totalXp}`),
-        ZeroKnowledgeProofEngine.hash(`REAL_SESSIONS:${totalSessions}`),
-        ZeroKnowledgeProofEngine.hash(`PASSED_SURAHS:${surahsMastered}`),
-        ZeroKnowledgeProofEngine.hash(`TIMESTAMP:${Date.now()}`)
-      ];
-      ZeroKnowledgeProofEngine.buildMerkleTree(leaves);
-      const proof = ZeroKnowledgeProofEngine.generateProofOfInclusion(leaves, 2);
-      setZkpProof(proof);
-      setIsGeneratingZkp(false);
-    }, 400);
-  };
 
   return (
     <NeobrutalCard variant="white" className="p-4 sm:p-6 border-3 border-black shadow-[6px_6px_0px_0px_#111827] space-y-6">
@@ -450,13 +419,13 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
         </div>
       </div>
 
-      {/* 2. PILAR 8: SILSILAH SANAD MUTASHIL TRANSMISSION DAG */}
+      {/* 2. SILSILAH SANAD MUTASHIL */}
       <div className="p-4 bg-white border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_#000] space-y-3">
         <div className="flex items-center justify-between border-b border-black/10 pb-2">
           <div className="flex items-center gap-2">
             <Network className="w-4 h-4 text-[#0B4627]" />
             <span className="text-xs font-black text-gray-900 uppercase">
-              Silsilah Sanad Mutashil (Sanad Transmission DAG)
+              Silsilah Sanad Mutashil (Rantai Talaqqi)
             </span>
           </div>
           <button
@@ -498,59 +467,6 @@ export const TahfidzMasteryAnalytics: React.FC<TahfidzMasteryAnalyticsProps> = (
               <span className="text-[9px] font-mono bg-[#0B4627] text-[#F59E0B] px-2 py-0.5 rounded border border-black">Khatamun Nabiyyin</span>
             </div>
           </div>
-        )}
-      </div>
-
-      {/* 3. PILAR 9: VERIFIKASI SERTIFIKAT DIGITAL ZK-PROOF (ZERO-KNOWLEDGE PROOF) */}
-      <div className="p-4 bg-[#FFFDF7] border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_#000] space-y-3">
-        <div className="flex items-center justify-between border-b border-black/10 pb-2">
-          <div className="flex items-center gap-2">
-            <KeyRound className="w-4 h-4 text-[#0B4627]" />
-            <span className="text-xs font-black text-gray-900 uppercase">
-              Verifikasi Sertifikat Digital ZK-Proof (Pilar 9)
-            </span>
-          </div>
-          <span className="text-[9px] font-mono font-black bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded border border-black">
-            CRYPTOGRAPHIC AUDIT
-          </span>
-        </div>
-        <p className="text-[11px] text-gray-700 font-medium">
-          Menerbitkan bukti matematis kriptografi Merkle Tree yang memvalidasi keaslian capaian hafalan santri secara on-device tanpa membeberkan log pribadi.
-        </p>
-
-        {zkpError && (
-          <div className="p-2.5 bg-amber-100 border border-amber-400 text-amber-950 text-xs font-bold rounded-xl flex items-center gap-2 animate-fade-in">
-            <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
-            <span>{zkpError}</span>
-          </div>
-        )}
-
-        {zkpProof ? (
-          <div className="p-3 bg-emerald-50 border-2 border-black rounded-xl space-y-2 animate-fade-up">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-emerald-900 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                Sertifikat ZK-Proof Terverifikasi Sah!
-              </span>
-              <span className="text-[9px] font-mono bg-white px-2 py-0.5 rounded border border-black font-bold">
-                Level {userProfile.hafidzLevel}
-              </span>
-            </div>
-            <div className="p-2 bg-white rounded-lg border border-emerald-300 font-mono text-[10px] space-y-0.5 text-gray-700">
-              <p className="truncate"><strong>Leaf Hash:</strong> {zkpProof.leafHash}</p>
-              <p className="truncate"><strong>Merkle Root:</strong> {zkpProof.rootHash}</p>
-              <p><strong>Status Integritas:</strong> Terverifikasi via SHA-256 Merkle Inclusion Proof ({totalSessions} Sesi Terekam)</p>
-            </div>
-          </div>
-        ) : (
-          <button
-            onClick={handleGenerateZkpCertificate}
-            disabled={isGeneratingZkp}
-            className="w-full py-2 px-3 bg-[#0B4627] hover:bg-[#08351D] text-[#F59E0B] border-2 border-black rounded-xl text-xs font-black flex items-center justify-center gap-2 cursor-pointer shadow-[2px_2px_0px_0px_#000] active:translate-y-0.5"
-          >
-            <ShieldCheck className="w-4 h-4 text-emerald-300" />
-            <span>{isGeneratingZkp ? 'Mengomputasi Bukti Merkle ZK-Proof...' : 'Verifikasi Keaslian Sertifikat Hafalan (ZK-Proof)'}</span>
-          </button>
         )}
       </div>
 
