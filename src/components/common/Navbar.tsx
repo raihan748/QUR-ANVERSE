@@ -31,14 +31,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center text-black p-1 shrink-0 group-hover:border-amber-400 transition">
             <img 
               src="/favicon.svg" 
-              alt="Al-Huda Logo" 
+              alt="QUR-ANVERSE Logo" 
               className="w-full h-full object-contain drop-shadow-xs" 
             />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-black tracking-wide font-display text-amber-300">
-                AL-HUDA
+                QUR-ANVERSE
               </h1>
             </div>
             <p className="text-[11px] text-emerald-200/80 font-medium hidden sm:block">
@@ -77,14 +77,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </button>
 
-          {/* Quran Buddy */}
+          {/* Tanya Azman AI */}
           <button
-            onClick={() => window.dispatchEvent(new CustomEvent('qv_open_quran_buddy'))}
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('qv_open_azman_buddy'));
+              window.dispatchEvent(new CustomEvent('qv_open_quran_buddy'));
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#06331D] hover:bg-emerald-900/80 text-amber-300 border border-emerald-700/60 rounded-xl text-xs font-semibold transition cursor-pointer"
-            title="Tanya Quran Buddy"
+            title="Tanya Azman (AI Sahabat Al-Qur'an)"
           >
             <Bot className="w-3.5 h-3.5 text-amber-300" />
-            <span className="hidden sm:inline">Tanya Ayat</span>
+            <span className="hidden sm:inline">Tanya Azman</span>
           </button>
 
           {/* Language Switcher */}

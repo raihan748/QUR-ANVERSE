@@ -1,7 +1,7 @@
 {
-  "name": "Al-Huda - Membaca, Merenungi, dan Memahami Al-Qur'an",
-  "short_name": "Al-Huda",
-  "description": "Al-Huda: Membaca, Merenungi, dan Memahami Al-Qur'an dengan Pencarian Makna yang Jernih. Eksplorasi lembaran mushaf digital secara khusyuk dan praktis.",
+  "name": "QUR-ANVERSE - Platform Edukasi & AI Smart Mushaf",
+  "short_name": "QUR-ANVERSE",
+  "description": "QUR-ANVERSE: Ekosistem AI Smart Mushaf, Muroja'ah Real-Time, Tanya Azman, dan 30 Juz Rasm Utsmani Standar Kemenag RI.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0B4627",

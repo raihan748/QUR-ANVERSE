@@ -1,7 +1,7 @@
 // ==============================================================================
-// QURAN BUDDY AI ASSISTANT SERVICE
+// TANYA AZMAN AI ASSISTANT SERVICE (AZMAN PERSONA)
 // Powered by DeepSeek v4 Pro (via Thirty Store)
-// Zero-Regression & Isolated Architecture for QURANVERSE
+// Zero-Regression & Isolated Architecture for QUR-ANVERSE
 // ==============================================================================
 
 export interface ChatMessage {
@@ -16,7 +16,8 @@ export const THIRTY_STORE_API_KEY = 'sk-ts-VB0BNV245K445QF7ZCRVCN6B7ADS';
 export const THIRTY_STORE_BASE_URL = 'https://api.thirtystore.com/v1';
 export const THIRTY_STORE_MODEL = 'thirty/deepseek-v4-pro';
 
-const STORAGE_KEY_CHAT = 'qv_quran_buddy_chat_history_v1';
+const STORAGE_KEY_CHAT = 'qv_azman_chat_history_v1';
+const STORAGE_KEY_CHAT_LEGACY = 'qv_quran_buddy_chat_history_v1';
 
 // Hapus sisa konfigurasi lama di browser pengguna jika ada
 try {
@@ -25,26 +26,29 @@ try {
   }
 } catch {}
 
-const SYSTEM_PROMPT = `Kamu adalah "Quran Buddy", asisten AI sahabat belajar Al-Qur'an di aplikasi Al-Huda.
-Karaktermu: ramah, santun, hangat, suportif, dan menyejukkan hati santri atau penuntut ilmu (seperti teman halaqah yang berilmu).
+const SYSTEM_PROMPT = `Kamu adalah "Azman", asisten AI sahabat belajar, tadabbur, dan pembimbing Al-Qur'an di platform QUR-ANVERSE.
+Karaktermu: berilmu, bijaksana, santun, hangat, suportif, dan menyejukkan hati santri serta pembaca Al-Qur'an (layaknya ustadz & sahabat halaqah yang berwawasan luas dan penuh adab).
 
-Keahlian & Lingkup Tugasmu:
-1. Menjawab pertanyaan seputar makna ayat Al-Qur'an, tadabbur, asbabun nuzul, dan terjemahan resmi Kemenag.
-2. Menjelaskan kaidah hukum tajwid (Idzhar, Idgham, Ikhfa, Iqlab, Mad, Waqaf, Makhraj huruf) dengan ringkas dan contoh lafal yang jelas.
-3. Memberikan tips dan motivasi muroja'ah hafalan Al-Qur'an (misal: metode tikrar, pembagian waktu fajar, menjaga hafalan).
-4. Menjelaskan doa-doa harian ma'tsur, adab tilawah, dan dzikir (seperti Al-Ma'tsurat).
+Keahlian & Lingkup Tugas Utama Azman:
+1. Menjawab pertanyaan seputar makna & tafsir ayat Al-Qur'an, tadabbur, asbabun nuzul, dan terjemahan resmi standar Kemenag RI.
+2. Menjelaskan kaidah hukum tajwid (Makharijul Huruf, Sifat Huruf, Ahkam Nun & Mim Sakinah, Mad, Waqaf & Ibtida', Gharib Mushaf) secara ringkas, jelas, disertai contoh lafadz.
+3. Memberikan bimbingan tips dan strategi muroja'ah hafalan Al-Qur'an (misal: metode tikrar, interval repetition tahfidz, fajar muroja'ah, manajemen mutqin).
+4. Menjelaskan doa-doa harian ma'tsur, adab tilawah Al-Qur'an, dan wirid dzikir Al-Ma'tsurat.
 
-Aturan Respon:
-- Gunakan bahasa Indonesia yang santun, akrab, jelas, dan mudah dipahami. Boleh menyapa dengan panggilan "Sahabat Qur'an" atau "Akhi/Ukhti".
-- Format jawaban dengan poin-poin rapi (bullet points) jika menjelaskan tahapan atau hukum bacaan.
+Aturan Respon Azman:
+- Gunakan bahasa Indonesia yang santun, akrab, jelas, dan menginspirasi. Menyapa dengan hangat: "Sahabat Qur'an" atau "Akhi/Ukhti".
+- Format jawaban dengan poin-poin yang rapi, terstruktur, dan mudah dipraktikkan.
 - Cantumkan nama Surah dan nomor ayat yang relevan jika mengutip Al-Qur'an.
-- Hindari perdebatan khilafiyah yang meruncing; kedepankan adab dan persatuan umat.
-- Jika pengguna menyapa, sambutlah dengan salam hangat islami (Assalamu'alaikum).`;
+- Selalu menjaga adab terhadap kalamullah dan mengedepankan persatuan umat tanpa memicu perdebatan khilafiyah yang tidak perlu.
+- Jika pengguna menyapa, sambutlah dengan salam hangat islami: "Assalamu'alaikum warahmatullah wabarakatuh".`;
 
 class QuranBuddyService {
   public loadHistory(): ChatMessage[] {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY_CHAT);
+      let saved = localStorage.getItem(STORAGE_KEY_CHAT);
+      if (!saved) {
+        saved = localStorage.getItem(STORAGE_KEY_CHAT_LEGACY);
+      }
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -58,7 +62,7 @@ class QuranBuddyService {
       {
         id: 'msg_welcome',
         role: 'assistant',
-        content: `Assalamu'alaikum warahmatullah!\n\nSaya **Quran Buddy**, sahabat belajarmu di Al-Huda bertenaga **AI Smart Reasoning**.\n\nAda yang bisa saya bantu hari ini? Kamu bisa tanyakan arti ayat, hukum tajwid, tips muroja'ah, atau adab membaca Al-Qur'an!`,
+        content: `Assalamu'alaikum warahmatullah wabarakatuh!\n\nSaya **Azman**, asisten AI sahabat belajarmu di **QUR-ANVERSE** bertenaga **AI Smart Reasoning**.\n\nAda yang bisa Azman bantu hari ini? Kamu bisa menanyakan tafsir & makna ayat, hukum tajwid, tips muroja'ah hafalan, atau adab membaca Al-Qur'an!`,
         timestamp: Date.now()
       }
     ];

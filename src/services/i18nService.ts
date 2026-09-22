@@ -8,8 +8,8 @@ const LANG_STORAGE_KEY = 'quranverse_app_lang_v1';
 export const translations = {
   id: {
     // Brand
-    brandTitle: 'AL-HUDA',
-    brandSubtitle: 'Membaca, Merenungi, dan Memahami Al-Qur\'an dengan Pencarian Makna yang Jernih.',
+    brandTitle: 'QUR-ANVERSE',
+    brandSubtitle: 'Platform Edukasi & AI Smart Mushaf 30 Juz Standar Kemenag RI.',
     aiPlatform: 'AI Platform',
     standardBadge: 'Standar Kemenag RI',
     
@@ -97,8 +97,8 @@ export const translations = {
 
   ar: {
     // Brand
-    brandTitle: 'الهدى',
-    brandSubtitle: 'تلاوة وتدبر وفهم القرآن الكريم ببيان واضح ومعنى جلي',
+    brandTitle: 'قرآن فيرس (QUR-ANVERSE)',
+    brandSubtitle: 'تلاوة وتدبر ومراجعة القرآن الكريم بتقنيات الذكاء الاصطناعي الكونية',
     aiPlatform: 'منصة الذكاء الاصطناعي',
     standardBadge: 'مصحف معتمد بالرسم العثماني',
 

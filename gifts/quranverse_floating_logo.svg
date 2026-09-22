@@ -289,25 +289,24 @@
         </g>
       </g>
 
-      <!-- Typography: QURANVERSE (Bold Neobrutal Display Font) -->
-      <g transform="translate(0, 180)">
-        <!-- Black Drop Stroke -->
-        <text x="0" y="0" font-family="'Plus Jakarta Sans', 'Outfit', sans-serif" font-weight="900" font-size="46" fill="#F59E0B" text-anchor="middle" stroke="#000000" stroke-width="9" letter-spacing="4">
-          QURANVERSE
+      <!-- Typography: QUR-ANVERSE (Grand Imperial Display) -->
+      <g transform="translate(0, 175)">
+        <text x="0" y="0" font-family="'Outfit', 'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="46" fill="#F59E0B" text-anchor="middle" stroke="#000000" stroke-width="8" letter-spacing="5">
+          QUR-ANVERSE
         </text>
-        <text x="0" y="0" font-family="'Plus Jakarta Sans', 'Outfit', sans-serif" font-weight="900" font-size="46" fill="#F59E0B" text-anchor="middle" letter-spacing="4">
-          QURANVERSE
+        <text x="0" y="0" font-family="'Outfit', 'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="46" fill="#FDE68A" text-anchor="middle" letter-spacing="5">
+          QUR-ANVERSE
         </text>
       </g>
     </g>
   </g>
 
-  <!-- 7. PRESENTATION SLOGAN & METADATA FOOTER (ELEGANT PRESENTATION READY) -->
+  <!-- 7. PRESENTATION SLOGAN & METADATA FOOTER -->
   <g transform="translate(960, 940)">
-    <!-- Pill Badge: AI Guru Ngaji Pribadi -->
-    <rect x="-240" y="-35" width="480" height="54" rx="27" fill="#063820" stroke="#F59E0B" stroke-width="3" filter="url(#hardShadow)"/>
-    <text x="0" y="1" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="20" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">
-      AI GURU NGAJI &amp; MUROJA'AH REAL-TIME
+    <!-- Pill Badge: Tanya Azman & AI Muroja'ah -->
+    <rect x="-270" y="-35" width="540" height="54" rx="27" fill="#063820" stroke="#F59E0B" stroke-width="2.5" filter="url(#hardShadow)"/>
+    <text x="0" y="1" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="19" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">
+      ✦ TANYA AZMAN • AI MUROJA'AH REAL-TIME ✦
     </text>
 
     <!-- Subtitle: Standar Kemenag RI & Rasm Utsmani -->

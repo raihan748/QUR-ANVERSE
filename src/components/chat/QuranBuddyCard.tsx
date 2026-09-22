@@ -36,8 +36,12 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
       setIsMinimized(false);
     };
 
+    window.addEventListener('qv_open_azman_buddy', handleGlobalOpen);
     window.addEventListener('qv_open_quran_buddy', handleGlobalOpen);
-    return () => window.removeEventListener('qv_open_quran_buddy', handleGlobalOpen);
+    return () => {
+      window.removeEventListener('qv_open_azman_buddy', handleGlobalOpen);
+      window.removeEventListener('qv_open_quran_buddy', handleGlobalOpen);
+    };
   }, []);
 
   // Auto scroll to bottom of chat
@@ -98,7 +102,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
   };
 
   const handleClearHistory = () => {
-    if (window.confirm('Hapus seluruh riwayat obrolan dengan Quran Buddy?')) {
+    if (window.confirm('Hapus seluruh riwayat obrolan dengan Azman?')) {
       const reset = quranBuddyService.clearHistory();
       setMessages(reset);
     }
@@ -121,7 +125,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
             setIsMinimized(false);
           }}
           className="group flex items-center gap-2 px-3.5 py-2.5 bg-[#0B4627] hover:bg-[#07301b] text-white border border-emerald-700/60 rounded-2xl shadow-lg cursor-pointer transition-all duration-200 ring-1 ring-emerald-500/20 active:scale-95"
-          title="Buka Quran Buddy (DeepSeek v4 Pro)"
+          title="Buka Tanya Azman (AI Sahabat Al-Qur'an)"
         >
           <div className="relative flex items-center justify-center w-7 h-7 bg-amber-500 text-slate-950 rounded-xl font-bold shadow-xs">
             <Bot className="w-4 h-4" />
@@ -129,7 +133,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 border border-emerald-900 rounded-full" />
           </div>
           <div className="text-left">
-            <span className="block text-xs font-bold leading-tight text-amber-300">Quran Buddy</span>
+            <span className="block text-xs font-bold leading-tight text-amber-300">Tanya Azman</span>
             <span className="block text-[9px] text-emerald-200 font-medium">Sahabat Qur'an</span>
           </div>
           <Sparkles className="w-3.5 h-3.5 text-amber-300 group-hover:rotate-12 transition-transform ml-1" />
@@ -148,7 +152,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
             className="flex items-center gap-2 cursor-pointer select-none flex-1"
           >
             <Bot className="w-5 h-5 text-amber-400" />
-            <span className="font-bold text-xs text-amber-300">Quran Buddy</span>
+            <span className="font-bold text-xs text-amber-300">Tanya Azman</span>
             <span className="px-1.5 py-0.5 bg-emerald-950 border border-emerald-600/60 text-[9px] font-mono rounded text-emerald-300">
               Online
             </span>
@@ -188,7 +192,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h3 className="font-bold text-xs text-amber-300">Quran Buddy</h3>
+              <h3 className="font-bold text-xs text-amber-300">Tanya Azman</h3>
               <span className="px-1.5 py-0.2 bg-emerald-950 text-emerald-300 text-[9px] font-mono rounded border border-emerald-600/60">
                 DeepSeek v4 Pro
               </span>
@@ -253,7 +257,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
         {/* Typing Loading Bubble */}
         {isLoading && (
           <div className="flex items-center gap-2 p-3 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs w-fit">
-            <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400">Quran Buddy sedang berpikir</span>
+            <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400">Azman sedang berpikir</span>
             <div className="flex gap-1 items-center">
               <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce [animation-delay:-0.3s]" />
               <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce [animation-delay:-0.15s]" />
@@ -293,7 +297,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Tanya tafsir, tajwid, atau tips hafalan..."
+          placeholder="Tanya Azman seputar tafsir, tajwid, atau tips hafalan..."
           disabled={isLoading}
           className="flex-1 px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-600 dark:text-white placeholder:text-slate-400 font-medium"
         />

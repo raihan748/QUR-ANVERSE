@@ -189,7 +189,7 @@ export function App() {
             <Suspense fallback={
               <div className="flex flex-col items-center justify-center min-h-[400px] p-12 text-center">
                 <div className="w-10 h-10 border-4 border-[#0B4627] border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="font-semibold text-slate-700 text-sm">Memuat modul Al-Huda...</p>
+                <p className="font-semibold text-slate-700 text-sm">Memuat modul QUR-ANVERSE...</p>
               </div>
             }>
               <div key={activeTab} className="animate-fade-up">
@@ -262,7 +262,7 @@ export function App() {
       {/* Floating Scroll to Top & Quick Jump Button */}
       <ScrollToTopButton onSelectTab={handleSelectTabWithScroll} />
 
-      {/* Floating Quran Buddy AI Assistant (DeepSeek v4 Pro) in Bottom-Right */}
+      {/* Floating Tanya Azman AI Assistant (DeepSeek v4 Pro) in Bottom-Right */}
       <QuranBuddyCard />
 
       {/* Global Fullscreen Adzan Modal (Accessible anywhere regardless of current tab) */}

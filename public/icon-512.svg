@@ -1,47 +1,169 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- Outer Neobrutal Emerald Background with Hard Shadow Border -->
-  <rect width="512" height="512" rx="110" fill="#0B4627" stroke="#000000" stroke-width="16"/>
-  
-  <!-- Outer Gold Geometric Dashed Border -->
-  <rect x="26" y="26" width="460" height="460" rx="90" fill="none" stroke="#F59E0B" stroke-width="8" stroke-dasharray="14 10"/>
-  
-  <!-- Islamic 8-Point Geometric Star (Rub el Hizb) Background Watermark -->
-  <g transform="translate(256, 230)" fill="#F59E0B" opacity="0.18">
-    <rect x="-140" y="-140" width="280" height="280" rx="28"/>
-    <rect x="-140" y="-140" width="280" height="280" rx="28" transform="rotate(45)"/>
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#022316"/>
+      <stop offset="45%" stop-color="#053e26"/>
+      <stop offset="100%" stop-color="#01180e"/>
+    </linearGradient>
+
+    <radialGradient id="nebulaGlow" cx="50%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.32"/>
+      <stop offset="40%" stop-color="#059669" stop-opacity="0.18"/>
+      <stop offset="75%" stop-color="#F59E0B" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="goldMetallic" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFBEB"/>
+      <stop offset="25%" stop-color="#FDE68A"/>
+      <stop offset="60%" stop-color="#F59E0B"/>
+      <stop offset="85%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#92400E"/>
+    </linearGradient>
+
+    <linearGradient id="pageLeftGrad" x1="100%" y1="50%" x2="0%" y2="50%">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="60%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+
+    <linearGradient id="pageRightGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#FFFDF5"/>
+      <stop offset="50%" stop-color="#FEF9E7"/>
+      <stop offset="100%" stop-color="#FDE68A"/>
+    </linearGradient>
+
+    <linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F43F5E"/>
+      <stop offset="50%" stop-color="#E11D48"/>
+      <stop offset="100%" stop-color="#9F1239"/>
+    </linearGradient>
+
+    <linearGradient id="emeraldOrbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6EE7B7"/>
+      <stop offset="45%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="glowSoft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="glowGold" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feComponentTransfer in="blur" result="boost">
+        <feFuncA type="linear" slope="1.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode in="boost"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="subtleShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- 1. Background Rounded Shield -->
+  <rect width="512" height="512" rx="108" fill="url(#bgGrad)"/>
+  <rect width="512" height="512" rx="108" fill="url(#nebulaGlow)"/>
+
+  <!-- 2. Dual Luxury Borders -->
+  <rect x="18" y="18" width="476" height="476" rx="92" fill="none" stroke="url(#goldMetallic)" stroke-width="2.5" opacity="0.85"/>
+  <rect x="28" y="28" width="456" height="456" rx="82" fill="none" stroke="#10B981" stroke-width="1.2" stroke-dasharray="8 6" opacity="0.5"/>
+
+  <!-- 3. Corner Islamic Filigree Accents -->
+  <g stroke="url(#goldMetallic)" stroke-width="1.8" fill="none" opacity="0.75">
+    <path d="M 44 80 L 44 44 L 80 44"/>
+    <circle cx="56" cy="56" r="3.5" fill="url(#goldMetallic)"/>
+    <path d="M 468 80 L 468 44 L 432 44"/>
+    <circle cx="456" cy="56" r="3.5" fill="url(#goldMetallic)"/>
+    <path d="M 44 432 L 44 468 L 80 468"/>
+    <circle cx="56" cy="456" r="3.5" fill="url(#goldMetallic)"/>
+    <path d="M 468 432 L 468 468 L 432 468"/>
+    <circle cx="456" cy="456" r="3.5" fill="url(#goldMetallic)"/>
   </g>
 
-  <!-- Open Mushaf / Holy Qur'an with Neobrutalism 3D offset -->
-  <g transform="translate(256, 210)">
-    <!-- Shadow Backing -->
-    <path d="M -180 30 C -120 5, -30 5, 0 35 C 30 5, 120 5, 180 30 L 180 160 C 120 135, 30 135, 0 165 C -30 135, -120 135, -180 160 Z" fill="#000000" transform="translate(10, 10)"/>
-    
-    <!-- Left Page (Ivory White) -->
-    <path d="M -180 30 C -120 5, -30 5, 0 35 L 0 165 C -30 135, -120 135, -180 160 Z" fill="#FFFDF7" stroke="#000000" stroke-width="10"/>
-    <!-- Right Page (Amber Gold) -->
-    <path d="M 0 35 C 30 5, 120 5, 180 30 L 180 160 C 120 135, 30 135, 0 165 Z" fill="#F59E0B" stroke="#000000" stroke-width="10"/>
-    
-    <!-- Center Spine & Gold Ribbon Bookmark -->
-    <path d="M 0 35 L 0 195 L 14 175 L 28 195 L 28 40" fill="#EF4444" stroke="#000000" stroke-width="6"/>
-    
-    <!-- Left Page Verse Lines -->
-    <line x1="-150" y1="65" x2="-30" y2="65" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
-    <line x1="-150" y1="95" x2="-30" y2="95" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
-    <line x1="-150" y1="125" x2="-50" y2="125" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
+  <!-- 4. Universe Cosmic Stardust / Constellations -->
+  <g fill="#FDE68A" opacity="0.6">
+    <path d="M 100 130 Q 100 142 106 142 Q 100 142 100 154 Q 100 142 94 142 Q 100 142 100 130 Z" opacity="0.85"/>
+    <path d="M 412 140 Q 412 150 417 150 Q 412 150 412 160 Q 412 150 407 150 Q 412 150 412 140 Z" opacity="0.8"/>
+    <path d="M 88 320 Q 88 328 92 328 Q 88 328 88 336 Q 88 328 84 328 Q 88 328 88 320 Z" opacity="0.6"/>
+    <path d="M 424 310 Q 424 318 428 318 Q 424 318 424 326 Q 424 318 420 318 Q 424 318 424 310 Z" opacity="0.7"/>
+    <circle cx="160" cy="96" r="1.5" opacity="0.7"/>
+    <circle cx="352" cy="90" r="2" opacity="0.8"/>
+    <circle cx="120" cy="220" r="1.5" opacity="0.5"/>
+    <circle cx="390" cy="240" r="1.5" opacity="0.6"/>
+    <circle cx="140" cy="380" r="1.8" opacity="0.5"/>
+    <circle cx="372" cy="375" r="1.5" opacity="0.5"/>
+  </g>
 
-    <!-- Right Page Verse Lines -->
-    <line x1="30" y1="65" x2="150" y2="65" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
-    <line x1="30" y1="95" x2="150" y2="95" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
-    <line x1="50" y1="125" x2="150" y2="125" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
+  <!-- 5. Celestial Orbit Ring -->
+  <ellipse cx="256" cy="216" rx="190" ry="115" fill="none" stroke="url(#goldMetallic)" stroke-width="1.2" stroke-dasharray="14 12" opacity="0.35" transform="rotate(-15 256 216)"/>
+  <ellipse cx="256" cy="216" rx="190" ry="115" fill="none" stroke="#6EE7B7" stroke-width="0.8" opacity="0.25" transform="rotate(25 256 216)"/>
 
-    <!-- AI Floating Orb / Neural Pulse on top of Quran -->
-    <g transform="translate(0, -50)">
-      <circle cx="0" cy="0" r="42" fill="#10B981" stroke="#000000" stroke-width="8"/>
-      <!-- Audio Waveform / Sparkle in Center -->
-      <path d="M -18 0 L -12 -12 L -6 12 L 0 -18 L 6 18 L 12 -12 L 18 0" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- 6. Rub el Hizb -->
+  <g transform="translate(256, 214)" filter="url(#glowGold)">
+    <rect x="-98" y="-98" width="196" height="196" rx="20" fill="none" stroke="url(#goldMetallic)" stroke-width="3" opacity="0.55"/>
+    <rect x="-98" y="-98" width="196" height="196" rx="20" fill="none" stroke="url(#goldMetallic)" stroke-width="3" opacity="0.55" transform="rotate(45)"/>
+    <circle cx="0" cy="0" r="82" fill="none" stroke="url(#goldMetallic)" stroke-width="1" stroke-dasharray="5 4" opacity="0.5"/>
+  </g>
+
+  <!-- 7. Glowing Mihrab Arch -->
+  <path d="M 176 295 L 176 185 C 176 130, 256 95, 256 95 C 256 95, 336 130, 336 185 L 336 295 Z" fill="#042C1B" stroke="url(#goldMetallic)" stroke-width="2" opacity="0.45" filter="url(#subtleShadow)"/>
+
+  <!-- 8. Holy Mushaf -->
+  <g transform="translate(256, 218)" filter="url(#subtleShadow)">
+    <path d="M -154 22 C -96 -5, -24 -2, 0 16 C 24 -2, 96 -5, 154 22 C 158 50, 156 80, 154 116 C 96 90, 24 93, 0 114 C -24 93, -96 90, -154 116 C -156 80, -158 50, -154 22 Z" fill="#032516" stroke="url(#goldMetallic)" stroke-width="4.5" stroke-linejoin="round"/>
+
+    <!-- Left Page -->
+    <path d="M -146 28 C -92 2, -22 6, 0 24 L 0 118 C -22 100, -92 97, -146 122 Z" fill="url(#pageLeftGrad)" stroke="#1E293B" stroke-width="1.2"/>
+    <path d="M -136 36 C -88 12, -26 16, -6 32 L -6 112 C -26 96, -88 94, -136 115 Z" fill="none" stroke="url(#goldMetallic)" stroke-width="1.2" opacity="0.75"/>
+    <line x1="-124" y1="50" x2="-20" y2="44" stroke="#0F766E" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
+    <line x1="-124" y1="64" x2="-20" y2="58" stroke="#0F766E" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
+    <line x1="-124" y1="78" x2="-20" y2="72" stroke="#0F766E" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
+    <line x1="-124" y1="92" x2="-42" y2="86" stroke="url(#goldMetallic)" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+
+    <!-- Right Page -->
+    <path d="M 0 24 C 22 6, 92 2, 146 28 L 146 122 C 92 97, 22 100, 0 118 Z" fill="url(#pageRightGrad)" stroke="#1E293B" stroke-width="1.2"/>
+    <path d="M 6 32 C 26 16, 88 12, 136 36 L 136 115 C 88 94, 26 96, 6 112 Z" fill="none" stroke="url(#goldMetallic)" stroke-width="1.2" opacity="0.75"/>
+    <line x1="20" y1="44" x2="124" y2="50" stroke="#78350F" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
+    <line x1="20" y1="58" x2="124" y2="64" stroke="#78350F" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
+    <line x1="20" y1="72" x2="124" y2="78" stroke="#78350F" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
+    <line x1="42" y1="86" x2="124" y2="92" stroke="url(#goldMetallic)" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+
+    <!-- Spine -->
+    <path d="M -3 20 L 3 20 L 3 124 L -3 124 Z" fill="#01160C" opacity="0.8"/>
+
+    <!-- Ribbon -->
+    <path d="M -1 22 Q -4 80 12 128 L 22 148 L 32 136 L 24 122 Q 4 75 3 22 Z" fill="url(#ribbonGrad)" stroke="url(#goldMetallic)" stroke-width="1"/>
+    <circle cx="22" cy="148" r="4.5" fill="url(#goldMetallic)" stroke="#000000" stroke-width="0.8"/>
+  </g>
+
+  <!-- 9. Floating Celestial Starlight Orb -->
+  <g transform="translate(256, 150)" filter="url(#glowSoft)">
+    <circle cx="0" cy="0" r="38" fill="url(#nebulaGlow)" opacity="0.9"/>
+    <circle cx="0" cy="0" r="26" fill="url(#emeraldOrbGrad)" stroke="url(#goldMetallic)" stroke-width="3"/>
+    <circle cx="0" cy="0" r="14" fill="#FFFFFF" opacity="0.85"/>
+    <path d="M -14 0 L -8 -6 L -3 6 L 0 -11 L 3 11 L 8 -6 L 14 0" fill="none" stroke="#022C1A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="-28" cy="-14" r="2" fill="#FDE68A"/>
+    <circle cx="28" cy="-12" r="2" fill="#FDE68A"/>
+    <circle cx="0" cy="-34" r="2.5" fill="#FFFBEB"/>
+  </g>
+
+  <!-- 10. Typography: QUR-ANVERSE -->
+  <g filter="url(#subtleShadow)">
+    <text x="256" y="420" font-family="'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-weight="900" font-size="44" fill="url(#goldMetallic)" text-anchor="middle" letter-spacing="6">QUR-ANVERSE</text>
+    <g transform="translate(256, 452)">
+      <rect x="-115" y="-14" width="230" height="26" rx="13" fill="#021C11" stroke="url(#goldMetallic)" stroke-width="1.4" opacity="0.95"/>
+      <text x="0" y="4" font-family="'Plus Jakarta Sans', 'Outfit', system-ui, sans-serif" font-weight="800" font-size="11.5" fill="#6EE7B7" text-anchor="middle" letter-spacing="3.5">AI SMART MUSHAF</text>
     </g>
   </g>
-
-  <!-- Typography: AL-HUDA in Bold Neo-Display Font -->
-  <text x="256" y="440" font-family="'Outfit', 'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="54" fill="#F59E0B" text-anchor="middle" stroke="#000000" stroke-width="6" letter-spacing="6">AL-HUDA</text>
 </svg>

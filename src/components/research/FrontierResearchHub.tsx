@@ -323,7 +323,7 @@ export const FrontierResearchHub: React.FC = () => {
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold font-display text-white tracking-wide">
-              {language === 'ar' ? 'مركز أبحاث الذكاء الاصطناعي والمحركات الـ ١٦' : 'Pusat Riset AI & 16 Engine Flagship AL-HUDA'}
+              {language === 'ar' ? 'مركز أبحاث الذكاء الاصطناعي والمحركات الـ ١٦ (QUR-ANVERSE)' : 'Pusat Riset AI & 16 Engine Flagship QUR-ANVERSE'}
             </h1>
             <p className="text-emerald-100/90 text-xs sm:text-sm mt-1 max-w-2xl font-normal">
               Mesin aktif dan terintegrasi penuh: 5 Model AI Frontier, Sistem Guardian Watchdog & Vault Anti-Deface, 
