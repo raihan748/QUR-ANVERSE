@@ -23,11 +23,11 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Setup Java JDK 17
+      - name: Setup Java JDK 21 (Capacitor 8 Compatible)
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: '21'
           cache: 'gradle'
 
       - name: Make Gradle Wrapper Executable
@@ -39,8 +39,11 @@ jobs:
       - name: Compile Web Production Assets
         run: npm run build
 
-      - name: Sync Capacitor Android
-        run: npx cap sync android
+      - name: Copy Assets to Android App
+        run: npx cap copy android
+
+      - name: Update Capacitor Android Plugins
+        run: npx cap update android
 
       - name: Build Android Debug APK with Gradle
         run: |
