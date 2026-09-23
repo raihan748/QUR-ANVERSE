@@ -52,8 +52,19 @@ jobs:
       - name: Build Android Debug APK with Gradle
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
           cd ..
+        continue-on-error: true
+
+      - name: Verify APK Generation and Diagnostics
+        run: |
+          if [ -f android/app/build/outputs/apk/debug/app-debug.apk ]; then
+            echo "SUCCESS: APK generated successfully!"
+          else
+            echo "=== FAILED: APK NOT FOUND ==="
+            tail -n 150 gradle_build.log
+            exit 1
+          fi
 
       - name: Stage APK Output
         run: |
