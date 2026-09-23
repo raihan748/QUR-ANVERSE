@@ -143,12 +143,14 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({ isOpen, onClos
 
               {/* Direct APK Download Button */}
               <a
-                href="/download/al-huda.apk"
+                href="https://github.com/raihan748/QUR-ANVERSE/releases/latest/download/al-huda.apk"
                 download="al-huda.apk"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-full py-3 px-4 bg-[#0B4627] hover:bg-[#07301b] text-white font-bold text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-all text-center active:scale-95"
               >
                 <FileDown className="w-4 h-4 text-amber-400" />
-                <span>Unduh File Native APK Android (Gratis)</span>
+                <span>Unduh File Native APK Android (Versi Terbaru)</span>
               </a>
 
               {/* Step-by-step install guide */}

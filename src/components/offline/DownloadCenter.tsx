@@ -36,7 +36,7 @@ export const DownloadCenter: React.FC = () => {
       size: '9.8 MB',
       status: 'idle',
       progress: 0,
-      downloadUrl: '/download/al-huda.apk',
+      downloadUrl: 'https://github.com/raihan748/QUR-ANVERSE/releases/latest/download/al-huda.apk',
       fileName: 'al-huda.apk'
     },
     {
