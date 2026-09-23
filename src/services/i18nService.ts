@@ -1,4 +1,4 @@
-// Internationalization (i18n) Engine for QURANVERSE
+// Internationalization (i18n) Engine for AL-HUDA
 // Supporting Bahasa Indonesia ('id') & Arabic / Kuwait ('ar')
 
 export type AppLanguage = 'id' | 'ar';
@@ -8,8 +8,8 @@ const LANG_STORAGE_KEY = 'quranverse_app_lang_v1';
 export const translations = {
   id: {
     // Brand
-    brandTitle: 'QUR-ANVERSE',
-    brandSubtitle: 'Platform Edukasi & AI Smart Mushaf 30 Juz Standar Kemenag RI.',
+    brandTitle: 'AL-HUDA',
+    brandSubtitle: 'Membaca, Merenungi, dan Memahami Al-Qur\'an dengan Pencarian Makna yang Jernih.',
     aiPlatform: 'AI Platform',
     standardBadge: 'Standar Kemenag RI',
     
@@ -97,8 +97,8 @@ export const translations = {
 
   ar: {
     // Brand
-    brandTitle: 'قرآن فيرس (QUR-ANVERSE)',
-    brandSubtitle: 'تلاوة وتدبر ومراجعة القرآن الكريم بتقنيات الذكاء الاصطناعي الكونية',
+    brandTitle: 'الهدى (AL-HUDA)',
+    brandSubtitle: 'تلاوة وتدبر وفهم القرآن الكريم ببيان واضح ونور هداية جلي',
     aiPlatform: 'منصة الذكاء الاصطناعي',
     standardBadge: 'مصحف معتمد بالرسم العثماني',
 

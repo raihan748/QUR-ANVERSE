@@ -1,8 +1,8 @@
 {
-  "name": "quranverse",
+  "name": "al-huda",
   "private": true,
   "version": "1.0.0",
-  "description": "QURANVERSE - AI Guru Ngaji Pribadi No. 1 untuk Baca, Hafalan & Muroja'ah Al-Qur'an",
+  "description": "Al-Huda - Membaca, Merenungi, dan Memahami Al-Qur'an",
   "type": "module",
   "scripts": {
     "dev": "vite",

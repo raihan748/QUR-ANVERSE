@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.quranverse.app',
-  appName: 'QURANVERSE',
+  appName: 'Al-Huda',
   webDir: 'dist',
   server: {
     androidScheme: 'https'

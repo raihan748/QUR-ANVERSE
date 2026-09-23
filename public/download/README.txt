@@ -1,13 +1,13 @@
-QURANVERSE - Native Android APK (.apk)
+Al-Huda - Native Android APK (.apk)
 =====================================
 Direktori ini diperuntukkan bagi distribusi file installer biner Android (.APK).
 
-Cara Menghasilkan File quranverse.apk:
+Cara Menghasilkan File al-huda.apk:
 1. Via Android Studio (Lokal):
    - Buka project dengan perintah: npx cap open android
    - Di Android Studio, pilih menu: Build > Build Bundle(s) / APK(s) > Build APK(s)
    - Salin file yang dihasilkan dari: android/app/build/outputs/apk/debug/app-debug.apk
-   - Tempel ke folder ini dengan nama: quranverse.apk
+   - Tempel ke folder ini dengan nama: al-huda.apk
 
 2. Via GitHub Actions (Otomatis di Cloud):
    - Push commit ke branch 'main' di GitHub.

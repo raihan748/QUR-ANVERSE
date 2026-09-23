@@ -1,6 +1,6 @@
 /**
  * ==============================================================================
- * QURANVERSE - MASTER VAULT INDUK (WEB SERVER-SIDE CRYPTOGRAPHIC AUTHORITY)
+ * AL-HUDA - MASTER VAULT INDUK (WEB SERVER-SIDE CRYPTOGRAPHIC AUTHORITY)
  * ==============================================================================
  * 28-Layer Military/Blockchain-Grade Security Architecture
  * 

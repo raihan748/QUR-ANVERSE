@@ -143,8 +143,8 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({ isOpen, onClos
 
               {/* Direct APK Download Button */}
               <a
-                href="/download/quranverse.apk"
-                download="quranverse.apk"
+                href="/download/al-huda.apk"
+                download="al-huda.apk"
                 className="w-full py-3 px-4 bg-[#0B4627] hover:bg-[#07301b] text-white font-bold text-sm rounded-xl shadow-xs flex items-center justify-center gap-2 cursor-pointer transition-all text-center active:scale-95"
               >
                 <FileDown className="w-4 h-4 text-amber-400" />
@@ -159,7 +159,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({ isOpen, onClos
                 </p>
                 <ol className="list-decimal list-inside space-y-1 text-[11px] font-medium text-slate-700 dark:text-slate-300 pl-1">
                   <li>Klik tombol <b>"Unduh File Native APK"</b> di atas.</li>
-                  <li>Setelah selesai, buka file <b>quranverse.apk</b> dari notifikasi atau File Manager HP Anda.</li>
+                  <li>Setelah selesai, buka file <b>al-huda.apk</b> dari notifikasi atau File Manager HP Anda.</li>
                   <li>Pilih <b>"Install"</b> (jika diminta izin, aktifkan <i>"Izinkan instalasi dari sumber ini"</i>).</li>
                 </ol>
               </div>

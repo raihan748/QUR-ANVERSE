@@ -1,5 +1,5 @@
 /**
- * QURANVERSE - Native Adzan Background Alarm & Notification Scheduler
+ * AL-HUDA - Native Adzan Background Alarm & Notification Scheduler
  * Powered by Capacitor LocalNotifications for Android / iOS native execution.
  * 
  * Works when phone is idle, screen is locked (Doze mode), or app is closed.

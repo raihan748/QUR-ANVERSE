@@ -1,4 +1,4 @@
-// Al-Matsurat Dedicated Audio Service for QURANVERSE
+// Al-Matsurat Dedicated Audio Service for AL-HUDA
 // Completely isolated from the main Quran audio player to ensure zero-regression
 
 import { MatsuratTime, MATSURAT_META } from '../data/almatsuratData';

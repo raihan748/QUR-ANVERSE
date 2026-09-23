@@ -1,6 +1,6 @@
-// QURANVERSE Progressive Web App (PWA) Service Worker
+// Al-Huda Progressive Web App (PWA) Service Worker
 // Cache-First with Network Fallback for 100% Offline Capability
-const CACHE_NAME = 'quranverse-offline-v3';
+const CACHE_NAME = 'alhuda-offline-v4';
 
 const STATIC_ASSETS = [
   '/',
@@ -15,9 +15,9 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Quranverse SW] Pre-caching core offline assets...');
+      console.log('[Al-Huda SW] Pre-caching core offline assets...');
       return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('[Quranverse SW] Pre-cache partial notice:', err);
+        console.warn('[Al-Huda SW] Pre-cache partial notice:', err);
       });
     }).then(() => self.skipWaiting())
   );
@@ -30,7 +30,7 @@ self.addEventListener('activate', (event) => {
         cacheNames
           .filter((name) => name !== CACHE_NAME)
           .map((name) => {
-            console.log('[Quranverse SW] Deleting stale cache:', name);
+            console.log('[Al-Huda SW] Deleting stale cache:', name);
             return caches.delete(name);
           })
       );

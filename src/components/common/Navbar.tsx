@@ -31,14 +31,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center text-black p-1 shrink-0 group-hover:border-amber-400 transition">
             <img 
               src="/favicon.svg" 
-              alt="QUR-ANVERSE Logo" 
+              alt="Al-Huda Logo" 
               className="w-full h-full object-contain drop-shadow-xs" 
             />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-black tracking-wide font-display text-amber-300">
-                QUR-ANVERSE
+                AL-HUDA
               </h1>
             </div>
             <p className="text-[11px] text-emerald-200/80 font-medium hidden sm:block">

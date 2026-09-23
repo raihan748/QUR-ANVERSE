@@ -1,6 +1,6 @@
 // ==============================================================================
 // TYPE-SAFE DATABASE SCHEMA & ENTITY DEFINITIONS
-// Enterprise ORM / Repository Models for QURANVERSE
+// Enterprise ORM / Repository Models for AL-HUDA
 // ==============================================================================
 
 export interface DBProfile {

@@ -289,13 +289,13 @@
         </g>
       </g>
 
-      <!-- Typography: QUR-ANVERSE (Grand Imperial Display) -->
+      <!-- Typography: AL-HUDA (Grand Imperial Display) -->
       <g transform="translate(0, 175)">
-        <text x="0" y="0" font-family="'Outfit', 'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="46" fill="#F59E0B" text-anchor="middle" stroke="#000000" stroke-width="8" letter-spacing="5">
-          QUR-ANVERSE
+        <text x="0" y="0" font-family="'Outfit', 'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="52" fill="#F59E0B" text-anchor="middle" stroke="#000000" stroke-width="8" letter-spacing="8">
+          AL-HUDA
         </text>
-        <text x="0" y="0" font-family="'Outfit', 'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="46" fill="#FDE68A" text-anchor="middle" letter-spacing="5">
-          QUR-ANVERSE
+        <text x="0" y="0" font-family="'Outfit', 'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="52" fill="#FDE68A" text-anchor="middle" letter-spacing="8">
+          AL-HUDA
         </text>
       </g>
     </g>
@@ -306,7 +306,7 @@
     <!-- Pill Badge: Tanya Azman & AI Muroja'ah -->
     <rect x="-270" y="-35" width="540" height="54" rx="27" fill="#063820" stroke="#F59E0B" stroke-width="2.5" filter="url(#hardShadow)"/>
     <text x="0" y="1" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="19" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">
-      ✦ TANYA AZMAN • AI MUROJA'AH REAL-TIME ✦
+      ✦ TANYA AZMAN • AL-HUDA AI MUROJA'AH ✦
     </text>
 
     <!-- Subtitle: Standar Kemenag RI & Rasm Utsmani -->

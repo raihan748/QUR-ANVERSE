@@ -5,7 +5,7 @@
 ## 1. HALAMAN JUDUL & BIODATA TIM
 
 **JUDUL PROYEK:**  
-**QURANVERSE: PLATFORM EDUTECH DAN EKOSISTEM DIGITAL MUROJA'AH INTERAKTIF BERBASIS AUDIO DIGITAL SIGNAL PROCESSING, N-BEST SPEECH RECOGNITION, DAN NEURO-SPACED REPETITION**
+**AL-HUDA: PLATFORM EDUTECH DAN EKOSISTEM DIGITAL MUROJA'AH INTERAKTIF BERBASIS AUDIO DIGITAL SIGNAL PROCESSING, N-BEST SPEECH RECOGNITION, DAN NEURO-SPACED REPETITION**
 
 * **Kategori Lomba:** Inovasi Teknologi Informasi & Aplikasi Web Pendidikan Islam
 * **Tingkat:** Sekolah Menengah Pertama (SMP)
@@ -22,7 +22,7 @@
 
 ## 2. ABSTRAK
 
-Tantangan menjaga mutqin hafalan Al-Qur'an dan ketepatan tajwid secara mandiri sering terkendala oleh keterbatasan waktu guru pembimbing serta minimnya media evaluasi lisan interaktif. Penelitian ini mengembangkan **QURANVERSE**, sebuah platform web edutech komprehensif yang mengintegrasikan *Digital Signal Processing* (DSP), *N-Best Speech Recognition*, *Levenshtein Distance Phonetic Alignment*, dan model memori *Neuro-Spaced Repetition (DSR)*. Sistem menyediakan 604 halaman mushaf digital 15-baris terstandar Madinah, evaluasi tilawah kata demi kata secara *real-time*, pendeteksi hukum tajwid otomatis, serta gamifikasi muroja'ah. Pengujian menunjukkan sistem mampu mengevaluasi pelafalan dengan akurasi pengenalan fonetik tinggi dan mencegah *false-skip* pada pembacaan beruntun, menjadikannya solusi efektif pendamping tahfizh mandiri.
+Tantangan menjaga mutqin hafalan Al-Qur'an dan ketepatan tajwid secara mandiri sering terkendala oleh keterbatasan waktu guru pembimbing serta minimnya media evaluasi lisan interaktif. Penelitian ini mengembangkan **AL-HUDA**, sebuah platform web edutech komprehensif yang mengintegrasikan *Digital Signal Processing* (DSP), *N-Best Speech Recognition*, *Levenshtein Distance Phonetic Alignment*, dan model memori *Neuro-Spaced Repetition (DSR)*. Sistem menyediakan 604 halaman mushaf digital 15-baris terstandar Madinah, evaluasi tilawah kata demi kata secara *real-time*, pendeteksi hukum tajwid otomatis, serta gamifikasi muroja'ah. Pengujian menunjukkan sistem mampu mengevaluasi pelafalan dengan akurasi pengenalan fonetik tinggi dan mencegah *false-skip* pada pembacaan beruntun, menjadikannya solusi efektif pendamping tahfizh mandiri.
 
 ---
 
@@ -35,7 +35,7 @@ Al-Qur'an merupakan pedoman hidup umat Islam yang memiliki tradisi penjagaan ote
 3. **Monoton dan Kurang Terstruktur**: Metode hafalan konvensional belum memiliki sistem pelacakan kurva lupa (*forgetting curve*) yang terotomatisasi secara ilmiah untuk menentukan kapan suatu ayat harus diulang sebelum hilang dari ingatan jangka panjang.
 
 ### 1.2 Alasan Pemilihan Judul
-Judul **"QURANVERSE: Platform Edutech dan Ekosistem Digital Muroja'ah Interaktif Berbasis Audio DSP, Speech Recognition, dan Neuro-Spaced Repetition"** dipilih karena merefleksikan konvergensi antara khazanah keilmuan Islam klasik (Ulumul Qur'an, Tajwid, Qira'at) dengan teknologi rekayasa komputasi mutakhir (pengolahan sinyal suara, pemrosesan bahasa alami fonetik Arab, dan sains kognitif memori).
+Judul **"AL-HUDA: Platform Edutech dan Ekosistem Digital Muroja'ah Interaktif Berbasis Audio DSP, Speech Recognition, dan Neuro-Spaced Repetition"** dipilih karena merefleksikan konvergensi antara khazanah keilmuan Islam klasik (Ulumul Qur'an, Tajwid, Qira'at) dengan teknologi rekayasa komputasi mutakhir (pengolahan sinyal suara, pemrosesan bahasa alami fonetik Arab, dan sains kognitif memori).
 
 ### 1.3 Tujuan Pembuatan Proyek
 1. Merancang dan membangun aplikasi web muroja'ah cerdas yang mampu mendengarkan, memverifikasi, dan mengoreksi pelafalan ayat suci Al-Qur'an kata demi kata secara *real-time*.
@@ -54,9 +54,9 @@ Judul **"QURANVERSE: Platform Edutech dan Ekosistem Digital Muroja'ah Interaktif
 
 ### 2.1 Analisis Integrasi STEAM (Science, Technology, Engineering, Art, Mathematics)
 
-Proyek QURANVERSE dirancang secara holistik dengan memadukan kelima domain STEAM:
+Proyek AL-HUDA dirancang secara holistik dengan memadukan kelima domain STEAM:
 
-| Pilar STEAM | Implementasi pada Proyek QURANVERSE |
+| Pilar STEAM | Implementasi pada Proyek AL-HUDA |
 | :--- | :--- |
 | **Science (Sains)** | Penerapan **Acoustic Phonetics** (ilmu artikulasi bunyi makharijul huruf), **Psychoacoustics** (rentang desibel mikrofon & persepsi pendengaran), serta **Cognitive Science** berupa pemodelan daya ingat *Ebbinghaus Forgetting Curve* dan *Neuro-Spaced Repetition (DSR Model)*. |
 | **Technology (Teknologi)** | Pemanfaatan **Web Speech API**, **Web Audio API AudioContext**, arsitektur cloud database **Supabase (PostgreSQL 15)** dengan *Row Level Security (RLS)*, penyimpanan awan terdesentralisasi, dan *Continuous Integration/Deployment* di Vercel/GitHub. |
@@ -193,7 +193,7 @@ Proyek ini mengoptimalkan arsitektur *Zero-Cost Open-Source Infrastructure* sehi
 ## 6. BAB 4: KESIMPULAN, REKOMENDASI, & PENELITIAN TERDAHULU
 
 ### 6.1 Kesimpulan Hasil Proyek
-1. Proyek QURANVERSE berhasil membuktikan bahwa teknologi pemrosesan audio digital (*DSP*) dan kecerdasan komputasi fonetik dapat diimplementasikan langsung pada peramban web (*client-side*) untuk membimbing hafalan Al-Qur'an secara presisi kata demi kata.
+1. Proyek AL-HUDA berhasil membuktikan bahwa teknologi pemrosesan audio digital (*DSP*) dan kecerdasan komputasi fonetik dapat diimplementasikan langsung pada peramban web (*client-side*) untuk membimbing hafalan Al-Qur'an secara presisi kata demi kata.
 2. Integrasi 604 halaman mushaf Madinah 15 baris, mesin tajwid otomatis, serta model pengulangan berkala (*Spaced Repetition*) memberikan solusi terpadu bagi siswa untuk melakukan *self-directed learning* yang mutqin.
 3. Arsitektur sistem yang modular, aman (dengan RLS PostgreSQL), dan bebas biaya operasional membuktikan efektivitas rekayasa perangkat lunak modern.
 
@@ -204,7 +204,7 @@ Proyek ini mengoptimalkan arsitektur *Zero-Cost Open-Source Infrastructure* sehi
 
 ### 6.3 Perbandingan dengan Proyek/Aplikasi Sejenis Terdahulu
 
-| Parameter Komparasi | Aplikasi Quran Konvensional Umum | Aplikasi Tahfizh Berbayar Komersial | **QURANVERSE (Proyek Ini)** |
+| Parameter Komparasi | Aplikasi Quran Konvensional Umum | Aplikasi Tahfizh Berbayar Komersial | **AL-HUDA (Proyek Ini)** |
 | :--- | :--- | :--- | :--- |
 | **Pendeteksian Kata Beruntun** | ❌ Tidak ada (hanya baca manual) | ✅ Ada (Berbayar/Langganan Bulanan) | **✅ Ada (Gratis, Open-Source & Akurat)** |
 | **Format Mushaf Madinah 604 Hal.** | ⚠️ Sebagian (Tampilan vertikal panjang) | ❌ Hanya tampilan per ayat | **✅ 100% Presisi 15 Baris Pojok 604 Halaman** |

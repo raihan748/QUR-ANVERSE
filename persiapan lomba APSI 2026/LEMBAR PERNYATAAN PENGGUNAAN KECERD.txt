@@ -4,13 +4,13 @@ Kompetisi: APSI 2026 | Kategori: Digital Innovation & Creative Intelligence
 Jenjang: SMP Al-Fityan
 
 I. DATA PROYEK
-Judul Proyek: QURANVERSE: Platform Cerdas Al-Qur'an Terintegrasi AI Acoustic Phonetic Alignment, Ensiklopedia Tajwid Digital 604 Halaman, dan Sistem Kriptografi Quran Vault Anti-Deface
+Judul Proyek: AL-HUDA: Platform Cerdas Al-Qur'an Terintegrasi AI Acoustic Phonetic Alignment, Ensiklopedia Tajwid Digital 604 Halaman, dan Sistem Kriptografi Quran Vault Anti-Deface
 Ketua Tim: Raihan Muhammad Ikhsan
 Anggota Tim: Andi Azman Awwadi
 Guru Pembimbing: Ustadz Hasballah
 
 II. PERNYATAAN TRANSPARANSI & INTEGRITAS
-Kami menyatakan pemanfaatan Kecerdasan Buatan (AI) dalam proyek QURANVERSE dilakukan secara etis, transparan, dan bertanggung jawab sebagai alat bantu komputasi dengan kendali penuh tetap berada pada tim pengembang (Human-in-the-Loop).
+Kami menyatakan pemanfaatan Kecerdasan Buatan (AI) dalam proyek AL-HUDA dilakukan secara etis, transparan, dan bertanggung jawab sebagai alat bantu komputasi dengan kendali penuh tetap berada pada tim pengembang (Human-in-the-Loop).
 
 III. RINCIAN PENGGUNAAN AI
 

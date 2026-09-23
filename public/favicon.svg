@@ -1,70 +1,83 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Gradients -->
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#022316"/>
-      <stop offset="45%" stop-color="#053e26"/>
-      <stop offset="100%" stop-color="#01180e"/>
+    <!-- Background Gradients -->
+    <linearGradient id="hudaBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#01180E"/>
+      <stop offset="35%" stop-color="#03301B"/>
+      <stop offset="70%" stop-color="#054527"/>
+      <stop offset="100%" stop-color="#01130A"/>
     </linearGradient>
 
-    <radialGradient id="nebulaGlow" cx="50%" cy="42%" r="58%">
-      <stop offset="0%" stop-color="#10B981" stop-opacity="0.32"/>
-      <stop offset="40%" stop-color="#059669" stop-opacity="0.18"/>
-      <stop offset="75%" stop-color="#F59E0B" stop-opacity="0.08"/>
+    <!-- Divine Radiance / Light of Guidance (Nur Al-Huda) -->
+    <radialGradient id="nurGuidanceGlow" cx="50%" cy="38%" r="62%">
+      <stop offset="0%" stop-color="#FDE68A" stop-opacity="0.45"/>
+      <stop offset="25%" stop-color="#10B981" stop-opacity="0.30"/>
+      <stop offset="55%" stop-color="#047857" stop-opacity="0.15"/>
+      <stop offset="85%" stop-color="#F59E0B" stop-opacity="0.05"/>
       <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
     </radialGradient>
 
-    <linearGradient id="goldMetallic" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFFBEB"/>
-      <stop offset="25%" stop-color="#FDE68A"/>
-      <stop offset="60%" stop-color="#F59E0B"/>
-      <stop offset="85%" stop-color="#D97706"/>
-      <stop offset="100%" stop-color="#92400E"/>
+    <!-- 24K Royal Gold Metallic Gradient -->
+    <linearGradient id="gold24k" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFDF0"/>
+      <stop offset="20%" stop-color="#FDE68A"/>
+      <stop offset="45%" stop-color="#F59E0B"/>
+      <stop offset="75%" stop-color="#D97706"/>
+      <stop offset="90%" stop-color="#B45309"/>
+      <stop offset="100%" stop-color="#78350F"/>
     </linearGradient>
 
-    <linearGradient id="goldLinear" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#FDE68A"/>
-      <stop offset="50%" stop-color="#F59E0B"/>
+    <linearGradient id="goldHorizontal" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="30%" stop-color="#FFFBEB"/>
+      <stop offset="70%" stop-color="#FDE68A"/>
       <stop offset="100%" stop-color="#D97706"/>
     </linearGradient>
 
-    <linearGradient id="pageLeftGrad" x1="100%" y1="50%" x2="0%" y2="50%">
+    <!-- Pages Gradient -->
+    <linearGradient id="pageLeftLuminous" x1="100%" y1="50%" x2="0%" y2="50%">
       <stop offset="0%" stop-color="#F8FAFC"/>
-      <stop offset="60%" stop-color="#FFFFFF"/>
-      <stop offset="100%" stop-color="#E2E8F0"/>
+      <stop offset="40%" stop-color="#FFFFFF"/>
+      <stop offset="85%" stop-color="#E2E8F0"/>
+      <stop offset="100%" stop-color="#CBD5E1"/>
     </linearGradient>
 
-    <linearGradient id="pageRightGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+    <linearGradient id="pageRightLuminous" x1="0%" y1="50%" x2="100%" y2="50%">
       <stop offset="0%" stop-color="#FFFDF5"/>
-      <stop offset="50%" stop-color="#FEF9E7"/>
-      <stop offset="100%" stop-color="#FDE68A"/>
+      <stop offset="40%" stop-color="#FEF9E7"/>
+      <stop offset="80%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
     </linearGradient>
 
-    <linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#F43F5E"/>
-      <stop offset="50%" stop-color="#E11D48"/>
-      <stop offset="100%" stop-color="#9F1239"/>
+    <!-- Silk Bookmark Ribbon -->
+    <linearGradient id="rubyRibbon" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FB7185"/>
+      <stop offset="40%" stop-color="#E11D48"/>
+      <stop offset="85%" stop-color="#BE123C"/>
+      <stop offset="100%" stop-color="#881337"/>
     </linearGradient>
 
-    <linearGradient id="emeraldOrbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6EE7B7"/>
-      <stop offset="45%" stop-color="#10B981"/>
-      <stop offset="100%" stop-color="#047857"/>
-    </linearGradient>
+    <!-- Emerald Gem Core -->
+    <radialGradient id="emeraldGem" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#A7F3D0"/>
+      <stop offset="40%" stop-color="#10B981"/>
+      <stop offset="80%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#022C1A"/>
+    </radialGradient>
 
-    <!-- Filters -->
-    <filter id="glowSoft" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur"/>
+    <!-- Filters for Divine Glow -->
+    <filter id="hudaGlow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
 
-    <filter id="glowGold" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="10" result="blur"/>
+    <filter id="divineLight" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
       <feComponentTransfer in="blur" result="boost">
-        <feFuncA type="linear" slope="1.5"/>
+        <feFuncA type="linear" slope="1.6"/>
       </feComponentTransfer>
       <feMerge>
         <feMergeNode in="boost"/>
@@ -72,133 +85,133 @@
       </feMerge>
     </filter>
 
-    <filter id="subtleShadow" x="-15%" y="-15%" width="130%" height="130%">
-      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    <filter id="nobleShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000000" flood-opacity="0.5"/>
     </filter>
   </defs>
 
-  <!-- 1. Background Rounded Shield -->
-  <rect width="512" height="512" rx="108" fill="url(#bgGrad)"/>
-  <rect width="512" height="512" rx="108" fill="url(#nebulaGlow)"/>
+  <!-- 1. BASE BACKGROUND: ROYAL ISLAMIC ARCHED SHIELD -->
+  <rect width="512" height="512" rx="112" fill="url(#hudaBgGrad)"/>
+  <rect width="512" height="512" rx="112" fill="url(#nurGuidanceGlow)"/>
 
-  <!-- 2. Dual Luxury Borders -->
-  <rect x="18" y="18" width="476" height="476" rx="92" fill="none" stroke="url(#goldMetallic)" stroke-width="2.5" opacity="0.85"/>
-  <rect x="28" y="28" width="456" height="456" rx="82" fill="none" stroke="#10B981" stroke-width="1.2" stroke-dasharray="8 6" opacity="0.5"/>
+  <!-- 2. LUXURY DOUBLE GOLD ORNAMENTAL FRAMES -->
+  <rect x="16" y="16" width="480" height="480" rx="98" fill="none" stroke="url(#gold24k)" stroke-width="2.5" opacity="0.9"/>
+  <rect x="26" y="26" width="460" height="460" rx="88" fill="none" stroke="#10B981" stroke-width="1.2" stroke-dasharray="10 6" opacity="0.6"/>
 
-  <!-- 3. Corner Islamic Filigree Accents -->
-  <g stroke="url(#goldMetallic)" stroke-width="1.8" fill="none" opacity="0.75">
+  <!-- 3. FOUR CORNER ISLAMIC ARABESQUE CRESTS -->
+  <g stroke="url(#gold24k)" stroke-width="2" fill="none" opacity="0.85">
     <!-- Top-Left -->
-    <path d="M 44 80 L 44 44 L 80 44"/>
-    <circle cx="56" cy="56" r="3.5" fill="url(#goldMetallic)"/>
+    <path d="M 42 84 L 42 42 L 84 42"/>
+    <path d="M 42 62 Q 62 62 62 42"/>
+    <circle cx="56" cy="56" r="3.5" fill="url(#gold24k)"/>
     <!-- Top-Right -->
-    <path d="M 468 80 L 468 44 L 432 44"/>
-    <circle cx="456" cy="56" r="3.5" fill="url(#goldMetallic)"/>
+    <path d="M 470 84 L 470 42 L 428 42"/>
+    <path d="M 470 62 Q 450 62 450 42"/>
+    <circle cx="456" cy="56" r="3.5" fill="url(#gold24k)"/>
     <!-- Bottom-Left -->
-    <path d="M 44 432 L 44 468 L 80 468"/>
-    <circle cx="56" cy="456" r="3.5" fill="url(#goldMetallic)"/>
+    <path d="M 42 428 L 42 470 L 84 470"/>
+    <path d="M 42 450 Q 62 450 62 470"/>
+    <circle cx="56" cy="456" r="3.5" fill="url(#gold24k)"/>
     <!-- Bottom-Right -->
-    <path d="M 468 432 L 468 468 L 432 468"/>
-    <circle cx="456" cy="456" r="3.5" fill="url(#goldMetallic)"/>
+    <path d="M 470 428 L 470 470 L 428 470"/>
+    <path d="M 470 450 Q 450 450 450 470"/>
+    <circle cx="456" cy="456" r="3.5" fill="url(#gold24k)"/>
   </g>
 
-  <!-- 4. Universe Cosmic Stardust / Constellations -->
-  <g fill="#FDE68A" opacity="0.6">
-    <!-- 4-Pointed Sparkle Stars -->
-    <path d="M 100 130 Q 100 142 106 142 Q 100 142 100 154 Q 100 142 94 142 Q 100 142 100 130 Z" opacity="0.85"/>
-    <path d="M 412 140 Q 412 150 417 150 Q 412 150 412 160 Q 412 150 407 150 Q 412 150 412 140 Z" opacity="0.8"/>
-    <path d="M 88 320 Q 88 328 92 328 Q 88 328 88 336 Q 88 328 84 328 Q 88 328 88 320 Z" opacity="0.6"/>
-    <path d="M 424 310 Q 424 318 428 318 Q 424 318 424 326 Q 424 318 420 318 Q 424 318 424 310 Z" opacity="0.7"/>
-    <!-- Micro Stardust -->
-    <circle cx="160" cy="96" r="1.5" opacity="0.7"/>
-    <circle cx="352" cy="90" r="2" opacity="0.8"/>
-    <circle cx="120" cy="220" r="1.5" opacity="0.5"/>
-    <circle cx="390" cy="240" r="1.5" opacity="0.6"/>
-    <circle cx="140" cy="380" r="1.8" opacity="0.5"/>
-    <circle cx="372" cy="375" r="1.5" opacity="0.5"/>
+  <!-- 4. CELESTIAL BEAMS OF GUIDANCE (Sinar Hidayah) -->
+  <g opacity="0.25" stroke="url(#gold24k)" stroke-width="1.2">
+    <line x1="256" y1="130" x2="80" y2="80" stroke-dasharray="6 6"/>
+    <line x1="256" y1="130" x2="432" y2="80" stroke-dasharray="6 6"/>
+    <line x1="256" y1="130" x2="50" y2="200" stroke-dasharray="6 6"/>
+    <line x1="256" y1="130" x2="462" y2="200" stroke-dasharray="6 6"/>
   </g>
 
-  <!-- 5. Celestial Orbit Ring (Cosmic Verse) -->
-  <ellipse cx="256" cy="216" rx="190" ry="115" fill="none" stroke="url(#goldMetallic)" stroke-width="1.2" stroke-dasharray="14 12" opacity="0.35" transform="rotate(-15 256 216)"/>
-  <ellipse cx="256" cy="216" rx="190" ry="115" fill="none" stroke="#6EE7B7" stroke-width="0.8" opacity="0.25" transform="rotate(25 256 216)"/>
-
-  <!-- 6. Rub el Hizb (8-Pointed Islamic Sacred Star Mandala) -->
-  <g transform="translate(256, 214)" filter="url(#glowGold)">
+  <!-- 5. SACRED RUB EL HIZB MANDALA (Bintang 8 Sudut Al-Huda) -->
+  <g transform="translate(256, 210)" filter="url(#divineLight)">
     <!-- Outer Star 1 -->
-    <rect x="-98" y="-98" width="196" height="196" rx="20" fill="none" stroke="url(#goldMetallic)" stroke-width="3" opacity="0.55"/>
+    <rect x="-106" y="-106" width="212" height="212" rx="22" fill="none" stroke="url(#gold24k)" stroke-width="3.2" opacity="0.6"/>
     <!-- Outer Star 2 (Rotated 45 deg) -->
-    <rect x="-98" y="-98" width="196" height="196" rx="20" fill="none" stroke="url(#goldMetallic)" stroke-width="3" opacity="0.55" transform="rotate(45)"/>
-    <!-- Inner Radiant Aura Circle -->
-    <circle cx="0" cy="0" r="82" fill="none" stroke="url(#goldMetallic)" stroke-width="1" stroke-dasharray="5 4" opacity="0.5"/>
+    <rect x="-106" y="-106" width="212" height="212" rx="22" fill="none" stroke="url(#gold24k)" stroke-width="3.2" opacity="0.6" transform="rotate(45)"/>
+    <!-- Inner Concentric Orbit -->
+    <circle cx="0" cy="0" r="92" fill="none" stroke="url(#gold24k)" stroke-width="1.2" stroke-dasharray="6 5" opacity="0.65"/>
+    <circle cx="0" cy="0" r="82" fill="none" stroke="#10B981" stroke-width="1" opacity="0.4"/>
   </g>
 
-  <!-- 7. Glowing Mihrab Arch Silhouette -->
-  <path d="M 176 295 L 176 185 C 176 130, 256 95, 256 95 C 256 95, 336 130, 336 185 L 336 295 Z" fill="#042C1B" stroke="url(#goldMetallic)" stroke-width="2" opacity="0.45" filter="url(#subtleShadow)"/>
+  <!-- 6. GLOWING MIHRAB ARCH SILHOUETTE (Kubah Hidayah) -->
+  <g filter="url(#nobleShadow)">
+    <path d="M 168 300 L 168 180 C 168 120, 256 80, 256 80 C 256 80, 344 120, 344 180 L 344 300 Z" fill="#022818" stroke="url(#gold24k)" stroke-width="2.2" opacity="0.6"/>
+    <path d="M 178 295 L 178 185 C 178 132, 256 95, 256 95 C 256 95, 334 132, 334 185 L 334 295 Z" fill="none" stroke="#10B981" stroke-width="1" stroke-dasharray="4 4" opacity="0.45"/>
+  </g>
 
-  <!-- 8. Holy Mushaf / Open Quran (Sleek & Divine Geometry) -->
-  <g transform="translate(256, 218)" filter="url(#subtleShadow)">
-    <!-- Backing Outer Edge / Quran Cover (Deep Emerald Leather with Gold Trim) -->
-    <path d="M -154 22 C -96 -5, -24 -2, 0 16 C 24 -2, 96 -5, 154 22 C 158 50, 156 80, 154 116 C 96 90, 24 93, 0 114 C -24 93, -96 90, -154 116 C -156 80, -158 50, -154 22 Z" fill="#032516" stroke="url(#goldMetallic)" stroke-width="4.5" stroke-linejoin="round"/>
+  <!-- 7. THE HOLY MUSHAF AL-HUDA (Kitab Suci Petunjuk Hidup) -->
+  <g transform="translate(256, 216)" filter="url(#nobleShadow)">
+    <!-- Hard Book Base / Leather Binding (Deep Forest Green with Gold Rim) -->
+    <path d="M -160 22 C -100 -6, -26 -2, 0 16 C 26 -2, 100 -6, 160 22 C 164 52, 162 84, 160 120 C 100 94, 26 97, 0 118 C -26 97, -100 94, -160 120 C -162 84, -164 52, -160 22 Z" fill="#021F12" stroke="url(#gold24k)" stroke-width="5" stroke-linejoin="round"/>
 
     <!-- Left Page (Ivory Pearl) -->
-    <path d="M -146 28 C -92 2, -22 6, 0 24 L 0 118 C -22 100, -92 97, -146 122 Z" fill="url(#pageLeftGrad)" stroke="#1E293B" stroke-width="1.2"/>
+    <path d="M -152 28 C -96 2, -24 6, 0 24 L 0 122 C -24 103, -96 100, -152 126 Z" fill="url(#pageLeftLuminous)" stroke="#0F172A" stroke-width="1.2"/>
     
-    <!-- Left Page Inner Gold Border & Ornament -->
-    <path d="M -136 36 C -88 12, -26 16, -6 32 L -6 112 C -26 96, -88 94, -136 115 Z" fill="none" stroke="url(#goldMetallic)" stroke-width="1.2" opacity="0.75"/>
+    <!-- Left Page Filigree Gold Margin -->
+    <path d="M -142 36 C -92 12, -28 16, -6 32 L -6 116 C -28 99, -92 97, -142 120 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.4" opacity="0.85"/>
 
-    <!-- Left Page Verse Lines -->
-    <line x1="-124" y1="50" x2="-20" y2="44" stroke="#0F766E" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
-    <line x1="-124" y1="64" x2="-20" y2="58" stroke="#0F766E" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
-    <line x1="-124" y1="78" x2="-20" y2="72" stroke="#0F766E" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
-    <line x1="-124" y1="92" x2="-42" y2="86" stroke="url(#goldMetallic)" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+    <!-- Left Page Sacred Verses (Al-Huda Lines) -->
+    <line x1="-130" y1="52" x2="-22" y2="45" stroke="#047857" stroke-width="2.6" stroke-linecap="round" opacity="0.8"/>
+    <line x1="-130" y1="67" x2="-22" y2="60" stroke="#047857" stroke-width="2.6" stroke-linecap="round" opacity="0.8"/>
+    <line x1="-130" y1="82" x2="-22" y2="75" stroke="#047857" stroke-width="2.6" stroke-linecap="round" opacity="0.8"/>
+    <line x1="-130" y1="97" x2="-44" y2="90" stroke="url(#gold24k)" stroke-width="2.8" stroke-linecap="round" opacity="0.95"/>
 
-    <!-- Right Page (Sacred Radiant Parchment) -->
-    <path d="M 0 24 C 22 6, 92 2, 146 28 L 146 122 C 92 97, 22 100, 0 118 Z" fill="url(#pageRightGrad)" stroke="#1E293B" stroke-width="1.2"/>
+    <!-- Right Page (Radiant Golden Parchment) -->
+    <path d="M 0 24 C 24 6, 96 2, 152 28 L 152 126 C 96 100, 24 103, 0 122 Z" fill="url(#pageRightLuminous)" stroke="#0F172A" stroke-width="1.2"/>
     
-    <!-- Right Page Inner Gold Border -->
-    <path d="M 6 32 C 26 16, 88 12, 136 36 L 136 115 C 88 94, 26 96, 6 112 Z" fill="none" stroke="url(#goldMetallic)" stroke-width="1.2" opacity="0.75"/>
+    <!-- Right Page Filigree Gold Margin -->
+    <path d="M 6 32 C 28 16, 92 12, 142 36 L 142 120 C 92 97, 28 99, 6 116 Z" fill="none" stroke="url(#gold24k)" stroke-width="1.4" opacity="0.85"/>
 
-    <!-- Right Page Verse Lines -->
-    <line x1="20" y1="44" x2="124" y2="50" stroke="#78350F" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
-    <line x1="20" y1="58" x2="124" y2="64" stroke="#78350F" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
-    <line x1="20" y1="72" x2="124" y2="78" stroke="#78350F" stroke-width="2.4" stroke-linecap="round" opacity="0.7"/>
-    <line x1="42" y1="86" x2="124" y2="92" stroke="url(#goldMetallic)" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+    <!-- Right Page Sacred Verses (Al-Huda Lines) -->
+    <line x1="22" y1="45" x2="130" y2="52" stroke="#92400E" stroke-width="2.6" stroke-linecap="round" opacity="0.8"/>
+    <line x1="22" y1="60" x2="130" y2="67" stroke="#92400E" stroke-width="2.6" stroke-linecap="round" opacity="0.8"/>
+    <line x1="22" y1="75" x2="130" y2="82" stroke="#92400E" stroke-width="2.6" stroke-linecap="round" opacity="0.8"/>
+    <line x1="44" y1="90" x2="130" y2="97" stroke="url(#gold24k)" stroke-width="2.8" stroke-linecap="round" opacity="0.95"/>
 
-    <!-- Book Spine & Shadow -->
-    <path d="M -3 20 L 3 20 L 3 124 L -3 124 Z" fill="#01160C" opacity="0.8"/>
+    <!-- Center Spine & Shadow Depth -->
+    <path d="M -4 20 L 4 20 L 4 128 L -4 128 Z" fill="#01130A" opacity="0.85"/>
 
-    <!-- Bookmark Silk Ribbon (Royal Crimson with Gold Tassel) -->
-    <path d="M -1 22 Q -4 80 12 128 L 22 148 L 32 136 L 24 122 Q 4 75 3 22 Z" fill="url(#ribbonGrad)" stroke="url(#goldMetallic)" stroke-width="1"/>
-    <!-- Gold Star Charm at ribbon end -->
-    <circle cx="22" cy="148" r="4.5" fill="url(#goldMetallic)" stroke="#000000" stroke-width="0.8"/>
+    <!-- Royal Ruby Silk Bookmark (Pita Pembatas Ayat Al-Huda) -->
+    <path d="M -2 22 Q -5 85 14 134 L 25 156 L 36 142 L 27 128 Q 5 80 4 22 Z" fill="url(#rubyRibbon)" stroke="url(#gold24k)" stroke-width="1.2"/>
+    <!-- Gold 8-Point Star Charm at ribbon bottom -->
+    <g transform="translate(25, 156) scale(0.65)">
+      <rect x="-6" y="-6" width="12" height="12" fill="url(#gold24k)" stroke="#000" stroke-width="0.8"/>
+      <rect x="-6" y="-6" width="12" height="12" fill="url(#gold24k)" stroke="#000" stroke-width="0.8" transform="rotate(45)"/>
+    </g>
   </g>
 
-  <!-- 9. Floating Celestial Starlight Orb / Nur Al-Qur'an (AI Intelligence & Divine Light) -->
-  <g transform="translate(256, 150)" filter="url(#glowSoft)">
-    <!-- Soft Outer Halo -->
-    <circle cx="0" cy="0" r="38" fill="url(#nebulaGlow)" opacity="0.9"/>
-    <!-- Emerald Orb Body -->
-    <circle cx="0" cy="0" r="26" fill="url(#emeraldOrbGrad)" stroke="url(#goldMetallic)" stroke-width="3"/>
-    <!-- Inner Radiant Core -->
-    <circle cx="0" cy="0" r="14" fill="#FFFFFF" opacity="0.85"/>
+  <!-- 8. THE BEACON OF NUR ILIEHI (Lentera Petunjuk & AI Audio Orb) -->
+  <g transform="translate(256, 142)" filter="url(#hudaGlow)">
+    <!-- Outer Golden Radiance Halo -->
+    <circle cx="0" cy="0" r="42" fill="url(#nurGuidanceGlow)" opacity="0.95"/>
+    <!-- Emerald & Gold Crest Dome -->
+    <circle cx="0" cy="0" r="28" fill="url(#emeraldGem)" stroke="url(#gold24k)" stroke-width="3.5"/>
+    <!-- Brilliant Center Light -->
+    <circle cx="0" cy="0" r="15" fill="#FFFFFF" opacity="0.9"/>
     
-    <!-- Sound Wave & Cosmic Starburst Icon -->
-    <path d="M -14 0 L -8 -6 L -3 6 L 0 -11 L 3 11 L 8 -6 L 14 0" fill="none" stroke="#022C1A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- Floating Sparkles around Orb -->
-    <circle cx="-28" cy="-14" r="2" fill="#FDE68A"/>
-    <circle cx="28" cy="-12" r="2" fill="#FDE68A"/>
-    <circle cx="0" cy="-34" r="2.5" fill="#FFFBEB"/>
+    <!-- Audio Waveform / Sacred Pulse in Center (AI Muroja'ah & Tanya Azman) -->
+    <path d="M -15 0 L -9 -7 L -4 7 L 0 -13 L 4 13 L 9 -7 L 15 0" fill="none" stroke="#012415" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Surrounding Starlight Jewels -->
+    <circle cx="-32" cy="-15" r="2.5" fill="#FDE68A"/>
+    <circle cx="32" cy="-13" r="2.5" fill="#FDE68A"/>
+    <circle cx="0" cy="-38" r="3.2" fill="#FFFBEB"/>
   </g>
 
-  <!-- 10. Typography: QUR-ANVERSE (Elegance & Grandeur) -->
-  <g filter="url(#subtleShadow)">
-    <!-- Main Brand Name -->
-    <text x="256" y="420" font-family="'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-weight="900" font-size="44" fill="url(#goldMetallic)" text-anchor="middle" letter-spacing="6">QUR-ANVERSE</text>
+  <!-- 9. NOBLE BRAND TYPOGRAPHY: AL-HUDA -->
+  <g filter="url(#nobleShadow)">
+    <!-- Main Brand Name: AL-HUDA in Golden Majestic Type -->
+    <text x="256" y="418" font-family="'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-weight="900" font-size="54" fill="url(#gold24k)" text-anchor="middle" letter-spacing="9">AL-HUDA</text>
     
-    <!-- Subtitle Pill / Badge -->
+    <!-- Subtitle Pill: CAHAYA PETUNJUK MUSHAF -->
     <g transform="translate(256, 452)">
-      <!-- Pill Backdrop -->
-      <rect x="-115" y="-14" width="230" height="26" rx="13" fill="#021C11" stroke="url(#goldMetallic)" stroke-width="1.4" opacity="0.95"/>
-      <text x="0" y="4" font-family="'Plus Jakarta Sans', 'Outfit', system-ui, sans-serif" font-weight="800" font-size="11.5" fill="#6EE7B7" text-anchor="middle" letter-spacing="3.5">AI SMART MUSHAF</text>
+      <!-- Capsule Shape -->
+      <rect x="-135" y="-14" width="270" height="27" rx="13.5" fill="#011F13" stroke="url(#gold24k)" stroke-width="1.6" opacity="0.95"/>
+      <text x="0" y="4.5" font-family="'Plus Jakarta Sans', 'Outfit', system-ui, sans-serif" font-weight="800" font-size="12" fill="#6EE7B7" text-anchor="middle" letter-spacing="4">CAHAYA PETUNJUK</text>
     </g>
   </g>
 </svg>

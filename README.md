@@ -1,12 +1,12 @@
-# 🌟 QURANVERSE — AI Guru Ngaji Pribadi No. 1
+# 🌟 AL-HUDA — AI Guru Ngaji Pribadi No. 1
 > **The Ultimate Islamic AI Platform for Qur'an Reading, Muroja'ah & Real-time Tajwid Evaluation.**
 
-![QURANVERSE Banner](public/icon-192.svg)
+![AL-HUDA Banner](public/icon-192.svg)
 
 ---
 
-## 🕋 Tentang QURANVERSE
-**QURANVERSE** adalah platform mobile-web & PWA premium berestetika **Islamic Neobrutalism** yang dirancang untuk membantu umat Islam membaca Al-Qur'an 30 Juz dengan Rasm Utsmani, melatih dan menguji hafalan (*muroja'ah*) menggunakan **AI Speech Recognition**, mengoreksi makhraj & tajwid dengan adab santun islami, serta menyediakan jadwal shalat dan adzan otomatis presisi Kota Makassar.
+## 🕋 Tentang AL-HUDA
+**AL-HUDA** adalah platform mobile-web & PWA premium berestetika **Islamic Neobrutalism** yang dirancang untuk membantu umat Islam membaca Al-Qur'an 30 Juz dengan Rasm Utsmani, melatih dan menguji hafalan (*muroja'ah*) menggunakan **AI Speech Recognition**, mengoreksi makhraj & tajwid dengan adab santun islami, serta menyediakan asisten cerdas **Tanya Azman** dan jadwal shalat beserta adzan otomatis presisi Kota Makassar.
 
 Lantunan audio ayat dan adzan dibawakan secara eksklusif oleh **Syekh Misyari Rasyid Al-Afasi**.
 
@@ -57,8 +57,8 @@ Lantunan audio ayat dan adzan dibawakan secara eksklusif oleh **Syekh Misyari Ra
 
 ### 1. Kloning & Instalasi Dependensi
 ```bash
-git clone https://github.com/username/QURANVERSE.git
-cd QURANVERSE
+git clone https://github.com/username/AL-HUDA.git
+cd AL-HUDA
 npm install
 ```
 
@@ -76,8 +76,8 @@ npm run dev
 Akses di browser: `http://localhost:5173`.
 
 ### 4. Deploy ke Vercel
-1. Push repository ini ke GitHub dengan nama `QURANVERSE`.
-2. Buka [https://vercel.com](https://vercel.com) &rarr; Import repository `QURANVERSE`.
+1. Push repository ini ke GitHub dengan nama `AL-HUDA`.
+2. Buka [https://vercel.com](https://vercel.com) &rarr; Import repository `AL-HUDA`.
 3. Masukkan Environment Variables `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY`.
 4. Klik **Deploy**!
 
@@ -91,4 +91,4 @@ Jalankan file `supabase_schema.sql` di SQL Editor Supabase untuk membuat tabel:
 - `weak_verses` (Pelacak ayat lemah untuk metode Tikrar 1-5-10)
 
 ---
-*Dibuat dengan cinta untuk umat Islam oleh Tim Pengembang QURANVERSE.*
+*Dibuat dengan cinta untuk umat Islam oleh Tim Pengembang AL-HUDA.*

@@ -36,8 +36,8 @@ export const DownloadCenter: React.FC = () => {
       size: '9.8 MB',
       status: 'idle',
       progress: 0,
-      downloadUrl: '/download/quranverse.apk',
-      fileName: 'quranverse.apk'
+      downloadUrl: '/download/al-huda.apk',
+      fileName: 'al-huda.apk'
     },
     {
       id: 'pkg_quran',
@@ -458,7 +458,7 @@ export const DownloadCenter: React.FC = () => {
                 {pkg.downloadUrl && (
                   <a
                     href={pkg.downloadUrl}
-                    download={pkg.fileName || 'quranverse-audio.mp3'}
+                    download={pkg.fileName || 'al-huda-audio.mp3'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-3 py-2 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-900 dark:text-amber-300 border border-amber-300/70 dark:border-amber-700/60 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition duration-150 cursor-pointer"

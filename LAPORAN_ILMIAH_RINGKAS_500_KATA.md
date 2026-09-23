@@ -1,7 +1,7 @@
 # LAPORAN ILMIAH & PROPOSAL PROYEK APSI 2026
 
 ### 1. JUDUL & BIODATA TIM
-* **Judul**: QURANVERSE: Platform Edutech Muroja'ah Berbasis Audio DSP, Speech Recognition, dan Spaced Repetition
+* **Judul**: AL-HUDA: Platform Edutech Muroja'ah Berbasis Audio DSP, Speech Recognition, dan Spaced Repetition
 * **Kategori**: Inovasi Web Pendidikan Islam – SMP IT Al-Fityan (2026)
 * **Tim**: Raihan (Ketua/Programmer), Siswa 2 (Desainer), Siswa 3 (Validator Tajwid)
 * **Pembimbing**: Ustadz [Nama Pembimbing, S.Pd.]
@@ -9,7 +9,7 @@
 ---
 
 ### 2. ABSTRAK
-Muroja'ah mandiri santri terkendala minimnya media evaluasi lisan seketika. Penelitian ini mengembangkan **QURANVERSE**, platform web edutech yang memadukan *Digital Signal Processing* (DSP), *N-Best Speech Recognition*, dan model *Neuro-Spaced Repetition*. Sistem menyediakan 604 halaman mushaf Madinah 15-baris, evaluasi tilawah kata demi kata *real-time*, dan penanda tajwid otomatis. Pengujian membuktikan akurasi fonetik 94,8% dengan latensi <150 ms, efektif mendampingi tahfizh mandiri santri.
+Muroja'ah mandiri santri terkendala minimnya media evaluasi lisan seketika. Penelitian ini mengembangkan **AL-HUDA**, platform web edutech yang memadukan *Digital Signal Processing* (DSP), *N-Best Speech Recognition*, dan model *Neuro-Spaced Repetition*. Sistem menyediakan 604 halaman mushaf Madinah 15-baris, evaluasi tilawah kata demi kata *real-time*, dan penanda tajwid otomatis. Pengujian membuktikan akurasi fonetik 94,8% dengan latensi <150 ms, efektif mendampingi tahfizh mandiri santri.
 
 ---
 
@@ -39,9 +39,9 @@ Muroja'ah mandiri santri terkendala minimnya media evaluasi lisan seketika. Pene
 ---
 
 ### 6. BAB 4: KESIMPULAN & PENELITIAN TERDAHULU
-* **Kesimpulan**: QURANVERSE membuktikan evaluasi tilawah kata demi kata dapat berjalan akurat di browser tanpa biaya server.
+* **Kesimpulan**: AL-HUDA membuktikan evaluasi tilawah kata demi kata dapat berjalan akurat di browser tanpa biaya server.
 * **Saran**: Integrasi AI *Wav2Vec2 on-device* (WASM) untuk mode luring dan aplikasi mobile.
-* **Komparasi**: Berbeda dari aplikasi Quran pasif atau berbayar, QURANVERSE 100% gratis, berstandar 604 halaman mushaf, dan berfitur memori adaptif.
+* **Komparasi**: Berbeda dari aplikasi Quran pasif atau berbayar, AL-HUDA 100% gratis, berstandar 604 halaman mushaf, dan berfitur memori adaptif.
 
 ---
 

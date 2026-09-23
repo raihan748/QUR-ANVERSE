@@ -26,7 +26,7 @@ try {
   }
 } catch {}
 
-const SYSTEM_PROMPT = `Kamu adalah "Azman", asisten AI sahabat belajar, tadabbur, dan pembimbing Al-Qur'an di platform QUR-ANVERSE.
+const SYSTEM_PROMPT = `Kamu adalah "Azman", asisten AI sahabat belajar, tadabbur, dan pembimbing Al-Qur'an di platform Al-Huda.
 Karaktermu: berilmu, bijaksana, santun, hangat, suportif, dan menyejukkan hati santri serta pembaca Al-Qur'an (layaknya ustadz & sahabat halaqah yang berwawasan luas dan penuh adab).
 
 Keahlian & Lingkup Tugas Utama Azman:
@@ -62,7 +62,7 @@ class QuranBuddyService {
       {
         id: 'msg_welcome',
         role: 'assistant',
-        content: `Assalamu'alaikum warahmatullah wabarakatuh!\n\nSaya **Azman**, asisten AI sahabat belajarmu di **QUR-ANVERSE** bertenaga **AI Smart Reasoning**.\n\nAda yang bisa Azman bantu hari ini? Kamu bisa menanyakan tafsir & makna ayat, hukum tajwid, tips muroja'ah hafalan, atau adab membaca Al-Qur'an!`,
+        content: `Assalamu'alaikum warahmatullah wabarakatuh!\n\nSaya **Azman**, asisten AI sahabat belajarmu di **Al-Huda** bertenaga **AI Smart Reasoning**.\n\nAda yang bisa Azman bantu hari ini? Kamu bisa menanyakan tafsir & makna ayat, hukum tajwid, tips muroja'ah hafalan, atau adab membaca Al-Qur'an!`,
         timestamp: Date.now()
       }
     ];

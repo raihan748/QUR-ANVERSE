@@ -1,5 +1,5 @@
 /**
- * QURANVERSE ENTERPRISE SECURITY & HARDENING MODULE
+ * AL-HUDA ENTERPRISE SECURITY & HARDENING MODULE
  * Comprehensive client-side protection against XSS, Prototype Pollution, ReDoS,
  * Audio Resource Injection, Uncontrolled Memory Leaks, and API Rate Limit Abuses.
  */

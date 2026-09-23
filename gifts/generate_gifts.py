@@ -30,7 +30,7 @@ C_MINT = (167, 243, 208)
 
 # Load fonts
 try:
-    font_logo = ImageFont.truetype("C:/Windows/Fonts/segoeuib.ttf", 30)
+    font_logo = ImageFont.truetype("C:/Windows/Fonts/segoeuib.ttf", 34)
     font_badge = ImageFont.truetype("C:/Windows/Fonts/segoeuib.ttf", 11)
     font_sub = ImageFont.truetype("C:/Windows/Fonts/segoeui.ttf", 9)
     font_ornament = ImageFont.truetype("C:/Windows/Fonts/segoeuib.ttf", 13)
@@ -189,8 +189,8 @@ def render_frame(frame_idx, total_frames):
     ]
     draw.line(wave_pts, fill=C_AMBER_DEEP, width=2)
 
-    # 8. QUR-ANVERSE Typography inside emblem
-    text_logo = "QUR-ANVERSE"
+    # 8. AL-HUDA Typography inside emblem
+    text_logo = "AL-HUDA"
     bbox = draw.textbbox((0, 0), text_logo, font=font_logo)
     tw = bbox[2] - bbox[0]
     tx = cx - tw // 2
@@ -202,7 +202,7 @@ def render_frame(frame_idx, total_frames):
 
     # 9. Presentation Slogan Banner at bottom
     ban_y = HEIGHT - 52
-    badge_text = "✦  TANYA AZMAN  •  AI MUROJA'AH REAL-TIME  ✦"
+    badge_text = "✦  TANYA AZMAN  •  AL-HUDA AI MUROJA'AH  ✦"
     bb_b = draw.textbbox((0, 0), badge_text, font=font_badge)
     bw = bb_b[2] - bb_b[0] + 36
     bh = bb_b[3] - bb_b[1] + 14
@@ -223,7 +223,7 @@ def render_frame(frame_idx, total_frames):
     return img
 
 def main():
-    print(f"Generating {TOTAL_FRAMES} frames for QUR-ANVERSE presentation gift...")
+    print(f"Generating {TOTAL_FRAMES} frames for Al-Huda presentation gift...")
     frames = []
     
     for i in range(TOTAL_FRAMES):
@@ -237,7 +237,7 @@ def main():
             print(f"Rendered {i + 1}/{TOTAL_FRAMES} frames")
 
     # 1. Save Looping Animated GIF
-    gif_path = os.path.join(OUTPUT_DIR, "quranverse_floating_logo.gif")
+    gif_path = os.path.join(OUTPUT_DIR, "alhuda_floating_logo.gif")
     print(f"Compiling animated GIF to {gif_path}...")
     frame_duration = int(1000 / FPS)
     frames[0].save(
@@ -259,12 +259,12 @@ def main():
         os.rmdir(FRAMES_DIR)
 
     # 3. Save High-Res Presentation Wallpaper (HD Still)
-    still_path = os.path.join(OUTPUT_DIR, "quranverse_presentation_wallpaper_hd.png")
+    still_path = os.path.join(OUTPUT_DIR, "alhuda_presentation_wallpaper_hd.png")
     best_frame = render_frame(TOTAL_FRAMES // 4, TOTAL_FRAMES)
     best_frame.save(still_path)
     print(f"[OK] HD Presentation Wallpaper created: {still_path}")
 
-    print("\nAlhamdulillah! All presentation gifts updated successfully with beautiful QUR-ANVERSE & Tanya Azman branding!")
+    print("\nAlhamdulillah! All presentation gifts updated successfully with beautiful AL-HUDA & Tanya Azman branding!")
 
 if __name__ == "__main__":
     main()

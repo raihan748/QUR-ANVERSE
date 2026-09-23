@@ -1,6 +1,6 @@
 /**
  * ==============================================================================
- * QURANVERSE - PRAYER ATTENDANCE & 30-MIN POST-ADHAN JURNAL SERVICE
+ * AL-HUDA - PRAYER ATTENDANCE & 30-MIN POST-ADHAN JURNAL SERVICE
  * ==============================================================================
  * Mengelola absensi sholat 5 waktu, deteksi otonom 30 menit pasca-adzan,
  * sistem gamifikasi pahala/XP, dan pencatatan streak sholat harian santri.
