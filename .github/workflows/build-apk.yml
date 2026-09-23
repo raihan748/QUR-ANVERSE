@@ -54,21 +54,19 @@ jobs:
           cd android
           ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
           cd ..
-        continue-on-error: true
 
-      - name: Verify APK Generation and Diagnostics
+      - name: Locate and Stage APK Output
         run: |
-          if [ -f android/app/build/outputs/apk/debug/app-debug.apk ]; then
-            echo "SUCCESS: APK generated successfully!"
-          else
-            echo "=== FAILED: APK NOT FOUND ==="
+          echo "Scanning for compiled APK..."
+          find android -name "*.apk"
+          APK_PATH=$(find android -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            echo "ERROR: No APK found after build!"
             tail -n 150 gradle_build.log
             exit 1
           fi
-
-      - name: Stage APK Output
-        run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk ./al-huda.apk
+          echo "Found APK at: $APK_PATH"
+          cp "$APK_PATH" ./al-huda.apk
           mkdir -p public/download
           cp ./al-huda.apk public/download/al-huda.apk
           ls -lh ./al-huda.apk
