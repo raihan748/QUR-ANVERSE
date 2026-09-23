@@ -1,0 +1,1 @@
+# Keep assets directory tracked in git so Capacitor copy never fails with ENOENT
