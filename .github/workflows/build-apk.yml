@@ -16,8 +16,6 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
@@ -63,25 +61,29 @@ jobs:
           cd android
           ./gradlew assembleDebug --no-daemon --stacktrace > ../gradle_err.txt 2>&1 || true
           cd ..
-          echo "==== GRADLE LOG TAIL ===="
-          tail -n 60 gradle_err.txt
 
-      - name: Capture and Push Debug Log on Missing APK
+      - name: Emit Gradle Error Annotations
+        if: always()
         run: |
-          if [ ! -f android/app/build/outputs/apk/debug/app-debug.apk ]; then
-            echo "APK not found! Committing debug log to branch ci-debug..."
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git checkout -B ci-debug
-            cp gradle_err.txt ./GRADLE_BUILD_ERROR.log
-            git add ./GRADLE_BUILD_ERROR.log
-            git commit -m "ci(debug): record gradle build error log" || true
-            git push -f origin ci-debug || true
-            exit 1
+          if [ -f gradle_err.txt ]; then
+            echo "### Gradle Build Log Tail" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 50 gradle_err.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            
+            tail -n 30 gradle_err.txt | while IFS= read -r line; do
+              if [ -n "$line" ]; then
+                echo "::error title=GradleLog::$line"
+              fi
+            done
           fi
 
       - name: Stage APK Output
         run: |
+          if [ ! -f android/app/build/outputs/apk/debug/app-debug.apk ]; then
+            echo "CRITICAL: APK was not generated!"
+            exit 1
+          fi
           APK_SRC="android/app/build/outputs/apk/debug/app-debug.apk"
           echo "Found APK at: $APK_SRC"
           cp "$APK_SRC" ./al-huda.apk
