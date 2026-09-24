@@ -58,24 +58,49 @@ jobs:
 
       - name: Build Android Debug APK with Gradle
         run: |
+          mkdir -p android/app/libs android/capacitor-cordova-android-plugins/src/main/libs android/capacitor-cordova-android-plugins/libs
           cd android
-          ./gradlew assembleDebug --no-daemon --stacktrace > ../gradle_err.txt 2>&1 || true
+          if ./gradlew assembleDebug --no-daemon --stacktrace > ../gradle_err.txt 2>&1; then
+            echo "BUILD_SUCCESS=true" >> $GITHUB_ENV
+            echo "✅ Gradle build succeeded!"
+            tail -n 20 ../gradle_err.txt
+          else
+            echo "BUILD_SUCCESS=false" >> $GITHUB_ENV
+            echo "❌ Gradle build failed! Showing error tail:"
+            tail -n 120 ../gradle_err.txt
+          fi
           cd ..
 
-      - name: Emit Gradle Error Annotations
+      - name: Emit Gradle Error Annotations & Summary
         if: always()
         run: |
           if [ -f gradle_err.txt ]; then
-            echo "### Gradle Build Log Tail" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            tail -n 50 gradle_err.txt >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "### 📋 Gradle Build Diagnostics" >> $GITHUB_STEP_SUMMARY
+            if grep -q "What went wrong:" gradle_err.txt; then
+              echo "#### ❌ Root Cause:" >> $GITHUB_STEP_SUMMARY
+              echo '```text' >> $GITHUB_STEP_SUMMARY
+              grep -A 20 "What went wrong:" gradle_err.txt >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              
+              grep -C 5 "What went wrong:" gradle_err.txt | head -n 20 | while IFS= read -r line; do
+                if [ -n "$line" ]; then
+                  echo "::error title=GradleCause::$line"
+                fi
+              done
+            fi
             
-            tail -n 30 gradle_err.txt | while IFS= read -r line; do
-              if [ -n "$line" ]; then
-                echo "::error title=GradleLog::$line"
-              fi
-            done
+            if grep -q "Caused by:" gradle_err.txt; then
+              echo "#### ⚠️ Caused By:" >> $GITHUB_STEP_SUMMARY
+              echo '```text' >> $GITHUB_STEP_SUMMARY
+              grep -C 3 "Caused by:" gradle_err.txt | head -n 30 >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              
+              grep -C 2 "Caused by:" gradle_err.txt | head -n 15 | while IFS= read -r line; do
+                if [ -n "$line" ]; then
+                  echo "::error title=GradleCausedBy::$line"
+                fi
+              done
+            fi
           fi
 
       - name: Stage APK Output
