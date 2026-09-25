@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Download, Smartphone, Laptop, CheckCircle2, X, Sparkles, Share, PlusSquare, Bell, ShieldCheck, FileDown } from 'lucide-react';
+import { AlHudaLogo } from './AlHudaLogo';
 
 interface InstallPwaModalProps {
   isOpen: boolean;
@@ -75,8 +76,8 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({ isOpen, onClos
 
           {/* Header */}
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-800 dark:text-emerald-300">
-              <Smartphone className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center p-1 shrink-0 shadow-inner">
+              <AlHudaLogo className="w-full h-full object-contain drop-shadow-xs" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -85,7 +86,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({ isOpen, onClos
                   NATIVE / PWA
                 </span>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">Qur'anverse di Smartphone Anda</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">Al-Huda di Smartphone Anda</p>
             </div>
           </div>
 
@@ -190,7 +191,7 @@ export const InstallPwaModal: React.FC<InstallPwaModalProps> = ({ isOpen, onClos
                 <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl text-center">
                   <Sparkles className="w-7 h-7 text-emerald-600 dark:text-emerald-400 mx-auto mb-2" />
                   <p className="font-bold text-sm text-emerald-800 dark:text-emerald-300">Aplikasi Sudah Terpasang di Perangkat Anda!</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Buka melalui ikon Qur'anverse di layar utama Anda.</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Buka melalui ikon Al-Huda di layar utama Anda.</p>
                 </div>
               ) : (
                 <div className="space-y-3">

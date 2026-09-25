@@ -1,6 +1,6 @@
 // Al-Huda Progressive Web App (PWA) Service Worker
 // Cache-First with Network Fallback for 100% Offline Capability
-const CACHE_NAME = 'alhuda-offline-v4';
+const CACHE_NAME = 'alhuda-offline-v7-fresh';
 
 const STATIC_ASSETS = [
   '/',

@@ -1,7 +1,7 @@
 // ==============================================================================
 // TANYA AZMAN AI ASSISTANT SERVICE (AZMAN PERSONA)
 // Powered by DeepSeek v4 Pro (via Thirty Store)
-// Zero-Regression & Isolated Architecture for QUR-ANVERSE
+// Zero-Regression & Isolated Architecture for AL-HUDA
 // ==============================================================================
 
 export interface ChatMessage {

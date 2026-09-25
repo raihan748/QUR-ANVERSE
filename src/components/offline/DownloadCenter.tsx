@@ -33,7 +33,7 @@ export const DownloadCenter: React.FC = () => {
       id: 'pkg_native_apk',
       name: 'Aplikasi Native Android (.APK Resmi)',
       description: 'Installer Android mandiri dengan alarm Adzan Background saat layar HP mati (Doze Mode), audio Masjid Nabawi Madinah, dan seluruh fitur Qur\'an offline.',
-      size: '9.8 MB',
+      size: '50.3 MB',
       status: 'idle',
       progress: 0,
       downloadUrl: 'https://github.com/raihan748/QUR-ANVERSE/releases/latest/download/al-huda.apk',

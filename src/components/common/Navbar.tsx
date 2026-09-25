@@ -2,6 +2,7 @@ import React from 'react';
 import { Sparkles, Download, Languages, Clock, BookOpen, Bot } from 'lucide-react';
 import { UserProfile, NavigationTab } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
+import { AlHudaLogo } from './AlHudaLogo';
 
 interface NavbarProps {
   profile: UserProfile;
@@ -28,12 +29,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => onSelectTab('murojaah_ai')}
           className="flex items-center gap-3 cursor-pointer group select-none"
         >
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center text-black p-1 shrink-0 group-hover:border-amber-400 transition">
-            <img 
-              src="/favicon.svg" 
-              alt="Al-Huda Logo" 
-              className="w-full h-full object-contain drop-shadow-xs" 
-            />
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center p-1 shrink-0 group-hover:border-amber-400 transition shadow-inner">
+            <AlHudaLogo className="w-full h-full object-contain drop-shadow-sm" />
           </div>
           <div>
             <div className="flex items-center gap-2">

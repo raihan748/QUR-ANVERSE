@@ -11,6 +11,7 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       .register('/sw.js')
       .then((reg) => {
         console.log('[PWA] Al-Huda Offline Service Worker Active:', reg.scope);
+        reg.update();
       })
       .catch((err) => {
         console.warn('[PWA] Service Worker notice:', err);
