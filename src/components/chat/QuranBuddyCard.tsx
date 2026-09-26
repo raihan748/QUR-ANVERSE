@@ -97,7 +97,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
       const errorMessage: ChatMessage = {
         id: `msg_err_${Date.now()}`,
         role: 'assistant',
-        content: `Maaf, ada kendala: ${err?.message || 'Gagal tersambung ke DeepSeek'}. Coba kirim ulang ya Sahabat Qur'an.`,
+        content: `Maaf, ada kendala saat menghubungi Server AI Bayan. Coba kirim ulang ya Sahabat Qur'an.`,
         timestamp: Date.now()
       };
       const finalHistory = [...newHistory, errorMessage];

@@ -23,7 +23,7 @@ export interface ToolCallResult {
   action?: ChatAction;
 }
 
-// 1. Definisi OpenAPI / OpenAI Tools Schema untuk DeepSeek v4 Pro
+// 1. Definisi OpenAPI / AI Tools Schema untuk Bayan AI
 export const BAYAN_TOOLS_SCHEMA = [
   {
     type: 'function',
@@ -167,7 +167,7 @@ export const BAYAN_TOOLS_SCHEMA = [
 // 2. Eksekutor Tool di Sisi Client (Local Intelligence & Navigation Dispatcher)
 class BayanToolsService {
   /**
-   * Eksekusi tool call yang diminta oleh model DeepSeek v4 Pro
+   * Eksekusi tool call yang diminta oleh Bayan AI
    */
   public executeTool(name: string, rawArgs: any): ToolCallResult {
     let args = rawArgs;
