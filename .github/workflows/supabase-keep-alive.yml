@@ -1,22 +1,28 @@
-﻿name: Supabase Keep-Alive Anti-Pause Bot
+name: Supabase & Repository Perpetual Keep-Alive Bot
 
 on:
   schedule:
     # Berjalan otomatis setiap 3 hari sekali pada pukul 00:00 UTC (07:00 WIB)
     - cron: '0 0 */3 * *'
   workflow_dispatch:
-    # Memungkinkan Anda menjalankan bot secara manual kapan saja dari tab Actions di GitHub
+    # Memungkinkan trigger manual kapan saja dari tab Actions
+
+permissions:
+  contents: write
 
 jobs:
-  ping-supabase:
-    name: 🏓 Ping Supabase Database
+  keep-alive:
+    name: 🛡️ Supabase Ping & Perpetual Repo Heartbeat
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
+      - name: 🔄 Checkout Source Code
+        uses: actions/checkout@v4
+
       - name: 🕒 Catat Waktu Eksekusi
         run: |
-          echo "Memulai ping Supabase Keep-Alive pada $(date -u)"
+          echo "Memulai siklus Keep-Alive pada $(date -u)"
 
       - name: 🚀 Ping Supabase REST & Auth Health Endpoint
         run: |
@@ -30,5 +36,28 @@ jobs:
           HTTP_AUTH=$(curl -s -o /dev/null -w "%{http_code}" "$PROJECT_URL/auth/v1/health" || echo "000")
           echo "Status Auth Health Response: $HTTP_AUTH"
 
-          echo "✅ Berhasil! Sinyal aktivitas berhasil dikirim ke Supabase."
+          echo "✅ Sinyal aktivitas berhasil dikirim ke Supabase."
           echo "🛡️ Inactivity Timer 7 Hari Supabase telah di-reset ke 0."
+
+      - name: 💓 Commit Perpetual Repository Heartbeat (Anti-60-Day-Inactivity)
+        run: |
+          mkdir -p .github
+          cat << 'EOF' > .github/keepalive.txt
+          # Al-Huda & Supabase Keep-Alive Heartbeat Log
+          # File ini otomatis di-update oleh GitHub Actions setiap 3 hari
+          # Berfungsi mencegah penonaktifan jadwal otomatis (cron 60 hari) oleh GitHub
+          EOF
+          echo "Last Heartbeat: $(date -u)" >> .github/keepalive.txt
+          echo "Supabase Status: Pinged successfully at $(date -u)" >> .github/keepalive.txt
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/keepalive.txt
+          
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(keepalive): automated perpetual heartbeat [skip ci]"
+            git push
+            echo "✅ Heartbeat commit berhasil di-push! Timer 60 hari GitHub Actions di-reset."
+          else
+            echo "ℹ️ Tidak ada perubahan heartbeat."
+          fi
