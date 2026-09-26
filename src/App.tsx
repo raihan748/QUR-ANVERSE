@@ -13,6 +13,7 @@ import { healthWatchdog } from './services/healthWatchdogService';
 import { prayerAttendance } from './services/prayerAttendanceService';
 import { ScrollToTopButton } from './components/common/ScrollToTopButton';
 import { QuranBuddyCard } from './components/chat/QuranBuddyCard';
+import { AgenticExecutionHUD } from './components/chat/AgenticExecutionHUD';
 import { LandingHeroShowcase } from './components/landing/LandingHeroShowcase';
 import { MurojaahStudio } from './components/murojaah/MurojaahStudio';
 
@@ -287,6 +288,9 @@ export function App() {
 
       {/* Floating Tanya Bayan AI Assistant (DeepSeek v4 Pro & Function Calling Tools) in Bottom-Right */}
       <QuranBuddyCard />
+
+      {/* Autonomous Jarvis Agentic Execution HUD Sequence */}
+      <AgenticExecutionHUD />
 
       {/* Global Fullscreen Adzan Modal (Accessible anywhere regardless of current tab) */}
       <FullscreenAdzan

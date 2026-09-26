@@ -7,8 +7,10 @@ import {
   Trash2,
   Bot,
   ChevronDown,
+  ChevronUp,
   ArrowRight,
-  Compass
+  Compass,
+  Brain
 } from 'lucide-react';
 import {
   quranBuddyService,
@@ -26,11 +28,12 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [expandedThinking, setExpandedThinking] = useState<Record<string, boolean>>({});
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load chat history on mount + listen to global open event
+  // Load chat history on mount + listen to global open and auto-minimize events
   useEffect(() => {
     setMessages(quranBuddyService.loadHistory());
 
@@ -39,13 +42,20 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
       setIsMinimized(false);
     };
 
+    const handleAutoMinimize = () => {
+      setIsMinimized(true);
+    };
+
     window.addEventListener('qv_open_bayan_buddy', handleGlobalOpen);
     window.addEventListener('qv_open_azman_buddy', handleGlobalOpen);
     window.addEventListener('qv_open_quran_buddy', handleGlobalOpen);
+    window.addEventListener('qv_bayan_auto_minimize', handleAutoMinimize);
+
     return () => {
       window.removeEventListener('qv_open_bayan_buddy', handleGlobalOpen);
       window.removeEventListener('qv_open_azman_buddy', handleGlobalOpen);
       window.removeEventListener('qv_open_quran_buddy', handleGlobalOpen);
+      window.removeEventListener('qv_bayan_auto_minimize', handleAutoMinimize);
     };
   }, []);
 
@@ -54,7 +64,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
     if (isOpen && !isMinimized) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen, isMinimized, isLoading]);
+  }, [messages, isOpen, isMinimized, isLoading, expandedThinking]);
 
   // Focus input when opened
   useEffect(() => {
@@ -62,6 +72,13 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen, isMinimized]);
+
+  const toggleThinking = (msgId: string) => {
+    setExpandedThinking((prev) => ({
+      ...prev,
+      [msgId]: !prev[msgId]
+    }));
+  };
 
   const handleSendMessage = async (customText?: string) => {
     const textToSend = (customText || inputText).trim();
@@ -86,8 +103,15 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
         role: 'assistant',
         content: response.text,
         timestamp: Date.now(),
+        thinking: response.thinking,
+        clarification: response.clarification,
         actions: response.actions
       };
+
+      // Auto expand thinking jika ada klarifikasi ambigu
+      if (response.thinking) {
+        setExpandedThinking((prev) => ({ ...prev, [assistantMessage.id]: true }));
+      }
 
       const finalHistory = [...newHistory, assistantMessage];
       setMessages(finalHistory);
@@ -119,11 +143,11 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
   };
 
   const quickPrompts = [
+    'Buka Al-Mulk',
     'Panduan Muroja\'ah AI',
-    'Buka Surah Al-Mulk: 1',
     'Jadwal sholat hari ini?',
-    'Tips hafalan cepat mutqin',
-    'Buka Dzikir Petang'
+    'Buka Dzikir Petang',
+    'Tips hafalan mutqin'
   ];
 
   // 1. Minimized / Floating Trigger Button (Saat ditutup)
@@ -192,7 +216,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
   // 3. Fully Expanded Compact Card
   return (
     <div
-      className={`fixed bottom-20 lg:bottom-6 right-3 sm:right-4 z-[9999] w-[320px] sm:w-[360px] md:w-[380px] h-[480px] sm:h-[510px] max-h-[78vh] flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 ring-1 ring-black/5 dark:ring-white/10 ${className}`}
+      className={`fixed bottom-20 lg:bottom-6 right-3 sm:right-4 z-[9999] w-[320px] sm:w-[370px] md:w-[400px] h-[500px] sm:h-[530px] max-h-[82vh] flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 ring-1 ring-black/5 dark:ring-white/10 ${className}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#0B4627] text-white border-b border-emerald-800/80 select-none">
@@ -241,21 +265,79 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
       <div className="flex-1 p-3.5 overflow-y-auto space-y-3 bg-slate-50 dark:bg-slate-950">
         {messages.map((msg) => {
           const isUser = msg.role === 'user';
+          const isThoughtExpanded = !!expandedThinking[msg.id];
+
           return (
             <div
               key={msg.id}
               className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
             >
               <div
-                className={`text-xs leading-relaxed max-w-[88%] p-3 rounded-2xl border ${
+                className={`text-xs leading-relaxed max-w-[90%] p-3 rounded-2xl border ${
                   isUser
                     ? 'bg-[#0B4627] text-white rounded-br-xs border-emerald-800 shadow-xs'
                     : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-bl-xs border-slate-200 dark:border-slate-800 shadow-xs space-y-1'
                 }`}
               >
-                <div className="whitespace-pre-wrap">{msg.content}</div>
+                {/* 1. Collapsible Chain of Thought (CoT) */}
+                {!isUser && msg.thinking && (
+                  <div className="mb-2 p-2 bg-amber-500/10 dark:bg-amber-950/30 border border-amber-400/30 rounded-xl text-[11px] select-none">
+                    <button
+                      onClick={() => toggleThinking(msg.id)}
+                      className="w-full flex items-center justify-between font-semibold text-amber-800 dark:text-amber-300 cursor-pointer"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Brain className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                        <span>Alur Pikir Bayan (Chain of Thought)</span>
+                      </span>
+                      {isThoughtExpanded ? (
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      )}
+                    </button>
 
-                {/* Interactive Action Badges */}
+                    {isThoughtExpanded && (
+                      <div className="mt-2 pt-2 border-t border-amber-300/30 text-[10.5px] leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-wrap font-sans font-normal">
+                        {msg.thinking}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 2. Main Text Content */}
+                <div className="whitespace-pre-wrap font-sans">{msg.content}</div>
+
+                {/* 3. Interactive Grill-Me Disambiguation Cards */}
+                {!isUser && msg.clarification && (
+                  <div className="mt-2.5 pt-2 border-t border-slate-200/80 dark:border-slate-800 space-y-1.5">
+                    <p className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400 mb-1 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-amber-500" />
+                      <span>{msg.clarification.question}</span>
+                    </p>
+                    <div className="grid grid-cols-1 gap-1.5">
+                      {msg.clarification.options.map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => handleExecuteAction(opt.action)}
+                          className="w-full text-left p-2.5 bg-gradient-to-r from-emerald-50 to-amber-50/40 dark:from-emerald-950/50 dark:to-slate-900 hover:from-emerald-100 hover:to-amber-100/60 dark:hover:from-emerald-900/60 text-slate-900 dark:text-slate-100 border border-emerald-300/80 dark:border-emerald-700/60 rounded-xl transition-all active:scale-[0.98] cursor-pointer shadow-xs group"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-[#0B4627] dark:text-amber-300 group-hover:underline">
+                              {opt.label}
+                            </span>
+                            <ArrowRight className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                          <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-2">
+                            {opt.description}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Interactive Action Badges */}
                 {!isUser && msg.actions && msg.actions.length > 0 && (
                   <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-1.5">
                     {msg.actions.map((act) => (
@@ -284,7 +366,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
         {/* Typing Loading Bubble */}
         {isLoading && (
           <div className="flex items-center gap-2 p-3 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs w-fit">
-            <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400">Bayan sedang berpikir</span>
+            <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400">Bayan sedang menganalisis</span>
             <div className="flex gap-1 items-center">
               <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce [animation-delay:-0.3s]" />
               <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce [animation-delay:-0.15s]" />
@@ -324,7 +406,7 @@ export const QuranBuddyCard: React.FC<QuranBuddyCardProps> = ({ className = '' }
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Tanya Bayan atau minta panduan fitur..."
+          placeholder="Tanya Bayan atau ketik nama surah..."
           disabled={isLoading}
           className="flex-1 px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-600 dark:text-white placeholder:text-slate-400 font-medium"
         />

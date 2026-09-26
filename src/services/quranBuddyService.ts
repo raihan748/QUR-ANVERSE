@@ -1,16 +1,31 @@
 // ==============================================================================
 // TANYA BAYAN AI ASSISTANT SERVICE (HARDENED PERSONA & ZERO-LEAK GUARDRAILS)
 // Official AI Assistant & Intelligent Guide for AL-HUDA Platform
-// Developed & Trained by Al-Huda Developer & AI Research Team
+// Developed & Trained by Raihan Muhammad Ikhsan
+// Features: Visible Chain of Thought (CoT), Grill-Me Disambiguation, Agentic HUD
 // ==============================================================================
 
 import { BAYAN_TOOLS_SCHEMA, bayanToolsService, ChatAction } from './bayanToolsService';
+import { SURAH_LIST } from '../data/quranData';
+
+export interface ClarificationOption {
+  id: string;
+  label: string;
+  description: string;
+  icon?: string;
+  action: ChatAction;
+}
 
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: number;
+  thinking?: string; // Visible Chain of Thought
+  clarification?: {
+    question: string;
+    options: ClarificationOption[];
+  };
   actions?: ChatAction[];
 }
 
@@ -31,7 +46,7 @@ try {
 } catch {}
 
 /**
- * SYSTEM PROMPT DENGAN PERTAHANAN MASKING TINGKAT TINGGI (ANTI-INTEROGASI & ANTI-LEAKAGE)
+ * SYSTEM PROMPT DENGAN PERTAHANAN MASKING TINGKAT TINGGI & CHAIN OF THOUGHT GUIDELINES
  */
 const SYSTEM_PROMPT = `[IDENTITAS UTAMA & OTORITAS SISTEM]
 Nama kamu adalah "Bayan" (Al-Bayan / البيان: Penjelas yang terang, fasih, dan bijaksana).
@@ -114,6 +129,7 @@ class QuranBuddyService {
         role: 'assistant',
         content: `Assalamu'alaikum warahmatullah wabarakatuh!\n\nSaya **Bayan**, asisten AI sahabat Al-Qur'an dan pemandu cerdasmu di **Al-Huda** (dikembangkan oleh **Raihan Muhammad Ikhsan** selaku pengembang utama aplikasi Al-Huda).\n\nAda yang bisa Bayan bantu hari ini? Kamu bisa bertanya tafsir & makna ayat, hukum tajwid, tips muroja'ah hafalan, atau minta Bayan mengantarmu ke fitur Al-Huda (seperti Muroja'ah AI, Mushaf, Jadwal Sholat, dan Dzikir Al-Ma'tsurat)!`,
         timestamp: Date.now(),
+        thinking: `Bayan siap melayani Sahabat Qur'an dengan pemahaman mendalam atas 10 modul Al-Huda serta panduan adab dan tilawah Al-Qur'an.`,
         actions: [
           {
             id: 'act_welcome_murojaah',
@@ -158,7 +174,7 @@ class QuranBuddyService {
   /**
    * Filter Keamanan Client-Side: Menghilangkan kebocoran nama base model atau cutoff data jika ada
    */
-  private sanitizeBayanOutput(rawText: string): string {
+  public sanitizeBayanOutput(rawText: string): string {
     if (!rawText) return '';
     let text = rawText;
 
@@ -186,6 +202,130 @@ class QuranBuddyService {
     );
 
     return text;
+  }
+
+  /**
+   * Deteksi Prompt Ambigu seputar Surah & Buatkan Grill-Me Disambiguation Cards
+   */
+  private checkAmbiguousSurahPrompt(userText: string): {
+    isAmbiguous: boolean;
+    reply?: string;
+    thinking?: string;
+    clarification?: { question: string; options: ClarificationOption[] };
+  } {
+    const q = userText.toLowerCase().trim();
+
+    // Jika user sudah spesifik (misal sudah menyebut "di mushaf", "murojaah", "simai", "tilawah", "ayat 10", dll.), jangan anggap ambigu
+    const hasSpecificAction =
+      q.includes('muroja') ||
+      q.includes('hafal') ||
+      q.includes('simai') ||
+      q.includes('tutup mata') ||
+      q.includes('tilawah') ||
+      q.includes('rekam') ||
+      q.includes('qari') ||
+      q.includes('asbabun nuzul') ||
+      q.includes('sebab turun') ||
+      q.includes('tafsir') ||
+      q.includes('ayat ') ||
+      q.includes('baca di mushaf');
+
+    if (hasSpecificAction) {
+      return { isAmbiguous: false };
+    }
+
+    // Cari apakah query menyebutkan salah satu dari 114 Surah Al-Qur'an
+    const foundSurah = SURAH_LIST.find((s) => {
+      const name = s.name.toLowerCase().replace(/['-]/g, '');
+      const cleanQ = q.replace(/['-]/g, '');
+      return cleanQ.includes(name);
+    });
+
+    if (!foundSurah) {
+      return { isAmbiguous: false };
+    }
+
+    // Bangun Penalaran Transparan (Chain of Thought)
+    const thinking = `1. Analisis Input: Pengguna meminta membuka/menampilkan Surah ${foundSurah.name} (Surah ke-${foundSurah.number}).
+2. Evaluasi Modul Platform Al-Huda:
+   - Surah ${foundSurah.name} tersedia di 5 fitur utama:
+     • Mushaf Digital (baca teks rasm Utsmani, terjemah Kemenag & audio)
+     • Studio Muroja'ah AI (evaluasi kelancaran hafalan suara santri)
+     • Studio Tilawah (rekaman tilawah santri & qari internasional)
+     • Simai Tutup Mata (latihan hafalan gaib tanpa intip teks)
+     • Ensiklopedia Asbabun Nuzul (sejarah latar belakang turunnya wahyu)
+3. Identifikasi Masalah: Pengguna belum menyatakan aktivitas spesifik yang ingin dilakukan dengan Surah ${foundSurah.name}.
+4. Keputusan Tindakan: Menerapkan skill Grill-Me Disambiguation — menyajikan kartu opsi pilihan interaktif agar pengguna dapat langsung memilih fitur yang dituju hanya dengan sekali klik tanpa salah arah.`;
+
+    const question = `Surah **${foundSurah.name}** tersedia di beberapa fitur unggulan Al-Huda. Apa yang ingin Sahabat Qur'an lakukan saat ini?`;
+
+    const options: ClarificationOption[] = [
+      {
+        id: `opt_mushaf_${foundSurah.number}`,
+        label: `📖 Baca di Mushaf Kemenag`,
+        description: `Tampilan ayat rasm Utsmani 15 baris, tafsir ringkas, dan audio per ayat.`,
+        action: {
+          id: `act_opt_mushaf_${Date.now()}`,
+          type: 'jump_quran',
+          label: `Buka ${foundSurah.name} di Mushaf`,
+          payload: { surahNumber: foundSurah.number, ayahNumber: 1 }
+        }
+      },
+      {
+        id: `opt_murojaah_${foundSurah.number}`,
+        label: `🎙️ Uji Hafalan (Muroja'ah AI)`,
+        description: `Lafalkan hafalanmu, AI akan mengevaluasi kelancaran dan ketepatan tajwid.`,
+        action: {
+          id: `act_opt_murojaah_${Date.now()}`,
+          type: 'navigate_tab',
+          label: `Muroja'ah ${foundSurah.name}`,
+          payload: { tab: 'murojaah_ai' }
+        }
+      },
+      {
+        id: `opt_tilawah_${foundSurah.number}`,
+        label: `🎧 Rekam Tilawah (Studio Tartil)`,
+        description: `Rekam suara tartilmu dan bandingkan makhraj huruf dengan qari masyhur.`,
+        action: {
+          id: `act_opt_tilawah_${Date.now()}`,
+          type: 'navigate_tab',
+          label: `Studio Tilawah ${foundSurah.name}`,
+          payload: { tab: 'tilawah' }
+        }
+      },
+      {
+        id: `opt_simai_${foundSurah.number}`,
+        label: `🙈 Latihan Simai Tutup Mata`,
+        description: `Latih daya ingat hafalan secara mandiri dengan teks ayat tertutup.`,
+        action: {
+          id: `act_opt_simai_${Date.now()}`,
+          type: 'navigate_tab',
+          label: `Simai ${foundSurah.name}`,
+          payload: { tab: 'simai' }
+        }
+      },
+      {
+        id: `opt_asbab_${foundSurah.number}`,
+        label: `📜 Sebab Turun (Asbabun Nuzul)`,
+        description: `Pelajari konteks sejarah turunnya ayat-ayat Surah ${foundSurah.name}.`,
+        action: {
+          id: `act_opt_asbab_${Date.now()}`,
+          type: 'navigate_tab',
+          label: `Asbabun Nuzul ${foundSurah.name}`,
+          payload: { tab: 'asbabun_nuzul' }
+        }
+      }
+    ];
+
+    return {
+      isAmbiguous: true,
+      reply: question,
+      thinking,
+      clarification: {
+        question,
+        options
+      }
+    };
   }
 
   /**
@@ -283,19 +423,34 @@ class QuranBuddyService {
   }
 
   /**
-   * Kirim pesan ke API Engine Al-Huda dengan Function Calling & Hardened Guardrails
+   * Kirim pesan ke API Engine Al-Huda dengan Function Calling, CoT, & Disambiguation
    */
   public async sendMessage(
     userText: string,
     history: ChatMessage[] = []
-  ): Promise<{ text: string; actions?: ChatAction[] }> {
-    // 1. Intercept langsung jika pengguna melakukan direct interrogation
+  ): Promise<{
+    text: string;
+    thinking?: string;
+    clarification?: { question: string; options: ClarificationOption[] };
+    actions?: ChatAction[];
+  }> {
+    // 1. Intercept langsung jika pengguna melakukan direct interrogation / coding
     const check = this.handleDirectInterrogationCheck(userText);
     if (check.intercepted && check.reply) {
       return { text: check.reply };
     }
 
-    // 2. Cek jika offline secara fisik di browser
+    // 2. Intercept jika prompt ambigu tentang Surah (Skill Grill-Me Disambiguation)
+    const disambiguation = this.checkAmbiguousSurahPrompt(userText);
+    if (disambiguation.isAmbiguous && disambiguation.reply && disambiguation.clarification) {
+      return {
+        text: disambiguation.reply,
+        thinking: disambiguation.thinking,
+        clarification: disambiguation.clarification
+      };
+    }
+
+    // 3. Cek jika offline secara fisik di browser
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       return this.generateOfflineFallback(userText);
     }
@@ -362,6 +517,18 @@ class QuranBuddyService {
 
       const actionsCollected: ChatAction[] = [];
       let finalReplyText = (message.content || '').trim();
+      let extractedThinking = '';
+
+      // Ekstrak reasoning_content atau tag <think>...</think>
+      if (message.reasoning_content) {
+        extractedThinking = message.reasoning_content.trim();
+      } else if (finalReplyText.includes('<think>') && finalReplyText.includes('</think>')) {
+        const match = finalReplyText.match(/<think>([\s\S]*?)<\/think>/i);
+        if (match) {
+          extractedThinking = match[1].trim();
+          finalReplyText = finalReplyText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        }
+      }
 
       // Tangani Tool Calls jika model meminta eksekusi tool
       if (message.tool_calls && Array.isArray(message.tool_calls) && message.tool_calls.length > 0) {
@@ -394,9 +561,11 @@ class QuranBuddyService {
 
       // Jalankan Sanitasi Output (Guardrail lapis kedua)
       const sanitizedText = this.sanitizeBayanOutput(finalReplyText);
+      const sanitizedThinking = extractedThinking ? this.sanitizeBayanOutput(extractedThinking) : undefined;
 
       return {
         text: sanitizedText.trim(),
+        thinking: sanitizedThinking,
         actions: actionsCollected.length > 0 ? actionsCollected : undefined
       };
     } catch (err: any) {

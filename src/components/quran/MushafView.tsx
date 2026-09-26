@@ -62,6 +62,8 @@ export const MushafView: React.FC = () => {
 
   // Bookmarks
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  // Spotlight effect for Bayan AI Agentic navigation
+  const [spotlightAyatNumber, setSpotlightAyatNumber] = useState<number | null>(null);
 
   const currentSurahMeta = SURAH_LIST.find((s) => s.number === selectedSurahNumber) || SURAH_LIST[0];
 
@@ -89,6 +91,12 @@ export const MushafView: React.FC = () => {
       const customEvent = e as CustomEvent<{ surahNumber: number; ayahNumber?: number }>;
       if (customEvent.detail && customEvent.detail.surahNumber) {
         setSelectedSurahNumber(customEvent.detail.surahNumber);
+        const targetAyah = customEvent.detail.ayahNumber || 1;
+        setSpotlightAyatNumber(targetAyah);
+        setTimeout(() => {
+          setSpotlightAyatNumber(null);
+        }, 5000);
+
         if (customEvent.detail.ayahNumber) {
           setTimeout(() => {
             const el = document.getElementById(`ayat-${customEvent.detail.ayahNumber}`);
@@ -350,13 +358,16 @@ export const MushafView: React.FC = () => {
           ayats.map((ayat) => {
             const isPlayingThis = currentPlayingAyat?.numberInSurah === ayat.numberInSurah && isPlayingAudio;
             const isBookmarked = isAyatBookmarked(ayat);
+            const isSpotlighted = ayat.numberInSurah === spotlightAyatNumber;
 
             return (
               <div
                 key={ayat.numberInSurah}
                 id={`ayat-${ayat.numberInSurah}`}
-                className={`rounded-2xl p-4 sm:p-5 border transition-all ${getContainerTheme()} ${
-                  isPlayingThis
+                className={`rounded-2xl p-4 sm:p-5 border transition-all duration-700 ${getContainerTheme()} ${
+                  isSpotlighted
+                    ? 'border-amber-400 ring-4 ring-amber-400/80 shadow-[0_0_35px_rgba(245,158,11,0.45)] bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-amber-500/10 scale-[1.01]'
+                    : isPlayingThis
                     ? 'border-amber-400 shadow-md ring-2 ring-amber-400/30'
                     : 'border-slate-200/90 dark:border-slate-800 shadow-xs'
                 }`}
@@ -365,12 +376,21 @@ export const MushafView: React.FC = () => {
                 <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800 pb-3 mb-4">
                   {/* Number Badge */}
                   <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-400/40 flex items-center justify-center font-bold text-xs shadow-xs">
+                    <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shadow-xs transition-all ${
+                      isSpotlighted 
+                        ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-300 animate-bounce' 
+                        : 'bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-400/40'
+                    }`}>
                       {ayat.numberInSurah}
                     </span>
                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                       Juz {ayat.juz}
                     </span>
+                    {isSpotlighted && (
+                      <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-lg bg-amber-500 text-slate-950 animate-pulse flex items-center gap-1 shadow-xs">
+                        <Sparkles className="w-3 h-3 text-slate-950 fill-current" /> Target Bayan AI
+                      </span>
+                    )}
                   </div>
 
                   {/* Actions */}

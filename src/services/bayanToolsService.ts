@@ -396,6 +396,34 @@ class BayanToolsService {
     switch (action.type) {
       case 'navigate_tab': {
         const tab = action.payload?.tab;
+        const labels: Record<string, string> = {
+          murojaah_ai: 'Studio Muroja\'ah AI',
+          mushaf: 'Mushaf Al-Qur\'an Kemenag',
+          tilawah: 'Studio Rekaman Tilawah',
+          simai: 'Simai Tutup Mata',
+          challenge: 'Tantangan Sambung Ayat',
+          prayer: 'Jadwal Sholat & Adzan',
+          dashboard: 'Dashboard Santri',
+          download: 'Pusat Unduh Offline',
+          asbabun_nuzul: 'Ensiklopedia Asbabun Nuzul',
+          dzikir: 'Dzikir Al-Ma\'tsurat'
+        };
+        const targetLabel = labels[tab] || 'Modul Al-Huda';
+
+        window.dispatchEvent(
+          new CustomEvent('qv_bayan_agentic_hud', {
+            detail: {
+              title: `Membuka ${targetLabel}`,
+              steps: [
+                'Memeriksa Kesiapan Sistem Al-Huda...',
+                `Mengalihkan Layar ke ${targetLabel}...`,
+                'Menyiapkan Tampilan Interaktif... Selesai!'
+              ],
+              durationMs: 1800
+            }
+          })
+        );
+
         if (tab) {
           window.dispatchEvent(new CustomEvent('qv_bayan_navigate', { detail: { tab } }));
         }
@@ -404,16 +432,47 @@ class BayanToolsService {
 
       case 'jump_quran': {
         const { surahNumber, ayahNumber } = action.payload || {};
+        const surah = SURAH_LIST.find((s) => s.number === surahNumber);
+        const surahName = surah?.name || `Surah ke-${surahNumber}`;
+        const ayahTxt = ayahNumber ? `Ayat ${ayahNumber}` : 'Awal Surah';
+
+        window.dispatchEvent(
+          new CustomEvent('qv_bayan_agentic_hud', {
+            detail: {
+              title: `Membuka ${surahName} (${ayahTxt})`,
+              steps: [
+                'Mengakses Mushaf Al-Qur\'an Digital...',
+                `Memuat Lembaran Surah ${surahName}...`,
+                `Mengunci Sorotan ${ayahTxt}... Selesai!`
+              ],
+              durationMs: 2200
+            }
+          })
+        );
+
         window.dispatchEvent(new CustomEvent('qv_bayan_navigate', { detail: { tab: 'mushaf' } }));
         setTimeout(() => {
           window.dispatchEvent(
             new CustomEvent('qv_mushaf_jump', { detail: { surahNumber, ayahNumber } })
           );
-        }, 150);
+        }, 300);
         break;
       }
 
       case 'open_dzikir': {
+        window.dispatchEvent(
+          new CustomEvent('qv_bayan_agentic_hud', {
+            detail: {
+              title: 'Membuka Dzikir Al-Ma\'tsurat',
+              steps: [
+                'Mengakses Wirid Al-Ma\'tsurat Hasan Al-Banna...',
+                'Menyiapkan Tampilan Doa & Tasbih Digital...',
+                'Siap Dilantunkan... Selesai!'
+              ],
+              durationMs: 1800
+            }
+          })
+        );
         window.dispatchEvent(new CustomEvent('qv_bayan_navigate', { detail: { tab: 'dzikir' } }));
         break;
       }
