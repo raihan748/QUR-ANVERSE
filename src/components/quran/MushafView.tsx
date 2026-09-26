@@ -83,6 +83,26 @@ export const MushafView: React.FC = () => {
     };
   }, [selectedSurahNumber]);
 
+  // Listener untuk Aksi Cerdas Bayan AI (Lompat ke Surah & Ayat Tertentu)
+  useEffect(() => {
+    const handleJump = (e: Event) => {
+      const customEvent = e as CustomEvent<{ surahNumber: number; ayahNumber?: number }>;
+      if (customEvent.detail && customEvent.detail.surahNumber) {
+        setSelectedSurahNumber(customEvent.detail.surahNumber);
+        if (customEvent.detail.ayahNumber) {
+          setTimeout(() => {
+            const el = document.getElementById(`ayat-${customEvent.detail.ayahNumber}`);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 500);
+        }
+      }
+    };
+    window.addEventListener('qv_mushaf_jump', handleJump);
+    return () => window.removeEventListener('qv_mushaf_jump', handleJump);
+  }, []);
+
   const handleSetViewMode = (mode: 'digital' | 'physical') => {
     setMushafViewMode(mode);
     try {
@@ -334,6 +354,7 @@ export const MushafView: React.FC = () => {
             return (
               <div
                 key={ayat.numberInSurah}
+                id={`ayat-${ayat.numberInSurah}`}
                 className={`rounded-2xl p-4 sm:p-5 border transition-all ${getContainerTheme()} ${
                   isPlayingThis
                     ? 'border-amber-400 shadow-md ring-2 ring-amber-400/30'

@@ -74,17 +74,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </button>
 
-          {/* Tanya Azman AI */}
+          {/* Tanya Bayan AI */}
           <button
             onClick={() => {
+              window.dispatchEvent(new CustomEvent('qv_open_bayan_buddy'));
               window.dispatchEvent(new CustomEvent('qv_open_azman_buddy'));
               window.dispatchEvent(new CustomEvent('qv_open_quran_buddy'));
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#06331D] hover:bg-emerald-900/80 text-amber-300 border border-emerald-700/60 rounded-xl text-xs font-semibold transition cursor-pointer"
-            title="Tanya Azman (AI Sahabat Al-Qur'an)"
+            title="Tanya Bayan (AI Sahabat & Pemandu Al-Qur'an)"
           >
             <Bot className="w-3.5 h-3.5 text-amber-300" />
-            <span className="hidden sm:inline">Tanya Azman</span>
+            <span className="hidden sm:inline">Tanya Bayan</span>
           </button>
 
           {/* Language Switcher */}

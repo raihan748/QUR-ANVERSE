@@ -161,6 +161,29 @@ export function App() {
     (window as any).__qv_is_attendance_open = true;
   };
 
+  // Listener untuk Aksi Tools Cerdas AI Bayan (Navigasi Modul, Buka Modal Install & Absensi)
+  useEffect(() => {
+    const handleBayanNavigate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab: NavigationTab }>;
+      if (customEvent.detail && customEvent.detail.tab) {
+        handleSelectTabWithScroll(customEvent.detail.tab);
+      }
+    };
+
+    const handleOpenInstall = () => setIsInstallModalOpen(true);
+    const handleOpenAttendance = () => handleOpenManualAttendance();
+
+    window.addEventListener('qv_bayan_navigate', handleBayanNavigate);
+    window.addEventListener('qv_open_install_modal', handleOpenInstall);
+    window.addEventListener('qv_open_attendance_modal', handleOpenAttendance);
+
+    return () => {
+      window.removeEventListener('qv_bayan_navigate', handleBayanNavigate);
+      window.removeEventListener('qv_open_install_modal', handleOpenInstall);
+      window.removeEventListener('qv_open_attendance_modal', handleOpenAttendance);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#F8F5EE] flex flex-col font-sans selection:bg-[#F59E0B] selection:text-black">
       {/* Top Navbar Header */}
@@ -262,7 +285,7 @@ export function App() {
       {/* Floating Scroll to Top & Quick Jump Button */}
       <ScrollToTopButton onSelectTab={handleSelectTabWithScroll} />
 
-      {/* Floating Tanya Azman AI Assistant (DeepSeek v4 Pro) in Bottom-Right */}
+      {/* Floating Tanya Bayan AI Assistant (DeepSeek v4 Pro & Function Calling Tools) in Bottom-Right */}
       <QuranBuddyCard />
 
       {/* Global Fullscreen Adzan Modal (Accessible anywhere regardless of current tab) */}
