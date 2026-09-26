@@ -138,7 +138,7 @@ jobs:
             - **Fitur Unggulan:** 
               - Alarm Adzan Otomatis saat Layar Mati (Doze Mode)
               - Audio Muadzin Masjid Nabawi Syekh Muhammad Marwan Al-Qassas
-              - Mode Muroja'ah Real-time AI & Tanya Azman
+              - Mode Muroja'ah Real-time AI & Tanya Bayan (AI Copilot & Navigasi Interaktif)
               - Standar Mushaf Madinah 604 Halaman Offline
               
             *Otomatis di-compile dari commit terbaru branch `main`.*
